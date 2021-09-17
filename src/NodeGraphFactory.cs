@@ -10,7 +10,7 @@ namespace GraphSharp
 {
     public static class NodeGraphFactory
     {
-        public static List<Node> CreateConnected<Node>(int count_of_nodes,int max_count_of_childs)
+        public static List<Node> CreateConnected<Node>(int count_of_nodes,int count_of_childs)
         where Node : NodeBase, new()
         {
             
@@ -22,7 +22,7 @@ namespace GraphSharp
                 nodes.Add(node);
             }
             foreach (var n in nodes){
-                for(int i = 0;i<max_count_of_childs;i++){
+                for(int i = 0;i<count_of_childs;i++){
                     Node child;
                     do
                         child = nodes[rand.Next(nodes.Count)];
