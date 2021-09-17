@@ -20,6 +20,7 @@ namespace GraphSharp
         }
         public void EndVesit()
         {
+            lock(Childs)
             Vesited = false;
         }
         /// <summary>
@@ -31,10 +32,10 @@ namespace GraphSharp
         {
             lock (Childs)
             {
-                var result = Vesited ? null : this;
+                if(Vesited) return null;
                 vesitor.Vesit(this);
                 Vesited = true;
-                return result;
+                return this;
             }
         }
         public override bool Equals(object obj)

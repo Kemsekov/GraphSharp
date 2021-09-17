@@ -57,14 +57,14 @@ namespace GraphSharp
             workSchedule.Clear();
             _endVesit?.Invoke();
         }
-        public void Send(IVesitor vesitor)
+        public void AddVesitor(IVesitor vesitor)
         {
-            Send(vesitor, new Random().Next(_nodes.Count));
+            AddVesitor(vesitor, new Random().Next(_nodes.Count));
         }
-        public void Send(IVesitor vesitor, int index)
+        public void AddVesitor(IVesitor vesitor, int index)
         {
             firstVesit.Add(() => _nodes[index].Vesit(vesitor));
-            Send(
+            AddVesitor(
                 vesitor,
                 new List<NodeBase>() { _nodes[index] },
                 new List<NodeBase>()
@@ -77,7 +77,7 @@ namespace GraphSharp
         /// <param name="vesitor">Vesitor</param>
         /// <param name="nodes"></param>
         /// <param name="next_generation"></param>
-        void Send(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)
+        void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)
         {
             ThreadLocal<NodeBase> buf_local = new ThreadLocal<NodeBase>(()=>null);
             workSchedule?.Add(
@@ -92,7 +92,7 @@ namespace GraphSharp
                 {
                     Parallel.For(0,nodes.Count,(index,_)=>
                         {
-                            var buf = buf_local.Value;
+                            NodeBase buf;
                             foreach (var child in nodes[index].Childs)
                             {
                                 buf = child.Vesit(vesitor);
@@ -118,8 +118,8 @@ namespace GraphSharp
         }
         public void Step()
         {
-            workSchedule.StepParallel();
-            workSchedule.StepParallel();
+            workSchedule.Step();
+            workSchedule.Step();
             workSchedule.Step();
             workSchedule.Reset();
         }
