@@ -12,7 +12,6 @@ namespace GraphSharp
         WorkSchedule workSchedule;
         WorkSchedule firstVesit = new(1);
         List<NodeBase> _nodes { get; }
-        event Action _endVesit;
         public Graph() : this(new List<NodeBase>())
         {
 
@@ -21,8 +20,6 @@ namespace GraphSharp
         {
             _nodes = new(nodes);
 
-            foreach (var node in _nodes)
-                _endVesit += node.EndVesit;
             workSchedule = new(3);
         }
         void vesit(IVesitor vesitor, IList<NodeBase> nodes)
@@ -35,27 +32,22 @@ namespace GraphSharp
         public bool AddNode(NodeBase node){
             if(_nodes.Contains(node)) return false;
             _nodes.Add(node);
-            _endVesit+=node.EndVesit;
             return true;
         }
         public bool RemoveNode(NodeBase node){
             if(_nodes.Remove(node)){
-                _endVesit-=node.EndVesit;
                 return true;
             }
             return false;
         }
         public void AddNodes(IEnumerable<NodeBase> nodes){
             var toAdd = nodes.Except(_nodes);
-            foreach(var n in toAdd)
-                _endVesit += n.EndVesit;
             _nodes.AddRange(toAdd);
         }
         public void Clear()
         {
             firstVesit.Clear();
             workSchedule.Clear();
-            _endVesit?.Invoke();
         }
         public void AddVesitor(IVesitor vesitor)
         {
@@ -79,13 +71,14 @@ namespace GraphSharp
         /// <param name="next_generation"></param>
         void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)
         {
-            ThreadLocal<NodeBase> buf_local = new ThreadLocal<NodeBase>(()=>null);
+            foreach(var node in this._nodes)
+                node.EndVesit(vesitor);
             workSchedule?.Add(
                 () =>
                 {
                     next_generation.Clear();
                     foreach (var node in nodes)
-                        node.EndVesit();
+                        node.EndVesit(vesitor);
                 },
                 //step            
                 () =>

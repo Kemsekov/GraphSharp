@@ -22,6 +22,6 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 **/publish
-**/logs.txt
+**/log.txt
 **/Program.cs
 README.md
