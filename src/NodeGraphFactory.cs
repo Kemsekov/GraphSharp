@@ -57,8 +57,7 @@ namespace GraphSharp
                         Node child;
                         do
                             child = nodes[_rand.Next(nodes.Count)];
-                        while(child==parent);
-
+                        while(child==parent || child.Childs.Contains(parent));
                         parent.AddChild(child);
                     }    
                 }

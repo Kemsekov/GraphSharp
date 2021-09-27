@@ -78,19 +78,23 @@ namespace GraphSharp
                 {
                     next_generation.Clear();
                     foreach (var node in nodes)
-                        node.EndVesit(vesitor);
+                        node?.EndVesit(vesitor);
                 },
                 //step            
                 () =>
                 {
+                    object mutex = new();
                     Parallel.For(0,nodes.Count,(index,_)=>
                         {
                             NodeBase buf;
-                            foreach (var child in nodes[index].Childs)
+                            if(nodes[index]?.Childs is not null)
+                            for(int i = 0;i<nodes[index].Childs.Count;i++)
                             {
+                                var child = nodes[index].Childs[i];
                                 buf = child.Vesit(vesitor);
                                 if (buf is null) continue;
-                                next_generation.Add(buf);
+                                lock(mutex)
+                                next_generation?.Add(buf);
                             }
                         }
                     );
