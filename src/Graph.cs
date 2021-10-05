@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dasync.Collections;
 using WorkSchedules;
 
 namespace GraphSharp
@@ -10,7 +12,7 @@ namespace GraphSharp
     public class Graph
     {
         WorkSchedule workSchedule;
-        WorkSchedule firstVesit = new(1);
+        WorkSchedule firstVesit = new WorkSchedule(1);
         List<NodeBase> _nodes { get; }
         public Graph() : this(new List<NodeBase>())
         {
@@ -18,9 +20,9 @@ namespace GraphSharp
         }
         public Graph(IEnumerable<NodeBase> nodes)
         {
-            _nodes = new(nodes);
+            _nodes = new List<NodeBase>(nodes);
 
-            workSchedule = new(3);
+            workSchedule = new WorkSchedule(3);
         }
         void vesit(IVesitor vesitor, IList<NodeBase> nodes)
         {
@@ -29,18 +31,22 @@ namespace GraphSharp
                 node.Vesit(vesitor);
             }
         }
-        public bool AddNode(NodeBase node){
-            if(_nodes.Contains(node)) return false;
+        public bool AddNode(NodeBase node)
+        {
+            if (_nodes.Contains(node)) return false;
             _nodes.Add(node);
             return true;
         }
-        public bool RemoveNode(NodeBase node){
-            if(_nodes.Remove(node)){
+        public bool RemoveNode(NodeBase node)
+        {
+            if (_nodes.Remove(node))
+            {
                 return true;
             }
             return false;
         }
-        public void AddNodes(IEnumerable<NodeBase> nodes){
+        public void AddNodes(IEnumerable<NodeBase> nodes)
+        {
             var toAdd = nodes.Except(_nodes);
             _nodes.AddRange(toAdd);
         }
@@ -71,7 +77,7 @@ namespace GraphSharp
         /// <param name="next_generation"></param>
         void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)
         {
-            foreach(var node in this._nodes)
+            foreach (var node in this._nodes)
                 node.EndVesit(vesitor);
             workSchedule?.Add(
                 () =>
@@ -83,21 +89,36 @@ namespace GraphSharp
                 //step            
                 () =>
                 {
-                    object mutex = new();
-                    Parallel.For(0,nodes.Count,(index,_)=>
+
+                    // NodeBase buf;
+                    // for(int index = 0; index<nodes.Count;index++){
+                    //     NodeBase current = nodes[index];
+                    //     if (current?.Childs != null)
+                    //         for (int i = 0; i < current.Childs.Count; i++)
+                    //         {
+                    //             var child = current.Childs[i];
+                    //             buf = child.Vesit(vesitor);
+                    //             if (buf is null) continue;
+                    //             next_generation?.Add(buf);
+                    //         }
+                    // }
+                    SemaphoreSlim semaphore = new SemaphoreSlim(1);
+                    var bag = new ConcurrentBag<NodeBase>(nodes);
+
+                    bag.ParallelForEachAsync(async current =>
+                    {
+                        NodeBase buf;
+                        for (int i = 0; i < current.Childs.Count; i++)
                         {
-                            NodeBase buf;
-                            if(nodes[index]?.Childs is not null)
-                            for(int i = 0;i<nodes[index].Childs.Count;i++)
-                            {
-                                var child = nodes[index].Childs[i];
-                                buf = child.Vesit(vesitor);
-                                if (buf is null) continue;
-                                lock(mutex)
-                                next_generation?.Add(buf);
-                            }
+                            var child = current.Childs[i];
+                            buf = await child.VesitAsync(vesitor);
+                            if (buf is null) continue;
+                            await semaphore.WaitAsync();
+                            next_generation?.Add(buf);
+                            semaphore.Release();
                         }
-                    );
+                    }).Wait();
+
                 },
                 //step
                 () =>

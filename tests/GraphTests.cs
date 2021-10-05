@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Extensions;
 using GraphSharp;
 using Xunit;
 
@@ -41,6 +40,7 @@ namespace tests
             List<int> vesited_nodes = new();
             var vesitor = new ActionVesitor(node =>
             {
+                lock(vesited_nodes)
                 vesited_nodes.Add(node.Id);
             });
 
@@ -119,6 +119,7 @@ namespace tests
             List<int> vesited_nodes = new();
             var vesitor = new ActionVesitor(node =>
             {
+                lock(vesited_nodes)
                 vesited_nodes.Add(node.Id);
             });
 

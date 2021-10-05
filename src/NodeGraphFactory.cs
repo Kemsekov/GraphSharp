@@ -41,7 +41,7 @@ namespace GraphSharp
                 var node = Activator.CreateInstance(typeof(Node),i) as Node;
                 nodes.Add(node);
             }
-            ThreadLocal<Random> rand = new(()=>new Random());
+            ThreadLocal<Random> rand = new ThreadLocal<Random>(()=>new Random());
 
             Parallel.ForEach(Partitioner.Create(0,nodes.Count),(range,loopState)=>{
                 var _rand = rand.Value;
