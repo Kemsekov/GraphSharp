@@ -1,3 +1,4 @@
+#define NATIVE_RUN
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -83,25 +84,23 @@ namespace GraphSharp
                 () =>
                 {
                     next_generation.Clear();
-                    foreach (var node in nodes)
-                        node?.EndVesit(vesitor);
+                    for(int i = 0;i<nodes.Count;i++)
+                        nodes[i].EndVesit(vesitor);
                 },
                 //step            
                 () =>
                 {
-
                     // NodeBase buf;
                     // for(int index = 0; index<nodes.Count;index++){
-                    //     NodeBase current = nodes[index];
-                    //     if (current?.Childs != null)
-                    //         for (int i = 0; i < current.Childs.Count; i++)
+                    //         for (int i = 0; i < nodes[index].Childs.Count; i++)
                     //         {
-                    //             var child = current.Childs[i];
+                    //             var child = nodes[index].Childs[i];
                     //             buf = child.Vesit(vesitor);
                     //             if (buf is null) continue;
-                    //             next_generation?.Add(buf);
+                    //             next_generation.Add(buf);
                     //         }
                     // }
+                    //----------------------------------
                     SemaphoreSlim semaphore = new SemaphoreSlim(1);
                     var bag = new ConcurrentBag<NodeBase>(nodes);
 
@@ -114,11 +113,11 @@ namespace GraphSharp
                             buf = await child.VesitAsync(vesitor);
                             if (buf is null) continue;
                             await semaphore.WaitAsync();
-                            next_generation?.Add(buf);
+                            next_generation.Add(buf);
                             semaphore.Release();
                         }
                     }).Wait();
-
+                    //------------------------------------
                 },
                 //step
                 () =>

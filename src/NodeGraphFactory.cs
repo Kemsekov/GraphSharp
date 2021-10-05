@@ -10,7 +10,7 @@ namespace GraphSharp
 {
     public static class NodeGraphFactory
     {
-        public static List<Node> CreateConnected<Node>(int count_of_nodes,int count_of_childs)
+        public static List<Node> CreateConnected<Node>(int count_of_nodes,int count_of_childs,bool indirect = false)
         where Node : NodeBase, new()
         {
             
@@ -26,14 +26,14 @@ namespace GraphSharp
                     Node child;
                     do
                         child = nodes[rand.Next(nodes.Count)];
-                    while(child==n);
+                    while(child==n || (indirect && child.Childs.Contains(n)));
 
                     n.AddChild(child);
                 }
             }
             return nodes;
         }
-        public static List<Node> CreateRandomConnected<Node>(int count_of_nodes,int min_count_of_childs, int max_count_of_childs)
+        public static List<Node> CreateRandomConnected<Node>(int count_of_nodes,int min_count_of_childs, int max_count_of_childs, bool indirect = false)
         where Node : NodeBase
         {
             var nodes = new List<Node>();
@@ -57,7 +57,7 @@ namespace GraphSharp
                         Node child;
                         do
                             child = nodes[_rand.Next(nodes.Count)];
-                        while(child==parent || child.Childs.Contains(parent));
+                        while(child==parent || (indirect && child.Childs.Contains(parent)));
                         parent.AddChild(child);
                     }    
                 }

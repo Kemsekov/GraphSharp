@@ -1,10 +1,10 @@
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using GraphSharp;
 using Xunit;
-
 namespace tests
 {
     public class GraphTests
@@ -240,6 +240,19 @@ namespace tests
                 vesited_nodes1.Clear();
                 vesited_nodes2.Clear();
 
+            }
+        }
+        [Theory]
+        [InlineData(9000,100,1000,50,500)]
+        public void Run_PerfomanceMeasure(int count_of_nodes, int min_count_of_childs, int max_count_of_childs,int delay,int count_of_steps){
+            var nodes = NodeGraphFactory.CreateRandomConnected<Node>(count_of_nodes,min_count_of_childs,max_count_of_childs);
+            var graph = new Graph(nodes);
+            var vesitor = new ActionVesitor(node=>{
+                Task.Delay(delay).Wait();
+            });
+            graph.Start();
+            for(int i = 0;i<count_of_steps;i++){
+                graph.Step();
             }
         }
     }
