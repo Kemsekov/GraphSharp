@@ -11,7 +11,7 @@ namespace GraphSharp
     public static class NodeGraphFactory
     {
         public static List<Node> CreateConnected<Node>(int count_of_nodes,int count_of_childs,bool indirect = false)
-        where Node : NodeBase, new()
+        where Node : NodeBase
         {
             
             var nodes = new List<Node>();

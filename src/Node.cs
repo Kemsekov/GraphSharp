@@ -20,6 +20,7 @@ namespace GraphSharp
         {
             semaphore.Wait();
             vesited[vesitor] = false;
+            vesitor.EndVesit(this);
             semaphore.Release();
         }
 
@@ -27,6 +28,7 @@ namespace GraphSharp
         {
             await semaphore.WaitAsync();
             vesited[vesitor] = false;
+            vesitor.EndVesit(this);
             semaphore.Release();
         }
 

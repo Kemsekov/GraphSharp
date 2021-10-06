@@ -7,14 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Collections;
 using WorkSchedules;
-
+//сделай Step для отдельный IVesitor
+//сделай НОРМАЛЬНЫЙ тест проверки на правильность работы графа
 namespace GraphSharp
 {
     public class Graph
     {
-        WorkSchedule workSchedule;
-        WorkSchedule firstVesit = new WorkSchedule(1);
-        List<NodeBase> _nodes { get; }
+        Dictionary<IVesitor,(WorkSchedule firstVesit,WorkSchedule vesit)> _work = new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
+        protected List<NodeBase> _nodes { get; }
         public Graph() : this(new List<NodeBase>())
         {
 
@@ -22,15 +22,6 @@ namespace GraphSharp
         public Graph(IEnumerable<NodeBase> nodes)
         {
             _nodes = new List<NodeBase>(nodes);
-
-            workSchedule = new WorkSchedule(3);
-        }
-        void vesit(IVesitor vesitor, IList<NodeBase> nodes)
-        {
-            foreach (var node in nodes)
-            {
-                node.Vesit(vesitor);
-            }
         }
         public bool AddNode(NodeBase node)
         {
@@ -51,18 +42,22 @@ namespace GraphSharp
             var toAdd = nodes.Except(_nodes);
             _nodes.AddRange(toAdd);
         }
-        public void Clear()
+        public virtual void Clear()
         {
-            firstVesit.Clear();
-            workSchedule.Clear();
+            _work.Clear();
         }
-        public void AddVesitor(IVesitor vesitor)
+        public virtual void AddVesitor(IVesitor vesitor)
         {
+            if(_work.ContainsKey(vesitor)) return;
             AddVesitor(vesitor, new Random().Next(_nodes.Count));
         }
-        public void AddVesitor(IVesitor vesitor, int index)
+        public virtual void AddVesitor(IVesitor vesitor, int index)
         {
-            firstVesit.Add(() => _nodes[index].Vesit(vesitor));
+            if(_work.ContainsKey(vesitor)) return;
+
+            _work.Add(vesitor,(new WorkSchedule(1),new WorkSchedule(3)));
+
+            _work[vesitor].firstVesit.Add(() => _nodes[index].Vesit(vesitor));
             AddVesitor(
                 vesitor,
                 new List<NodeBase>() { _nodes[index] },
@@ -76,11 +71,13 @@ namespace GraphSharp
         /// <param name="vesitor">Vesitor</param>
         /// <param name="nodes"></param>
         /// <param name="next_generation"></param>
-        void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)
+        protected virtual void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)
         {
             foreach (var node in this._nodes)
                 node.EndVesit(vesitor);
-            workSchedule?.Add(
+            SemaphoreSlim semaphore = new SemaphoreSlim(1);
+
+            _work[vesitor].vesit.Add(
                 () =>
                 {
                     next_generation.Clear();
@@ -90,21 +87,10 @@ namespace GraphSharp
                 //step            
                 () =>
                 {
-                    // NodeBase buf;
-                    // for(int index = 0; index<nodes.Count;index++){
-                    //         for (int i = 0; i < nodes[index].Childs.Count; i++)
-                    //         {
-                    //             var child = nodes[index].Childs[i];
-                    //             buf = child.Vesit(vesitor);
-                    //             if (buf is null) continue;
-                    //             next_generation.Add(buf);
-                    //         }
-                    // }
-                    //----------------------------------
-                    SemaphoreSlim semaphore = new SemaphoreSlim(1);
+
                     var bag = new ConcurrentBag<NodeBase>(nodes);
 
-                    bag.ParallelForEachAsync(async current =>
+                    nodes.ParallelForEachAsync(async current =>
                     {
                         NodeBase buf;
                         for (int i = 0; i < current.Childs.Count; i++)
@@ -129,16 +115,29 @@ namespace GraphSharp
                 }
             );
         }
-        public void Start()
+        public virtual void Start()
         {
-            firstVesit.StepAsync().Wait();
+            foreach(var item in _work)
+            item.Value.firstVesit.Step();
         }
-        public void Step()
+        public virtual void Start(IVesitor vesitor){
+            _work[vesitor].firstVesit.Step();
+        }
+        public virtual void Step()
         {
-            workSchedule.Step();
-            workSchedule.Step();
-            workSchedule.Step();
-            workSchedule.Reset();
+            foreach(var item in _work){
+            item.Value.vesit.Step();
+            item.Value.vesit.Step();
+            item.Value.vesit.Step();
+            item.Value.vesit.Reset();
+            }
+
+        }
+        public virtual void Step(IVesitor vesitor){
+            _work[vesitor].vesit.Step();
+            _work[vesitor].vesit.Step();
+            _work[vesitor].vesit.Step();
+            _work[vesitor].vesit.Reset();
         }
     }
 }
