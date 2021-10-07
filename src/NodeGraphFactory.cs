@@ -29,10 +29,10 @@ namespace GraphSharp
             //create childs
             await nodes.ParallelForEachAsync(async node=>
             {
-                List<NodeBase> copy = new List<NodeBase>(nodes);
-                copy.Shuffle(count_of_childs);
+                List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
+                copy.Shuffle();
                 copy.Remove(node);
-                node.Childs.AddRange(copy.GetRange(0,count_of_childs));
+                node.Childs.AddRange(copy);
             });
 
             return nodes;
@@ -54,11 +54,11 @@ namespace GraphSharp
             {
                 var rand = rand_local.Value;
                 var count_of_childs = rand.Next(Math.Abs(max_count_of_childs-min_count_of_childs))+min_count_of_childs;
-                List<NodeBase> copy = new List<NodeBase>(nodes);
-                copy.Shuffle(count_of_childs);
+                List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
+                copy.Shuffle();
                 copy.Remove(node);
-                node.Childs.AddRange(copy.GetRange(0,count_of_childs));
-            });;
+                node.Childs.AddRange(copy);
+            });
 
             return nodes;
         }
@@ -86,10 +86,10 @@ namespace GraphSharp
             foreach(var node in nodes)
             {
                 var count_of_childs = rand.Next(Math.Abs(max_count_of_childs-min_count_of_childs))+min_count_of_childs;
-                List<NodeBase> copy = new List<NodeBase>(nodes);
-                copy.Shuffle(count_of_childs);
+                List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
+                copy.Shuffle();
                 copy.Remove(node);
-                node.Childs.AddRange(copy.GetRange(0,count_of_childs));
+                node.Childs.AddRange(copy);
             }
 
             return nodes;
@@ -108,10 +108,10 @@ namespace GraphSharp
             //create childs
             foreach(var node in nodes)
             {
-                List<NodeBase> copy = new List<NodeBase>(nodes);
-                copy.Shuffle(count_of_childs);
+                List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
+                copy.Shuffle();
                 copy.Remove(node);
-                node.Childs.AddRange(copy.GetRange(0,count_of_childs));
+                node.Childs.AddRange(copy);
             };
 
             return nodes;

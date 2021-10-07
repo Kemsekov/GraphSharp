@@ -198,7 +198,7 @@ namespace tests
             Assert.Equal(nodes.Count,nodes_count);
             foreach(var node in nodes){
                 //check if childs count of node equal to childs_count
-                Assert.Equal(node.Childs.Count,childs_count);
+                Assert.True(node.Childs.Count<=childs_count && node.Childs.Count>=(childs_count-1));
                 
                 //check if childs of node does not contains itself
                 foreach(var child in node.Childs)
