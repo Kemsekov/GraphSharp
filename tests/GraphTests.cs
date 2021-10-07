@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp;
+using GraphSharp.Graphs;
+using GraphSharp.Nodes;
+using GraphSharp.Vesitos;
 using Xunit;
 namespace tests
 {

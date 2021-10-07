@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Collections;
 using GraphSharp.Extensions;
+using GraphSharp.Nodes;
 
 namespace GraphSharp
 {

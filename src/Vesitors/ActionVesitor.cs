@@ -1,8 +1,9 @@
 using System.Threading.Tasks;
 using System.Threading;
 using System;
+using GraphSharp.Nodes;
 
-namespace GraphSharp
+namespace GraphSharp.Vesitos
 {
     public class ActionVesitor : IVesitor
     {

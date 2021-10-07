@@ -2,8 +2,9 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using GraphSharp.Vesitos;
 
-namespace GraphSharp
+namespace GraphSharp.Nodes
 {
     /// <summary>
     /// Supports multiple vesitors

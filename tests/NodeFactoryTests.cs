@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using GraphSharp;
+using GraphSharp.Nodes;
 using Xunit;
 
 namespace tests

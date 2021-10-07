@@ -1,4 +1,3 @@
-#define NATIVE_RUN
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -6,10 +5,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Dasync.Collections;
+using GraphSharp.Nodes;
+using GraphSharp.Vesitos;
 using WorkSchedules;
-//сделай Step для отдельный IVesitor
-//сделай НОРМАЛЬНЫЙ тест проверки на правильность работы графа
-namespace GraphSharp
+
+namespace GraphSharp.Graphs
 {
     public class Graph
     {

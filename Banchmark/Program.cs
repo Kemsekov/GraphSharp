@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using GraphSharp;
-
+using GraphSharp.Graphs;
+using GraphSharp.Nodes;
+using GraphSharp.Vesitos;
 
 const int nodes_count = 30000;
 const int min_nodes = 1;

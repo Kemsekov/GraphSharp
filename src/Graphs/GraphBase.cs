@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace GraphSharp
+namespace GraphSharp.Graphs
 {
     public abstract class GraphBase
     {
