@@ -87,9 +87,6 @@ namespace GraphSharp
                 //step            
                 () =>
                 {
-
-                    var bag = new ConcurrentBag<NodeBase>(nodes);
-
                     nodes.ParallelForEachAsync(async current =>
                     {
                         NodeBase buf;
@@ -103,7 +100,6 @@ namespace GraphSharp
                             semaphore.Release();
                         }
                     }).Wait();
-                    //------------------------------------
                 },
                 //step
                 () =>
