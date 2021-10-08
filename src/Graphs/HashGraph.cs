@@ -41,7 +41,6 @@ namespace GraphSharp.Graphs
                 {
                     nodes_hash.ParallelForEachAsync(async current =>
                     {
-                        NodeBase buf;
                         bool need_to_vesit = false;
                         NodeBase child;
                         for (int i = 0; i < current.Childs.Count; i++)

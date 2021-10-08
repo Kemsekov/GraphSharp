@@ -70,7 +70,7 @@ namespace GraphSharp.Graphs
                 new List<NodeBase>()
             );
         }
-
+        
         /// <summary>
         /// on input nodes already vesited, but not it's childs
         /// </summary>
@@ -98,8 +98,8 @@ namespace GraphSharp.Graphs
                         NodeBase buf;
                         for (int i = 0; i < current.Childs.Count; i++)
                         {
-                            var child = current.Childs[i];
-                            buf = child.Vesit(vesitor);
+                            buf = current.Childs[i];
+                            buf = buf.Vesit(vesitor);
                             if (buf is null) continue;
                             await semaphore.WaitAsync();
                             next_generation.Add(buf);
