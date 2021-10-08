@@ -11,19 +11,6 @@ using GraphSharp.Vesitos;
 using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
-using var log = File.OpenWrite("log.txt");
-SemaphoreSlim semaphore = new SemaphoreSlim(1);
-
-async Task Log(string message){
-    await semaphore.WaitAsync();
-    log.Write(Encoding.UTF8.GetBytes(message));
-    semaphore.Release();
-}
-
-
-async Task LogLn(string msg){
-    await Log(msg+'\n');
-}
 
 const int nodes_count = 20000;
 const int min_nodes = 1;
@@ -37,9 +24,10 @@ watch1.Start();
 var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(nodes_count,min_nodes,max_nodes);
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
+
 var graph = new Graph(nodes);
 var vesitor = new ActionVesitor(async node=>{
-    await Log($"Node {node.Id} ");
+    await Task.Delay(50);
 });
 
 var watch2 = new Stopwatch();
@@ -48,10 +36,8 @@ graph.AddVesitor(vesitor);
 
 graph.Start();
 
-LogLn("\n---Start---").Wait();
 for(int i = 0;i<steps_count;i++){
     graph.Step();
-    LogLn($"\n---Step {i}---").Wait();
 }
 System.Console.WriteLine($"Time {watch2.ElapsedMilliseconds} milliseconds to work");
 Console.ResetColor();
