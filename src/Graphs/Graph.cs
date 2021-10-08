@@ -9,11 +9,14 @@ using GraphSharp.Nodes;
 using GraphSharp.Vesitos;
 using WorkSchedules;
 
+//make check for multiple Starts
+
 namespace GraphSharp.Graphs
 {
-    public class Graph
+    public class Graph : IGraph
     {
-        Dictionary<IVesitor,(WorkSchedule firstVesit,WorkSchedule vesit)> _work = new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
+        Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)> _work = new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
+        Dictionary<IVesitor, bool> _started = new Dictionary<IVesitor, bool>();
         protected List<NodeBase> _nodes { get; }
         public Graph() : this(new List<NodeBase>())
         {
@@ -42,22 +45,25 @@ namespace GraphSharp.Graphs
             var toAdd = nodes.Except(_nodes);
             _nodes.AddRange(toAdd);
         }
-        public virtual void Clear()
+        public void Clear()
         {
             _work.Clear();
+            _started.Clear();
         }
-        public virtual void AddVesitor(IVesitor vesitor)
+        public void AddVesitor(IVesitor vesitor)
         {
-            if(_work.ContainsKey(vesitor)) return;
+            if (_work.ContainsKey(vesitor)) return;
             AddVesitor(vesitor, new Random().Next(_nodes.Count));
         }
-        public virtual void AddVesitor(IVesitor vesitor, int index)
+        public void AddVesitor(IVesitor vesitor, int index)
         {
-            if(_work.ContainsKey(vesitor)) return;
+            if (_work.ContainsKey(vesitor)) return;
 
-            _work.Add(vesitor,(new WorkSchedule(1),new WorkSchedule(3)));
+            _work.Add(vesitor, (new WorkSchedule(1), new WorkSchedule(3)));
 
             _work[vesitor].firstVesit.Add(() => _nodes[index].Vesit(vesitor));
+
+            _started.Add(vesitor,false);
             AddVesitor(
                 vesitor,
                 new List<NodeBase>() { _nodes[index] },
@@ -81,7 +87,7 @@ namespace GraphSharp.Graphs
                 () =>
                 {
                     next_generation.Clear();
-                    for(int i = 0;i<nodes.Count;i++)
+                    for (int i = 0; i < nodes.Count; i++)
                         nodes[i].EndVesit(vesitor);
                 },
                 //step            
@@ -111,25 +117,35 @@ namespace GraphSharp.Graphs
                 }
             );
         }
-        public virtual void Start()
+        public void Start()
         {
-            foreach(var item in _work)
-            item.Value.firstVesit.Step();
+            foreach (var item in _work)
+            {
+                Start(item.Key);
+            }
         }
-        public virtual void Start(IVesitor vesitor){
-            _work[vesitor].firstVesit.Step();
-        }
-        public virtual void Step()
+        public void Start(IVesitor vesitor)
         {
-            foreach(var item in _work){
-            item.Value.vesit.Step();
-            item.Value.vesit.Step();
-            item.Value.vesit.Step();
-            item.Value.vesit.Reset();
+            if(!_work.ContainsKey(vesitor)) throw new ArgumentException("Wrong vesitor. Add vesitor before calling Start()");
+
+            if (!_started[vesitor])
+            {
+                _work[vesitor].firstVesit.Step();
+                _started[vesitor] = true;
+            }
+        }
+        public void Step()
+        {
+            foreach (var item in _work)
+            {
+                Step(item.Key);
             }
 
         }
-        public virtual void Step(IVesitor vesitor){
+        public void Step(IVesitor vesitor)
+        {
+            if(!_started[vesitor]) throw new ApplicationException("Start() graph before calling Step()");
+            
             _work[vesitor].vesit.Step();
             _work[vesitor].vesit.Step();
             _work[vesitor].vesit.Step();
