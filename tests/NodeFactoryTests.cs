@@ -43,7 +43,8 @@ namespace tests
             Assert.Equal(nodes.Count,nodes_count);
             foreach(var node in nodes){
                 //check if childs count of node equal to childs_count
-                Assert.True(node.Childs.Count>=min_childs_count && node.Childs.Count<=max_childs_count);
+                Assert.True(node.Childs.Count>=min_childs_count,$"min is {min_childs_count}, but childs count is {node.Childs.Count}");
+                Assert.True(node.Childs.Count<=max_childs_count,$"max is {max_childs_count}, but childs count is {node.Childs.Count}");
                 
                 //check if childs of node does not contains itself
                 foreach(var child in node.Childs)
@@ -63,8 +64,8 @@ namespace tests
             Assert.Equal(nodes.Count,nodes_count);
             foreach(var node in nodes){
                 //check if childs count of node equal to childs_count
-                Assert.True(node.Childs.Count<=childs_count && node.Childs.Count>=(childs_count-1));
-                
+                Assert.True(node.Childs.Count<=childs_count);
+                Assert.True(node.Childs.Count>=(childs_count-1));
                 //check if childs of node does not contains itself
                 foreach(var child in node.Childs)
                     Assert.NotEqual(child,node);
