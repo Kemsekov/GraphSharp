@@ -99,7 +99,7 @@ namespace GraphSharp.Graphs
                         for (int i = 0; i < current.Childs.Count; i++)
                         {
                             var child = current.Childs[i];
-                            buf = await child.VesitAsync(vesitor);
+                            buf = child.Vesit(vesitor);
                             if (buf is null) continue;
                             await semaphore.WaitAsync();
                             next_generation.Add(buf);

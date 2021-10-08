@@ -8,13 +8,13 @@ using GraphSharp.Vesitos;
 
 namespace GraphSharp.Graphs
 {
-    public class SimpleGraph : Graph
+    public class HashGraph : Graph
     {
-        public SimpleGraph() : this(new List<NodeBase>())
+        public HashGraph() : this(new List<NodeBase>())
         {
             
         }
-        public SimpleGraph(IEnumerable<NodeBase> nodes): base(nodes)
+        public HashGraph(IEnumerable<NodeBase> nodes): base(nodes)
         {
 
         }
