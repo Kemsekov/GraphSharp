@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
+using GraphSharp.Nodes;
 
-namespace GraphSharp
+namespace GraphSharp.Vesitos
 {
     public interface IVesitor
     {

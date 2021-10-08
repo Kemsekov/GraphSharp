@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using GraphSharp.Vesitos;
 
-namespace GraphSharp
+namespace GraphSharp.Nodes
 {
     public abstract class NodeBase
     {
