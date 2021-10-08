@@ -51,12 +51,19 @@ namespace GraphSharp
             //create childs
             ThreadLocal<Random> rand_local = new ThreadLocal<Random>(()=>new Random());
 
+            //swap
+            if(min_count_of_childs>max_count_of_childs){
+                var b = min_count_of_childs;
+                max_count_of_childs = min_count_of_childs;
+                min_count_of_childs = b;
+            }
+                
+
             await nodes.ParallelForEachAsync(async node=>
             {
                 var rand = rand_local.Value;
-                var count_of_childs = rand.Next(Math.Abs(max_count_of_childs-min_count_of_childs))+min_count_of_childs;
+                var count_of_childs = rand.Next(max_count_of_childs-min_count_of_childs)+min_count_of_childs+1;
                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
-                //copy.Shuffle();
                 copy.Remove(node);
                 node.Childs.AddRange(copy);
             });
@@ -82,13 +89,17 @@ namespace GraphSharp
                 nodes.Add(node);
             }
 
+            if(min_count_of_childs>max_count_of_childs){
+                var b = min_count_of_childs;
+                max_count_of_childs = min_count_of_childs;
+                min_count_of_childs = b;
+            }
             //create childs
 
             foreach(var node in nodes)
             {
-                var count_of_childs = rand.Next(Math.Abs(max_count_of_childs-min_count_of_childs))+min_count_of_childs;
+                var count_of_childs = rand.Next(max_count_of_childs-min_count_of_childs)+min_count_of_childs+1;
                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
-                //copy.Shuffle();
                 copy.Remove(node);
                 node.Childs.AddRange(copy);
             }
@@ -110,7 +121,6 @@ namespace GraphSharp
             foreach(var node in nodes)
             {
                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
-                //copy.Shuffle();
                 copy.Remove(node);
                 node.Childs.AddRange(copy);
             };

@@ -15,8 +15,8 @@ namespace GraphSharp.Graphs
 {
     public class Graph : IGraph
     {
-        Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)> _work = new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
-        Dictionary<IVesitor, bool> _started = new Dictionary<IVesitor, bool>();
+        Dictionary<IVesitor, bool> _started {get;} = new Dictionary<IVesitor, bool>();
+        protected Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)> _work {get;}= new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
         protected List<NodeBase> _nodes { get; }
         public Graph() : this(new List<NodeBase>())
         {

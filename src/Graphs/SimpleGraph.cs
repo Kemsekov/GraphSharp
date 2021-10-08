@@ -1,74 +1,69 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Dasync.Collections;
 using GraphSharp.Nodes;
 using GraphSharp.Vesitos;
 
 namespace GraphSharp.Graphs
 {
-    public class SimpleGraph : IGraph
+    public class SimpleGraph : Graph
     {
-        protected List<NodeBase> _nodes { get; }
         public SimpleGraph() : this(new List<NodeBase>())
         {
             
         }
-        public SimpleGraph(IEnumerable<NodeBase> nodes)
+        public SimpleGraph(IEnumerable<NodeBase> nodes): base(nodes)
         {
-            _nodes = new List<NodeBase>(nodes);
-        }   
-        public bool AddNode(NodeBase node)
-        {
-            if (_nodes.Contains(node)) return false;
-            _nodes.Add(node);
-            return true;
-        }
-        public bool RemoveNode(NodeBase node)
-        {
-            if (_nodes.Remove(node))
-            {
-                return true;
-            }
-            return false;
-        }
-        public void AddNodes(IEnumerable<NodeBase> nodes)
-        {
-            var toAdd = nodes.Except(_nodes);
-            _nodes.AddRange(toAdd);
+
         }
 
-        public void AddVesitor(IVesitor vesitor)
+        protected override void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)
         {
-            throw new System.NotImplementedException();
-        }
+            foreach (var node in this._nodes)
+                node.EndVesit(vesitor);
+            
+            SemaphoreSlim semaphore = new SemaphoreSlim(1);
 
-        public void AddVesitor(IVesitor vesitor, int index)
-        {
-            throw new System.NotImplementedException();
-        }
+            HashSet<NodeBase> nodes_hash = new HashSet<NodeBase>(nodes);
+            HashSet<NodeBase> next_gen_hash = new HashSet<NodeBase>(next_generation);
 
-        public void Clear()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Start()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Start(IVesitor vesitor)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Step()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Step(IVesitor vesitor)
-        {
-            throw new System.NotImplementedException();
+            _work[vesitor].vesit.Add(
+                () =>
+                {
+                    next_gen_hash.Clear();
+                    foreach(var node in nodes_hash)
+                        node.EndVesit(vesitor);
+                },
+                //step            
+                () =>
+                {
+                    nodes_hash.ParallelForEachAsync(async current =>
+                    {
+                        NodeBase buf;
+                        bool need_to_vesit = false;
+                        NodeBase child;
+                        for (int i = 0; i < current.Childs.Count; i++)
+                        {
+                            child = current.Childs[i];
+                            await semaphore.WaitAsync();
+                            need_to_vesit = next_gen_hash.Add(child);
+                            semaphore.Release();
+                            if(need_to_vesit)
+                                await child.VesitAsync(vesitor);
+                        }
+                    }).Wait();
+                },
+                //step
+                () =>
+                {
+                    //swap
+                    var nodes_buf = nodes_hash;
+                    nodes_hash = next_gen_hash;
+                    next_gen_hash = nodes_buf;
+                }
+            );
         }
     }
 }
