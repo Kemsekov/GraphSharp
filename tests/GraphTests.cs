@@ -24,17 +24,7 @@ namespace tests
             validate_graphOrder(graph, nodes, new Random().Next(nodes.Count()));
 
         }
-        [Fact]
-        public void HashGraph_Vesit_ValidateOrder()
-        {
-            IEnumerable<SimpleNode> nodes = null;
-            IGraph graph = null;
-
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<SimpleNode>(1000, 30, 70);
-            graph = new HashGraph(nodes);
-
-            validate_graphOrder(graph, nodes, new Random().Next(nodes.Count()));
-        }
+  
         [Fact]
         public void Graph_Vesit_ValidateOrderMultipleVesitors()
         {
@@ -48,21 +38,9 @@ namespace tests
             graph = new Graph(nodes);
             validate_graphOrderMultipleVesitors(graph,index1,index2);
         }
-        [Fact]
-        public void HashGraph_Vesit_ValidateOrderMultipleVesitors()
-        {
-            const int index1 = 3;
-            const int index2 = 9;
 
-            IEnumerable<SimpleNode> nodes = null;
-            IGraph graph;
-            
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<SimpleNode>(1000, 30, 70);
-            graph = new HashGraph(nodes);
-            validate_graphOrderMultipleVesitors(graph,index1,index2);
-        }
         
-        private void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index)
+        public static void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index)
         {
 
             var next_gen = new HashSet<NodeBase>();
@@ -101,7 +79,7 @@ namespace tests
                 current_gen.Clear();
             }
         }
-        private void validate_graphOrderMultipleVesitors(IGraph graph, int index1,int index2){
+        public static void validate_graphOrderMultipleVesitors(IGraph graph, int index1,int index2){
             var next_gen1 = new HashSet<NodeBase>();
             var current_gen1 = new List<NodeBase>();
             var buf_gen1 = new List<NodeBase>();
