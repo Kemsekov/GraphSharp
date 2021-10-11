@@ -3,7 +3,6 @@ GraphSharp is a node based implementation of graph.
 
 # Example of usage
 
-# Creating nodes
 First of all we need to create a bunch of connected nodes
 You can do this using `NodeGraphFactory`
 ```cs
