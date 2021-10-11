@@ -10,13 +10,12 @@ namespace GraphSharp.Graphs
 {
     public class HashGraph : Graph
     {
-        public HashGraph() : this(new List<NodeBase>())
+        public HashGraph() : this(new List<SimpleNode>())
         {
             
         }
-        public HashGraph(IEnumerable<NodeBase> nodes): base(nodes)
+        public HashGraph(IEnumerable<SimpleNode> nodes) : base(nodes)
         {
-
         }
 
         protected override void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)

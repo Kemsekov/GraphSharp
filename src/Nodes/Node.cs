@@ -16,7 +16,7 @@ namespace GraphSharp.Nodes
         public Node(int id) : base(id)
         {
         }
-
+        public bool Vesited(IVesitor vesitor) => vesited[vesitor];
         public override void EndVesit(IVesitor vesitor)
         {
             semaphore.Wait();

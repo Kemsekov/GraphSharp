@@ -18,14 +18,19 @@ namespace GraphSharp.Graphs
         Dictionary<IVesitor, bool> _started {get;} = new Dictionary<IVesitor, bool>();
         protected Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)> _work {get;}= new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
         protected List<NodeBase> _nodes { get; }
-        public Graph() : this(new List<NodeBase>())
+        public Graph() : this(new List<Node>())
         {
 
         }
-        public Graph(IEnumerable<NodeBase> nodes)
+        public Graph(IEnumerable<Node> nodes)
         {
             _nodes = new List<NodeBase>(nodes);
         }
+
+        protected Graph(IEnumerable<NodeBase> nodes){
+            _nodes = new List<NodeBase>(nodes);
+        }
+
         public bool AddNode(NodeBase node)
         {
             if (_nodes.Contains(node)) return false;
@@ -95,17 +100,19 @@ namespace GraphSharp.Graphs
                 {
                     nodes.ParallelForEachAsync(async current =>
                     {
-                        NodeBase buf;
+                        // NodeBase buf;
                         for (int i = 0; i < current.Childs.Count; i++)
                         {
-                            buf = current.Childs[i];
-                            buf = buf.Vesit(vesitor);
-                            if (buf is null) continue;
-                            await semaphore.WaitAsync();
-                            next_generation.Add(buf);
-                            semaphore.Release();
+                            current.Childs[i].Vesit(vesitor);
+                            // buf = current.Childs[i];
+                            // buf = buf.Vesit(vesitor);
+                            // if (buf is null) continue;
+                            // await semaphore.WaitAsync();
+                            // next_generation.Add(buf);
+                            // semaphore.Release();
                         }
                     }).Wait();
+                    (next_generation as List<NodeBase>).AddRange(this._nodes.Where(v=>(v as Node).Vesited(vesitor)));
                 },
                 //step
                 () =>

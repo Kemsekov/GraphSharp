@@ -16,7 +16,7 @@ namespace tests
         [Fact]
         public void Graph_Vesit_ValidateOrder()
         {
-            IEnumerable<NodeBase> nodes = null;
+            IEnumerable<Node> nodes = null;
             IGraph graph = null;
             nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
             graph = new Graph(nodes);
@@ -27,7 +27,7 @@ namespace tests
         [Fact]
         public void HashGraph_Vesit_ValidateOrder()
         {
-            IEnumerable<NodeBase> nodes = null;
+            IEnumerable<SimpleNode> nodes = null;
             IGraph graph = null;
 
             nodes = NodeGraphFactory.CreateRandomConnectedParallel<SimpleNode>(1000, 30, 70);
@@ -41,7 +41,7 @@ namespace tests
             const int index1 = 3;
             const int index2 = 9;
 
-            IEnumerable<NodeBase> nodes = null;
+            IEnumerable<Node> nodes = null;
             IGraph graph;
             
             nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
@@ -54,13 +54,14 @@ namespace tests
             const int index1 = 3;
             const int index2 = 9;
 
-            IEnumerable<NodeBase> nodes = null;
+            IEnumerable<SimpleNode> nodes = null;
             IGraph graph;
             
             nodes = NodeGraphFactory.CreateRandomConnectedParallel<SimpleNode>(1000, 30, 70);
             graph = new HashGraph(nodes);
             validate_graphOrderMultipleVesitors(graph,index1,index2);
         }
+        
         private void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index)
         {
 
@@ -185,5 +186,6 @@ namespace tests
                 current_gen2.Clear();
             }
         }
+        
     }
 }

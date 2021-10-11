@@ -24,7 +24,6 @@ watch1.Start();
 var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(nodes_count,min_nodes,max_nodes);
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
-
 var graph = new Graph(nodes);
 var vesitor = new ActionVesitor(async node=>{
     await Task.Delay(50);
