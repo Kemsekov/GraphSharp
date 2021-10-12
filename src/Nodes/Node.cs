@@ -22,10 +22,11 @@ namespace GraphSharp.Nodes
             vesitor.EndVesit(this);
         }
 
-        public override async Task EndVesitAsync(IVesitor vesitor)
+        public override Task EndVesitAsync(IVesitor vesitor)
         {
             vesited[vesitor] = false;
             vesitor.EndVesit(this);
+            return Task.CompletedTask;
         }
 
         public override NodeBase Vesit(IVesitor vesitor)
@@ -39,7 +40,7 @@ namespace GraphSharp.Nodes
             return this;
         }
 
-        public override async Task<NodeBase> VesitAsync(IVesitor vesitor)
+        public override Task<NodeBase> VesitAsync(IVesitor vesitor)
         {
             if (vesited[vesitor])
             {
@@ -47,7 +48,7 @@ namespace GraphSharp.Nodes
             }
             vesited[vesitor] = true;
             vesitor.Vesit(this);
-            return this;
+            return Task.FromResult(this as NodeBase);
         }
     }
 }

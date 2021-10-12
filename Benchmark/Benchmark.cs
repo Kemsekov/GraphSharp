@@ -12,10 +12,10 @@ using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
 
-const int nodes_count = 20000;
-const int min_nodes = 1;
-const int max_nodes = 20;
-const int steps_count = 20;
+const int nodes_count = 25000;
+const int min_nodes = 10;
+const int max_nodes = 40;
+const int steps_count = 30;
 
 Console.ForegroundColor = ConsoleColor.Green;
 
@@ -25,8 +25,11 @@ var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(nodes_count,min
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);
-var vesitor = new ActionVesitor(async node=>{
-    await Task.Delay(50);
+var vesitor = new ActionVesitor(node=>{
+    float e = 0;
+    for(int i = 0;i<300;i++){
+        e+=MathF.Pow(1+1/MathF.Pow(0.1f,i),i);
+    }
 });
 
 var watch2 = new Stopwatch();

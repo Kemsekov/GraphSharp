@@ -34,6 +34,7 @@ namespace GraphSharp
                 //copy.Shuffle();
                 copy.Remove(node);
                 node.Childs.AddRange(copy);
+                await Task.CompletedTask;
             });
 
             return nodes;
@@ -66,6 +67,7 @@ namespace GraphSharp
                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
                 copy.Remove(node);
                 node.Childs.AddRange(copy);
+                await Task.CompletedTask;
             });
 
             return nodes;
