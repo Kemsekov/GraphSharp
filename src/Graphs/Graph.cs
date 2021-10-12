@@ -9,6 +9,7 @@ using GraphSharp.Nodes;
 using GraphSharp.Vesitos;
 using Kemsekov;
 using System.Threading.Tasks.Dataflow;
+using System.Diagnostics;
 //make check for multiple Starts
 
 namespace GraphSharp.Graphs
@@ -76,7 +77,6 @@ namespace GraphSharp.Graphs
                 new List<NodeBase>()
             );
         }
-
         /// <summary>
         /// on input nodes already vesited, but not it's childs
         /// </summary>
@@ -87,7 +87,6 @@ namespace GraphSharp.Graphs
         {
             foreach (var node in this._nodes)
                 node.EndVesit(vesitor);
-
             _work[vesitor].vesit.Add(
                 () =>
                 {
@@ -98,26 +97,18 @@ namespace GraphSharp.Graphs
                 //step            
                 () =>
                 {
-                    // nodes.SelectMany(v=>v.Childs).ParallelForEachAsync(
-                    //     async node=>{
-                    //         node.Vesit(vesitor);
-                    //     }
-                    // ).Wait();
-
-                    // foreach(var node in nodes){
-                    //     foreach(var child in node.Childs)
-                    //         child.Vesit(vesitor);
-                    // }
-
-                    Parallel.ForEach(nodes,(value,_)=>{
+                    Parallel.ForEach(nodes, (value, _) =>
+                    {
                         foreach (var child in value.Childs)
-                            lock(child)
-                            child.Vesit(vesitor);
+                        {
+                            if((child as Node).Vesited(vesitor)) continue;
+                            lock(child){
+                                child.Vesit(vesitor);
+                            }
+                        }
                     });
-
-                    //while(!node_processor.SendAsync(nodes).Result) ;
+                    
                     (next_generation as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
-
                 },
                 //step
                 () =>
