@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Dasync.Collections;
 using GraphSharp.Nodes;
 using GraphSharp.Vesitos;
 using Kemsekov;
@@ -16,7 +15,7 @@ namespace GraphSharp.Graphs
 {
     public class Graph : IGraph
     {
-        Dictionary<IVesitor, bool> _started { get; } = new Dictionary<IVesitor, bool>();
+        IDictionary<IVesitor, bool> _started { get; } = new Dictionary<IVesitor, bool>();
         protected Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)> _work { get; } = new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
         protected NodeBase[] _nodes { get; }
         public Graph(IEnumerable<Node> nodes)

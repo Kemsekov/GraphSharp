@@ -11,7 +11,7 @@ namespace GraphSharp.Nodes
     /// </summary>
     public class Node : NodeBase
     {
-        Dictionary<IVesitor, bool> vesited = new Dictionary<IVesitor, bool>();
+        IDictionary<IVesitor, bool> vesited = new Dictionary<IVesitor, bool>();
         public Node(int id) : base(id)
         {
         }

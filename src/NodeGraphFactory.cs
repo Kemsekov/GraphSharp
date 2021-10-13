@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Dasync.Collections;
 using GraphSharp.Extensions;
 using GraphSharp.Nodes;
 
@@ -14,7 +13,7 @@ namespace GraphSharp
 {
     public static class NodeGraphFactory
     {
-        public static async Task<List<_Node>> CreateConnectedParallelAsync<_Node>(int count_of_nodes,int count_of_childs)
+        public static List<_Node> CreateConnectedParallelAsync<_Node>(int count_of_nodes,int count_of_childs)
         where _Node : NodeBase
         {
             
@@ -28,18 +27,17 @@ namespace GraphSharp
             }
             
             //create childs
-            await nodes.ParallelForEachAsync(async node=>
+            Parallel.ForEach(nodes,(node,_)=>
             {
                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
                 //copy.Shuffle();
                 copy.Remove(node);
                 node.Childs.AddRange(copy);
-                await Task.CompletedTask;
             });
 
             return nodes;
         }
-        public static async Task<List<_Node>> CreateRandomConnectedParallelAsync<_Node>(int count_of_nodes,int max_count_of_childs,int min_count_of_childs)
+        public static List<_Node> CreateRandomConnectedParallelAsync<_Node>(int count_of_nodes,int max_count_of_childs,int min_count_of_childs)
         where _Node : NodeBase
         {
             var nodes = new List<_Node>();
@@ -59,26 +57,24 @@ namespace GraphSharp
                 min_count_of_childs = b;
             }
                 
-
-            await nodes.ParallelForEachAsync(async node=>
+            Parallel.ForEach(nodes,(node,_)=>
             {
                 var rand = rand_local.Value;
                 var count_of_childs = rand.Next(max_count_of_childs-min_count_of_childs)+min_count_of_childs+1;
                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count-count_of_childs),count_of_childs));
                 copy.Remove(node);
                 node.Childs.AddRange(copy);
-                await Task.CompletedTask;
             });
 
             return nodes;
         }
         public static List<_Node> CreateConnectedParallel<_Node>(int count_of_nodes,int count_of_childs) where _Node : NodeBase{
-            return CreateConnectedParallelAsync<_Node>(count_of_nodes,count_of_childs).Result;
+            return CreateConnectedParallelAsync<_Node>(count_of_nodes,count_of_childs);
         }
         public static List<_Node> CreateRandomConnectedParallel<_Node>(int count_of_nodes,int max_count_of_childs,int min_count_of_childs) 
         where _Node : NodeBase
         {
-            return CreateRandomConnectedParallelAsync<_Node>(count_of_nodes,max_count_of_childs,min_count_of_childs).Result;
+            return CreateRandomConnectedParallelAsync<_Node>(count_of_nodes,max_count_of_childs,min_count_of_childs);
         }
         public static List<_Node> CreateRandomConnected<_Node>(int count_of_nodes,int max_count_of_childs,int min_count_of_childs,Random rand = null) 
         where _Node : NodeBase
