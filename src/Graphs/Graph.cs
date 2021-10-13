@@ -101,13 +101,14 @@ namespace GraphSharp.Graphs
                     {
                         foreach (var child in value.Childs)
                         {
-                            if((child as Node).Vesited(vesitor)) continue;
-                            lock(child){
+                            if ((child as Node).Vesited(vesitor)) continue;
+                            lock (child)
+                            {
                                 child.Vesit(vesitor);
                             }
                         }
                     });
-                    
+
                     (next_generation as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
                 },
                 //step
