@@ -14,6 +14,12 @@ namespace tests
     public class GraphTests
     {
         [Fact]
+        public void AddVesitor_ThrowsIfOutOfRange(){
+            var graph = new Graph(Enumerable.Range(1,5).Select(i=>new Node(i)));
+            var vesitor = new ActionVesitor(node=>{});
+            Assert.Throws<IndexOutOfRangeException>(()=> graph.AddVesitor(vesitor,22));
+        }
+        [Fact]
         public void RemoveVesitor_Works(){
             var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
             var graph = new Graph(nodes);

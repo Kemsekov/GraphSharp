@@ -1,18 +1,16 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
 using GraphSharp.Vesitos;
 using Kemsekov;
-using System.Threading.Tasks.Dataflow;
-using System.Diagnostics;
-//make check for multiple Starts
 
 namespace GraphSharp.Graphs
 {
+    /// <summary>
+    /// Base graph implementation. Work in parallel by default.
+    /// </summary>
     public class Graph : IGraph
     {
         IDictionary<IVesitor, bool> _started { get; } = new Dictionary<IVesitor, bool>();
@@ -27,16 +25,28 @@ namespace GraphSharp.Graphs
             _work.Clear();
             _started.Clear();
         }
-
+        /// <summary>
+        /// Adds <see cref="IVesitor"/> to current graph and bind it to some random node.
+        /// </summary>
+        /// <param name="vesitor">Vesitor to add</param>
         public void AddVesitor(IVesitor vesitor)
         {
             if (_work.ContainsKey(vesitor)) return;
             AddVesitor(vesitor, new Random().Next(_nodes.Length));
         }
+        /// <summary>
+        /// Adds <see cref="IVesitor"/> to current graph and binds it to <see cref="Node"/> with index id
+        /// </summary>
+        /// <param name="vesitor">Vesitor to add</param>
+        /// <param name="index">Node id</param>
         public void AddVesitor(IVesitor vesitor, int index)
         {
             if(_nodes.Length == 0) throw new InvalidOperationException("No nodes were added");
             if (_work.ContainsKey(vesitor)) return;
+
+            var node = _nodes[index];
+            if(node.Id != index)
+                node = _nodes.FirstOrDefault(n=>n.Id==index);
 
             _work.Add(vesitor, (new WorkSchedule(1), new WorkSchedule(3)));
 
