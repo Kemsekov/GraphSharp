@@ -132,3 +132,7 @@ class Graph : IGraph{
 }
 ```
 
+# What it is best suited for
+
+Graph is best suited for a not big number of vesitors and a lot of nodes.
+A lot of vesitors and nodes can greatly affect memory usage, so be ware.
