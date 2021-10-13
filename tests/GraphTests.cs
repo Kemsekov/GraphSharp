@@ -14,6 +14,51 @@ namespace tests
     public class GraphTests
     {
         [Fact]
+        public void RemoveVesitor_Works(){
+            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
+            var graph = new Graph(nodes);
+            
+            var childs1 = new List<NodeBase>();
+            var childs2 = new List<NodeBase>();
+
+            
+            var vesitor1 = new ActionVesitor(node =>{
+                lock(childs1)
+                    childs1.Add(node);
+            });
+            var vesitor2 = new ActionVesitor(node =>{
+                lock(childs2)
+                    childs2.Add(node);
+            });
+            graph.AddVesitor(vesitor1,1);
+            graph.AddVesitor(vesitor2,2);
+
+            graph.Start();
+            childs1.Clear();
+            childs2.Clear();
+            
+            graph.Step();
+            childs1.Sort((v1, v2) => v1.Id - v2.Id);
+            nodes[1].Childs.Sort((v1, v2) => v1.Id - v2.Id);
+
+            Assert.Equal(childs1,nodes[1].Childs);
+            Assert.Equal(childs2,nodes[2].Childs);
+
+            childs1.Clear();
+            childs2.Clear();
+
+            graph.RemoveVesitor(vesitor1);
+            Assert.Throws<KeyNotFoundException>(()=>graph.Step(vesitor1));
+
+            childs1.Clear();
+            childs2.Clear();
+
+            graph.Step();
+            Assert.Equal(childs1.Count,0);
+            Assert.NotEqual(childs2.Count,0);
+
+        }
+        [Fact]
         public void Start_Step_WrongVesitorThrows(){
             var graph = new Graph(new List<Node>());
             var vesitor1 = new ActionVesitor(node =>{});
@@ -54,7 +99,6 @@ namespace tests
             validate_graphOrderMultipleVesitors(graph,index1,index2);
         }
 
-        
         public static void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index)
         {
 

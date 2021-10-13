@@ -28,6 +28,7 @@ namespace GraphSharp.Graphs
             _work.Clear();
             _started.Clear();
         }
+
         public void AddVesitor(IVesitor vesitor)
         {
             if (_work.ContainsKey(vesitor)) return;
@@ -124,6 +125,11 @@ namespace GraphSharp.Graphs
             _work[vesitor].vesit.Step();
             _work[vesitor].vesit.Step();
             _work[vesitor].vesit.Reset();
+        }
+
+        public bool RemoveVesitor(IVesitor vesitor)
+        {
+            return _started.Remove(vesitor) && _work.Remove(vesitor);
         }
     }
 }

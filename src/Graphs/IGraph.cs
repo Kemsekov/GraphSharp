@@ -7,6 +7,7 @@ namespace GraphSharp.Graphs
     public interface IGraph
     {
         void Clear();
+        bool RemoveVesitor(IVesitor vesitor);
         void AddVesitor(IVesitor vesitor);
         void AddVesitor(IVesitor vesitor,int index);
         void Start();
