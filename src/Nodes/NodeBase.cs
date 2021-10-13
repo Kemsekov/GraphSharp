@@ -47,6 +47,5 @@ namespace GraphSharp.Nodes
         }
         public static bool operator==(NodeBase t1, NodeBase t2)=>t1.Id==t2.Id;
         public static bool operator!=(NodeBase t1, NodeBase t2)=>t1.Id!=t2.Id;
-
     }
 }

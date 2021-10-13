@@ -50,5 +50,9 @@ namespace GraphSharp.Nodes
             vesitor.Vesit(this);
             return Task.FromResult(this as NodeBase);
         }
+        public void RemoveVesitor(IVesitor vesitor)
+        {
+            vesited.Remove(vesitor);
+        }
     }
 }

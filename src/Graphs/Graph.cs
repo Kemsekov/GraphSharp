@@ -129,6 +129,8 @@ namespace GraphSharp.Graphs
 
         public bool RemoveVesitor(IVesitor vesitor)
         {
+            foreach(var node in _nodes)
+                (node as Node).RemoveVesitor(vesitor);
             return _started.Remove(vesitor) && _work.Remove(vesitor);
         }
     }
