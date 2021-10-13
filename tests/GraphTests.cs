@@ -14,6 +14,21 @@ namespace tests
     public class GraphTests
     {
         [Fact]
+        public void Start_Step_WrongVesitorThrows(){
+            var graph = new Graph();
+            var vesitor1 = new ActionVesitor(node =>{});
+            var vesitor2 = new ActionVesitor(node =>{});
+            
+            Assert.Throws<InvalidOperationException>(()=>
+                graph.AddVesitor(vesitor1));
+            
+            Assert.Throws<InvalidOperationException>(()=>
+                graph.AddVesitor(vesitor1,0));
+
+            Assert.Throws<KeyNotFoundException>(()=>
+                graph.Start(vesitor2));
+        }
+        [Fact]
         public void Graph_Vesit_ValidateOrder()
         {
             IEnumerable<Node> nodes = null;

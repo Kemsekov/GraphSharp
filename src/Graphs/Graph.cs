@@ -32,26 +32,6 @@ namespace GraphSharp.Graphs
         {
             _nodes = new List<NodeBase>(nodes);
         }
-
-        public bool AddNode(NodeBase node)
-        {
-            if (_nodes.Contains(node)) return false;
-            _nodes.Add(node);
-            return true;
-        }
-        public bool RemoveNode(NodeBase node)
-        {
-            if (_nodes.Remove(node))
-            {
-                return true;
-            }
-            return false;
-        }
-        public void AddNodes(IEnumerable<NodeBase> nodes)
-        {
-            var toAdd = nodes.Except(_nodes);
-            _nodes.AddRange(toAdd);
-        }
         public void Clear()
         {
             _work.Clear();
@@ -59,11 +39,13 @@ namespace GraphSharp.Graphs
         }
         public void AddVesitor(IVesitor vesitor)
         {
+            if(_nodes.Count == 0) throw new InvalidOperationException("No nodes were added");
             if (_work.ContainsKey(vesitor)) return;
             AddVesitor(vesitor, new Random().Next(_nodes.Count));
         }
         public void AddVesitor(IVesitor vesitor, int index)
         {
+            if(_nodes.Count == 0) throw new InvalidOperationException("No nodes were added");
             if (_work.ContainsKey(vesitor)) return;
 
             _work.Add(vesitor, (new WorkSchedule(1), new WorkSchedule(3)));
@@ -130,8 +112,6 @@ namespace GraphSharp.Graphs
         }
         public void Start(IVesitor vesitor)
         {
-            if (!_work.ContainsKey(vesitor)) throw new ArgumentException("Wrong vesitor. Add vesitor before calling Start()");
-
             if (!_started[vesitor])
             {
                 _work[vesitor].firstVesit.Step();
