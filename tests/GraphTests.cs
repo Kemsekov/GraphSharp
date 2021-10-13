@@ -15,7 +15,7 @@ namespace tests
     {
         [Fact]
         public void Start_Step_WrongVesitorThrows(){
-            var graph = new Graph();
+            var graph = new Graph(new List<Node>());
             var vesitor1 = new ActionVesitor(node =>{});
             var vesitor2 = new ActionVesitor(node =>{});
             

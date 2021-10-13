@@ -18,19 +18,10 @@ namespace GraphSharp.Graphs
     {
         Dictionary<IVesitor, bool> _started { get; } = new Dictionary<IVesitor, bool>();
         protected Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)> _work { get; } = new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
-        protected List<NodeBase> _nodes { get; }
-        public Graph() : this(new List<Node>())
-        {
-
-        }
+        protected NodeBase[] _nodes { get; }
         public Graph(IEnumerable<Node> nodes)
         {
-            _nodes = new List<NodeBase>(nodes);
-        }
-
-        protected Graph(IEnumerable<NodeBase> nodes)
-        {
-            _nodes = new List<NodeBase>(nodes);
+            _nodes = nodes.ToArray();
         }
         public void Clear()
         {
@@ -39,13 +30,12 @@ namespace GraphSharp.Graphs
         }
         public void AddVesitor(IVesitor vesitor)
         {
-            if(_nodes.Count == 0) throw new InvalidOperationException("No nodes were added");
             if (_work.ContainsKey(vesitor)) return;
-            AddVesitor(vesitor, new Random().Next(_nodes.Count));
+            AddVesitor(vesitor, new Random().Next(_nodes.Length));
         }
         public void AddVesitor(IVesitor vesitor, int index)
         {
-            if(_nodes.Count == 0) throw new InvalidOperationException("No nodes were added");
+            if(_nodes.Length == 0) throw new InvalidOperationException("No nodes were added");
             if (_work.ContainsKey(vesitor)) return;
 
             _work.Add(vesitor, (new WorkSchedule(1), new WorkSchedule(3)));
