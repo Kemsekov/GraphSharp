@@ -6,7 +6,7 @@ namespace GraphSharp.Nodes
 {
     public abstract class NodeBase
     {
-        public List<NodeBase> Childs{get;} = new List<NodeBase>();
+        public List<int> Childs{get;} = new List<int>();
         public int Id { get; }
         public NodeBase(int id)
         {
@@ -14,8 +14,8 @@ namespace GraphSharp.Nodes
         }
         public void AddChild(NodeBase child)
         {
-            if (!Childs.Contains(child))
-                Childs.Add(child);
+            if (!Childs.Contains(child.Id))
+                Childs.Add(child.Id);
         }
         public abstract void EndVesit(IVesitor vesitor);
         public abstract Task EndVesitAsync(IVesitor vesitor);

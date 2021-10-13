@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
 using GraphSharp.Vesitos;
@@ -41,12 +42,12 @@ namespace GraphSharp.Graphs
         /// <param name="index">Node id</param>
         public void AddVesitor(IVesitor vesitor, int index)
         {
-            if(_nodes.Length == 0) throw new InvalidOperationException("No nodes were added");
+            if (_nodes.Length == 0) throw new InvalidOperationException("No nodes were added");
             if (_work.ContainsKey(vesitor)) return;
 
             var node = _nodes[index];
-            if(node.Id != index)
-                node = _nodes.FirstOrDefault(n=>n.Id==index);
+            if (node.Id != index)
+                node = _nodes.FirstOrDefault(n => n.Id == index);
 
             _work.Add(vesitor, (new WorkSchedule(1), new WorkSchedule(3)));
 
@@ -81,16 +82,17 @@ namespace GraphSharp.Graphs
                 {
                     Parallel.ForEach(nodes, (value, _) =>
                     {
-                        foreach (var child in value.Childs)
+                        Node child;
+                        foreach (var id in value.Childs)
                         {
-                            if ((child as Node).Vesited(vesitor)) continue;
+                            child = _nodes[id] as Node;
+                            if (child.Vesited(vesitor)) continue;
                             lock (child)
                             {
                                 child.Vesit(vesitor);
                             }
                         }
                     });
-
                     (next_generation as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
                 },
                 //step
@@ -138,7 +140,7 @@ namespace GraphSharp.Graphs
 
         public bool RemoveVesitor(IVesitor vesitor)
         {
-            foreach(var node in _nodes)
+            foreach (var node in _nodes)
                 (node as Node).RemoveVesitor(vesitor);
             return _started.Remove(vesitor) && _work.Remove(vesitor);
         }

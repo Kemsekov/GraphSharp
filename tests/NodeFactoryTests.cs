@@ -48,10 +48,10 @@ namespace tests
                 
                 //check if childs of node does not contains itself
                 foreach(var child in node.Childs)
-                    Assert.NotEqual(child,node);
+                    Assert.NotEqual(child,node.Id);
                 
                 //check if childs has no copies
-                var childs =new List<NodeBase>(node.Childs);
+                var childs =new List<NodeBase>(node.Childs.Select(id=>nodes[id]));
                 var hash_set = new HashSet<NodeBase>(childs);
                 childs.Sort((v1,v2)=>v1.Id-v2.Id);
                 var hash_set_childs = hash_set.ToList();
@@ -68,10 +68,10 @@ namespace tests
                 Assert.True(node.Childs.Count>=(childs_count-1));
                 //check if childs of node does not contains itself
                 foreach(var child in node.Childs)
-                    Assert.NotEqual(child,node);
+                    Assert.NotEqual(child,node.Id);
                 
                 //check if childs has no copies
-                var childs =new List<NodeBase>(node.Childs);
+                var childs =new List<NodeBase>(node.Childs.Select(id=>nodes[id]));
                 var hash_set = new HashSet<NodeBase>(childs);
                 childs.Sort((v1,v2)=>v1.Id-v2.Id);
                 var hash_set_childs = hash_set.ToList();
