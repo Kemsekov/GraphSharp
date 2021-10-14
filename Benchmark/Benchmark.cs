@@ -11,11 +11,10 @@ using GraphSharp.Vesitos;
 using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
-
 const int nodes_count = 7000;
 const int min_nodes = 1;
 const int max_nodes = 4;
-const int steps_count = 600;
+const int steps_count = 1200*4;
 
 Console.ForegroundColor = ConsoleColor.Green;
 
@@ -26,8 +25,7 @@ System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to cre
 watch1.Stop();
 var graph = new Graph(nodes);
 var vesitor = new ActionVesitor(node=>{
-    float e = MathF.Sqrt(2.0f);
-    e = MathF.Pow(e,2.5f);
+    
 });
 
 var watch2 = new Stopwatch();
