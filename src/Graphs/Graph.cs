@@ -86,15 +86,15 @@ namespace GraphSharp.Graphs
                 Parallel.ForEach(nodes, (value, _) =>
                 {
                     Node child;
-                    Box<bool> vesited;
+                    // Box<bool> vesited;
                     foreach (var id in value.Childs)
                     {
                         child = _nodes[id];
-                        vesited = child.Vesited(vesitor);
-                        if (vesited.Value) continue;
+                        // vesited = child.Vesited(vesitor);
+                        if (child.VesitedValue(vesitor)) continue;
                         lock (child){
-                            if (vesited.Value) continue;
-                            vesited.Value = true;
+                            //if (vesited.Value) continue;
+                            //vesited.Value = true;
                             child.Vesit(vesitor);
                         }
                     }

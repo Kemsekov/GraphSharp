@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using GraphSharp.Vesitos;
+using System.Runtime.CompilerServices;
 
 namespace GraphSharp.Nodes
 {
@@ -9,15 +10,14 @@ namespace GraphSharp.Nodes
     /// </summary>
     public class Node : NodeBase
     {
-        IDictionary<IVesitor, Box<bool>> vesited = new Dictionary<IVesitor, Box<bool>>();
+        IDictionary<IVesitor, bool> vesited = new Dictionary<IVesitor, bool>();
         public Node(int id) : base(id)
         {
         }
-        public bool VesitedValue(IVesitor vesitor) => vesited[vesitor].Value;
-        public Box<bool> Vesited(IVesitor vesitor) => vesited[vesitor];
+        public bool VesitedValue(IVesitor vesitor) => vesited[vesitor];
         public override void EndVesit(IVesitor vesitor)
         {
-            vesited[vesitor] = new Box<bool>(false);
+            vesited[vesitor] = false;
             vesitor.EndVesit(this);
         }
 
@@ -27,14 +27,14 @@ namespace GraphSharp.Nodes
             return Task.CompletedTask;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override NodeBase Vesit(IVesitor vesitor)
         {
-            //if (vesited[vesitor].Value) return null;
-            //vesited[vesitor] = true;
+            if (vesited[vesitor]) return null;
+            vesited[vesitor] = true;
             vesitor.Vesit(this);
             return this;
         }
-
         public override Task<NodeBase> VesitAsync(IVesitor vesitor)
         {
             Vesit(vesitor);
