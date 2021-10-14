@@ -9,14 +9,15 @@ namespace GraphSharp.Nodes
     /// </summary>
     public class Node : NodeBase
     {
-        IDictionary<IVesitor, bool> vesited = new Dictionary<IVesitor, bool>();
+        IDictionary<IVesitor, Box<bool>> vesited = new Dictionary<IVesitor, Box<bool>>();
         public Node(int id) : base(id)
         {
         }
-        public bool Vesited(IVesitor vesitor) => vesited[vesitor];
+        public bool VesitedValue(IVesitor vesitor) => vesited[vesitor].Value;
+        public Box<bool> Vesited(IVesitor vesitor) => vesited[vesitor];
         public override void EndVesit(IVesitor vesitor)
         {
-            vesited[vesitor] = false;
+            vesited[vesitor] = new Box<bool>(false);
             vesitor.EndVesit(this);
         }
 
@@ -28,8 +29,8 @@ namespace GraphSharp.Nodes
 
         public override NodeBase Vesit(IVesitor vesitor)
         {
-            if (vesited[vesitor]) return null;
-            vesited[vesitor] = true;
+            //if (vesited[vesitor].Value) return null;
+            //vesited[vesitor] = true;
             vesitor.Vesit(this);
             return this;
         }
