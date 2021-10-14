@@ -213,6 +213,7 @@ namespace tests
             void check1()
             {
                 current_gen1.Sort();
+                Assert.Equal(buf_gen1.Count, current_gen1.Count);
                 Assert.Equal(buf_gen1, current_gen1);
                 buf_gen1 = next_gen1.ToList();
                 buf_gen1.Sort();
@@ -222,7 +223,7 @@ namespace tests
             void check2()
             {
                 current_gen2.Sort();
-                Assert.Equal(buf_gen2, current_gen2);
+                Assert.Equal(buf_gen2.Count, current_gen2.Count);
                 buf_gen2 = next_gen2.ToList();
                 buf_gen2.Sort();
                 next_gen2.Clear();
