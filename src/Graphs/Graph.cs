@@ -16,7 +16,7 @@ namespace GraphSharp.Graphs
     {
         IDictionary<IVesitor, bool> _started { get; } = new Dictionary<IVesitor, bool>();
         protected Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)> _work { get; } = new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
-        protected NodeBase[] _nodes { get; }
+        protected Node[] _nodes { get; }
         public Graph(IEnumerable<Node> nodes)
         {
             _nodes = nodes.ToArray();
@@ -49,15 +49,14 @@ namespace GraphSharp.Graphs
             if (node.Id != index)
                 node = _nodes.FirstOrDefault(n => n.Id == index);
 
-            _work.Add(vesitor, (new WorkSchedule(1), new WorkSchedule(3)));
+            _work.Add(vesitor, (new WorkSchedule(1), new WorkSchedule(2)));
 
             _work[vesitor].firstVesit.Add(() => _nodes[index].Vesit(vesitor));
 
             _started.Add(vesitor, false);
             AddVesitor(
                 vesitor,
-                new List<NodeBase>() { _nodes[index] },
-                new List<NodeBase>()
+                new List<NodeBase>() { _nodes[index] }
             );
         }
         /// <summary>
@@ -66,43 +65,42 @@ namespace GraphSharp.Graphs
         /// <param name="vesitor">Vesitor</param>
         /// <param name="nodes"></param>
         /// <param name="next_generation"></param>
-        protected virtual void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes, IList<NodeBase> next_generation)
+        protected virtual void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes)
         {
             foreach (var node in this._nodes)
                 node.EndVesit(vesitor);
-            _work[vesitor].vesit.Add(
-                () =>
+            
+            Action clearNextGenAndEndVesit;
+            clearNextGenAndEndVesit =
+            () =>
+            {
+                Parallel.ForEach(nodes, (node, _) =>
                 {
-                    next_generation.Clear();
-                    for (int i = 0; i < nodes.Count; i++)
-                        nodes[i].EndVesit(vesitor);
-                },
-                //step            
-                () =>
+                    node.EndVesit(vesitor);
+                });
+            };
+            
+            Action stepTroughGen =
+            () =>
+            {
+                Parallel.ForEach(nodes, (value, _) =>
                 {
-                    Parallel.ForEach(nodes, (value, _) =>
+                    Node child;
+                    foreach (var id in value.Childs)
                     {
-                        Node child;
-                        foreach (var id in value.Childs)
-                        {
-                            child = _nodes[id] as Node;
-                            if (child.Vesited(vesitor)) continue;
-                            lock (child)
-                            {
-                                child.Vesit(vesitor);
-                            }
-                        }
-                    });
-                    (next_generation as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
-                },
-                //step
-                () =>
-                {
-                    //swap
-                    var nodes_buf = nodes;
-                    nodes = next_generation;
-                    next_generation = nodes_buf;
-                }
+                        child = _nodes[id];
+                        if (child.Vesited(vesitor)) continue;
+                        lock (child)
+                            child.Vesit(vesitor);
+                    }
+                });
+                nodes.Clear();
+                (nodes as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
+            };
+
+            _work[vesitor].vesit.Add(
+                clearNextGenAndEndVesit,
+                stepTroughGen
             );
         }
         public void Start()
