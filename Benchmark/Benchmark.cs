@@ -12,10 +12,10 @@ using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
 
-const int nodes_count = 25000;
-const int min_nodes = 10;
-const int max_nodes = 40;
-const int steps_count = 30;
+const int nodes_count = 7000;
+const int min_nodes = 1;
+const int max_nodes = 4;
+const int steps_count = 600;
 
 Console.ForegroundColor = ConsoleColor.Green;
 
@@ -26,10 +26,8 @@ System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to cre
 watch1.Stop();
 var graph = new Graph(nodes);
 var vesitor = new ActionVesitor(node=>{
-    float e = 0;
-    for(int i = 0;i<300;i++){
-        e+=MathF.Pow(1+1/MathF.Pow(0.1f,i),i);
-    }
+    float e = MathF.Sqrt(2.0f);
+    e = MathF.Pow(e,2.5f);
 });
 
 var watch2 = new Stopwatch();
