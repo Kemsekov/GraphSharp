@@ -46,8 +46,9 @@ namespace tests
             graph.Step();
             childs1.Sort((v1, v2) => v1.Id - v2.Id);
             nodes[1].Childs.Sort((v1,v2)=>v1.Id-v2.Id);
-
+            nodes[2].Childs.Sort((v1,v2)=>v1.Id-v2.Id);
             Assert.Equal(childs1,nodes[1].Childs);
+            Assert.Equal(childs2.Count,nodes[2].Childs.Count);
             Assert.Equal(childs2,nodes[2].Childs);
 
             childs1.Clear();
