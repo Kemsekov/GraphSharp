@@ -30,10 +30,6 @@ namespace GraphSharp.Vesitos
         {   
             _vesit(node);
         }
-        public void NewVesit(NodeBase node){
-            
-            node.Vesit(this);
-        }
 
         public bool Select(NodeBase node)
         {
