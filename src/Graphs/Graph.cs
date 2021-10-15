@@ -70,13 +70,12 @@ namespace GraphSharp.Graphs
             foreach (var node in this._nodes)
                 node.EndVesit(vesitor);
             
-            Action clearNextGenAndEndVesit;
-            clearNextGenAndEndVesit =
+            Action EndVesit =
             () =>
             {
                 Parallel.ForEach(nodes, (node, _) =>
                 {
-                    node.EndVesit(vesitor);
+                    vesitor.EndVesit(node);
                 });
             };
             
@@ -88,7 +87,8 @@ namespace GraphSharp.Graphs
                     foreach (var child in value.Childs)
                     {
                         if ((child as Node).Vesited(vesitor)) continue;
-                        lock (child){
+                        lock(child){
+                            if(vesitor.Select(child))
                             child.Vesit(vesitor);
                         }
                     }
@@ -98,7 +98,7 @@ namespace GraphSharp.Graphs
             };
 
             _work[vesitor].vesit.Add(
-                clearNextGenAndEndVesit,
+                EndVesit,
                 stepTroughGen
             );
         }
