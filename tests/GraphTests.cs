@@ -14,6 +14,15 @@ namespace tests
     public class GraphTests
     {
         [Fact]
+        public void VesitorSelect_Works(){
+            IEnumerable<Node> nodes = null;
+            IGraph graph = null;
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
+            graph = new Graph(nodes);
+            validate_graphOrder(graph,nodes,3,node=>node.Id%2==0);
+
+        }
+        [Fact]
         public void AddVesitor_ThrowsIfOutOfRange(){
             var graph = new Graph(Enumerable.Range(1,5).Select(i=>new Node(i)));
             var vesitor = new ActionVesitor(node=>{});
@@ -106,7 +115,7 @@ namespace tests
             validate_graphOrderMultipleVesitors(graph,index1,index2);
         }
 
-        public static void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index)
+        public static void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index, Func<NodeBase,bool> selector = null)
         {
 
             var next_gen = new HashSet<NodeBase>();
@@ -118,9 +127,14 @@ namespace tests
                 lock (nodes)
                 {
                     current_gen.Add(node);
-                    node.Childs.ForEach(n => next_gen.Add(n));
+                    node.Childs.ForEach(n =>{
+                        if(selector is null)
+                            next_gen.Add(n);    
+                        else if (selector(n))
+                            next_gen.Add(n);
+                    });
                 }
-            });
+            },null,selector);
 
             graph.AddVesitor(vesitor, index);
             graph.Start();
@@ -145,7 +159,7 @@ namespace tests
                 current_gen.Clear();
             }
         }
-        public static void validate_graphOrderMultipleVesitors(IGraph graph, int index1,int index2){
+        public static void validate_graphOrderMultipleVesitors(IGraph graph, int index1,int index2,Func<NodeBase,bool> selector = null){
             var next_gen1 = new HashSet<NodeBase>();
             var current_gen1 = new List<NodeBase>();
             var buf_gen1 = new List<NodeBase>();
@@ -159,7 +173,12 @@ namespace tests
                 lock (next_gen1)
                 {
                     current_gen1.Add(node);
-                    node.Childs.ForEach(n => next_gen1.Add(n));
+                    node.Childs.ForEach(n =>{
+                        if(selector is null)
+                            next_gen1.Add(n);    
+                        else if (selector(n))
+                            next_gen1.Add(n);
+                    });
                 }
             });
 
@@ -168,7 +187,12 @@ namespace tests
                 lock (next_gen2)
                 {
                     current_gen2.Add(node);
-                    node.Childs.ForEach(n => next_gen2.Add(n));
+                    node.Childs.ForEach(n =>{
+                        if(selector is null)
+                            next_gen2.Add(n);    
+                        else if (selector(n))
+                            next_gen2.Add(n);
+                    });
                 }
             });
 
