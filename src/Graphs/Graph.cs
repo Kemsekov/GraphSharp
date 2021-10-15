@@ -133,7 +133,6 @@ namespace GraphSharp.Graphs
             {
                 Step(item.Key);
             }
-
         }
         /// <summary>
         /// Steps trough graph with vesitor
