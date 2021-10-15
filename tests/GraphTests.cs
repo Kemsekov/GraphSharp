@@ -45,9 +45,10 @@ namespace tests
             
             graph.Step();
             childs1.Sort((v1, v2) => v1.Id - v2.Id);
-            nodes[1].Childs.Sort((v1, v2) => v1.Id - v2.Id);
-
+            nodes[1].Childs.Sort((v1,v2)=>v1.Id-v2.Id);
+            nodes[2].Childs.Sort((v1,v2)=>v1.Id-v2.Id);
             Assert.Equal(childs1,nodes[1].Childs);
+            Assert.Equal(childs2.Count,nodes[2].Childs.Count);
             Assert.Equal(childs2,nodes[2].Childs);
 
             childs1.Clear();
@@ -125,7 +126,7 @@ namespace tests
             graph.Start();
 
             buf_gen = next_gen.ToList();
-            buf_gen.Sort((v1, v2) => v1.Id - v2.Id);
+            buf_gen.Sort((v1,v2)=>v1.Id-v2.Id);
 
             next_gen.Clear();
             current_gen.Clear();
@@ -133,12 +134,12 @@ namespace tests
             for (int i = 0; i < 50; i++)
             {
                 graph.Step();
-                current_gen.Sort((v1, v2) => v1.Id - v2.Id);
+                current_gen.Sort((v1,v2)=>v1.Id-v2.Id);
                 Assert.Equal(buf_gen.Count,current_gen.Count);
                 Assert.Equal(buf_gen, current_gen);
 
                 buf_gen = next_gen.ToList();
-                buf_gen.Sort((v1, v2) => v1.Id - v2.Id);
+                buf_gen.Sort((v1,v2)=>v1.Id-v2.Id);
 
                 next_gen.Clear();
                 current_gen.Clear();
@@ -177,13 +178,13 @@ namespace tests
             graph.Start();
             //vesitor 1
             buf_gen1 = next_gen1.ToList();
-            buf_gen1.Sort((v1, v2) => v1.Id - v2.Id);
+            buf_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
 
             next_gen1.Clear();
             current_gen1.Clear();
             //vesitor 2
             buf_gen2 = next_gen2.ToList();
-            buf_gen2.Sort((v1, v2) => v1.Id - v2.Id);
+            buf_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
 
             next_gen2.Clear();
             current_gen2.Clear();
@@ -212,19 +213,20 @@ namespace tests
             }
             void check1()
             {
-                current_gen1.Sort((v1, v2) => v1.Id - v2.Id);
+                current_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
+                Assert.Equal(buf_gen1.Count, current_gen1.Count);
                 Assert.Equal(buf_gen1, current_gen1);
                 buf_gen1 = next_gen1.ToList();
-                buf_gen1.Sort((v1, v2) => v1.Id - v2.Id);
+                buf_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
                 next_gen1.Clear();
                 current_gen1.Clear();
             }
             void check2()
             {
-                current_gen2.Sort((v1, v2) => v1.Id - v2.Id);
-                Assert.Equal(buf_gen2, current_gen2);
+                current_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
+                Assert.Equal(buf_gen2.Count, current_gen2.Count);
                 buf_gen2 = next_gen2.ToList();
-                buf_gen2.Sort((v1, v2) => v1.Id - v2.Id);
+                buf_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
                 next_gen2.Clear();
                 current_gen2.Clear();
             }
