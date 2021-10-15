@@ -45,10 +45,10 @@ namespace tests
             
             graph.Step();
             childs1.Sort((v1, v2) => v1.Id - v2.Id);
-            nodes[1].Childs.Sort();
+            nodes[1].Childs.Sort((v1,v2)=>v1.Id-v2.Id);
 
-            Assert.Equal(childs1.Select(v=>v.Id),nodes[1].Childs);
-            Assert.Equal(childs2.Select(v=>v.Id),nodes[2].Childs);
+            Assert.Equal(childs1,nodes[1].Childs);
+            Assert.Equal(childs2,nodes[2].Childs);
 
             childs1.Clear();
             childs2.Clear();
@@ -108,15 +108,15 @@ namespace tests
         public static void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index)
         {
 
-            var next_gen = new HashSet<int>();
-            var current_gen = new List<int>();
-            var buf_gen = new List<int>();
+            var next_gen = new HashSet<NodeBase>();
+            var current_gen = new List<NodeBase>();
+            var buf_gen = new List<NodeBase>();
 
             var vesitor = new ActionVesitor(node =>
             {
                 lock (nodes)
                 {
-                    current_gen.Add(node.Id);
+                    current_gen.Add(node);
                     node.Childs.ForEach(n => next_gen.Add(n));
                 }
             });
@@ -125,7 +125,7 @@ namespace tests
             graph.Start();
 
             buf_gen = next_gen.ToList();
-            buf_gen.Sort();
+            buf_gen.Sort((v1,v2)=>v1.Id-v2.Id);
 
             next_gen.Clear();
             current_gen.Clear();
@@ -133,31 +133,31 @@ namespace tests
             for (int i = 0; i < 50; i++)
             {
                 graph.Step();
-                current_gen.Sort();
+                current_gen.Sort((v1,v2)=>v1.Id-v2.Id);
                 Assert.Equal(buf_gen.Count,current_gen.Count);
                 Assert.Equal(buf_gen, current_gen);
 
                 buf_gen = next_gen.ToList();
-                buf_gen.Sort();
+                buf_gen.Sort((v1,v2)=>v1.Id-v2.Id);
 
                 next_gen.Clear();
                 current_gen.Clear();
             }
         }
         public static void validate_graphOrderMultipleVesitors(IGraph graph, int index1,int index2){
-            var next_gen1 = new HashSet<int>();
-            var current_gen1 = new List<int>();
-            var buf_gen1 = new List<int>();
+            var next_gen1 = new HashSet<NodeBase>();
+            var current_gen1 = new List<NodeBase>();
+            var buf_gen1 = new List<NodeBase>();
 
-            var next_gen2 = new HashSet<int>();
-            var current_gen2 = new List<int>();
-            var buf_gen2 = new List<int>();
+            var next_gen2 = new HashSet<NodeBase>();
+            var current_gen2 = new List<NodeBase>();
+            var buf_gen2 = new List<NodeBase>();
 
             var vesitor1 = new ActionVesitor(node =>
             {
                 lock (next_gen1)
                 {
-                    current_gen1.Add(node.Id);
+                    current_gen1.Add(node);
                     node.Childs.ForEach(n => next_gen1.Add(n));
                 }
             });
@@ -166,7 +166,7 @@ namespace tests
             {
                 lock (next_gen2)
                 {
-                    current_gen2.Add(node.Id);
+                    current_gen2.Add(node);
                     node.Childs.ForEach(n => next_gen2.Add(n));
                 }
             });
@@ -177,13 +177,13 @@ namespace tests
             graph.Start();
             //vesitor 1
             buf_gen1 = next_gen1.ToList();
-            buf_gen1.Sort();
+            buf_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
 
             next_gen1.Clear();
             current_gen1.Clear();
             //vesitor 2
             buf_gen2 = next_gen2.ToList();
-            buf_gen2.Sort();
+            buf_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
 
             next_gen2.Clear();
             current_gen2.Clear();
@@ -212,20 +212,20 @@ namespace tests
             }
             void check1()
             {
-                current_gen1.Sort();
+                current_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
                 Assert.Equal(buf_gen1.Count, current_gen1.Count);
                 Assert.Equal(buf_gen1, current_gen1);
                 buf_gen1 = next_gen1.ToList();
-                buf_gen1.Sort();
+                buf_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
                 next_gen1.Clear();
                 current_gen1.Clear();
             }
             void check2()
             {
-                current_gen2.Sort();
+                current_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
                 Assert.Equal(buf_gen2.Count, current_gen2.Count);
                 buf_gen2 = next_gen2.ToList();
-                buf_gen2.Sort();
+                buf_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
                 next_gen2.Clear();
                 current_gen2.Clear();
             }
