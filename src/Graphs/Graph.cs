@@ -102,6 +102,9 @@ namespace GraphSharp.Graphs
                 stepTroughGen
             );
         }
+        /// <summary>
+        /// Starts graph's <see cref="IVesitor"/>s walk trough graph. Call this before using <see cref="Step()"/>
+        /// </summary>
         public void Start()
         {
             foreach (var item in _work)
@@ -109,6 +112,10 @@ namespace GraphSharp.Graphs
                 Start(item.Key);
             }
         }
+        /// <summary>
+        /// Starts vesitor walk trough graph. Call this before using <see cref="Step()"/> on the same vesitor
+        /// </summary>
+        /// <param name="vesitor">Vesitor to be started</param>
         public void Start(IVesitor vesitor)
         {
             if (!_started[vesitor])
@@ -117,6 +124,9 @@ namespace GraphSharp.Graphs
                 _started[vesitor] = true;
             }
         }
+        /// <summary>
+        /// Steps trough all vesitors
+        /// </summary>
         public void Step()
         {
             foreach (var item in _work)
@@ -125,6 +135,10 @@ namespace GraphSharp.Graphs
             }
 
         }
+        /// <summary>
+        /// Steps trough graph with vesitor
+        /// </summary>
+        /// <param name="vesitor">Vesitor to step</param>
         public void Step(IVesitor vesitor)
         {
             if (!_started[vesitor]) throw new ApplicationException("Start() graph before calling Step()");
@@ -134,7 +148,11 @@ namespace GraphSharp.Graphs
             _work[vesitor].vesit.Step();
             _work[vesitor].vesit.Reset();
         }
-
+        /// <summary>
+        /// Removes vesitor from graph
+        /// </summary>
+        /// <param name="vesitor">Vesitor to remove</param>
+        /// <returns>removed or not</returns>
         public bool RemoveVesitor(IVesitor vesitor)
         {
             foreach (var node in _nodes)
