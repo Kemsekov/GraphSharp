@@ -35,10 +35,6 @@ namespace GraphSharp.Nodes
             vesited[vesitor] = true;
             return this;
         }
-        public void NewVesit(IVesitor vesitor){
-            if (vesited[vesitor]) return;
-            vesited[vesitor] = true;
-        }
         public override Task<NodeBase> VesitAsync(IVesitor vesitor)
         {
             return Task.FromResult(Vesit(vesitor));
