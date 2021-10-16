@@ -22,7 +22,6 @@ namespace GraphSharp.Vesitos
 
         public void EndVesit(NodeBase node)
         {
-            node.EndVesit(this);
             _endVesit?.Invoke(node);
         }
 

@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
 using GraphSharp.Vesitos;
@@ -59,6 +62,10 @@ namespace GraphSharp.Graphs
                 new List<NodeBase>() { _nodes[index] }
             );
         }
+        public long _EndVesit = 0;
+        public long _StepTroughGen = 0;
+        public long _AddNodes = 0;
+
         /// <summary>
         /// on input nodes already vesited, but not it's childs
         /// </summary>
@@ -69,32 +76,51 @@ namespace GraphSharp.Graphs
         {
             foreach (var node in this._nodes)
                 node.EndVesit(vesitor);
+            Stopwatch sw1 = new Stopwatch();
+            Stopwatch sw2 = new Stopwatch();
+            Stopwatch sw3 = new Stopwatch();
             
             Action EndVesit =
             () =>
             {
+                sw1.Start();
                 Parallel.ForEach(nodes, (node, _) =>
                 {
-                    vesitor.EndVesit(node);
+                    node.EndVesit(vesitor);
                 });
+                sw1.Stop();
+                _EndVesit = sw1.ElapsedMilliseconds;
             };
             
+            var copy = new ThreadLocal<List<NodeBase>>(()=>new List<NodeBase>(_nodes.Length/Environment.ProcessorCount),true);
             Action stepTroughGen =
             () =>
             {
+                sw2.Start();
+                foreach(var c in copy.Values) c.Clear();
                 Parallel.ForEach(nodes, (value, _) =>
                 {
+                    NodeBase buf = null;
                     foreach (var child in value.Childs)
                     {
                         if ((child as Node).Vesited(vesitor)) continue;
                         lock(child){
-                            if(vesitor.Select(child))
-                            child.Vesit(vesitor);
+                            if(!vesitor.Select(child)) continue;
+                                buf = child.Vesit(vesitor);
+                            if(buf is object)  
+                                copy.Value.Add(buf);                                                        
                         }
                     }
                 });
+                sw2.Stop();
+                this._StepTroughGen = sw2.ElapsedMilliseconds;
+                sw3.Start();
                 nodes.Clear();
-                (nodes as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
+                foreach(var c in copy.Values)
+                    (nodes as List<NodeBase>).AddRange(c);
+                //(nodes as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
+                sw3.Stop();
+                this._AddNodes=sw3.ElapsedMilliseconds;
             };
 
             _work[vesitor].vesit.Add(

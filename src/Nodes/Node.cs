@@ -40,8 +40,7 @@ namespace GraphSharp.Nodes
         }
         public override Task<NodeBase> VesitAsync(IVesitor vesitor)
         {
-            Vesit(vesitor);
-            return Task.FromResult(this as NodeBase);
+            return Task.FromResult(Vesit(vesitor));
         }
         public void RemoveVesitor(IVesitor vesitor)
         {
