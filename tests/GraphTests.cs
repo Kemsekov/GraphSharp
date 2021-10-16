@@ -14,79 +14,162 @@ namespace tests
     public class GraphTests
     {
         [Fact]
-        public void VesitorSelect_Works(){
+        public void Step_ThrowsWhenNotStarted(){
+            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 10, 20);
+            var graph = new Graph(nodes);
+            var vesitor = new ActionVesitor(
+                node=>{
+
+                }
+            );
+            graph.AddVesitor(vesitor);
+            Assert.Throws<ApplicationException>(graph.Step);
+
+        }
+        [Fact]
+        public void ForthBackwardVesitors_Test()
+        {
+            for (int k = 0; k < 20; k++)
+            {
+                var nodes = new Node[14];
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    nodes[i] = new Node(i);
+                }
+                for (int i = 0; i < nodes.Length; i++)
+                {
+                    if (i + 1 < nodes.Length)
+                    {
+                        nodes[i].AddChild(nodes[i + 1]);
+                    }
+                }
+
+                for (int i = nodes.Length - 1; i > 0; i--)
+                {
+                    if (i - 1 >= 0)
+                    {
+                        nodes[i].AddChild(nodes[i - 1]);
+                    }
+                }
+
+                var forward_list = new List<NodeBase>();
+                var back_list = new List<NodeBase>();
+
+                var forward_vesitor = new ActionVesitor(node =>
+                {
+                    lock (forward_list)
+                        forward_list.Add(node);
+                },
+                    null,
+                    node =>
+                    {
+                        return forward_list.Last().Id < node.Id;
+                    });
+
+                var back_vesitor = new ActionVesitor(
+                    node =>
+                    {
+                        lock (back_list)
+                            back_list.Add(node);
+                    },
+                    null,
+                    node =>
+                    {
+                        return back_list.Last().Id > node.Id;
+                    });
+
+                var graph = new Graph(nodes);
+
+                graph.AddVesitor(forward_vesitor, 0);
+                graph.AddVesitor(back_vesitor, 13);
+
+                graph.Start();
+                for (int i = 0; i < nodes.Length; i++)
+                    graph.Step();
+                back_list.Reverse();
+                Assert.Equal(forward_list, back_list);
+            }
+        }
+        [Fact]
+        public void VesitorSelect_Works()
+        {
             IEnumerable<Node> nodes = null;
             IGraph graph = null;
             nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
             graph = new Graph(nodes);
-            validate_graphOrder(graph,nodes,3,node=>node.Id%2==0);
+            validate_graphOrder(graph, nodes, 3, node => node.Id % 2 == 0);
 
         }
         [Fact]
-        public void AddVesitor_ThrowsIfOutOfRange(){
-            var graph = new Graph(Enumerable.Range(1,5).Select(i=>new Node(i)));
-            var vesitor = new ActionVesitor(node=>{});
-            Assert.Throws<IndexOutOfRangeException>(()=> graph.AddVesitor(vesitor,22));
+        public void AddVesitor_ThrowsIfOutOfRange()
+        {
+            var graph = new Graph(Enumerable.Range(1, 5).Select(i => new Node(i)));
+            var vesitor = new ActionVesitor(node => { });
+            Assert.Throws<IndexOutOfRangeException>(() => graph.AddVesitor(vesitor, 22));
         }
         [Fact]
-        public void RemoveVesitor_Works(){
+        public void RemoveVesitor_Works()
+        {
             var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
             var graph = new Graph(nodes);
-            
+
             var childs1 = new List<NodeBase>();
             var childs2 = new List<NodeBase>();
 
-            
-            var vesitor1 = new ActionVesitor(node =>{
-                lock(childs1)
+
+            var vesitor1 = new ActionVesitor(node =>
+            {
+                lock (childs1)
                     childs1.Add(node);
             });
-            var vesitor2 = new ActionVesitor(node =>{
-                lock(childs2)
+            var vesitor2 = new ActionVesitor(node =>
+            {
+                lock (childs2)
                     childs2.Add(node);
             });
-            graph.AddVesitor(vesitor1,1);
-            graph.AddVesitor(vesitor2,2);
+            graph.AddVesitor(vesitor1, 1);
+            graph.AddVesitor(vesitor2, 2);
 
             graph.Start();
             childs1.Clear();
             childs2.Clear();
-            
+
             graph.Step();
             childs1.Sort((v1, v2) => v1.Id - v2.Id);
-            nodes[1].Childs.Sort((v1,v2)=>v1.Id-v2.Id);
-            nodes[2].Childs.Sort((v1,v2)=>v1.Id-v2.Id);
-            Assert.Equal(childs1,nodes[1].Childs);
-            Assert.Equal(childs2.Count,nodes[2].Childs.Count);
-            Assert.Equal(childs2,nodes[2].Childs);
+            nodes[1].Childs.Sort((v1, v2) => v1.Id - v2.Id);
+            nodes[2].Childs.Sort((v1, v2) => v1.Id - v2.Id);
+            Assert.Equal(childs1, nodes[1].Childs);
+            Assert.Equal(childs2.Count, nodes[2].Childs.Count);
+            Assert.Equal(childs2, nodes[2].Childs);
 
             childs1.Clear();
             childs2.Clear();
 
             graph.RemoveVesitor(vesitor1);
-            Assert.Throws<KeyNotFoundException>(()=>graph.Step(vesitor1));
+            Assert.Throws<KeyNotFoundException>(() => graph.Step(vesitor1));
 
             childs1.Clear();
             childs2.Clear();
 
             graph.Step();
-            Assert.Equal(childs1.Count,0);
-            Assert.NotEqual(childs2.Count,0);
+            Assert.Equal(childs1.Count, 0);
+            Assert.NotEqual(childs2.Count, 0);
 
         }
         [Fact]
-        public void Start_Step_WrongVesitorThrows(){
+        public void Start_Step_WrongVesitorThrows()
+        {
             var graph = new Graph(new List<Node>());
-            var vesitor1 = new ActionVesitor(node =>{});
-            var vesitor2 = new ActionVesitor(node =>{});
-            
-            Assert.Throws<InvalidOperationException>(()=>
-                graph.AddVesitor(vesitor1));
-            
-            Assert.Throws<InvalidOperationException>(()=>
-                graph.AddVesitor(vesitor1,0));
+            var vesitor1 = new ActionVesitor(node => { });
+            var vesitor2 = new ActionVesitor(node => { });
 
-            Assert.Throws<KeyNotFoundException>(()=>
+            Assert.Throws<InvalidOperationException>(() =>
+                graph.AddVesitor(vesitor1));
+
+            Assert.Throws<InvalidOperationException>(() =>
+                graph.AddVesitor(vesitor1, 0));
+
+            Assert.Throws<KeyNotFoundException>(() =>
                 graph.Start(vesitor2));
         }
         [Fact]
@@ -100,7 +183,7 @@ namespace tests
             validate_graphOrder(graph, nodes, new Random().Next(nodes.Count()));
 
         }
-  
+
         [Fact]
         public void Graph_Vesit_ValidateOrderMultipleVesitors()
         {
@@ -109,13 +192,13 @@ namespace tests
 
             IEnumerable<Node> nodes = null;
             IGraph graph;
-            
+
             nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
             graph = new Graph(nodes);
-            validate_graphOrderMultipleVesitors(graph,index1,index2);
+            validate_graphOrderMultipleVesitors(graph, index1, index2);
         }
 
-        public static void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index, Func<NodeBase,bool> selector = null)
+        public static void validate_graphOrder(IGraph graph, IEnumerable<NodeBase> nodes, int index, Func<NodeBase, bool> selector = null)
         {
 
             var next_gen = new HashSet<NodeBase>();
@@ -127,20 +210,21 @@ namespace tests
                 lock (nodes)
                 {
                     current_gen.Add(node);
-                    node.Childs.ForEach(n =>{
-                        if(selector is null)
-                            next_gen.Add(n);    
+                    node.Childs.ForEach(n =>
+                    {
+                        if (selector is null)
+                            next_gen.Add(n);
                         else if (selector(n))
                             next_gen.Add(n);
                     });
                 }
-            },null,selector);
+            }, null, selector);
 
             graph.AddVesitor(vesitor, index);
             graph.Start();
 
             buf_gen = next_gen.ToList();
-            buf_gen.Sort((v1,v2)=>v1.Id-v2.Id);
+            buf_gen.Sort((v1, v2) => v1.Id - v2.Id);
 
             next_gen.Clear();
             current_gen.Clear();
@@ -148,18 +232,19 @@ namespace tests
             for (int i = 0; i < 50; i++)
             {
                 graph.Step();
-                current_gen.Sort((v1,v2)=>v1.Id-v2.Id);
-                Assert.Equal(buf_gen.Count,current_gen.Count);
+                current_gen.Sort((v1, v2) => v1.Id - v2.Id);
+                Assert.Equal(buf_gen.Count, current_gen.Count);
                 Assert.Equal(buf_gen, current_gen);
 
                 buf_gen = next_gen.ToList();
-                buf_gen.Sort((v1,v2)=>v1.Id-v2.Id);
+                buf_gen.Sort((v1, v2) => v1.Id - v2.Id);
 
                 next_gen.Clear();
                 current_gen.Clear();
             }
         }
-        public static void validate_graphOrderMultipleVesitors(IGraph graph, int index1,int index2,Func<NodeBase,bool> selector = null){
+        public static void validate_graphOrderMultipleVesitors(IGraph graph, int index1, int index2, Func<NodeBase, bool> selector = null)
+        {
             var next_gen1 = new HashSet<NodeBase>();
             var current_gen1 = new List<NodeBase>();
             var buf_gen1 = new List<NodeBase>();
@@ -173,9 +258,10 @@ namespace tests
                 lock (next_gen1)
                 {
                     current_gen1.Add(node);
-                    node.Childs.ForEach(n =>{
-                        if(selector is null)
-                            next_gen1.Add(n);    
+                    node.Childs.ForEach(n =>
+                    {
+                        if (selector is null)
+                            next_gen1.Add(n);
                         else if (selector(n))
                             next_gen1.Add(n);
                     });
@@ -187,9 +273,10 @@ namespace tests
                 lock (next_gen2)
                 {
                     current_gen2.Add(node);
-                    node.Childs.ForEach(n =>{
-                        if(selector is null)
-                            next_gen2.Add(n);    
+                    node.Childs.ForEach(n =>
+                    {
+                        if (selector is null)
+                            next_gen2.Add(n);
                         else if (selector(n))
                             next_gen2.Add(n);
                     });
@@ -202,13 +289,13 @@ namespace tests
             graph.Start();
             //vesitor 1
             buf_gen1 = next_gen1.ToList();
-            buf_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
+            buf_gen1.Sort((v1, v2) => v1.Id - v2.Id);
 
             next_gen1.Clear();
             current_gen1.Clear();
             //vesitor 2
             buf_gen2 = next_gen2.ToList();
-            buf_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
+            buf_gen2.Sort((v1, v2) => v1.Id - v2.Id);
 
             next_gen2.Clear();
             current_gen2.Clear();
@@ -237,24 +324,24 @@ namespace tests
             }
             void check1()
             {
-                current_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
+                current_gen1.Sort((v1, v2) => v1.Id - v2.Id);
                 Assert.Equal(buf_gen1.Count, current_gen1.Count);
                 Assert.Equal(buf_gen1, current_gen1);
                 buf_gen1 = next_gen1.ToList();
-                buf_gen1.Sort((v1,v2)=>v1.Id-v2.Id);
+                buf_gen1.Sort((v1, v2) => v1.Id - v2.Id);
                 next_gen1.Clear();
                 current_gen1.Clear();
             }
             void check2()
             {
-                current_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
+                current_gen2.Sort((v1, v2) => v1.Id - v2.Id);
                 Assert.Equal(buf_gen2.Count, current_gen2.Count);
                 buf_gen2 = next_gen2.ToList();
-                buf_gen2.Sort((v1,v2)=>v1.Id-v2.Id);
+                buf_gen2.Sort((v1, v2) => v1.Id - v2.Id);
                 next_gen2.Clear();
                 current_gen2.Clear();
             }
         }
-        
+
     }
 }
