@@ -11,10 +11,10 @@ using GraphSharp.Vesitos;
 using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
-const int nodes_count = 7000;
-const int min_nodes = 1;
-const int max_nodes = 4;
-const int steps_count = 1200*4;
+const int nodes_count = 9000;
+const int min_nodes = 2;
+const int max_nodes = 20;
+const int steps_count = 1200*2;
 
 Console.ForegroundColor = ConsoleColor.Green;
 
