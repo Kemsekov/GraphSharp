@@ -29,7 +29,7 @@ namespace GraphSharp.Vesitos
         {   
             _vesit(node);
         }
-
+        
         public bool Select(NodeBase node)
         {
             return _selector(node);

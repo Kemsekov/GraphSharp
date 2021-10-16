@@ -101,16 +101,19 @@ namespace GraphSharp.Graphs
                 Parallel.ForEach(nodes, (value, _) =>
                 {
                     NodeBase buf = null;
+                    var c_copy = copy.Value;
                     foreach (var child in value.Childs)
                     {
                         if ((child as Node).Vesited(vesitor)) continue;
+                        if(!vesitor.Select(child)) continue;
+                        if(buf is object)
+                            c_copy.Add(buf);                                                        
                         lock(child){
-                            if(!vesitor.Select(child)) continue;
-                                buf = child.Vesit(vesitor);
-                            if(buf is object)  
-                                copy.Value.Add(buf);                                                        
+                            buf = child.Vesit(vesitor);
                         }
                     }
+                    if(buf is object)
+                        c_copy.Add(buf);   
                 });
                 sw2.Stop();
                 this._StepTroughGen = sw2.ElapsedMilliseconds;
@@ -118,7 +121,6 @@ namespace GraphSharp.Graphs
                 nodes.Clear();
                 foreach(var c in copy.Values)
                     (nodes as List<NodeBase>).AddRange(c);
-                //(nodes as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
                 sw3.Stop();
                 this._AddNodes=sw3.ElapsedMilliseconds;
             };

@@ -15,6 +15,7 @@ namespace GraphSharp.Nodes
         {
         }
         public bool Vesited(IVesitor vesitor) => vesited[vesitor];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void EndVesit(IVesitor vesitor)
         {
             vesited[vesitor] = false;
