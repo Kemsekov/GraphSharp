@@ -10,15 +10,15 @@ namespace GraphSharp.Nodes
     /// </summary>
     public class Node : NodeBase
     {
-        IDictionary<IVesitor, bool> vesited = new Dictionary<IVesitor, bool>();
+        IDictionary<IVesitor, Box<bool>> vesited = new Dictionary<IVesitor, Box<bool>>();
         public Node(int id) : base(id)
         {
         }
-        public bool Vesited(IVesitor vesitor) => vesited[vesitor];
+        public Box<bool> Vesited(IVesitor vesitor) => vesited[vesitor];
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void EndVesit(IVesitor vesitor)
         {
-            vesited[vesitor] = false;
+            vesited[vesitor] = new Box<bool>(false);
         }
 
         public override Task EndVesitAsync(IVesitor vesitor)
@@ -30,9 +30,17 @@ namespace GraphSharp.Nodes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override NodeBase Vesit(IVesitor vesitor)
         {
-            if (vesited[vesitor]) return null;
+            if (vesited[vesitor].Value) return null;
             vesitor.Vesit(this);
-            vesited[vesitor] = true;
+            vesited[vesitor].Value = true;
+            return this;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public NodeBase VesitBox(IVesitor vesitor,Box<bool> box)
+        {
+            if (box.Value) return null;
+            vesitor.Vesit(this);
+            box.Value = true;
             return this;
         }
         public override Task<NodeBase> VesitAsync(IVesitor vesitor)
