@@ -13,6 +13,7 @@ namespace tests
 {
     public class GraphTests
     {
+
         [Fact]
         public void Step_ThrowsWhenNotStarted(){
             var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 10, 20);
@@ -146,13 +147,17 @@ namespace tests
             childs2.Clear();
 
             graph.RemoveVesitor(vesitor1);
+            Assert.Throws<KeyNotFoundException>(() => graph.Start(vesitor1));
             Assert.Throws<KeyNotFoundException>(() => graph.Step(vesitor1));
-
             childs1.Clear();
             childs2.Clear();
 
             graph.Step();
             Assert.Equal(childs1.Count, 0);
+            foreach(var node in nodes){
+                Assert.Throws<KeyNotFoundException>(()=> node.Vesit(vesitor1));
+            }
+
             Assert.NotEqual(childs2.Count, 0);
 
         }
