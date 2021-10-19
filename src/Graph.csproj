@@ -9,7 +9,4 @@
         <Authors>Kemsekov</Authors>
         <PackageProjectUrl>https://github.com/Kemsekov/GraphSharp</PackageProjectUrl>
   </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Kemsekov.WorkSchedule" Version="1.0.1"/>
-  </ItemGroup>
 </Project>
