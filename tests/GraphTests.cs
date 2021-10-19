@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using GraphSharp;
 using GraphSharp.Graphs;
@@ -13,20 +14,6 @@ namespace tests
 {
     public class GraphTests
     {
-
-        [Fact]
-        public void Step_ThrowsWhenNotStarted(){
-            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 10, 20);
-            var graph = new Graph(nodes);
-            var vesitor = new ActionVesitor(
-                node=>{
-
-                }
-            );
-            graph.AddVesitor(vesitor);
-            Assert.Throws<ApplicationException>(graph.Step);
-
-        }
         [Fact]
         public void ForthBackwardVesitors_Test()
         {
@@ -61,11 +48,13 @@ namespace tests
                     lock (forward_list)
                         forward_list.Add(node);
                 },
-                    null,
-                    node =>
-                    {
-                        return forward_list.Last().Id < node.Id;
-                    });
+                null,
+                //select happening before vesit
+                node =>
+                {
+                    if(forward_list.Count==0) return true;
+                    return forward_list.Last().Id < node.Id;
+                });
 
                 var back_vesitor = new ActionVesitor(
                     node =>
@@ -76,6 +65,7 @@ namespace tests
                     null,
                     node =>
                     {
+                        if(back_list.Count==0) return true;
                         return back_list.Last().Id > node.Id;
                     });
 
@@ -84,7 +74,7 @@ namespace tests
                 graph.AddVesitor(forward_vesitor, 0);
                 graph.AddVesitor(back_vesitor, 13);
 
-                graph.Start();
+                graph.Step();
                 for (int i = 0; i < nodes.Length; i++)
                     graph.Step();
                 back_list.Reverse();
@@ -131,7 +121,7 @@ namespace tests
             graph.AddVesitor(vesitor1, 1);
             graph.AddVesitor(vesitor2, 2);
 
-            graph.Start();
+            graph.Step();
             childs1.Clear();
             childs2.Clear();
 
@@ -139,6 +129,7 @@ namespace tests
             childs1.Sort((v1, v2) => v1.Id - v2.Id);
             nodes[1].Childs.Sort((v1, v2) => v1.Id - v2.Id);
             nodes[2].Childs.Sort((v1, v2) => v1.Id - v2.Id);
+
             Assert.Equal(childs1, nodes[1].Childs);
             Assert.Equal(childs2.Count, nodes[2].Childs.Count);
             Assert.Equal(childs2, nodes[2].Childs);
@@ -147,35 +138,35 @@ namespace tests
             childs2.Clear();
 
             graph.RemoveVesitor(vesitor1);
-            Assert.Throws<KeyNotFoundException>(() => graph.Start(vesitor1));
             Assert.Throws<KeyNotFoundException>(() => graph.Step(vesitor1));
             childs1.Clear();
             childs2.Clear();
 
             graph.Step();
             Assert.Equal(childs1.Count, 0);
-            foreach(var node in nodes){
-                Assert.Throws<KeyNotFoundException>(()=> node.Vesit(vesitor1));
+            var __nodes = graph.GetType().GetProperty("_nodes",BindingFlags.NonPublic | BindingFlags.Instance).GetValue(graph) as NodeBase[];
+            foreach(var node in __nodes){
+                Assert.Throws<KeyNotFoundException>(()=> node.NodeStates[vesitor1]);
             }
 
             Assert.NotEqual(childs2.Count, 0);
 
         }
         [Fact]
-        public void Start_Step_WrongVesitorThrows()
+        public void Step_WrongVesitorThrowsOutOfRangeTrows()
         {
-            var graph = new Graph(new List<Node>());
+
+            var graph = new Graph(new List<Node>(){new Node(0), new Node(1), new Node(2), new Node(3)});
             var vesitor1 = new ActionVesitor(node => { });
             var vesitor2 = new ActionVesitor(node => { });
 
-            Assert.Throws<InvalidOperationException>(() =>
-                graph.AddVesitor(vesitor1));
+            graph.AddVesitor(vesitor1,1);
 
-            Assert.Throws<InvalidOperationException>(() =>
-                graph.AddVesitor(vesitor1, 0));
+            Assert.Throws<IndexOutOfRangeException>(() =>
+                graph.AddVesitor(vesitor1, 10));
 
             Assert.Throws<KeyNotFoundException>(() =>
-                graph.Start(vesitor2));
+                graph.Step(vesitor2));
         }
         [Fact]
         public void Graph_Vesit_ValidateOrder()
@@ -226,7 +217,7 @@ namespace tests
             }, null, selector);
 
             graph.AddVesitor(vesitor, index);
-            graph.Start();
+            graph.Step();
 
             buf_gen = next_gen.ToList();
             buf_gen.Sort((v1, v2) => v1.Id - v2.Id);
@@ -291,7 +282,7 @@ namespace tests
             graph.AddVesitor(vesitor1, index1);
             graph.AddVesitor(vesitor2, index2);
 
-            graph.Start();
+            graph.Step();
             //vesitor 1
             buf_gen1 = next_gen1.ToList();
             buf_gen1.Sort((v1, v2) => v1.Id - v2.Id);

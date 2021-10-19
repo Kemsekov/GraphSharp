@@ -7,9 +7,7 @@ namespace GraphSharp.Graphs
         void Clear();
         bool RemoveVesitor(IVesitor vesitor);
         void AddVesitor(IVesitor vesitor);
-        void AddVesitor(IVesitor vesitor,int index);
-        void Start();
-        void Start(IVesitor vesitor);
+        void AddVesitor(IVesitor vesitor,params int[] nodes_id);
         void Step();
         void Step(IVesitor vesitor);
 

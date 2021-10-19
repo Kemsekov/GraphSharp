@@ -20,12 +20,12 @@ namespace GraphSharp.Vesitos
             };
         }
 
-        public void EndVesit(NodeBase node)
+        public void EndVesit(NodeBase node,bool vesited = false)
         {
             _endVesit?.Invoke(node);
         }
 
-        public void Vesit(NodeBase node)
+        public void Vesit(NodeBase node,bool vesited = false)
         {   
             _vesit(node);
         }
