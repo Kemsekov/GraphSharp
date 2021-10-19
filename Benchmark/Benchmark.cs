@@ -36,8 +36,8 @@ for(int i = 0;i<steps_count;i++){
     graph.Step();
 }
 System.Console.WriteLine($"Time {watch2.ElapsedMilliseconds} milliseconds to work");
-System.Console.WriteLine($"Step time {graph._StepTroughGen}");
-System.Console.WriteLine($"End visit time {graph._EndVisit}");
+// System.Console.WriteLine($"Step time {graph._StepTroughGen}");
+// System.Console.WriteLine($"End visit time {graph._EndVisit}");
 
 Console.ResetColor();
 watch2.Stop();

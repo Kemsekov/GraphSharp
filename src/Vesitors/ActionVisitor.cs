@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using GraphSharp.Nodes;
 
 namespace GraphSharp.Visitors
@@ -25,6 +26,7 @@ namespace GraphSharp.Visitors
             _endVisit?.Invoke(node);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Visit(NodeBase node,bool visited = false)
         {   
             _Visit(node,visited);
