@@ -5,11 +5,11 @@ namespace GraphSharp.Vesitos
 {
     public class ActionVesitor : IVesitor
     {
-        private Action<NodeBase> _vesit;
-        private Func<NodeBase,bool> _selector;
-        private Action<NodeBase> _endVesit;
+        private readonly Action<NodeBase,bool> _vesit;
+        private readonly Func<NodeBase,bool> _selector;
+        private readonly Action<NodeBase> _endVesit;
 
-        public ActionVesitor(Action<NodeBase> vesit,Action<NodeBase> endVesit = null, Func<NodeBase,bool> selector = null)
+        public ActionVesitor(Action<NodeBase,bool> vesit,Action<NodeBase> endVesit = null, Func<NodeBase,bool> selector = null)
         {
             this._endVesit = endVesit;
             this._vesit = vesit;
@@ -22,15 +22,14 @@ namespace GraphSharp.Vesitos
 
         public void EndVesit(NodeBase node)
         {
-            node.EndVesit(this);
             _endVesit?.Invoke(node);
         }
 
-        public void Vesit(NodeBase node)
+        public void Vesit(NodeBase node,bool vesited = false)
         {   
-            _vesit(node);
+            _vesit(node,vesited);
         }
-
+        
         public bool Select(NodeBase node)
         {
             return _selector(node);

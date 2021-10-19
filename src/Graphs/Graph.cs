@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
 using GraphSharp.Vesitos;
@@ -9,154 +12,120 @@ using Kemsekov;
 
 namespace GraphSharp.Graphs
 {
-    /// <summary>
-    /// Base graph implementation. Work in parallel by default.
-    /// </summary>
     public class Graph : IGraph
     {
-        IDictionary<IVesitor, bool> _started { get; } = new Dictionary<IVesitor, bool>();
-        protected Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)> _work { get; } = new Dictionary<IVesitor, (WorkSchedule firstVesit, WorkSchedule vesit)>();
-        protected Node[] _nodes { get; }
-        public Graph(IEnumerable<Node> nodes)
+        public long _StepTroughGen;
+        public long _EndVesit;
+        NodeBase[] _nodes { get; }
+        Dictionary<IVesitor, bool[]> _visitors = new Dictionary<IVesitor, bool[]>();
+        Dictionary<IVesitor, (Action _EndVesit, Action _Step)> _work = new Dictionary<IVesitor, (Action _EndVesit, Action _Step)>();
+        public Graph(IEnumerable<NodeBase> nodes)
         {
+            if (nodes.Count() == 0) throw new ArgumentException("There is no nodes.");
             _nodes = nodes.ToArray();
+            Array.Sort(_nodes);
         }
+
+        public void AddVesitor(IVesitor vesitor)
+        {
+            var index = new Random().Next(_nodes.Length);
+            AddVesitor(vesitor, index);
+        }
+
+        public void AddVesitor(IVesitor vesitor, params int[] nodes_id)
+        {
+            if (nodes_id.Max() > _nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
+            var nodes = nodes_id.Select(n => _nodes[n]);
+
+            var vesited_list = new NodeState[_nodes.Count() + 1];
+
+            //make sure to initialize the NodeStates
+
+
+            ThreadLocal<List<NodeBase>> next_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
+            ThreadLocal<List<NodeBase>> current_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
+            {
+                var temp_node = new Node(_nodes.Count());
+                temp_node.Childs.AddRange(nodes);
+                current_gen.Value.Add(temp_node);
+            }
+
+            var sw1 = new Stopwatch();
+            var sw2 = new Stopwatch();
+
+
+            _work[vesitor] = (
+                () =>
+                {
+                    sw1.Start();
+                    foreach (var n in next_gen.Values)
+                        n.Clear();
+
+                    foreach (var n in current_gen.Values)
+                        Parallel.ForEach(n, node =>
+                        {
+                            vesitor.EndVesit(node);
+                            vesited_list[node.Id].Vesited = false;
+                        });
+                    sw1.Stop();
+                    _EndVesit = sw1.ElapsedMilliseconds;
+                },
+                () =>
+                {
+                    sw2.Start();
+                    foreach (var n in current_gen.Values)
+                        Parallel.ForEach(n, node =>
+                        {
+                            ref NodeState node_state = ref vesited_list[0];
+
+                            foreach (var child in node.Childs)
+                            {
+                                node_state = ref vesited_list[child.Id];
+                                if (node_state.Vesited) continue;
+                                if (!vesitor.Select(child)) continue;
+                                lock (child)
+                                {
+                                    vesitor.Vesit(child,node_state.Vesited);
+                                    if (node_state.Vesited) continue;
+                                    node_state.Vesited = true;
+                                    next_gen.Value.Add(child);
+                                }
+                            }
+                        });
+                    sw2.Stop();
+                    _StepTroughGen = sw2.ElapsedMilliseconds;
+                    var buf = current_gen;
+                    current_gen = next_gen;
+                    next_gen = buf;
+                }
+            );
+
+        }
+
         public void Clear()
         {
             _work.Clear();
-            _started.Clear();
         }
-        /// <summary>
-        /// Adds <see cref="IVesitor"/> to current graph and bind it to some random node.
-        /// </summary>
-        /// <param name="vesitor">Vesitor to add</param>
-        public void AddVesitor(IVesitor vesitor)
-        {
-            if (_work.ContainsKey(vesitor)) return;
-            AddVesitor(vesitor, new Random().Next(_nodes.Length));
-        }
-        /// <summary>
-        /// Adds <see cref="IVesitor"/> to current graph and binds it to <see cref="Node"/> with index id
-        /// </summary>
-        /// <param name="vesitor">Vesitor to add</param>
-        /// <param name="index">Node id</param>
-        public void AddVesitor(IVesitor vesitor, int index)
-        {
-            if (_nodes.Length == 0) throw new InvalidOperationException("No nodes were added");
-            if (_work.ContainsKey(vesitor)) return;
 
-            var node = _nodes[index];
-            if (node.Id != index)
-                node = _nodes.FirstOrDefault(n => n.Id == index);
-
-            _work.Add(vesitor, (new WorkSchedule(1), new WorkSchedule(2)));
-
-            _work[vesitor].firstVesit.Add(() => _nodes[index].Vesit(vesitor));
-
-            _started.Add(vesitor, false);
-            AddVesitor(
-                vesitor,
-                new List<NodeBase>() { _nodes[index] }
-            );
-        }
-        /// <summary>
-        /// on input nodes already vesited, but not it's childs
-        /// </summary>
-        /// <param name="vesitor">Vesitor</param>
-        /// <param name="nodes"></param>
-        /// <param name="next_generation"></param>
-        protected virtual void AddVesitor(IVesitor vesitor, IList<NodeBase> nodes)
+        public bool RemoveVesitor(IVesitor vesitor)
         {
-            foreach (var node in this._nodes)
-                node.EndVesit(vesitor);
-            
-            Action EndVesit =
-            () =>
-            {
-                Parallel.ForEach(nodes, (node, _) =>
-                {
-                    vesitor.EndVesit(node);
-                });
-            };
-            
-            Action stepTroughGen =
-            () =>
-            {
-                Parallel.ForEach(nodes, (value, _) =>
-                {
-                    foreach (var child in value.Childs)
-                    {
-                        if ((child as Node).Vesited(vesitor)) continue;
-                        lock(child){
-                            if(vesitor.Select(child))
-                            child.Vesit(vesitor);
-                        }
-                    }
-                });
-                nodes.Clear();
-                (nodes as List<NodeBase>).AddRange(this._nodes.Where(v => (v as Node).Vesited(vesitor)));
-            };
+            return _work.Remove(vesitor);
+        }
 
-            _work[vesitor].vesit.Add(
-                EndVesit,
-                stepTroughGen
-            );
-        }
-        /// <summary>
-        /// Starts graph's <see cref="IVesitor"/>s walk trough graph. Call this before using <see cref="Step()"/>
-        /// </summary>
-        public void Start()
-        {
-            foreach (var item in _work)
-            {
-                Start(item.Key);
-            }
-        }
-        /// <summary>
-        /// Starts vesitor walk trough graph. Call this before using <see cref="Step()"/> on the same vesitor
-        /// </summary>
-        /// <param name="vesitor">Vesitor to be started</param>
-        public void Start(IVesitor vesitor)
-        {
-            if (!_started[vesitor])
-            {
-                _work[vesitor].firstVesit.Step();
-                _started[vesitor] = true;
-            }
-        }
-        /// <summary>
-        /// Steps trough all vesitors
-        /// </summary>
         public void Step()
         {
             foreach (var item in _work)
             {
-                Step(item.Key);
+                item.Value._EndVesit();
+                item.Value._Step();
             }
         }
-        /// <summary>
-        /// Steps trough graph with vesitor
-        /// </summary>
-        /// <param name="vesitor">Vesitor to step</param>
+
         public void Step(IVesitor vesitor)
         {
-            if (!_started[vesitor]) throw new ApplicationException("Start() graph before calling Step()");
-
-            _work[vesitor].vesit.Step();
-            _work[vesitor].vesit.Step();
-            _work[vesitor].vesit.Step();
-            _work[vesitor].vesit.Reset();
-        }
-        /// <summary>
-        /// Removes vesitor from graph
-        /// </summary>
-        /// <param name="vesitor">Vesitor to remove</param>
-        /// <returns>removed or not</returns>
-        public bool RemoveVesitor(IVesitor vesitor)
-        {
-            foreach (var node in _nodes)
-                (node as Node).RemoveVesitor(vesitor);
-            return _started.Remove(vesitor) && _work.Remove(vesitor);
+            var work = _work[vesitor];
+            work._EndVesit();
+            work._Step();
         }
     }
 }
