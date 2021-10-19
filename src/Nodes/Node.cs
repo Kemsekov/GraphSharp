@@ -1,12 +1,12 @@
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using GraphSharp.Vesitos;
+using GraphSharp.Visitors;
 using System.Runtime.CompilerServices;
 
 namespace GraphSharp.Nodes
 {
     /// <summary>
-    /// Supports multiple vesitors
+    /// Base implementation of <see cref="NodeBase"/>
     /// </summary>
     public class Node : NodeBase
     {

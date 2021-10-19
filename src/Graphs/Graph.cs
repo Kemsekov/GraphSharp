@@ -7,17 +7,20 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
-using GraphSharp.Vesitos;
+using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs
 {
+    /// <summary>
+    /// Parallel implementation of <see cref="IGraph"/>
+    /// </summary>
     public class Graph : IGraph
     {
         public long _StepTroughGen;
-        public long _EndVesit;
+        public long _EndVisit;
         NodeBase[] _nodes { get; }
-        Dictionary<IVesitor, bool[]> _visitors = new Dictionary<IVesitor, bool[]>();
-        Dictionary<IVesitor, (Action _EndVesit, Action _Step)> _work = new Dictionary<IVesitor, (Action _EndVesit, Action _Step)>();
+        Dictionary<IVisitor, bool[]> _visitors = new Dictionary<IVisitor, bool[]>();
+        Dictionary<IVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<IVisitor, (Action _EndVisit, Action _Step)>();
         public Graph(IEnumerable<NodeBase> nodes)
         {
             if (nodes.Count() == 0) throw new ArgumentException("There is no nodes.");
@@ -25,18 +28,18 @@ namespace GraphSharp.Graphs
             Array.Sort(_nodes);
         }
 
-        public void AddVesitor(IVesitor vesitor)
+        public void AddVisitor(IVisitor visitor)
         {
             var index = new Random().Next(_nodes.Length);
-            AddVesitor(vesitor, index);
+            AddVisitor(visitor, index);
         }
 
-        public void AddVesitor(IVesitor vesitor, params int[] nodes_id)
+        public void AddVisitor(IVisitor visitor, params int[] nodes_id)
         {
             if (nodes_id.Max() > _nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
             var nodes = nodes_id.Select(n => _nodes[n]);
 
-            var vesited_list = new NodeState[_nodes.Count() + 1];
+            var visited_list = new NodeState[_nodes.Count() + 1];
 
             //make sure to initialize the NodeStates
 
@@ -53,7 +56,7 @@ namespace GraphSharp.Graphs
             var sw2 = new Stopwatch();
 
 
-            _work[vesitor] = (
+            _work[visitor] = (
                 () =>
                 {
                     sw1.Start();
@@ -63,11 +66,11 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
-                            vesitor.EndVesit(node);
-                            vesited_list[node.Id].Vesited = false;
+                            visitor.EndVisit(node);
+                            visited_list[node.Id].Visited = false;
                         });
                     sw1.Stop();
-                    _EndVesit = sw1.ElapsedMilliseconds;
+                    _EndVisit = sw1.ElapsedMilliseconds;
                 },
                 () =>
                 {
@@ -75,18 +78,18 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
-                            ref NodeState node_state = ref vesited_list[0];
+                            ref NodeState node_state = ref visited_list[0];
 
                             foreach (var child in node.Childs)
                             {
-                                node_state = ref vesited_list[child.Id];
-                                if (node_state.Vesited) continue;
-                                if (!vesitor.Select(child)) continue;
+                                node_state = ref visited_list[child.Id];
+                                if (node_state.Visited) continue;
+                                if (!visitor.Select(child)) continue;
                                 lock (child)
                                 {
-                                    vesitor.Vesit(child,node_state.Vesited);
-                                    if (node_state.Vesited) continue;
-                                    node_state.Vesited = true;
+                                    visitor.Visit(child,node_state.Visited);
+                                    if (node_state.Visited) continue;
+                                    node_state.Visited = true;
                                     next_gen.Value.Add(child);
                                 }
                             }
@@ -106,24 +109,24 @@ namespace GraphSharp.Graphs
             _work.Clear();
         }
 
-        public bool RemoveVesitor(IVesitor vesitor)
+        public bool RemoveVisitor(IVisitor visitor)
         {
-            return _work.Remove(vesitor);
+            return _work.Remove(visitor);
         }
 
         public void Step()
         {
             foreach (var item in _work)
             {
-                item.Value._EndVesit();
+                item.Value._EndVisit();
                 item.Value._Step();
             }
         }
 
-        public void Step(IVesitor vesitor)
+        public void Step(IVisitor visitor)
         {
-            var work = _work[vesitor];
-            work._EndVesit();
+            var work = _work[visitor];
+            work._EndVisit();
             work._Step();
         }
     }

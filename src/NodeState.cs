@@ -2,11 +2,11 @@ namespace GraphSharp
 {
     public struct NodeState
     {
-        public bool Vesited;
+        public bool Visited;
 
-        public NodeState(bool vesited)
+        public NodeState(bool visited)
         {
-            Vesited = vesited;
+            Visited = visited;
         }
     }
 }
