@@ -94,15 +94,18 @@ using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 
+//create 20 nodes with each of them have from 0 to 2 childs
 var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(20, 0, 2);
 
 var graph = new Graph(nodes);
 
+//print node if it is visited first time
 var visitor = new ActionVisitor((node,visited)=>{
     if(!visited)
         System.Console.WriteLine(node);
 });
 
+//add visitor to node 1 and node 2
 graph.AddVisitor(visitor,1,2);
 
 System.Console.WriteLine("---Step 1---");
