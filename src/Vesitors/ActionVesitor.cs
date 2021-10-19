@@ -34,5 +34,10 @@ namespace GraphSharp.Vesitos
         {
             return _selector(node);
         }
+
+        public int CompareTo(IVesitor other)
+        {
+            return this.GetHashCode()-other.GetHashCode();
+        }
     }
 }

@@ -36,9 +36,8 @@ for(int i = 0;i<steps_count;i++){
     graph.Step();
 }
 System.Console.WriteLine($"Time {watch2.ElapsedMilliseconds} milliseconds to work");
-// System.Console.WriteLine($"AddNode time {graph._AddNodes}");
-// System.Console.WriteLine($"Step time {graph._StepTroughGen}");
-// System.Console.WriteLine($"End vesit time {graph._EndVesit}");
+System.Console.WriteLine($"Step time {graph._StepTroughGen}");
+System.Console.WriteLine($"End vesit time {graph._EndVesit}");
 
 Console.ResetColor();
 watch2.Stop();

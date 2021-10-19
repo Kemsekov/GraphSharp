@@ -14,11 +14,14 @@ namespace GraphSharp.Graphs
 {
     public class Graph : IGraph
     {
-        NodeBase[] _nodes{get;}
+        public long _StepTroughGen;
+        public long _EndVesit;
+        NodeBase[] _nodes { get; }
+        Dictionary<IVesitor,bool[]> _visitors = new Dictionary<IVesitor,bool[]>();
         Dictionary<IVesitor, (Action _EndVesit, Action _Step)> _work = new Dictionary<IVesitor, (Action _EndVesit, Action _Step)>();
         public Graph(IEnumerable<NodeBase> nodes)
         {
-            if(nodes.Count() == 0) throw new ArgumentException("There is no nodes.");
+            if (nodes.Count() == 0) throw new ArgumentException("There is no nodes.");
             _nodes = nodes.ToArray();
             Array.Sort(_nodes);
         }
@@ -31,60 +34,64 @@ namespace GraphSharp.Graphs
 
         public void AddVesitor(IVesitor vesitor, params int[] nodes_id)
         {
-            if(nodes_id.Max()>_nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
+            if (nodes_id.Max() > _nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
             var nodes = nodes_id.Select(n => _nodes[n]);
 
+            var vesited_list = new NodeState[_nodes.Count()+1];
+
             //make sure to initialize the NodeStates
-            foreach (var node in _nodes)
-            {
-                node.NodeStates[vesitor] = new NodeState();
-            }
+
 
             ThreadLocal<List<NodeBase>> next_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
-            ThreadLocal<List<NodeBase>> current_gen = new ThreadLocal<List<NodeBase>>(() =>new List<NodeBase>(), true);
+            ThreadLocal<List<NodeBase>> current_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
             {
-                var temp_node = new Node(-1);
-                temp_node.NodeStates[vesitor] = new NodeState();
+                var temp_node = new Node(_nodes.Count());
                 temp_node.Childs.AddRange(nodes);
                 current_gen.Value.Add(temp_node);
             }
 
+            var sw1 = new Stopwatch();
+            var sw2 = new Stopwatch();
+
+
             _work[vesitor] = (
                 () =>
                 {
+                    sw1.Start();
                     foreach (var n in next_gen.Values)
                         n.Clear();
-                    
-                    foreach(var n in current_gen.Values)
-                    Parallel.ForEach(n,node=>
-                    {
-                        node.NodeStates[vesitor].Vesited = false;
-                        vesitor.EndVesit(node);
-                    });
+
+                    foreach (var n in current_gen.Values)
+                        Parallel.ForEach(n, node =>
+                        {
+                           vesitor.EndVesit(node);
+                           vesited_list[node.Id].Vesited = false;
+                        });
+                    sw1.Stop();
+                    _EndVesit = sw1.ElapsedMilliseconds;
                 },
                 () =>
                 {
-                    foreach(var n in current_gen.Values)
-                    Parallel.ForEach(n,node=>
-                    {
-                        var copy = next_gen.Value;
-                        NodeStateBase node_state = null;
-                        foreach (var child in node.Childs)
+                    sw2.Start();
+                    foreach (var n in current_gen.Values)
+                        Parallel.ForEach(n, node =>
                         {
-                            node_state = child.NodeStates[vesitor];
-                            if (node_state.Vesited) continue;
-                            if (!vesitor.Select(child)) continue;
-
-                            lock (child)
+                            foreach (var child in node.Childs)
                             {
+                                ref NodeState node_state = ref vesited_list[child.Id];
                                 if (node_state.Vesited) continue;
-                                vesitor.Vesit(child);
-                                node_state.Vesited = true;
-                                copy.Add(child);
+                                if (!vesitor.Select(child)) continue;
+                                lock (child)
+                                {
+                                    if (node_state.Vesited) continue;
+                                    vesitor.Vesit(child);
+                                    node_state.Vesited = true;
+                                    next_gen.Value.Add(child);
+                                }
                             }
-                        }
-                    });
-
+                        });
+                    sw2.Stop();
+                    _StepTroughGen = sw2.ElapsedMilliseconds;
                     var buf = current_gen;
                     current_gen = next_gen;
                     next_gen = buf;
@@ -100,16 +107,13 @@ namespace GraphSharp.Graphs
 
         public bool RemoveVesitor(IVesitor vesitor)
         {
-            bool vesited = true;
-            foreach (var node in _nodes)
-                vesited = vesited && node.NodeStates.Remove(vesitor);
-            vesited = vesited && _work.Remove(vesitor);
-            return vesited;
+            return _work.Remove(vesitor);
         }
 
         public void Step()
         {
-            foreach(var item in _work){
+            foreach (var item in _work)
+            {
                 item.Value._EndVesit();
                 item.Value._Step();
             }

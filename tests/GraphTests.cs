@@ -145,9 +145,6 @@ namespace tests
             graph.Step();
             Assert.Equal(childs1.Count, 0);
             var __nodes = graph.GetType().GetProperty("_nodes",BindingFlags.NonPublic | BindingFlags.Instance).GetValue(graph) as NodeBase[];
-            foreach(var node in __nodes){
-                Assert.Throws<KeyNotFoundException>(()=> node.NodeStates[vesitor1]);
-            }
 
             Assert.NotEqual(childs2.Count, 0);
 

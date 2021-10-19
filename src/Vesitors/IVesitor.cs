@@ -1,9 +1,11 @@
+using System;
 using GraphSharp.Nodes;
 
 namespace GraphSharp.Vesitos
 {
-    public interface IVesitor
+    public interface IVesitor : IComparable<IVesitor>
     {
+        
         /// <summary>
         /// Vesit node
         /// </summary>

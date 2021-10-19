@@ -14,8 +14,6 @@ namespace GraphSharp.Nodes
         {
         }
         readonly List<NodeBase> childs = new List<NodeBase>();
-        readonly Dictionary<IVesitor, NodeStateBase> nodeStates = new Dictionary<IVesitor, NodeStateBase>();
         public override List<NodeBase> Childs => childs;
-        public override Dictionary<IVesitor, NodeStateBase> NodeStates => nodeStates;
     }
 }

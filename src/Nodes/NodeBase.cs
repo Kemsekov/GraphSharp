@@ -8,7 +8,6 @@ namespace GraphSharp.Nodes
     public abstract class NodeBase : IComparable<NodeBase>
     {
         public abstract List<NodeBase> Childs{get;}
-        public abstract Dictionary<IVesitor,NodeStateBase> NodeStates{get;}
         public int Id { get; }
         public NodeBase(int id)
         {
