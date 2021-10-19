@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using GraphSharp;
 using GraphSharp.Graphs;
 using GraphSharp.Nodes;
-using GraphSharp.Vesitos;
+using GraphSharp.Visitors;
 using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
@@ -24,20 +24,20 @@ var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(nodes_count,min
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);
-var vesitor = new ActionVesitor((node,vesited)=>{
+var visitor = new ActionVisitor((node,visited)=>{
     
 });
 
 var watch2 = new Stopwatch();
 watch2.Start();
-graph.AddVesitor(vesitor);
+graph.AddVisitor(visitor);
 
 for(int i = 0;i<steps_count;i++){
     graph.Step();
 }
 System.Console.WriteLine($"Time {watch2.ElapsedMilliseconds} milliseconds to work");
-System.Console.WriteLine($"Step time {graph._StepTroughGen}");
-System.Console.WriteLine($"End vesit time {graph._EndVesit}");
+// System.Console.WriteLine($"Step time {graph._StepTroughGen}");
+// System.Console.WriteLine($"End visit time {graph._EndVisit}");
 
 Console.ResetColor();
 watch2.Stop();
