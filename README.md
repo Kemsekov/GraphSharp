@@ -87,6 +87,43 @@ will stay the same.
 graph.Clear();
 ```
 
+A whole example
+```cs
+using GraphSharp;
+using GraphSharp.Graphs;
+using GraphSharp.Nodes;
+using GraphSharp.Visitors;
+
+var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(20, 0, 2);
+
+var graph = new Graph(nodes);
+
+var visitor = new ActionVisitor((node,visited)=>{
+    if(!visited)
+        System.Console.WriteLine(node);
+});
+
+graph.AddVisitor(visitor,1,2);
+
+System.Console.WriteLine("---Step 1---");
+graph.Step();
+System.Console.WriteLine("---Step 2---");
+graph.Step();
+```
+Output
+```
+---Step 1---
+Node : 1
+Node : 2
+---Step 2---
+Node : 6
+Node : 7
+Node : 8
+Node : 14
+Node : 15
+Node : 16
+```
+
 # Node type
 Your custom `Node` type must be inherited from `NodeBase`.
 If you wanna to use your custom `Node` type win `NodeGraphFactory` then it MUST have constructor with single integer as input.
