@@ -30,29 +30,33 @@ Next you need to create `Visitor`.
 `Visitor` is object that visiting your `graph` when you need to 'walk' through it.
 
 ```cs
-var visitor = new ActionVisitor(node=>
+var visitor = new ActionVisitor((node,visited)=>
 {
+    //if we printed it earlier do not print it again
+    if(!visited)
     Console.Writeline(node);
 });
 ```
+In this one we wanna write all nodes that we visit to console except those which we already visited.
+
 And now we need add visitor to graph
 
 ```cs
 graph.AddVisitor(visitor);
 ```
 Now our `visitor` is bound to some node from `nodes` that we loaded to `graph`.
-If you wanna your `visitor` to be bound to some exact node then you can do this
+If you wanna your `visitor` to be bound to some exact nodes then you can do this
 
 ```cs
-graph.AddVisitor(visitor,index);
+graph.AddVisitor(visitor,index1,index2...);
 ```
 
-This will bound `visitor` to node with index `index`.
+This will bound `visitor` to nodes with `Id` equals to corresponding `indexN`.
 
 Then when we can start.
 
 ```cs
-graph.Start();
+graph.Step();
 ```
 
 After invoking this method you will see this in console 
@@ -61,7 +65,7 @@ Node : NUMBER
 ```
 
 In the graph we created every node connected to minimum 5 and at least 20 other nodes.
-So when we step through graph next time `visitor` will print to us next 5<x<20 nodes.
+So when we step through graph next time `visitor` will print to us `Node` childs.
 
 ```cs
 graph.Step();
@@ -77,14 +81,15 @@ Node : NUMBER4
 ...
 ```
 
-If you need to clean your graph then use `Clear` function and then you will have to add visitors again, but nodes inside of 
+If you need to clean your graph then use `Clear` function and then you will have to add visitors again, but nodes inside of `Graph`
 will stay the same.
 ```cs
 graph.Clear();
 ```
 
 # Node type
-`Node` type must be inherited from `NodeBase` class and must have constructor with single integer as input.
+Your custom `Node` type must be inherited from `NodeBase`.
+If you wanna to use your custom `Node` type win `NodeGraphFactory` then it MUST have constructor with single integer as input.
 ```cs
     public class Node : NodeBase
     {
@@ -94,37 +99,50 @@ graph.Clear();
     }
 ```
 
-Because of `NodeGraphFactory` implementation this constraint must be followed on each custom `Node` type.
-
 # Visitor type
 
 To write your own visitor inherit it from `IVisitor`
 
 ```cs
-public class ActionVisitor : IVisitor
+public class Visitor : IVisitor
     {
-        private Action<NodeBase> _visit;
 
-        public ActionVisitor(Action<NodeBase> visit)
+        public MyVisitor()
         {
-            this._visit = visit;
         }
-
+        
+        //When you call Graph.Step() this method is called first.
+        //It will filter which node must be visited, and which not.
+        public bool Select(NodeBase node){
+            //select only even nodes
+            return node.Id % 2 == 0;
+        }
+        //This method will recieve nodes. visited means whatever current visitor already visited node or not.
+        public void Visit(NodeBase node, bool visited)
+        {   
+            if(!visited)
+                Console.Writeline(node);
+        }
+        //this method ends visiting nodes. Unlike Visit(), which is called on every node and you free
+        //to do anything with it(depend of visited value) this method called on node only once.
         public void EndVisit(NodeBase node)
         {
-            
-        }
-
-        public void Visit(NodeBase node)
-        {   
-            _visit(node);
+            //do nothing
         }
     }
 ```
 
+And with this visitor output may be like this after calling `Graph.Step()`.
+```
+Node : 2
+Node : 4
+Node : 6
+```
+
+
 # Graph type
 
-I am not recommend you to write your own `IGraph` implementation but to do so just inherit it from `IGraph`
+To write your own `Graph` type inherit it from `IGraph`
 
 ```cs
 class Graph : IGraph{
