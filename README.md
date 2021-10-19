@@ -25,29 +25,29 @@ Next what you need to create `Graph` and pass it nodes
 var graph = new Graph(nodes);
 ```
 
-Next you need to create `Vesitor`.
+Next you need to create `Visitor`.
 
-`Vesitor` is object that vesiting your `graph` when you need to 'walk' through it.
+`Visitor` is object that visiting your `graph` when you need to 'walk' through it.
 
 ```cs
-var vesitor = new ActionVesitor(node=>
+var visitor = new ActionVisitor(node=>
 {
     Console.Writeline(node);
 });
 ```
-And now we need add vesitor to graph
+And now we need add visitor to graph
 
 ```cs
-graph.AddVesitor(vesitor);
+graph.AddVisitor(visitor);
 ```
-Now our `vesitor` is bound to some node from `nodes` that we loaded to `graph`.
-If you wanna your `vesitor` to be bound to some exact node then you can do this
+Now our `visitor` is bound to some node from `nodes` that we loaded to `graph`.
+If you wanna your `visitor` to be bound to some exact node then you can do this
 
 ```cs
-graph.AddVesitor(vesitor,index);
+graph.AddVisitor(visitor,index);
 ```
 
-This will bound `vesitor` to node with index `index`.
+This will bound `visitor` to node with index `index`.
 
 Then when we can start.
 
@@ -61,7 +61,7 @@ Node : NUMBER
 ```
 
 In the graph we created every node connected to minimum 5 and at least 20 other nodes.
-So when we step through graph next time `vesitor` will print to us next 5<x<20 nodes.
+So when we step through graph next time `visitor` will print to us next 5<x<20 nodes.
 
 ```cs
 graph.Step();
@@ -77,7 +77,7 @@ Node : NUMBER4
 ...
 ```
 
-If you need to clean your graph then use `Clear` function and then you will have to add vesitors again, but nodes inside of 
+If you need to clean your graph then use `Clear` function and then you will have to add visitors again, but nodes inside of 
 will stay the same.
 ```cs
 graph.Clear();
@@ -96,28 +96,28 @@ graph.Clear();
 
 Because of `NodeGraphFactory` implementation this constraint must be followed on each custom `Node` type.
 
-# Vesitor type
+# Visitor type
 
-To write your own vesitor inherit it from `IVesitor`
+To write your own visitor inherit it from `IVisitor`
 
 ```cs
-public class ActionVesitor : IVesitor
+public class ActionVisitor : IVisitor
     {
-        private Action<NodeBase> _vesit;
+        private Action<NodeBase> _visit;
 
-        public ActionVesitor(Action<NodeBase> vesit)
+        public ActionVisitor(Action<NodeBase> visit)
         {
-            this._vesit = vesit;
+            this._visit = visit;
         }
 
-        public void EndVesit(NodeBase node)
+        public void EndVisit(NodeBase node)
         {
             
         }
 
-        public void Vesit(NodeBase node)
+        public void Visit(NodeBase node)
         {   
-            _vesit(node);
+            _visit(node);
         }
     }
 ```
@@ -134,5 +134,5 @@ class Graph : IGraph{
 
 # What it is best suited for
 
-Graph is best suited for a not big number of vesitors and a lot of nodes.
-A lot of vesitors and nodes can greatly affect memory usage, so be ware.
+Graph is best suited for a not big number of visitors and a lot of nodes.
+A lot of visitors and nodes can greatly affect memory usage, so be ware.
