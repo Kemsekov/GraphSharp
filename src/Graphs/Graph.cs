@@ -17,7 +17,7 @@ namespace GraphSharp.Graphs
         public long _StepTroughGen;
         public long _EndVesit;
         NodeBase[] _nodes { get; }
-        Dictionary<IVesitor,bool[]> _visitors = new Dictionary<IVesitor,bool[]>();
+        Dictionary<IVesitor, bool[]> _visitors = new Dictionary<IVesitor, bool[]>();
         Dictionary<IVesitor, (Action _EndVesit, Action _Step)> _work = new Dictionary<IVesitor, (Action _EndVesit, Action _Step)>();
         public Graph(IEnumerable<NodeBase> nodes)
         {
@@ -37,7 +37,7 @@ namespace GraphSharp.Graphs
             if (nodes_id.Max() > _nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
             var nodes = nodes_id.Select(n => _nodes[n]);
 
-            var vesited_list = new NodeState[_nodes.Count()+1];
+            var vesited_list = new NodeState[_nodes.Count() + 1];
 
             //make sure to initialize the NodeStates
 
@@ -64,8 +64,8 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
-                           vesitor.EndVesit(node);
-                           vesited_list[node.Id].Vesited = false;
+                            vesitor.EndVesit(node);
+                            vesited_list[node.Id].Vesited = false;
                         });
                     sw1.Stop();
                     _EndVesit = sw1.ElapsedMilliseconds;
@@ -76,15 +76,17 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
+                            ref NodeState node_state = ref vesited_list[0];
+
                             foreach (var child in node.Childs)
                             {
-                                ref NodeState node_state = ref vesited_list[child.Id];
+                                node_state = ref vesited_list[child.Id];
                                 if (node_state.Vesited) continue;
                                 if (!vesitor.Select(child)) continue;
                                 lock (child)
                                 {
+                                    vesitor.Vesit(child,node_state.Vesited);
                                     if (node_state.Vesited) continue;
-                                    vesitor.Vesit(child);
                                     node_state.Vesited = true;
                                     next_gen.Value.Add(child);
                                 }

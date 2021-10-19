@@ -17,7 +17,7 @@ namespace GraphSharp.Vesitos
         /// </summary>
         /// <param name="node">node to be end vesited</param>
         /// <param name="vesited">Whatever current vesitor already end vesited node or not</param>
-        void EndVesit(NodeBase node, bool vesited = false);
+        void EndVesit(NodeBase node);
         /// <summary>
         /// Method that selects which nodes need to be vesited and which not
         /// </summary>
