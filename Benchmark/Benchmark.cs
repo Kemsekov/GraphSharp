@@ -24,7 +24,7 @@ var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(nodes_count,min
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);
-var vesitor = new ActionVesitor(node=>{
+var vesitor = new ActionVesitor((node,vesited)=>{
     
 });
 

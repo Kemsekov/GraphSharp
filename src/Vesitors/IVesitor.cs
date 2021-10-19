@@ -3,7 +3,7 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Vesitos
 {
-    public interface IVesitor : IComparable<IVesitor>
+    public interface IVesitor
     {
         
         /// <summary>
