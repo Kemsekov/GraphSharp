@@ -71,7 +71,10 @@ namespace GraphSharp.Graphs
                             {
                                 visited = ref visited_list[child.Id];
                                 if (visited) continue;
-                                if (!visitor.Select(child)) continue;
+                                if (!visitor.Select(child)){
+                                    visited = true;
+                                    continue;
+                                }
                                 lock (child)
                                 {
                                     if (visited) continue;
