@@ -24,7 +24,8 @@ namespace tests
                 new int[] {1,4,9},
                 new int[] {2,3,5,8},
                 new int[] {0,1,3,6,7,9},
-                new int[] {1,2,3,4,7,8,9}
+                new int[] {1,2,3,4,7,8,9},
+                new int[] {1,2,3,5,7,8,9}
             };
 
             var expectedNodes2 = new int[][]{
@@ -32,7 +33,8 @@ namespace tests
                 new int[] {0,1,2,3,6,8},
                 new int[] {1,2,3,4,7,8,9},
                 new int[] {1,2,3,5,7,8,9},
-                new int[] {0,1,2,3,6,7,8,9}
+                new int[] {0,1,2,3,6,7,8,9},
+                new int[] {1,2,3,4,7,8,9}
             };
 
             for (int i = 0; i < nodes.Count(); i++)
