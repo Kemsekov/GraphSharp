@@ -31,14 +31,12 @@ Next you need to create `Visitor`.
 `Visitor` is object that visiting your `graph` when you need to 'walk' through it.
 
 ```cs
-var visitor = new ActionVisitor((node,visited)=>
-{
-    //if we printed it earlier do not print it again
-    if(!visited)
+var visitor = new ActionVisitor(node=>
+{    
     Console.Writeline(node);
 });
 ```
-In this one we wanna write all nodes that we visit to console except those which we already visited.
+In this one we wanna write all nodes that we visit to console.
 
 And now we need add visitor to graph
 
@@ -101,9 +99,8 @@ var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(20, 0, 2);
 var graph = new Graph(nodes);
 
 //print node if it is visited first time
-var visitor = new ActionVisitor((node,visited)=>{
-    if(!visited)
-        System.Console.WriteLine(node);
+var visitor = new ActionVisitor(node=>{
+    System.Console.WriteLine(node);
 });
 
 //add visitor to node 1 and node 2
@@ -158,14 +155,12 @@ public class Visitor : IVisitor
             //select only even nodes
             return node.Id % 2 == 0;
         }
-        //This method will recieve nodes. visited means whatever current visitor already visited node or not.
-        public void Visit(NodeBase node, bool visited)
+        //This method will recieve nodes on each Graph.Step() for this visitor.
+        public void Visit(NodeBase node)
         {   
-            if(!visited)
                 Console.Writeline(node);
         }
-        //this method ends visiting nodes. Unlike Visit(), which is called on every node and you free
-        //to do anything with it(depend of visited value) this method called on node only once.
+        //this method ends visiting nodes. This method called 
         public void EndVisit(NodeBase node)
         {
             //do nothing
