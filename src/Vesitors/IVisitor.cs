@@ -18,9 +18,7 @@ namespace GraphSharp.Visitors
         /// End visit for node
         /// </summary>
         /// <param name="node">node to be end visited</param>
-        /// <param name="visited">Whatever current visitor already end visited node or not</param>
-        /// <returns>Whatever </returns>
-        void EndVisit(NodeBase node);
+        void EndVisit();
         /// <summary>
         /// Method that selects which nodes need to be visited and which not
         /// </summary>

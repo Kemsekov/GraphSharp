@@ -7,9 +7,9 @@ namespace GraphSharp.Visitors
     {
         private readonly Action<NodeBase> _Visit;
         private readonly Func<NodeBase,bool> _selector;
-        private readonly Action<NodeBase> _endVisit;
+        private readonly Action _endVisit;
 
-        public ActionVisitor(Action<NodeBase> visit,Action<NodeBase> endvisit = null, Func<NodeBase,bool> selector = null)
+        public ActionVisitor(Action<NodeBase> visit,Action endvisit = null, Func<NodeBase,bool> selector = null)
         {
             this._endVisit = endvisit;
             this._Visit = visit;
@@ -20,9 +20,9 @@ namespace GraphSharp.Visitors
             };
         }
 
-        public void EndVisit(NodeBase node)
+        public void EndVisit()
         {
-            _endVisit?.Invoke(node);
+            _endVisit?.Invoke();
         }
 
         public void Visit(NodeBase node)

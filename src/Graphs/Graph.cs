@@ -56,9 +56,9 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
-                            visitor.EndVisit(node);
                             visited_list[node.Id] = false;
                         });
+                    visitor.EndVisit();
                 },
                 () =>
                 {
