@@ -37,7 +37,7 @@ namespace GraphSharp.Graphs
             if (nodes_id.Max() > _nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
             var nodes = nodes_id.Select(n => _nodes[n]);
 
-            var visited_list = new NodeState[_nodes.Count() + 1];
+            var visited_list = new bool[_nodes.Count() + 1];
 
             ThreadLocal<List<NodeBase>> next_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
             ThreadLocal<List<NodeBase>> current_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
@@ -57,7 +57,7 @@ namespace GraphSharp.Graphs
                         Parallel.ForEach(n, node =>
                         {
                             visitor.EndVisit(node);
-                            visited_list[node.Id].Visited = false;
+                            visited_list[node.Id] = false;
                         });
                 },
                 () =>
@@ -65,18 +65,18 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
-                            ref NodeState node_state = ref visited_list[0];
+                            ref bool visited = ref visited_list[0];
 
                             foreach (var child in node.Childs)
                             {
-                                node_state = ref visited_list[child.Id];
-                                if (node_state.Visited) continue;
+                                visited = ref visited_list[child.Id];
+                                if (visited) continue;
                                 if (!visitor.Select(child)) continue;
                                 lock (child)
                                 {
-                                    if (node_state.Visited) continue;
+                                    if (visited) continue;
                                     visitor.Visit(child);
-                                    node_state.Visited = true;
+                                    visited = true;
                                     next_gen.Value.Add(child);
                                 }
                             }
