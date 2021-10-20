@@ -16,8 +16,6 @@ namespace GraphSharp.Graphs
     /// </summary>
     public class Graph : IGraph
     {
-        // public long _StepTroughGen;
-        // public long _EndVisit;
         NodeBase[] _nodes { get; }
         Dictionary<IVisitor, bool[]> _visitors = new Dictionary<IVisitor, bool[]>();
         Dictionary<IVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<IVisitor, (Action _EndVisit, Action _Step)>();
@@ -41,9 +39,6 @@ namespace GraphSharp.Graphs
 
             var visited_list = new NodeState[_nodes.Count() + 1];
 
-            //make sure to initialize the NodeStates
-
-
             ThreadLocal<List<NodeBase>> next_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
             ThreadLocal<List<NodeBase>> current_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
             {
@@ -52,14 +47,9 @@ namespace GraphSharp.Graphs
                 current_gen.Value.Add(temp_node);
             }
 
-            // var sw1 = new Stopwatch();
-            // var sw2 = new Stopwatch();
-
-
             _work[visitor] = (
                 () =>
                 {
-                    // sw1.Start();
                     foreach (var n in next_gen.Values)
                         n.Clear();
 
@@ -69,12 +59,9 @@ namespace GraphSharp.Graphs
                             visitor.EndVisit(node);
                             visited_list[node.Id].Visited = false;
                         });
-                    // sw1.Stop();
-                    // _EndVisit = sw1.ElapsedMilliseconds;
                 },
                 () =>
                 {
-                    // sw2.Start();
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
@@ -94,8 +81,6 @@ namespace GraphSharp.Graphs
                                 }
                             }
                         });
-                    // sw2.Stop();
-                    // _StepTroughGen = sw2.ElapsedMilliseconds;
                     var buf = current_gen;
                     current_gen = next_gen;
                     next_gen = buf;

@@ -14,6 +14,7 @@ namespace tests
 {
     public class GraphTests
     {
+        
 
         [Fact]
         public void Graph_ValidateOrderAgain()
@@ -88,7 +89,6 @@ namespace tests
 
                 visitor2 = new ActionVisitor(node =>
                 {
-                    
                     lock (visitor2_store) visitor2_store.Add(node);
                 },null,null);
                 graph.Clear();
