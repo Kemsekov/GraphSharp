@@ -16,6 +16,8 @@ namespace GraphSharp.Graphs
     /// </summary>
     public class Graph : IGraph
     {
+        // public long _StepTroughGen;
+        // public long _EndVisit;
         NodeBase[] _nodes { get; }
         Dictionary<IVisitor, bool[]> _visitors = new Dictionary<IVisitor, bool[]>();
         Dictionary<IVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<IVisitor, (Action _EndVisit, Action _Step)>();
@@ -50,11 +52,14 @@ namespace GraphSharp.Graphs
                 current_gen.Value.Add(temp_node);
             }
 
+            // var sw1 = new Stopwatch();
+            // var sw2 = new Stopwatch();
 
 
             _work[visitor] = (
                 () =>
                 {
+                    // sw1.Start();
                     foreach (var n in next_gen.Values)
                         n.Clear();
 
@@ -64,32 +69,33 @@ namespace GraphSharp.Graphs
                             visitor.EndVisit(node);
                             visited_list[node.Id].Visited = false;
                         });
+                    // sw1.Stop();
+                    // _EndVisit = sw1.ElapsedMilliseconds;
                 },
                 () =>
                 {
+                    // sw2.Start();
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
                             ref NodeState node_state = ref visited_list[0];
-                            
+
                             foreach (var child in node.Childs)
                             {
-                                if (!visitor.Select(child)) continue;
-                                
                                 node_state = ref visited_list[child.Id];
-                                if (node_state.Visited){
-                                    visitor.Visit(child,true);
-                                    continue;
-                                }
+                                if (node_state.Visited) continue;
+                                if (!visitor.Select(child)) continue;
                                 lock (child)
                                 {
-                                    visitor.Visit(child,node_state.Visited);
                                     if (node_state.Visited) continue;
+                                    visitor.Visit(child);
                                     node_state.Visited = true;
                                     next_gen.Value.Add(child);
                                 }
                             }
                         });
+                    // sw2.Stop();
+                    // _StepTroughGen = sw2.ElapsedMilliseconds;
                     var buf = current_gen;
                     current_gen = next_gen;
                     next_gen = buf;

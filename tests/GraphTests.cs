@@ -14,31 +14,7 @@ namespace tests
 {
     public class GraphTests
     {
-        [Fact]
-        public void Graph_VisitAll(){
-            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
-            var expected_value = new List<NodeBase>();
-            var visitor = new ActionVisitor((n,v)=>{
-                lock(expected_value)
-                expected_value.Add(n);
-            });
-            var graph = new Graph(nodes);
-            graph.AddVisitor(visitor,1);
 
-            graph.Step();
-            expected_value.Clear();
-            graph.Step();
-
-            expected_value.Sort();
-            nodes[1].Childs.Sort();
-            Assert.Equal(expected_value,nodes[1].Childs);
-            expected_value.Clear();
-            graph.Step();
-            expected_value.Sort();
-            var childs = nodes[1].Childs.SelectMany(n=>n.Childs).ToList();
-            childs.Sort();
-            Assert.Equal(expected_value,childs);
-        }
         [Fact]
         public void Graph_ValidateOrderAgain()
         {
@@ -103,15 +79,14 @@ namespace tests
 
             for (int i = 0; i < 20; i++)
             {
-                visitor1 = new ActionVisitor((node,visited) =>
+                visitor1 = new ActionVisitor(node =>
                 {
-                    if(!visited)
                     lock (visitor1_store) visitor1_store.Add(node);
                 }, null,null);
 
-                visitor2 = new ActionVisitor((node,visited) =>
+                visitor2 = new ActionVisitor(node =>
                 {
-                    if(!visited)
+                    
                     lock (visitor2_store) visitor2_store.Add(node);
                 },null,null);
                 graph.Clear();
@@ -182,14 +157,14 @@ namespace tests
                 var forward_list = new List<NodeBase>();
                 var back_list = new List<NodeBase>();
 
-                var forward_visitor = new ActionVisitor((node,visited) =>
+                var forward_visitor = new ActionVisitor(node =>
                 {
-                    if(!visited)
+                    
                     lock (forward_list)
                         forward_list.Add(node);
                 },
                 null,
-                //select happening before visit
+                //select happening before vesit
                 node =>
                 {
                     if (forward_list.Count == 0) return true;
@@ -197,9 +172,9 @@ namespace tests
                 });
 
                 var back_visitor = new ActionVisitor(
-                    (node,visited) =>
+                    node =>
                     {
-                        if(!visited)
+                        
                         lock (back_list)
                             back_list.Add(node);
                     },
@@ -236,7 +211,7 @@ namespace tests
         public void AddVisitor_ThrowsIfOutOfRange()
         {
             var graph = new Graph(Enumerable.Range(1, 5).Select(i => new Node(i)));
-            var visitor = new ActionVisitor((node,visited) => { });
+            var visitor = new ActionVisitor(node => { });
             Assert.Throws<IndexOutOfRangeException>(() => graph.AddVisitor(visitor, 22));
         }
         [Fact]
@@ -249,15 +224,15 @@ namespace tests
             var childs2 = new List<NodeBase>();
 
 
-            var visitor1 = new ActionVisitor((node,visited) =>
+            var visitor1 = new ActionVisitor(node =>
             {
-                if(!visited)
+                
                 lock (childs1)
                     childs1.Add(node);
             });
-            var visitor2 = new ActionVisitor((node,visited) =>
+            var visitor2 = new ActionVisitor(node =>
             {
-                if(!visited)
+                
                 lock (childs2)
                     childs2.Add(node);
             });
@@ -297,8 +272,8 @@ namespace tests
         {
 
             var graph = new Graph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
-            var visitor1 = new ActionVisitor((node,visited) => { });
-            var visitor2 = new ActionVisitor((node,visited) => { });
+            var visitor1 = new ActionVisitor(node => { });
+            var visitor2 = new ActionVisitor(node => { });
 
             graph.AddVisitor(visitor1, 1);
 
@@ -309,7 +284,7 @@ namespace tests
                 graph.Step(visitor2));
         }
         [Fact]
-        public void Graph_Visit_ValidateOrder()
+        public void Graph_Vesit_ValidateOrder()
         {
             IEnumerable<Node> nodes = null;
             IGraph graph = null;
@@ -320,7 +295,7 @@ namespace tests
 
         }
         [Fact]
-        public void Graph_Visit_ValidateOrderMultipleVisitors()
+        public void Graph_Vesit_ValidateOrderMultipleVisitors()
         {
             const int index1 = 3;
             const int index2 = 9;
@@ -339,9 +314,9 @@ namespace tests
             var current_gen = new List<NodeBase>();
             var buf_gen = new List<NodeBase>();
 
-            var visitor = new ActionVisitor((node,visited) =>
+            var visitor = new ActionVisitor(node =>
             {
-                if(!visited)
+                
                 lock (nodes)
                 {
                     current_gen.Add(node);
@@ -388,9 +363,9 @@ namespace tests
             var current_gen2 = new List<NodeBase>();
             var buf_gen2 = new List<NodeBase>();
 
-            var visitor1 = new ActionVisitor((node,visited) =>
+            var visitor1 = new ActionVisitor(node =>
             {
-                if(!visited)
+                
                 lock (next_gen1)
                 {
                     current_gen1.Add(node);
@@ -404,9 +379,9 @@ namespace tests
                 }
             });
 
-            var visitor2 = new ActionVisitor((node,visited) =>
+            var visitor2 = new ActionVisitor(node =>
             {
-                if(!visited)
+                
                 lock (next_gen2)
                 {
                     current_gen2.Add(node);

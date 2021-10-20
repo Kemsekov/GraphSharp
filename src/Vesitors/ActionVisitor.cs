@@ -1,16 +1,15 @@
 using System;
-using System.Runtime.CompilerServices;
 using GraphSharp.Nodes;
 
 namespace GraphSharp.Visitors
 {
     public class ActionVisitor : IVisitor
     {
-        private readonly Action<NodeBase,bool> _Visit;
+        private readonly Action<NodeBase> _Visit;
         private readonly Func<NodeBase,bool> _selector;
         private readonly Action<NodeBase> _endVisit;
 
-        public ActionVisitor(Action<NodeBase,bool> visit,Action<NodeBase> endvisit = null, Func<NodeBase,bool> selector = null)
+        public ActionVisitor(Action<NodeBase> visit,Action<NodeBase> endvisit = null, Func<NodeBase,bool> selector = null)
         {
             this._endVisit = endvisit;
             this._Visit = visit;
@@ -26,10 +25,9 @@ namespace GraphSharp.Visitors
             _endVisit?.Invoke(node);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Visit(NodeBase node,bool visited = false)
+        public void Visit(NodeBase node)
         {   
-            _Visit(node,visited);
+            _Visit(node);
         }
         
         public bool Select(NodeBase node)

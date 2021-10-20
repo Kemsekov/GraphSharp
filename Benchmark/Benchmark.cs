@@ -24,7 +24,7 @@ var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(nodes_count,min
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);
-var visitor = new ActionVisitor((node,visited)=>{
+var visitor = new ActionVisitor(node=>{
     
 });
 
@@ -41,3 +41,4 @@ System.Console.WriteLine($"Time {watch2.ElapsedMilliseconds} milliseconds to wor
 
 Console.ResetColor();
 watch2.Stop();
+
