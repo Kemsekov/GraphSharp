@@ -1,4 +1,4 @@
-[![nuget](https://img.shields.io/nuget/v/Kemsekov.GraphSharp.svg)](https://www.nuget.org/packages/Kemsekov.GraphSharp/) 
+[![nuget](https://img.shields.io/nuget/v/Kemsekov.GraphSharp.svg)](https://www.nuget.org/packages/Kemsekov.GraphSharp/1.0.3) 
 # GraphSharp
 GraphSharp is a node based implementation of graph.
 
