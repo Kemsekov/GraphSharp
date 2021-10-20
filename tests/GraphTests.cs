@@ -14,7 +14,7 @@ namespace tests
 {
     public class GraphTests
     {
-        
+
 
         [Fact]
         public void Graph_ValidateOrderAgain()
@@ -207,7 +207,7 @@ namespace tests
             nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
             graph = new Graph(nodes);
             validate_graphOrder(graph, nodes, 3, node => node.Id % 2 == 0);
-
+            
         }
         [Fact]
         public void AddVisitor_ThrowsIfOutOfRange()
