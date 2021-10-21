@@ -17,7 +17,6 @@ namespace GraphSharp.Graphs
     public class Graph : IGraph
     {
         NodeBase[] _nodes { get; }
-        Dictionary<IVisitor, bool[]> _visitors = new Dictionary<IVisitor, bool[]>();
         Dictionary<IVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<IVisitor, (Action _EndVisit, Action _Step)>();
         public Graph(IEnumerable<NodeBase> nodes)
         {
@@ -56,7 +55,7 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
-                            visited_list[node.Id]= false;
+                            visited_list[node.Id] = false;
                         });
                     visitor.EndVisit();
                 },
@@ -66,7 +65,6 @@ namespace GraphSharp.Graphs
                         Parallel.ForEach(n, node =>
                         {
                             ref bool visited = ref visited_list[0];
-
                             foreach (var child in node.Childs)
                             {
                                 visited = ref visited_list[child.Id];

@@ -34,15 +34,7 @@ namespace GraphSharp.Nodes
         /// <param name="child">Node to be added as child of this node.</param>
         public void AddChild(NodeBase child)
         {
-            if (!Childs.Contains(child))
-                Childs.Add(child);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if(!(obj is NodeBase))
-                return false;
-            return (obj as NodeBase).Id==Id;
+            Childs.Add(child);
         }
 
         public override int GetHashCode()
