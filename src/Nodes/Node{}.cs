@@ -13,5 +13,11 @@ namespace GraphSharp.Nodes
         public Node(int id) : base(id)
         {
         }
+
+        public override void AddChild<TNode>(TNode node)
+        {
+            if(node is Node<T> n)
+                Children.Add(new NodeValue<T>(n,default(T)));
+        }
     }
 }

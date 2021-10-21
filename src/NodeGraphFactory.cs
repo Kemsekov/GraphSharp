@@ -36,7 +36,7 @@ namespace GraphSharp
                  List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                  //copy.Shuffle();
                  copy.Remove(node);
-                 node.Childs.AddRange(copy);
+                 node.Children.AddRange(copy);
              });
 
             return nodes;
@@ -77,7 +77,7 @@ namespace GraphSharp
                  var count_of_childs = rand.Next(max_count_of_childs - min_count_of_childs) + min_count_of_childs + 1;
                  List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                  copy.Remove(node);
-                 node.Childs.AddRange(copy);
+                 node.Children.AddRange(copy);
              });
 
             return nodes;
@@ -115,7 +115,7 @@ namespace GraphSharp
                 var count_of_childs = rand.Next(max_count_of_childs - min_count_of_childs) + min_count_of_childs + 1;
                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                 copy.Remove(node);
-                node.Childs.AddRange(copy);
+                node.Children.AddRange(copy);
             }
 
             return nodes;
@@ -144,7 +144,7 @@ namespace GraphSharp
             {
                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                 copy.Remove(node);
-                node.Childs.AddRange(copy);
+                node.Children.AddRange(copy);
             };
 
             return nodes;

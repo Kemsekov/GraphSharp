@@ -247,12 +247,12 @@ namespace tests
 
             graph.Step();
             childs1.Sort((v1, v2) => v1.Id - v2.Id);
-            nodes[1].Childs.Sort((v1, v2) => v1.Id - v2.Id);
-            nodes[2].Childs.Sort((v1, v2) => v1.Id - v2.Id);
+            nodes[1].Children.Sort((v1, v2) => v1.Id - v2.Id);
+            nodes[2].Children.Sort((v1, v2) => v1.Id - v2.Id);
 
-            Assert.Equal(childs1, nodes[1].Childs);
-            Assert.Equal(childs2.Count, nodes[2].Childs.Count);
-            Assert.Equal(childs2, nodes[2].Childs);
+            Assert.Equal(childs1, nodes[1].Children);
+            Assert.Equal(childs2.Count, nodes[2].Children.Count);
+            Assert.Equal(childs2, nodes[2].Children);
 
             childs1.Clear();
             childs2.Clear();
@@ -322,7 +322,7 @@ namespace tests
                 lock (nodes)
                 {
                     current_gen.Add(node);
-                    node.Childs.ForEach(n =>
+                    node.Children.ForEach(n =>
                     {
                         if (selector is null)
                             next_gen.Add(n);
@@ -371,7 +371,7 @@ namespace tests
                 lock (next_gen1)
                 {
                     current_gen1.Add(node);
-                    node.Childs.ForEach(n =>
+                    node.Children.ForEach(n =>
                     {
                         if (selector is null)
                             next_gen1.Add(n);
@@ -387,7 +387,7 @@ namespace tests
                 lock (next_gen2)
                 {
                     current_gen2.Add(node);
-                    node.Childs.ForEach(n =>
+                    node.Children.ForEach(n =>
                     {
                         if (selector is null)
                             next_gen2.Add(n);

@@ -42,7 +42,7 @@ namespace tests
                     {
                         current_gen.Add(node.NodeBase.Id);
                         if(!visited)
-                        node.NodeBase.Childs.ForEach(
+                        node.NodeBase.Children.ForEach(
                             n =>
                             {
                                 if (selector(n))
@@ -280,51 +280,51 @@ namespace tests
             var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
             var graph = new Graph<object>(nodes);
 
-            var childs1 = new List<NodeBase<object>>();
-            var childs2 = new List<NodeBase<object>>();
+            var Children1 = new List<NodeBase<object>>();
+            var Children2 = new List<NodeBase<object>>();
 
 
             var visitor1 = new ActionVisitor<object>((node, visited) =>
             {
                 if (visited) return;
-                lock (childs1)
-                    childs1.Add(node.NodeBase);
+                lock (Children1)
+                    Children1.Add(node.NodeBase);
             });
             var visitor2 = new ActionVisitor<object>((node, visited) =>
             {
                 if (visited) return;
-                lock (childs2)
-                    childs2.Add(node.NodeBase);
+                lock (Children2)
+                    Children2.Add(node.NodeBase);
             });
             graph.AddVisitor(visitor1, 1);
             graph.AddVisitor(visitor2, 2);
 
             graph.Step();
-            childs1.Clear();
-            childs2.Clear();
+            Children1.Clear();
+            Children2.Clear();
 
             graph.Step();
-            childs1.Sort();
-            nodes[1].Childs.Sort();
-            nodes[2].Childs.Sort();
+            Children1.Sort();
+            nodes[1].Children.Sort();
+            nodes[2].Children.Sort();
 
-            Assert.Equal(childs1, nodes[1].Childs.Select(n => n.NodeBase));
-            Assert.Equal(childs2.Count, nodes[2].Childs.Count);
-            Assert.Equal(childs2, nodes[2].Childs.Select(n => n.NodeBase));
+            Assert.Equal(Children1, nodes[1].Children.Select(n => n.NodeBase));
+            Assert.Equal(Children2.Count, nodes[2].Children.Count);
+            Assert.Equal(Children2, nodes[2].Children.Select(n => n.NodeBase));
 
-            childs1.Clear();
-            childs2.Clear();
+            Children1.Clear();
+            Children2.Clear();
 
             graph.RemoveVisitor(visitor1);
             Assert.Throws<KeyNotFoundException>(() => graph.Step(visitor1));
-            childs1.Clear();
-            childs2.Clear();
+            Children1.Clear();
+            Children2.Clear();
 
             graph.Step();
-            Assert.Equal(childs1.Count, 0);
+            Assert.Equal(Children1.Count, 0);
             var __nodes = graph.GetType().GetProperty("_nodes", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(graph) as NodeBase<object>[];
 
-            Assert.NotEqual(childs2.Count, 0);
+            Assert.NotEqual(Children2.Count, 0);
 
         }
         [Fact]
@@ -381,7 +381,7 @@ namespace tests
                 lock (nodes)
                 {
                     current_gen.Add(node);
-                    node.NodeBase.Childs.ForEach(n =>
+                    node.NodeBase.Children.ForEach(n =>
                     {
                         if (selector is null)
                             next_gen.Add(n);
@@ -431,7 +431,7 @@ namespace tests
                 lock (next_gen1)
                 {
                     current_gen1.Add(node.NodeBase);
-                    node.NodeBase.Childs.ForEach(n =>
+                    node.NodeBase.Children.ForEach(n =>
                     {
                         if (selector is null)
                             next_gen1.Add(n.NodeBase);
@@ -447,7 +447,7 @@ namespace tests
                 lock (next_gen2)
                 {
                     current_gen2.Add(node.NodeBase);
-                    node.NodeBase.Childs.ForEach(n =>
+                    node.NodeBase.Children.ForEach(n =>
                     {
                         if (selector is null)
                             next_gen2.Add(n.NodeBase);

@@ -3,18 +3,18 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp
 {
-    public struct NodeValue<T> : IComparable<NodeValue<T>>
+    public struct NodeValue<TValue> : IComparable<NodeValue<TValue>>
     {
-        public T Value;
-        public NodeBase<T> NodeBase;
+        public TValue Value;
+        public NodeBase<TValue> NodeBase;
 
-        public NodeValue(NodeBase<T> nodeBase,T value)
+        public NodeValue(NodeBase<TValue> nodeBase,TValue value)
         {
             Value = value;
             NodeBase = nodeBase;
         }
 
-        public int CompareTo(NodeValue<T> nodeValue)
+        public int CompareTo(NodeValue<TValue> nodeValue)
         {
             return NodeBase.CompareTo(nodeValue.NodeBase);
         }

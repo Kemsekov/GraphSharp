@@ -13,7 +13,11 @@ namespace GraphSharp.Nodes
         public Node(int id) : base(id)
         {
         }
-        readonly List<NodeBase> childs = new List<NodeBase>();
-        public override List<NodeBase> Childs => childs;
+
+        public override void AddChild<TNode>(TNode node)
+        {
+            if(node is Node n)
+            Children.Add(n);
+        }
     }
 }

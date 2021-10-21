@@ -8,109 +8,46 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
-
+/*
+visited = ref visited_list[child.Id];
+if (visited) continue;
+if (!visitor.Select(child)) continue;
+lock (child)
+{
+    if (visited) continue;
+    visitor.Visit(child);
+    visited = true;
+    next_gen.Value.Add(child);
+}
+*/
 namespace GraphSharp.Graphs
 {
     /// <summary>
     /// Parallel implementation of <see cref="IGraph"/>
     /// </summary>
-    public class Graph : IGraph
+    public class Graph : GraphBase<NodeBase, NodeBase, IVisitor>, IGraph
     {
-        NodeBase[] _nodes { get; }
-        Dictionary<IVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<IVisitor, (Action _EndVisit, Action _Step)>();
-        public Graph(IEnumerable<NodeBase> nodes)
+        public Graph(IEnumerable<NodeBase> nodes) : base(nodes)
         {
-            if (nodes.Count() == 0) throw new ArgumentException("There is no nodes.");
-            _nodes = nodes.ToArray();
-            Array.Sort(_nodes);
         }
 
-        public void AddVisitor(IVisitor visitor)
+        protected override NodeBase CreateNode(int index)
         {
-            var index = new Random().Next(_nodes.Length);
-            AddVisitor(visitor, index);
+            return new Node(index);
         }
 
-        public void AddVisitor(IVisitor visitor, params int[] nodes_id)
+        protected override void DoLogic(ref bool visited, ref bool[] visited_list, IVisitor visitor, List<NodeBase> next_gen, NodeBase child)
         {
-            if (nodes_id.Max() > _nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
-            var nodes = nodes_id.Select(n => _nodes[n]);
-
-            var visited_list = new bool[_nodes.Count() + 1];
-
-            ThreadLocal<List<NodeBase>> next_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
-            ThreadLocal<List<NodeBase>> current_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
+            visited = ref visited_list[child.Id];
+            if (visited) return;
+            if (!visitor.Select(child)) return;
+            lock (child)
             {
-                var temp_node = new Node(_nodes.Count());
-                temp_node.Childs.AddRange(nodes);
-                current_gen.Value.Add(temp_node);
+                if (visited) return;
+                visitor.Visit(child);
+                visited = true;
+                next_gen.Add(child);
             }
-
-            _work[visitor] = (
-                () =>
-                {
-                    foreach (var n in next_gen.Values)
-                        n.Clear();
-
-                    foreach (var n in current_gen.Values)
-                        Parallel.ForEach(n, node =>
-                        {
-                            visited_list[node.Id] = false;
-                        });
-                    visitor.EndVisit();
-                },
-                () =>
-                {
-                    foreach (var n in current_gen.Values)
-                        Parallel.ForEach(n, node =>
-                        {
-                            ref bool visited = ref visited_list[0];
-                            foreach (var child in node.Childs)
-                            {
-                                visited = ref visited_list[child.Id];
-                                if (visited) continue;
-                                if (!visitor.Select(child)) continue;
-                                lock (child)
-                                {
-                                    if (visited) continue;
-                                    visitor.Visit(child);
-                                    visited = true;
-                                    next_gen.Value.Add(child);
-                                }
-                            }
-                        });
-                    var buf = current_gen;
-                    current_gen = next_gen;
-                    next_gen = buf;
-                }
-            );
-
-        }
-
-        public void Clear()
-        {
-            _work.Clear();
-        }
-
-        public bool RemoveVisitor(IVisitor visitor)
-        {
-            return _work.Remove(visitor);
-        }
-
-        public void Step()
-        {
-            foreach (var item in _work)
-            {
-                item.Value._EndVisit();
-                item.Value._Step();
-            }
-        }
-
-        public void Step(IVisitor visitor)
-        {
-            var work = _work[visitor];
-            work._EndVisit();
-            work._Step();
         }
     }
 }
