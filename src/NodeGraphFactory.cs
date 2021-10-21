@@ -36,7 +36,7 @@ namespace GraphSharp
                  List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                 //copy.Shuffle();
                 copy.Remove(node);
-                 node.Childs.AddRange(copy);
+                node.Childs.AddRange(copy);
              });
 
             return nodes;
