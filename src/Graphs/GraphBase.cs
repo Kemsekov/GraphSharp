@@ -76,9 +76,8 @@ namespace GraphSharp.Graphs
                 }
             );
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected abstract void DoLogic(ref List<TChild> children, ref int count, ref List<TNode> next_gen, ref bool[] visited_list,ref TVisitor visitor);
-
         protected abstract TNode CreateDefaultNode(int index);
         public void Clear()
         {

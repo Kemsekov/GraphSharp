@@ -55,21 +55,5 @@ namespace GraphSharp.Graphs
                 }
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void _DoLogic(ref bool[] visited_list, ref IVisitor visitor, ref List<NodeBase> next_gen, NodeBase child)
-        {
-            ref var visited = ref visited_list[child.Id];
-            if (visited) return;
-            if (!visitor.Select(child)) return;
-            lock (child)
-            {
-                if (visited) return;
-                visitor.Visit(child);
-                visited = true;
-                next_gen.Add(child);
-            }
-        }
-
     }
 }
