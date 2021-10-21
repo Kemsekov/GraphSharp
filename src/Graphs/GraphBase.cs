@@ -64,14 +64,11 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
-                            ref bool visited = ref visited_list[0];
                             var next_gen_local = next_gen.Value;
                             var children = node.Children;
                             int count = children.Count;
-                            for(int i = 0;i<count;i++)
-                            {
-                                DoLogic(ref visited,ref visited_list,ref visitor,ref next_gen_local,children[i]);
-                            }
+
+                            DoLogic(ref children,ref count,ref next_gen_local,ref visited_list,ref visitor);
                         });
                     var buf = current_gen;
                     current_gen = next_gen;
@@ -79,7 +76,9 @@ namespace GraphSharp.Graphs
                 }
             );
         }
-        protected abstract void DoLogic(ref bool visited,ref bool[] visited_list,ref TVisitor visitor,ref List<TNode> next_gen,TChild child);
+
+        protected abstract void DoLogic(ref List<TChild> children, ref int count, ref List<TNode> next_gen, ref bool[] visited_list,ref TVisitor visitor);
+
         protected abstract TNode CreateDefaultNode(int index);
         public void Clear()
         {

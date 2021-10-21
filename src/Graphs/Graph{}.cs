@@ -35,10 +35,31 @@ namespace GraphSharp.Graphs
         {
             return new Node<T>(index);
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void DoLogic(ref bool visited, ref bool[] visited_list, ref IVisitor<T> visitor,ref List<NodeBase<T>> next_gen, NodeValue<T> child)
+
+        protected override void DoLogic(ref List<NodeValue<T>> children, ref int count, ref List<NodeBase<T>> next_gen, ref bool[] visited_list, ref IVisitor<T> visitor)
         {
-            visited = ref visited_list[child.NodeBase.Id];
+            ref var visited = ref visited_list[0];
+            NodeValue<T> child;
+            for (int i = 0; i < count; ++i)
+            {
+                child = children[i];
+                visited = ref visited_list[child.NodeBase.Id];
+                if (!visitor.Select(child)) continue;
+
+                lock (child.NodeBase)
+                {
+                    visitor.Visit(child, visited);
+                    if (visited) continue;
+                    visited = true;
+                    next_gen.Add(child.NodeBase);
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void _DoLogic(ref bool[] visited_list, ref IVisitor<T> visitor, ref List<NodeBase<T>> next_gen, NodeValue<T> child)
+        {
+            ref var visited = ref visited_list[child.NodeBase.Id];
             if (!visitor.Select(child)) return;
 
             lock (child.NodeBase)
@@ -49,5 +70,6 @@ namespace GraphSharp.Graphs
                 next_gen.Add(child.NodeBase);
             }
         }
+
     }
 }
