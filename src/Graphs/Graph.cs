@@ -68,7 +68,6 @@ namespace GraphSharp.Graphs
                             foreach (var child in node.Childs)
                             {
                                 visited = ref visited_list[child.NodeBase.Id];
-                                // if (visited) continue;
                                 if (!visitor.Select(child)){
                                     continue;
                                 }

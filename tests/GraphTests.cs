@@ -15,7 +15,63 @@ namespace tests
     public class GraphTests
     {
 
+        [Fact]
+        public void Graph_CheckIfVisitAll(){
+            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 10);
+            var graph = new Graph<object>(nodes);
+            _graph_CheckIfVisitAll(graph,node=>true);
+            graph.Clear();
+            _graph_CheckIfVisitAll(graph,node=>node.NodeBase.Id%2==0);
+        }
+        public void _graph_CheckIfVisitAll<T>(IGraph<T> graph, Func<NodeValue<T>, bool> selector)
+        {
+            // var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 10);
+            // var graph = new Graph<object>(nodes);
+            // Func<NodeValue<object>, bool> selector = node => true;
+            if(selector is null)
+                selector = node=>true;
+            
+            var current_gen = new List<int>();
+            var next_gen = new List<int>();
+            var buf_gen = new List<int>();
 
+            var visitor = new ActionVisitor<T>(
+                (node, visited) =>
+                {
+                    lock (current_gen)
+                    {
+                        current_gen.Add(node.NodeBase.Id);
+                        if(!visited)
+                        node.NodeBase.Childs.ForEach(
+                            n =>
+                            {
+                                if (selector(n))
+                                    next_gen.Add(n.NodeBase.Id);
+                            }
+                        );
+                    }
+                },
+                null,
+                selector
+            );
+            graph.AddVisitor(visitor,1,2,3);
+
+            graph.Step();
+            buf_gen = next_gen.ToList();
+            next_gen.Clear();
+            for (int i = 0; i < 50; i++)
+            {
+                current_gen.Clear();
+                next_gen.Clear();
+                graph.Step();
+                Assert.True(buf_gen.Count==current_gen.Count,$"{i} step. {buf_gen.Count} != {current_gen.Count}");
+                buf_gen.Sort();
+                current_gen.Sort();
+                Assert.Equal(buf_gen, current_gen);
+                buf_gen = next_gen.ToList();
+            }
+
+        }
         [Fact]
         public void Graph_ValidateOrderAgain()
         {
@@ -82,17 +138,17 @@ namespace tests
 
             for (int i = 0; i < 20; i++)
             {
-                visitor1 = new ActionVisitor<object>((node,visited) =>
+                visitor1 = new ActionVisitor<object>((node, visited) =>
                 {
-                    if(visited) return;
+                    if (visited) return;
                     lock (visitor1_store) visitor1_store.Add(node.NodeBase);
-                }, null,null);
+                }, null, null);
 
-                visitor2 = new ActionVisitor<object>((node,visited) =>
+                visitor2 = new ActionVisitor<object>((node, visited) =>
                 {
-                    if(visited) return;
+                    if (visited) return;
                     lock (visitor2_store) visitor2_store.Add(node.NodeBase);
-                },null,null);
+                }, null, null);
                 graph.Clear();
 
                 graph.AddVisitor(visitor1, 0, 7);
@@ -161,9 +217,9 @@ namespace tests
                 var forward_list = new List<NodeBase<object>>();
                 var back_list = new List<NodeBase<object>>();
 
-                var forward_visitor = new ActionVisitor<object>((node,visited) =>
+                var forward_visitor = new ActionVisitor<object>((node, visited) =>
                 {
-                    if(visited) return;
+                    if (visited) return;
                     lock (forward_list)
                         forward_list.Add(node.NodeBase);
                 },
@@ -176,9 +232,9 @@ namespace tests
                 });
 
                 var back_visitor = new ActionVisitor<object>(
-                    (node,visited) =>
+                    (node, visited) =>
                     {
-                        if(visited) return;
+                        if (visited) return;
                         lock (back_list)
                             back_list.Add(node.NodeBase);
                     },
@@ -206,37 +262,37 @@ namespace tests
         {
             IEnumerable<Node<object>> nodes = null;
             IGraph<object> graph = null;
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>,object>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
             graph = new Graph<object>(nodes);
             validate_graphOrder(graph, nodes, 3, node => node.NodeBase.Id % 2 == 0);
-            
+
         }
         [Fact]
         public void AddVisitor_ThrowsIfOutOfRange()
         {
             var graph = new Graph<object>(Enumerable.Range(1, 5).Select(i => new Node<object>(i)));
-            var visitor = new ActionVisitor<object>((node,v) => { });
+            var visitor = new ActionVisitor<object>((node, v) => { });
             Assert.Throws<IndexOutOfRangeException>(() => graph.AddVisitor(visitor, 22));
         }
         [Fact]
         public void RemoveVisitor_Works()
         {
-            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>,object>(1000, 30, 70);
+            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
             var graph = new Graph<object>(nodes);
 
             var childs1 = new List<NodeBase<object>>();
             var childs2 = new List<NodeBase<object>>();
 
 
-            var visitor1 = new ActionVisitor<object>((node,visited) =>
+            var visitor1 = new ActionVisitor<object>((node, visited) =>
             {
-                if(visited) return;
+                if (visited) return;
                 lock (childs1)
                     childs1.Add(node.NodeBase);
             });
-            var visitor2 = new ActionVisitor<object>((node,visited) =>
+            var visitor2 = new ActionVisitor<object>((node, visited) =>
             {
-                if(visited) return;
+                if (visited) return;
                 lock (childs2)
                     childs2.Add(node.NodeBase);
             });
@@ -252,9 +308,9 @@ namespace tests
             nodes[1].Childs.Sort();
             nodes[2].Childs.Sort();
 
-            Assert.Equal(childs1, nodes[1].Childs.Select(n=>n.NodeBase));
+            Assert.Equal(childs1, nodes[1].Childs.Select(n => n.NodeBase));
             Assert.Equal(childs2.Count, nodes[2].Childs.Count);
-            Assert.Equal(childs2, nodes[2].Childs.Select(n=>n.NodeBase));
+            Assert.Equal(childs2, nodes[2].Childs.Select(n => n.NodeBase));
 
             childs1.Clear();
             childs2.Clear();
@@ -276,8 +332,8 @@ namespace tests
         {
 
             var graph = new Graph<object>(new List<Node<object>>() { new Node<object>(0), new Node<object>(1), new Node<object>(2), new Node<object>(3) });
-            var visitor1 = new ActionVisitor<object>((node,v) => { });
-            var visitor2 = new ActionVisitor<object>((node,v) => { });
+            var visitor1 = new ActionVisitor<object>((node, v) => { });
+            var visitor2 = new ActionVisitor<object>((node, v) => { });
 
             graph.AddVisitor(visitor1, 1);
 
@@ -292,7 +348,7 @@ namespace tests
         {
             IEnumerable<Node<object>> nodes = null;
             IGraph<object> graph = null;
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>,object>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
             graph = new Graph<object>(nodes);
 
             validate_graphOrder(graph, nodes, new Random().Next(nodes.Count()));
@@ -307,29 +363,30 @@ namespace tests
             IEnumerable<Node<object>> nodes = null;
             IGraph<object> graph;
 
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>,object>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
             graph = new Graph<object>(nodes);
             validate_graphOrderMultipleVisitors(graph, index1, index2);
         }
         public static void validate_graphOrder(IGraph<object> graph, IEnumerable<NodeBase<object>> nodes, int index, Func<NodeValue<object>, bool> selector = null)
         {
+            if (selector is null)
+                selector = node => true;
+            var next_gen = new HashSet<NodeValue<object>>();
+            var current_gen = new List<NodeValue<object>>();
+            var buf_gen = new List<NodeValue<object>>();
 
-            var next_gen = new HashSet<NodeBase<object>>();
-            var current_gen = new List<NodeBase<object>>();
-            var buf_gen = new List<NodeBase<object>>();
-
-            var visitor = new ActionVisitor<object>((node,visited) =>
+            var visitor = new ActionVisitor<object>((node, visited) =>
             {
-                if(visited) return;
+                if (visited) return;
                 lock (nodes)
                 {
-                    current_gen.Add(node.NodeBase);
+                    current_gen.Add(node);
                     node.NodeBase.Childs.ForEach(n =>
                     {
                         if (selector is null)
-                            next_gen.Add(n.NodeBase);
+                            next_gen.Add(n);
                         else if (selector(n))
-                            next_gen.Add(n.NodeBase);
+                            next_gen.Add(n);
                     });
                 }
             }, null, selector);
@@ -338,7 +395,7 @@ namespace tests
             graph.Step();
 
             buf_gen = next_gen.ToList();
-            buf_gen.Sort((v1, v2) => v1.Id - v2.Id);
+            buf_gen.Sort();
 
             next_gen.Clear();
             current_gen.Clear();
@@ -346,12 +403,13 @@ namespace tests
             for (int i = 0; i < 50; i++)
             {
                 graph.Step();
-                current_gen.Sort((v1, v2) => v1.Id - v2.Id);
+                current_gen.Sort();
+                Assert.True(buf_gen.All(v => selector(v)));
                 Assert.Equal(buf_gen.Count, current_gen.Count);
                 Assert.Equal(buf_gen, current_gen);
 
                 buf_gen = next_gen.ToList();
-                buf_gen.Sort((v1, v2) => v1.Id - v2.Id);
+                buf_gen.Sort();
 
                 next_gen.Clear();
                 current_gen.Clear();
@@ -367,9 +425,9 @@ namespace tests
             var current_gen2 = new List<NodeBase<object>>();
             var buf_gen2 = new List<NodeBase<object>>();
 
-            var visitor1 = new ActionVisitor<object>((node,visited) =>
+            var visitor1 = new ActionVisitor<object>((node, visited) =>
             {
-                if(visited) return;
+                if (visited) return;
                 lock (next_gen1)
                 {
                     current_gen1.Add(node.NodeBase);
@@ -383,9 +441,9 @@ namespace tests
                 }
             });
 
-            var visitor2 = new ActionVisitor<object>((node,visited) =>
+            var visitor2 = new ActionVisitor<object>((node, visited) =>
             {
-                if(visited) return;
+                if (visited) return;
                 lock (next_gen2)
                 {
                     current_gen2.Add(node.NodeBase);
