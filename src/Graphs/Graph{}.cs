@@ -31,12 +31,12 @@ namespace GraphSharp.Graphs
         {
         }
 
-        protected override NodeBase<T> CreateNode(int index)
+        protected override NodeBase<T> CreateDefaultNode(int index)
         {
             return new Node<T>(index);
         }
 
-        protected override void DoLogic(ref bool visited, ref bool[] visited_list, IVisitor<T> visitor, List<NodeBase<T>> next_gen, NodeValue<T> child)
+        protected override void DoLogic(ref bool visited, ref bool[] visited_list, ref IVisitor<T> visitor,ref List<NodeBase<T>> next_gen, NodeValue<T> child)
         {
             visited = ref visited_list[child.NodeBase.Id];
             if (!visitor.Select(child)) return;

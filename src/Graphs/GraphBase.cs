@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
@@ -37,7 +38,7 @@ namespace GraphSharp.Graphs
             var next_gen = new ThreadLocal<List<TNode>>(() => new List<TNode>(), true);
             var current_gen = new ThreadLocal<List<TNode>>(() => new List<TNode>(), true);
             {
-                var temp_node = CreateNode(_nodes.Count());
+                var temp_node = CreateDefaultNode(_nodes.Count());
                 foreach (var n in nodes)
                 {
                     temp_node.AddChild(n);
@@ -64,9 +65,12 @@ namespace GraphSharp.Graphs
                         Parallel.ForEach(n, node =>
                         {
                             ref bool visited = ref visited_list[0];
-                            foreach (var child in node.Children)
+                            var next_gen_local = next_gen.Value;
+                            var children = node.Children;
+                            int count = children.Count;
+                            for(int i = 0;i<count;i++)
                             {
-                                DoLogic(ref visited,ref visited_list,visitor,next_gen.Value,child);
+                                DoLogic(ref visited,ref visited_list,ref visitor,ref next_gen_local,children[i]);
                             }
                         });
                     var buf = current_gen;
@@ -75,8 +79,8 @@ namespace GraphSharp.Graphs
                 }
             );
         }
-        protected abstract void DoLogic(ref bool visited,ref bool[] visited_list,TVisitor visitor,List<TNode> next_gen,TChild child);
-        protected abstract TNode CreateNode(int index);
+        protected abstract void DoLogic(ref bool visited,ref bool[] visited_list,ref TVisitor visitor,ref List<TNode> next_gen,TChild child);
+        protected abstract TNode CreateDefaultNode(int index);
         public void Clear()
         {
             _work.Clear();
