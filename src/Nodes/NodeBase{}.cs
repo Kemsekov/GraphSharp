@@ -8,13 +8,13 @@ namespace GraphSharp.Nodes
     /// <summary>
     /// Base class for all nodes
     /// </summary>
-    public abstract class NodeBase : IComparable<NodeBase>
+    public abstract class NodeBase<T> : IComparable<NodeBase<T>>
     {
         /// <summary>
         /// Childs of current node
         /// </summary>
         /// <value></value>
-        public abstract List<NodeBase> Childs{get;}
+        public List<NodeValue<T>> Childs{get;} = new List<NodeValue<T>>();
         /// <summary>
         /// Id of current node. Must be unique in collections of nodes.
         /// </summary>
@@ -32,17 +32,9 @@ namespace GraphSharp.Nodes
         /// Adds child to current node.
         /// </summary>
         /// <param name="child">Node to be added as child of this node.</param>
-        public void AddChild(NodeBase child)
+        public void AddChild(NodeBase<T> child, T value = default(T))
         {
-            if (!Childs.Contains(child))
-                Childs.Add(child);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if(!(obj is NodeBase))
-                return false;
-            return (obj as NodeBase).Id==Id;
+            Childs.Add(new NodeValue<T>(child,value));
         }
 
         public override int GetHashCode()
@@ -54,6 +46,6 @@ namespace GraphSharp.Nodes
         {
             return $"Node : {Id}";
         }
-        public int CompareTo(NodeBase other)=>Id-other.Id;
+        public int CompareTo(NodeBase<T> other)=>Id-other.Id;
     }
 }
