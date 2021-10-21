@@ -8,12 +8,10 @@ namespace GraphSharp.Nodes
     /// <summary>
     /// Base implementation of <see cref="NodeBase"/>
     /// </summary>
-    public class Node : NodeBase
+    public class Node<T> : NodeBase<T>
     {
         public Node(int id) : base(id)
         {
         }
-        readonly List<NodeBase> childs = new List<NodeBase>();
-        public override List<NodeBase> Childs => childs;
     }
 }

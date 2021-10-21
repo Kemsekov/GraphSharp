@@ -14,36 +14,35 @@ namespace GraphSharp.Graphs
     /// <summary>
     /// Parallel implementation of <see cref="IGraph"/>
     /// </summary>
-    public class Graph : IGraph
+    public class Graph<T> : IGraph<T>
     {
-        NodeBase[] _nodes { get; }
-        Dictionary<IVisitor, bool[]> _visitors = new Dictionary<IVisitor, bool[]>();
-        Dictionary<IVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<IVisitor, (Action _EndVisit, Action _Step)>();
-        public Graph(IEnumerable<NodeBase> nodes)
+        NodeBase<T>[] _nodes { get; }
+        Dictionary<IVisitor<T>, (Action _EndVisit, Action _Step)> _work = new Dictionary<IVisitor<T>, (Action _EndVisit, Action _Step)>();
+        public Graph(IEnumerable<NodeBase<T>> nodes)
         {
             if (nodes.Count() == 0) throw new ArgumentException("There is no nodes.");
             _nodes = nodes.ToArray();
             Array.Sort(_nodes);
         }
 
-        public void AddVisitor(IVisitor visitor)
+        public void AddVisitor(IVisitor<T> visitor)
         {
             var index = new Random().Next(_nodes.Length);
             AddVisitor(visitor, index);
         }
 
-        public void AddVisitor(IVisitor visitor, params int[] nodes_id)
+        public void AddVisitor(IVisitor<T> visitor, params int[] nodes_id)
         {
             if (nodes_id.Max() > _nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
             var nodes = nodes_id.Select(n => _nodes[n]);
 
             var visited_list = new bool[_nodes.Count() + 1];
 
-            ThreadLocal<List<NodeBase>> next_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
-            ThreadLocal<List<NodeBase>> current_gen = new ThreadLocal<List<NodeBase>>(() => new List<NodeBase>(), true);
+            var next_gen = new ThreadLocal<List<NodeBase<T>>>(() => new List<NodeBase<T>>(), true);
+            var current_gen = new ThreadLocal<List<NodeBase<T>>>(() => new List<NodeBase<T>>(), true);
             {
-                var temp_node = new Node(_nodes.Count());
-                temp_node.Childs.AddRange(nodes);
+                var temp_node = new Node<T>(_nodes.Count());
+                temp_node.Childs.AddRange(nodes.Select(n=>new NodeValue<T>(n,default(T))));
                 current_gen.Value.Add(temp_node);
             }
 
@@ -66,21 +65,19 @@ namespace GraphSharp.Graphs
                         Parallel.ForEach(n, node =>
                         {
                             ref bool visited = ref visited_list[0];
-
                             foreach (var child in node.Childs)
                             {
-                                visited = ref visited_list[child.Id];
-                                if (visited) continue;
+                                visited = ref visited_list[child.NodeBase.Id];
+                                // if (visited) continue;
                                 if (!visitor.Select(child)){
-                                    visited = true;
                                     continue;
                                 }
-                                lock (child)
+                                lock (child.NodeBase)
                                 {
+                                    visitor.Visit(child,visited);
                                     if (visited) continue;
-                                    visitor.Visit(child);
                                     visited = true;
-                                    next_gen.Value.Add(child);
+                                    next_gen.Value.Add(child.NodeBase);
                                 }
                             }
                         });
@@ -97,7 +94,7 @@ namespace GraphSharp.Graphs
             _work.Clear();
         }
 
-        public bool RemoveVisitor(IVisitor visitor)
+        public bool RemoveVisitor(IVisitor<T> visitor)
         {
             return _work.Remove(visitor);
         }
@@ -111,7 +108,7 @@ namespace GraphSharp.Graphs
             }
         }
 
-        public void Step(IVisitor visitor)
+        public void Step(IVisitor<T> visitor)
         {
             var work = _work[visitor];
             work._EndVisit();
