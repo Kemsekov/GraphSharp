@@ -35,7 +35,7 @@ namespace GraphSharp.Graphs
         {
             return new Node<T>(index);
         }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void DoLogic(ref bool visited, ref bool[] visited_list, ref IVisitor<T> visitor,ref List<NodeBase<T>> next_gen, NodeValue<T> child)
         {
             visited = ref visited_list[child.NodeBase.Id];
