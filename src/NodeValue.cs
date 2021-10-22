@@ -16,9 +16,7 @@ namespace GraphSharp
         }
 
 
-        public int CompareTo(NodeValue<TValue> nodeValue)
-        {
-            return NodeBase.CompareTo(nodeValue.NodeBase);
-        }
+        public int CompareTo(NodeValue<TValue> nodeValue)=>NodeBase.CompareTo(nodeValue.NodeBase);
+        public int CompareTo(IChild other)=>NodeBase.CompareTo(other.NodeBase);
     }
 }

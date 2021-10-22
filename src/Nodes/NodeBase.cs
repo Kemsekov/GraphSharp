@@ -23,6 +23,8 @@ namespace GraphSharp.Nodes
         public void AddChild(NodeBase child)
         {
             Children.Add(child);
-        }   
+        }
+
+        public int CompareTo(IChild other) => CompareTo(other.NodeBase);
     }
 }
