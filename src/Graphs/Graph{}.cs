@@ -8,16 +8,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
+using Microsoft.Toolkit.HighPerformance;
 /*
 visited = ref visited_list[child.NodeBase.Id];
 if (!visitor.Select(child)) continue;
 
 lock (child.NodeBase)
 {
-    visitor.Visit(child, visited);
-    if (visited) continue;
-    visited = true;
-    next_gen.Value.Add(child.NodeBase);
+visitor.Visit(child, visited);
+if (visited) continue;
+visited = true;
+next_gen.Value.Add(child.NodeBase);
 }
 */
 namespace GraphSharp.Graphs
@@ -43,7 +44,7 @@ namespace GraphSharp.Graphs
             for (int i = 0; i < count; ++i)
             {
                 child = children[i];
-                visited = ref visited_list[child.NodeBase.Id];
+                visited = ref visited_list.DangerousGetReferenceAt(child.NodeBase.Id);
                 if (!visitor.Select(child)) continue;
 
                 lock (child.NodeBase)
