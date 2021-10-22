@@ -8,6 +8,7 @@ namespace GraphSharp
         public TValue Value;
         public NodeBase<TValue> NodeBase;
         INode IChild.NodeBase => NodeBase;
+
         public NodeValue(NodeBase<TValue> nodeBase,TValue value)
         {
             Value = value;

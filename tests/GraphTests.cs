@@ -14,8 +14,6 @@ namespace tests
 {
     public class GraphTests
     {
-
-
         [Fact]
         public void Graph_ValidateOrderAgain()
         {
@@ -204,7 +202,7 @@ namespace tests
         {
             IEnumerable<Node> nodes = null;
             IGraph graph = null;
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node,NodeBase>(1000, 30, 70);
             graph = new Graph(nodes);
             validate_graphOrder(graph, nodes, 3, node => node.Id % 2 == 0);
             
@@ -219,7 +217,7 @@ namespace tests
         [Fact]
         public void RemoveVisitor_Works()
         {
-            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
+            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node,NodeBase>(1000, 30, 70);
             var graph = new Graph(nodes);
 
             var childs1 = new List<NodeBase>();
@@ -290,7 +288,7 @@ namespace tests
         {
             IEnumerable<Node> nodes = null;
             IGraph graph = null;
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node,NodeBase>(1000, 30, 70);
             graph = new Graph(nodes);
 
             validate_graphOrder(graph, nodes, new Random().Next(nodes.Count()));
@@ -305,7 +303,7 @@ namespace tests
             IEnumerable<Node> nodes = null;
             IGraph graph;
 
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node,NodeBase>(1000, 30, 70);
             graph = new Graph(nodes);
             validate_graphOrderMultipleVisitors(graph, index1, index2);
         }

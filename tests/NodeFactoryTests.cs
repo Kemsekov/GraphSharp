@@ -12,15 +12,16 @@ namespace tests
         public void NodeGraphFactory_CreateConnectedParallel_Validate(){
             const int Children_count = 100;
             const int nodes_count = 5000;
-            var nodes = NodeGraphFactory.CreateConnectedParallel<Node>(nodes_count,Children_count);
+            var nodes = NodeGraphFactory.CreateConnectedParallel<Node,NodeBase>(nodes_count,Children_count);
             validateConnected(nodes.Select(n=>n as NodeBase).ToList(),nodes_count,Children_count);
+            
         }
         [Fact]
         public void NodeGraphFactory_CreateRandomConnectedParallel_Validate(){
             const int max_Children_count = 100;
             const int min_Children_count = 10;
             const int nodes_count = 5000;
-            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(nodes_count,max_Children_count, min_Children_count);
+            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node,NodeBase>(nodes_count,max_Children_count, min_Children_count);
             validateRandomConnected(nodes.Select(n=>n as NodeBase).ToList(),nodes_count,max_Children_count,min_Children_count);
         }
 
@@ -29,14 +30,14 @@ namespace tests
             const int max_Children_count = 100;
             const int min_Children_count = 10;
             const int nodes_count = 5000;
-            var nodes = NodeGraphFactory.CreateRandomConnected<Node>(nodes_count,max_Children_count, min_Children_count);
+            var nodes = NodeGraphFactory.CreateRandomConnected<Node,NodeBase>(nodes_count,max_Children_count, min_Children_count);
             validateRandomConnected(nodes.Select(n=>n as NodeBase).ToList(),nodes_count,max_Children_count,min_Children_count);
         }
         [Fact]
         public void NodeGraphFactory_CreateConnected_Validate(){
             const int Children_count = 100;
             const int nodes_count = 5000;
-            var nodes = NodeGraphFactory.CreateConnected<Node>(nodes_count,Children_count);
+            var nodes = NodeGraphFactory.CreateConnected<Node,NodeBase>(nodes_count,Children_count);
             validateConnected(nodes.Select(n=>n as NodeBase).ToList(),nodes_count,Children_count);
         }
         private void validateRandomConnected(IList<NodeBase> nodes,int nodes_count,int max_Children_count, int min_Children_count){

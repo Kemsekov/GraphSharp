@@ -9,6 +9,13 @@ using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs
 {
+    /// <summary>
+    /// THIS IS TEMPORARY GOD OBJECT THAT I USE FOR DEVELOPMENT.
+    /// It is a bit scary and I will try to find a way to remade it.
+    /// </summary>
+    /// <typeparam name="TNode"></typeparam>
+    /// <typeparam name="TChild"></typeparam>
+    /// <typeparam name="TVisitor"></typeparam>
     public abstract class GraphBase<TNode, TChild, TVisitor> : IGraphShared<TChild, TVisitor> 
     where TNode : NodeShared<TChild> 
     where TVisitor : IVisitorShared<TChild>

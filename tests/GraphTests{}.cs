@@ -17,7 +17,7 @@ namespace tests
 
         [Fact]
         public void Graph_CheckIfVisitAll(){
-            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 10);
+            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, NodeValue<object>>(1000, 30, 10);
             var graph = new Graph<object>(nodes);
             _graph_CheckIfVisitAll(graph,node=>true);
             graph.Clear();
@@ -262,7 +262,7 @@ namespace tests
         {
             IEnumerable<Node<object>> nodes = null;
             IGraph<object> graph = null;
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, NodeValue<object>>(1000, 30, 70);
             graph = new Graph<object>(nodes);
             validate_graphOrder(graph, nodes, 3, node => node.NodeBase.Id % 2 == 0);
 
@@ -277,7 +277,7 @@ namespace tests
         [Fact]
         public void RemoveVisitor_Works()
         {
-            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
+            var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, NodeValue<object>>(1000, 30, 70);
             var graph = new Graph<object>(nodes);
 
             var Children1 = new List<NodeBase<object>>();
@@ -348,7 +348,7 @@ namespace tests
         {
             IEnumerable<Node<object>> nodes = null;
             IGraph<object> graph = null;
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, NodeValue<object>>(1000, 30, 70);
             graph = new Graph<object>(nodes);
 
             validate_graphOrder(graph, nodes, new Random().Next(nodes.Count()));
@@ -363,7 +363,7 @@ namespace tests
             IEnumerable<Node<object>> nodes = null;
             IGraph<object> graph;
 
-            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, object>(1000, 30, 70);
+            nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node<object>, NodeValue<object>>(1000, 30, 70);
             graph = new Graph<object>(nodes);
             validate_graphOrderMultipleVisitors(graph, index1, index2);
         }

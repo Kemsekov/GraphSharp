@@ -20,7 +20,7 @@ Console.ForegroundColor = ConsoleColor.Green;
 
 var watch1 = new Stopwatch();
 watch1.Start();
-var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(nodes_count,min_nodes,max_nodes);
+var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node,NodeBase>(nodes_count,min_nodes,max_nodes);
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);
