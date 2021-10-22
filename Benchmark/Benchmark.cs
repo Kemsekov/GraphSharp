@@ -11,20 +11,19 @@ using GraphSharp.Visitors;
 using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
-const int nodes_count = 9000;
-const int min_nodes = 2;
-const int max_nodes = 20;
+const int nodes_count = 11000;
+const int child_count = 20;
 const int steps_count = 1200*2;
 
 Console.ForegroundColor = ConsoleColor.Green;
 
 var watch1 = new Stopwatch();
 watch1.Start();
-var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node,NodeBase>(nodes_count,min_nodes,max_nodes);
+var nodes = NodeGraphFactory.CreateConnectedParallel<Node,NodeBase>(nodes_count,child_count);
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);
-var visitor = new ActionVisitor(node=>{
+var visitor = new ActionVisitor(nodeValue=>{
     
 });
 
