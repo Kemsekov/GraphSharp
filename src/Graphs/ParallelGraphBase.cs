@@ -10,21 +10,14 @@ using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs
 {
-    /// <summary>
-    /// THIS IS TEMPORARY GOD OBJECT THAT I USE FOR DEVELOPMENT.
-    /// It is a bit scary and I will try to find a way to remade it.
-    /// </summary>
-    /// <typeparam name="TNode"></typeparam>
-    /// <typeparam name="TChild"></typeparam>
-    /// <typeparam name="TVisitor"></typeparam>
-    public abstract class GraphBase<TNode, TChild, TVisitor> : IGraphShared<TChild, TVisitor> 
+    public abstract class ParallelGraphBase<TNode, TChild, TVisitor> : IGraphShared<TChild, TVisitor> 
     where TNode : NodeShared<TChild> 
     where TVisitor : IVisitorShared<TChild>
     where TChild : IChild
     {
         protected TNode[] _nodes { get; }
         protected Dictionary<TVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<TVisitor, (Action _EndVisit, Action _Step)>();
-        public GraphBase(IEnumerable<TNode> nodes)
+        public ParallelGraphBase(IEnumerable<TNode> nodes)
         {
             if (nodes.Count() == 0) throw new ArgumentException("There is no nodes.");
             _nodes = nodes.ToArray();

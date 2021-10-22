@@ -26,7 +26,7 @@ namespace GraphSharp.Graphs
     /// <summary>
     /// Parallel implementation of <see cref="IGraph"/>
     /// </summary>
-    public class Graph<T> : GraphBase<NodeBase<T>, NodeValue<T>, IVisitor<T>>, IGraph<T>
+    public class Graph<T> : ParallelGraphBase<NodeBase<T>, NodeValue<T>, IVisitor<T>>, IGraph<T>
     {
         public Graph(IEnumerable<NodeBase<T>> nodes) : base(nodes)
         {
