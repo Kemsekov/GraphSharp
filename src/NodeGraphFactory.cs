@@ -16,12 +16,13 @@ namespace GraphSharp
         /// <param name="count_of_childs">Count of childs for each node</param>
         /// <typeparam name="_Node">Type inherited from <see cref="NodeBase"/></typeparam>
         /// <returns>Created nodes</returns>
-        public static List<_Node> CreateConnectedParallel<_Node>(int count_of_nodes, int count_of_childs)
-        where _Node : NodeBase
+        public static List<_Node> CreateConnectedParallel<_Node, TChild>(int count_of_nodes, int count_of_childs)
+        where _Node : NodeShared<TChild>
+        where TChild : IChild
         {
 
             var nodes = new List<_Node>(count_of_nodes);
-            var rand = new Random();
+            var rand_local = new ThreadLocal<Random>(() => new Random());
 
             //create nodes
             for (int i = 0; i < count_of_nodes; i++)
@@ -33,10 +34,12 @@ namespace GraphSharp
             //create childs
             Parallel.ForEach(nodes, (node, _) =>
              {
-                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
+                 var rand = rand_local.Value;
+                 var copy = new List<_Node>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                  //copy.Shuffle();
                  copy.Remove(node);
-                 node.Children.AddRange(copy);
+                 foreach (var c in copy)
+                     node.AddChild(c);
              });
 
             return nodes;
@@ -49,10 +52,12 @@ namespace GraphSharp
         /// <param name="min_count_of_childs">Min count of childs per node</param>
         /// <typeparam name="_Node">Type inherited from <see cref="NodeBase"/></typeparam>
         /// <returns>Created nodes</returns>
-        public static List<_Node> CreateRandomConnectedParallel<_Node>(int count_of_nodes, int max_count_of_childs, int min_count_of_childs)
-        where _Node : NodeBase
+        public static List<_Node> CreateRandomConnectedParallel<_Node, TChild>(int count_of_nodes, int max_count_of_childs, int min_count_of_childs)
+        where _Node : NodeShared<TChild>
+where TChild : IChild
         {
             var nodes = new List<_Node>();
+            ThreadLocal<Random> rand_local = new ThreadLocal<Random>(() => new Random());
             //create nodes
             foreach (int i in Enumerable.Range(0, count_of_nodes))
             {
@@ -61,7 +66,6 @@ namespace GraphSharp
             }
 
             //create childs
-            ThreadLocal<Random> rand_local = new ThreadLocal<Random>(() => new Random());
 
             //swap
             if (min_count_of_childs > max_count_of_childs)
@@ -75,9 +79,10 @@ namespace GraphSharp
              {
                  var rand = rand_local.Value;
                  var count_of_childs = rand.Next(max_count_of_childs - min_count_of_childs) + min_count_of_childs + 1;
-                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
+                 var copy = new List<_Node>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                  copy.Remove(node);
-                 node.Children.AddRange(copy);
+                 foreach (var c in copy)
+                     node.AddChild(c);
              });
 
             return nodes;
@@ -90,8 +95,9 @@ namespace GraphSharp
         /// <param name="min_count_of_childs">Min count of childs per node</param>
         /// <typeparam name="_Node">Type inherited from <see cref="NodeBase"/></typeparam>
         /// <returns>Created nodes</returns>
-        public static List<_Node> CreateRandomConnected<_Node>(int count_of_nodes, int max_count_of_childs, int min_count_of_childs, Random rand = null)
-        where _Node : NodeBase
+        public static List<_Node> CreateRandomConnected<_Node, TChild>(int count_of_nodes, int max_count_of_childs, int min_count_of_childs, Random rand = null)
+        where _Node : NodeShared<TChild>
+where TChild : IChild
         {
             rand = rand ?? new Random();
             var nodes = new List<_Node>();
@@ -113,9 +119,10 @@ namespace GraphSharp
             foreach (var node in nodes)
             {
                 var count_of_childs = rand.Next(max_count_of_childs - min_count_of_childs) + min_count_of_childs + 1;
-                List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
+                var copy = new List<_Node>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                 copy.Remove(node);
-                node.Children.AddRange(copy);
+                foreach (var c in copy)
+                    node.AddChild(c);
             }
 
             return nodes;
@@ -127,7 +134,8 @@ namespace GraphSharp
         /// <param name="count_of_childs">Count of childs for each node</param>
         /// <typeparam name="_Node">Type inherited from <see cref="NodeBase"/></typeparam>
         /// <returns>Created nodes</returns>
-        public static List<_Node> CreateConnected<_Node>(int count_of_nodes, int count_of_childs, Random rand = null) where _Node : NodeBase
+        public static List<_Node> CreateConnected<_Node, TChild>(int count_of_nodes, int count_of_childs, Random rand = null) where _Node : NodeShared<TChild>
+where TChild : IChild
         {
             rand = rand ?? new Random();
             var nodes = new List<_Node>(count_of_nodes);
@@ -142,9 +150,10 @@ namespace GraphSharp
             //create childs
             foreach (var node in nodes)
             {
-                List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
+                var copy = new List<_Node>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
                 copy.Remove(node);
-                node.Children.AddRange(copy);
+                foreach (var c in copy)
+                    node.AddChild(c);
             };
 
             return nodes;

@@ -8,11 +8,14 @@ namespace GraphSharp.Nodes
     /// <summary>
     /// Base class for all nodes
     /// </summary>
-    public abstract class NodeBase : NodeShared<NodeBase>
+    public abstract class NodeBase : NodeShared<NodeBase>, IChild 
     {
         public NodeBase(int id) : base(id)
         {
         }
+
+        INode IChild.NodeBase => this;
+
         /// <summary>
         /// Adds child to current node.
         /// </summary>

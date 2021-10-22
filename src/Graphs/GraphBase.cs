@@ -12,6 +12,7 @@ namespace GraphSharp.Graphs
     public abstract class GraphBase<TNode, TChild, TVisitor> : IGraphShared<TChild, TVisitor> 
     where TNode : NodeShared<TChild> 
     where TVisitor : IVisitorShared<TChild>
+    where TChild : IChild
     {
         protected TNode[] _nodes { get; }
         protected Dictionary<TVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<TVisitor, (Action _EndVisit, Action _Step)>();

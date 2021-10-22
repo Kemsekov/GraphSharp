@@ -1,6 +1,6 @@
 namespace GraphSharp.Visitors
 {
-    public interface IVisitorShared<TChild>
+    public interface IVisitorShared<TChild> where TChild : IChild
     {
         /// <summary>
         /// End visit for node

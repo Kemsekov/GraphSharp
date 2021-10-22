@@ -3,7 +3,9 @@ using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs
 {
-    public interface IGraphShared<IChild,TVisitor> where TVisitor : IVisitorShared<IChild>
+    public interface IGraphShared<TChild,TVisitor> 
+    where TVisitor : IVisitorShared<TChild>
+    where TChild : IChild
     {
         /// <summary>
         /// Clears graph data. After this method is called you should add <see cref="IVisitor"/> again.

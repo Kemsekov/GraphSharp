@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace GraphSharp.Nodes
 {
-    public abstract class NodeShared<TChild> : IComparable<NodeShared<TChild>>
+    public abstract class NodeShared<TChild> : IComparable<NodeShared<TChild>>, INode where TChild : IChild
     {
         /// <summary>
         /// Id of current node. Must be unique in collections of nodes.
