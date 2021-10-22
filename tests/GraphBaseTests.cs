@@ -12,7 +12,7 @@ using GraphSharp.Visitors;
 using Xunit;
 namespace tests
 {
-    public class GraphTests
+    public class GraphBaseTests
     {
         
         [Fact]

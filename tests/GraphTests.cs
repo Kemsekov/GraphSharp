@@ -9,8 +9,27 @@ using System.Linq;
 
 namespace tests
 {
-    public class GraphTests_dev
+    public class GraphTests
     {
+
+        [Fact]
+        public void Graph_EndVisitWork()
+        {
+            var nodes = NodeGraphFactory.CreateConnected<Node, NodeBase>(200, 5);
+            int counter = 0;
+            var visitor = new ActionVisitor(
+                node => { },
+                () => counter++,
+                node => true
+            );
+            var graph = new Graph(nodes);
+            graph.AddVisitor(visitor, 1, 2, 3);
+            for (int i = 0; i < 50; i++)
+            {
+                Assert.Equal(counter, i);
+                graph.Step();
+            }
+        }
         [Fact]
         public void Graph_ValidateOrderWithManualData()
         {
@@ -56,23 +75,25 @@ namespace tests
             validateVisitWithManualData(graph, t, nodeValue => true, expectedNodes1.Select(ids => ids.Select(id => nodes[id]).ToArray()).ToArray(), 0, 7);
             validateVisitWithManualData(graph, t, nodeValue => true, expectedNodes2.Select(ids => ids.Select(id => nodes[id]).ToArray()).ToArray(), 1, 5);
 
-            var nodes_g = 
-                nodes.Select(n=>new Node<object>(n.Id)).ToArray();
+            var nodes_g =
+                nodes.Select(n => new Node<object>(n.Id)).ToArray();
 
-            for(int i = 0;i<nodes_g.Length;i++){
+            for (int i = 0; i < nodes_g.Length; i++)
+            {
                 nodes_g[i].Children.AddRange(
-                    nodes[i].Children.Select(n=>new NodeValue<object>(nodes_g[n.Id],new Object()))
+                    nodes[i].Children.Select(n => new NodeValue<object>(nodes_g[n.Id], new Object()))
                 );
             }
             var graph_g = new Graph<object>(nodes_g);
             Func<List<NodeValue<object>>, Func<NodeValue<object>, bool>, IVisitor<object>> t_g = (current_gen, selector) =>
             {
                 var visitor = new ActionVisitor<object>(
-                    (nodeValue,visited) =>
+                    (nodeValue, visited) =>
                     {
-                        lock (current_gen){
-                            if(!visited)
-                            current_gen.Add(nodeValue);
+                        lock (current_gen)
+                        {
+                            if (!visited)
+                                current_gen.Add(nodeValue);
                         }
                     },
                     null,
@@ -80,8 +101,8 @@ namespace tests
                 );
                 return visitor;
             };
-            validateVisitWithManualData(graph_g, t_g, nodeValue => true, expectedNodes1.Select(ids => ids.Select(id =>  new NodeValue<object>(nodes_g[id], new Object())).ToArray()).ToArray(), 0, 7);
-            validateVisitWithManualData(graph_g, t_g, nodeValue => true, expectedNodes2.Select(ids => ids.Select(id =>  new NodeValue<object>(nodes_g[id], new Object())).ToArray()).ToArray(), 1, 5);
+            validateVisitWithManualData(graph_g, t_g, nodeValue => true, expectedNodes1.Select(ids => ids.Select(id => new NodeValue<object>(nodes_g[id], new Object())).ToArray()).ToArray(), 0, 7);
+            validateVisitWithManualData(graph_g, t_g, nodeValue => true, expectedNodes2.Select(ids => ids.Select(id => new NodeValue<object>(nodes_g[id], new Object())).ToArray()).ToArray(), 1, 5);
 
             void InitNodes()
             {
