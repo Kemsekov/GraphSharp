@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
@@ -38,14 +39,14 @@ namespace GraphSharp.Graphs
             return new Node(index);
         }
 
-        protected override void DoLogic(ref List<NodeBase> children, ref int count, ref List<NodeBase> next_gen, ref bool[] visited_list, ref IVisitor visitor)
+        protected override void DoLogic(ref Span<NodeBase> children, ref List<NodeBase> next_gen, ref bool[] visited_list, ref IVisitor visitor)
         {
             ref var visited = ref visited_list[0];
-            NodeBase child;
-            // var raw = children.GetType().GetField("_items",BindingFlags.NonPublic | BindingFlags.Instance).GetValue(children) as NodeBase;
+            ref NodeBase child = ref children[0];
+            int count = children.Length;
             for(int i = 0;i<count;++i)
             {
-                child = children[i];
+                child = ref children[i];
                 visited = ref visited_list.DangerousGetReferenceAt(child.Id);
                 if (visited) continue;
                 if (!visitor.Select(child)) continue;

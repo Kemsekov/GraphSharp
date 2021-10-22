@@ -37,13 +37,15 @@ namespace GraphSharp.Graphs
             return new Node<T>(index);
         }
 
-        protected override void DoLogic(ref List<NodeValue<T>> children, ref int count, ref List<NodeBase<T>> next_gen, ref bool[] visited_list, ref IVisitor<T> visitor)
+        protected override void DoLogic(ref Span<NodeValue<T>> children, ref List<NodeBase<T>> next_gen, ref bool[] visited_list, ref IVisitor<T> visitor)
         {
             ref var visited = ref visited_list[0];
-            NodeValue<T> child;
+            ref NodeValue<T> child = ref children[0];
+            int count = children.Length;
+
             for (int i = 0; i < count; ++i)
             {
-                child = children[i];
+                child = ref children[i];
                 visited = ref visited_list.DangerousGetReferenceAt(child.NodeBase.Id);
                 if (!visitor.Select(child)) continue;
 

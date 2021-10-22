@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
@@ -73,10 +74,9 @@ namespace GraphSharp.Graphs
                         Parallel.ForEach(n, node =>
                         {
                             var next_gen_local = next_gen.Value;
-                            var children = node.Children;
-                            int count = children.Count;
+                            var children = CollectionsMarshal.AsSpan(node.Children);
 
-                            DoLogic(ref children,ref count,ref next_gen_local,ref visited_list,ref visitor);
+                            DoLogic(ref children,ref next_gen_local,ref visited_list,ref visitor);
                         });
                     var buf = current_gen;
                     current_gen = next_gen;
@@ -85,7 +85,7 @@ namespace GraphSharp.Graphs
             );
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract void DoLogic(ref List<TChild> children, ref int count, ref List<TNode> next_gen, ref bool[] visited_list,ref TVisitor visitor);
+        protected abstract void DoLogic(ref Span<TChild> children, ref List<TNode> next_gen, ref bool[] visited_list,ref TVisitor visitor);
         protected abstract TNode CreateDefaultNode(int index);
         public void Clear()
         {
