@@ -13,18 +13,18 @@ namespace GraphSharp.Graphs
         /// </summary>
         void Clear();
         /// <summary>
-        /// RemoVis Visitor from graph and all it's data. After this method is called <see cref="Step()"/> method will not call Visitor you removed
+        /// Removes visitor from graph and cleans all it's data. After this method is called <see cref="Step()"/> method will not call visitor you removed and will throw if you try to specify it directly in <see cref="Step(TVisitor)"/>
         /// </summary>
         /// <param name="Visitor">Visitor to be removed</param>
         /// <returns></returns>
         bool RemoveVisitor(TVisitor visitor);
         /// <summary>
-        /// Add Visitor to graph. This Visitor will be called on each node that graph Visit from <see cref="Step()"/> method.
+        /// Adds visitor to graph. This visitor will be called on each node that graph Visit from <see cref="Step()"/> method.
         /// </summary>
         /// <param name="Visitor">Visitor to add</param>
         void AddVisitor(TVisitor visitor);
         /// <summary>
-        /// Add Visitor and assign it starting nodes to <see cref="nodes_id"/>
+        /// Add Visitor with some starting nodes
         /// </summary>
         /// <param name="Visitor">Visitor to add</param>
         /// <param name="nodes_id">Id's of nodes this Visitor must be assigned to</param>

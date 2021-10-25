@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace GraphSharp.Nodes
 {
     /// <summary>
-    /// Base implementation of <see cref="NodeBase"/>
+    /// Base implementation of <see cref="NodeBase{}"/>
     /// </summary>
     public class Node<T> : NodeBase<T>
     {

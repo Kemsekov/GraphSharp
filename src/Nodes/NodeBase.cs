@@ -6,20 +6,21 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Nodes
 {
     /// <summary>
-    /// Base class for all nodes
+    /// Base class for all nodes without any weight per connection
     /// </summary>
     public abstract class NodeBase : NodeShared<NodeBase>, IChild 
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="id">Node id</param>
+        /// <returns></returns>
         public NodeBase(int id) : base(id)
         {
         }
 
         INode IChild.NodeBase => this;
 
-        /// <summary>
-        /// Adds child to current node.
-        /// </summary>
-        /// <param name="child">Node to be added as child of this node.</param>
         public void AddChild(NodeBase child)
         {
             Children.Add(child);

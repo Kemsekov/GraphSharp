@@ -9,43 +9,29 @@ using System.Threading.Tasks;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 using Microsoft.Toolkit.HighPerformance;
-/*
-visited = ref visited_list[child.NodeBase.Id];
-if (!visitor.Select(child)) continue;
 
-lock (child.NodeBase)
-{
-visitor.Visit(child, visited);
-if (visited) continue;
-visited = true;
-next_gen.Value.Add(child.NodeBase);
-}
-*/
 namespace GraphSharp.Graphs
 {
-    /// <summary>
-    /// Parallel implementation of <see cref="IGraph"/>
-    /// </summary>
     public class Graph<T> : ParallelGraphBase<NodeBase<T>, NodeValue<T>, IVisitor<T>>, IGraph<T>
     {
         public Graph(IEnumerable<NodeBase<T>> nodes) : base(nodes)
         {
         }
 
-        protected override NodeBase<T> CreateDefaultNode(int index)
+        protected override NodeBase<T> CreateDefaultNode(int node_id)
         {
-            return new Node<T>(index);
+            return new Node<T>(node_id);
         }
 
-        protected override void DoLogic(ref Span<NodeValue<T>> children, ref List<NodeBase<T>> next_gen, ref bool[] visited_list, ref IVisitor<T> visitor)
+        protected override void DoLogic(List<NodeValue<T>> children,List<NodeBase<T>> next_gen,ref bool[] visited_list,ref IVisitor<T> visitor)
         {
             ref var visited = ref visited_list[0];
-            ref NodeValue<T> child = ref children[0];
-            int count = children.Length;
+            NodeValue<T> child = default;
+            int count = children.Count;
 
             for (int i = 0; i < count; ++i)
             {
-                child = ref children[i];
+                child = children[i];
                 visited = ref visited_list.DangerousGetReferenceAt(child.NodeBase.Id);
                 if (!visitor.Select(child)) continue;
 

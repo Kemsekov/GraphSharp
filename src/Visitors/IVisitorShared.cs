@@ -1,5 +1,9 @@
 namespace GraphSharp.Visitors
 {
+    /// <summary>
+    /// base interface for all visitors
+    /// </summary>
+    /// <typeparam name="TChild">Type of child of node</typeparam>
     public interface IVisitorShared<TChild> where TChild : IChild
     {
         /// <summary>
@@ -11,7 +15,7 @@ namespace GraphSharp.Visitors
         /// Method that selects which nodes need to be visited and which not
         /// </summary>
         /// <param name="node">Node to be selected</param>
-        /// <returns>True - visit node. False - not visit node</returns>
+        /// <returns>True - visit node. False - do not visit</returns>
         bool Select(TChild node);
     }
 }

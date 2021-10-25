@@ -10,13 +10,24 @@ using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs
 {
-    public abstract class ParallelGraphBase<TNode, TChild, TVisitor> : IGraphShared<TChild, TVisitor> 
-    where TNode : NodeShared<TChild> 
+    /// <summary>
+    /// Base parallel implementation for <see cref="IGraphShared{,}"/> 
+    /// </summary>
+    /// <typeparam name="TNode">Type of node to be used</typeparam>
+    /// <typeparam name="TChild">Type of child to be used</typeparam>
+    /// <typeparam name="TVisitor">Type of visitor to be used</typeparam>
+    public abstract class ParallelGraphBase<TNode, TChild, TVisitor> : IGraphShared<TChild, TVisitor>
+    where TNode : NodeShared<TChild>
     where TVisitor : IVisitorShared<TChild>
     where TChild : IChild
     {
         protected TNode[] _nodes { get; }
-        protected Dictionary<TVisitor, (Action _EndVisit, Action _Step)> _work = new Dictionary<TVisitor, (Action _EndVisit, Action _Step)>();
+        protected Dictionary<TVisitor, (Action _EndVisit, Action _Step)> _work = new();
+        protected Dictionary<TVisitor, Func<int, bool>> _isVisited = new();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="nodes">nodes to be used in graph</param>
         public ParallelGraphBase(IEnumerable<TNode> nodes)
         {
             if (nodes.Count() == 0) throw new ArgumentException("There is no nodes.");
@@ -28,9 +39,11 @@ namespace GraphSharp.Graphs
             var index = new Random().Next(_nodes.Length);
             AddVisitor(visitor, index);
         }
-
-
-        public void AddVisitor(TVisitor visitor, params int[] nodes_id)
+        /// <param name="visitor">visitor to check</param>
+        /// <param name="node_id">id of node to check</param>
+        /// <returns>Whatever specified visitor visited specified node</returns>
+        public virtual bool IsVisited(TVisitor visitor, int node_id) => _isVisited[visitor].Invoke(node_id);
+        public virtual void AddVisitor(TVisitor visitor, params int[] nodes_id)
         {
             if (nodes_id.Max() > _nodes.Last().Id) throw new IndexOutOfRangeException("One or more of given nodes id is invalid");
             var nodes = nodes_id.Select(n => _nodes[n]);
@@ -39,6 +52,7 @@ namespace GraphSharp.Graphs
 
             var next_gen = new ThreadLocal<List<TNode>>(() => new List<TNode>(), true);
             var current_gen = new ThreadLocal<List<TNode>>(() => new List<TNode>(), true);
+
             {
                 var temp_node = CreateDefaultNode(_nodes.Count());
                 foreach (var n in nodes)
@@ -48,17 +62,18 @@ namespace GraphSharp.Graphs
                 current_gen.Value.Add(temp_node);
             }
 
+            Func<int, bool> isVisited = node_id =>
+                 visited_list[node_id];
+            _isVisited.Add(visitor, isVisited);
+
             _work[visitor] = (
                 () =>
                 {
                     foreach (var n in next_gen.Values)
                         n.Clear();
-
-                    foreach (var n in current_gen.Values)
-                        Parallel.ForEach(n, node =>
-                        {
-                            visited_list[node.Id] = false;
-                        });
+                    int len = visited_list.Length;
+                    for(int i = 0;i<len;++i)
+                        visited_list[i] = false;
                     visitor.EndVisit();
                 },
                 () =>
@@ -66,20 +81,30 @@ namespace GraphSharp.Graphs
                     foreach (var n in current_gen.Values)
                         Parallel.ForEach(n, node =>
                         {
-                            var next_gen_local = next_gen.Value;
-                            var children = CollectionsMarshal.AsSpan(node.Children);
-
-                            DoLogic(ref children,ref next_gen_local,ref visited_list,ref visitor);
+                            DoLogic(node.Children, next_gen.Value,ref visited_list,ref visitor);
                         });
+
                     var buf = current_gen;
                     current_gen = next_gen;
                     next_gen = buf;
                 }
             );
         }
+        /// <summary>
+        /// This method implements main logic of a graph, such as visit nodes, add nodes to next generation of nodes, mark node as visited and etc.
+        /// </summary>
+        /// <param name="children">children to be visited</param>
+        /// <param name="next_gen">this is storage that must contain nodes that must be visited in next Step</param>
+        /// <param name="visited_list">this is visit list of all nodes.</param>
+        /// <param name="visitor">visitor to be used</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract void DoLogic(ref Span<TChild> children, ref List<TNode> next_gen, ref bool[] visited_list,ref TVisitor visitor);
-        protected abstract TNode CreateDefaultNode(int index);
+        protected abstract void DoLogic(List<TChild> children,List<TNode> next_gen,ref bool[] visited_list,ref TVisitor visitor);
+        /// <summary>
+        /// This method must create default node for current graph
+        /// </summary>
+        /// <param name="node_id">Id of node</param>
+        /// <returns></returns>
+        protected abstract TNode CreateDefaultNode(int node_id);
         public void Clear()
         {
             _work.Clear();

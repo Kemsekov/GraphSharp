@@ -4,7 +4,7 @@ using GraphSharp.Nodes;
 namespace GraphSharp.Visitors
 {
     /// <summary>
-    /// Interface for creating custom Visitors
+    /// Interface for creating custom Visitors.
     /// </summary>
     public interface IVisitor : IVisitorShared<NodeBase>
     {

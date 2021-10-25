@@ -3,10 +3,10 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp
 {
-    public struct NodeValue<TValue> : IComparable<NodeValue<TValue>>, IChild
+    public readonly struct NodeValue<TValue> : IComparable<NodeValue<TValue>>, IChild
     {
-        public TValue Value;
-        public NodeBase<TValue> NodeBase;
+        public readonly TValue Value;
+        public readonly NodeBase<TValue> NodeBase;
         INode IChild.NodeBase => NodeBase;
 
         public NodeValue(NodeBase<TValue> nodeBase,TValue value)
