@@ -1,10 +1,10 @@
 using System;
 using GraphSharp.Nodes;
 
-namespace GraphSharp
+namespace GraphSharp.Children
 {
     public interface IChild : IComparable<IChild>
     {
-        INode NodeBase{get;}
+        INode Node{get;}
     }
 }

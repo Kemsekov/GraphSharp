@@ -3,11 +3,13 @@ using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs
 {
-    /// <summary>
-    /// Interface for creating custom graphs.
-    /// </summary>
-    public interface IGraph : IGraphShared<NodeBase,IVisitor>
+    public interface IGraph
     {
-        
+        void AddVisitor(IVisitor visitor);
+        void AddVisitor(IVisitor visitor,params int[] indices);
+        void RemoveVisitor(IVisitor visitor);
+        void RemoveAllVisitors();
+        void Step(IVisitor visitor);
+        void Step();
     }
 }

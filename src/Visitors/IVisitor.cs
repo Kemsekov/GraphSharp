@@ -1,4 +1,5 @@
 using System;
+using GraphSharp.Children;
 using GraphSharp.Nodes;
 
 namespace GraphSharp.Visitors
@@ -6,13 +7,10 @@ namespace GraphSharp.Visitors
     /// <summary>
     /// Interface for creating custom Visitors.
     /// </summary>
-    public interface IVisitor : IVisitorShared<NodeBase>
+    public interface IVisitor
     {
-        
-        /// <summary>
-        /// Visit node
-        /// </summary>
-        /// <param name="node">node to visit</param>
-        void Visit(NodeBase node);
+        bool Select(IChild node);
+        void Visit(IChild node);
+        void EndVisit();
     }
 }
