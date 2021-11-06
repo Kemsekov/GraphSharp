@@ -23,6 +23,13 @@ namespace tests
             NodeGraphFactory.ConnectRandomCountOfNodes(_nodes, 5, 30);
         }
         [Fact]
+        public void Graph_VisitSelectorWorks(){
+            dynamic t = new object();
+            t.PrintHello = new Action(()=>{System.Console.WriteLine("Hello!");});
+            t.PrintHello();
+        }
+
+        [Fact]
         public void Graph_ValidateOrderWithManualData()
         {
             var nodes = new Node[10];
@@ -276,6 +283,5 @@ namespace tests
             Assert.Throws<KeyNotFoundException>(() =>
                 graph.Step(visitor2));
         }
-
     }
 }

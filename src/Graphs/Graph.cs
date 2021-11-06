@@ -36,9 +36,11 @@ namespace GraphSharp.Graphs
         public void AddVisitor(IVisitor visitor, params int[] indices)
         {
             if (_work.ContainsKey(visitor)) return;
-            ThreadLocal<List<INode>> nodes_local = new(()=>new(),true);
-            ThreadLocal<List<INode>> buf_local = new(()=>new(),true);
+            
+            ThreadLocal<List<INode>> nodes_local = new(() => new(), true);
+            ThreadLocal<List<INode>> buf_local = new(() => new(), true);
 
+            //create starting node
             {
                 var start_node = new Node(-1);
                 foreach (var index in indices)
@@ -49,9 +51,7 @@ namespace GraphSharp.Graphs
                 nodes_local.Value.Add(start_node);
             }
 
-            BitArray visited = new(_nodes.Length);
-            visited.SetAll(false);
-
+            var visited = new byte[_nodes.Length];
             Action step_action = () =>
             {
                 foreach (var n in buf_local.Values) n.Clear();
@@ -59,22 +59,11 @@ namespace GraphSharp.Graphs
                 foreach (var n in nodes_local.Values)
                     Parallel.ForEach(n, node =>
                     {
-                        var buf = buf_local.Value;
-                        foreach (var child in node.Children)
-                        {
-                            if (!visitor.Select(child)) continue;
-                            if (visited[child.Node.Id]) continue;
-                            lock (child.Node)
-                            {
-                                if (visited[child.Node.Id]) continue;
-                                visitor.Visit(child);
-                                visited[child.Node.Id] = true;
-                                buf.Add(child.Node);
-                            }
-                        }
+                        DoLogic(node);
                     });
 
-                visited.SetAll(false);
+                Array.Clear(visited, 0, visited.Length);
+
                 visitor.EndVisit();
 
                 var b = buf_local;
@@ -82,6 +71,35 @@ namespace GraphSharp.Graphs
                 nodes_local = b;
             };
             _work.Add(visitor, step_action);
+            return;
+            [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+            void DoLogic(INode node)
+            {
+                //this horrible code is here because it is fast... Don't blame me pls.
+                var __buf = buf_local.Value;
+                int __count = node.Children.Count;
+                IChild __child;
+                ref byte __visited = ref visited.DangerousGetReferenceAt(0);
+                var __children = node.Children;
+                INode __node;
+
+                for (int i = 0; i < __count; ++i)
+                {
+                    __child = __children[i];
+                    if (!visitor.Select(__child)) continue;
+                    __node = __child.Node;
+                    __visited = ref visited.DangerousGetReferenceAt(__node.Id);
+
+                    if (__visited > 0) continue;
+                    lock (__node)
+                    {
+                        if (__visited > 0) continue;
+                        visitor.Visit(__child);
+                        ++__visited;
+                        __buf.Add(__node);
+                    }
+                }
+            }
         }
 
         public void RemoveAllVisitors()
