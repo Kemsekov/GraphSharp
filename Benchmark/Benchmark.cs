@@ -12,18 +12,19 @@ using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
 const int nodes_count = 11000;
-const int child_count = 20;
+const int children_count = 20;
 const int steps_count = 1200*2;
 
 Console.ForegroundColor = ConsoleColor.Green;
 
 var watch1 = new Stopwatch();
 watch1.Start();
-var nodes = NodeGraphFactory.CreateConnectedParallel<Node>(nodes_count,child_count);
+var nodes = NodeGraphFactory.CreateNodes(nodes_count);
+NodeGraphFactory.ConnectNodes(nodes,children_count);
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);
-var visitor = new ActionVisitor(node=>{
+var visitor = new ActionVisitor(child=>{
     
 });
 

@@ -3,152 +3,75 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using GraphSharp.Children;
 using GraphSharp.Nodes;
 
 namespace GraphSharp
 {
-    public static class NodeGraphFactory
+    public static partial class NodeGraphFactory
     {
-        /// <summary>
-        /// Create nodes with each of them have approximately <see cref="count_of_childs"/> childs in parallel
-        /// </summary>
-        /// <param name="count_of_nodes">Count of nodes to create</param>
-        /// <param name="count_of_childs">Count of childs for each node</param>
-        /// <typeparam name="_Node">Type inherited from <see cref="NodeBase"/></typeparam>
-        /// <returns>Created nodes</returns>
-        public static List<_Node> CreateConnectedParallel<_Node>(int count_of_nodes, int count_of_childs)
-        where _Node : NodeBase
+        public static IList<INode> CreateNodes(int count, Func<int, INode> createNode = null)
         {
+            createNode ??= id => new Node(id);
 
-            var nodes = new List<_Node>(count_of_nodes);
-            var rand = new Random();
+            var nodes = new List<INode>(count);
 
             //create nodes
-            for (int i = 0; i < count_of_nodes; i++)
+            for (int i = 0; i < count; i++)
             {
-                var node = Activator.CreateInstance(typeof(_Node), i) as _Node;
+                var node = createNode(i);
                 nodes.Add(node);
             }
-
-            //create childs
-            Parallel.ForEach(nodes, (node, _) =>
-             {
-                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
-                //copy.Shuffle();
-                copy.Remove(node);
-                 node.Childs.AddRange(copy);
-             });
-
             return nodes;
         }
-        /// <summary>
-        /// Creates count_of_nodes nodes with >= min_count_of_childs and <= max_count_of_childs childs in parallel.
-        /// </summary>
-        /// <param name="count_of_nodes">Count of nodes to create</param>
-        /// <param name="max_count_of_childs">Max count of childs per node</param>
-        /// <param name="min_count_of_childs">Min count of childs per node</param>
-        /// <typeparam name="_Node">Type inherited from <see cref="NodeBase"/></typeparam>
-        /// <returns>Created nodes</returns>
-        public static List<_Node> CreateRandomConnectedParallel<_Node>(int count_of_nodes, int max_count_of_childs, int min_count_of_childs)
-        where _Node : NodeBase
+        public static void ConnectNodes(IList<INode> nodes, int count_of_connections, Random rand = null, Func<INode, IChild> createChild = null)
         {
-            var nodes = new List<_Node>();
-            //create nodes
-            foreach (int i in Enumerable.Range(0, count_of_nodes))
-            {
-                var node = Activator.CreateInstance(typeof(_Node), i) as _Node;
-                nodes.Add(node);
-            }
-
-            //create childs
-            ThreadLocal<Random> rand_local = new ThreadLocal<Random>(() => new Random());
-
-            //swap
-            if (min_count_of_childs > max_count_of_childs)
-            {
-                var b = min_count_of_childs;
-                max_count_of_childs = min_count_of_childs;
-                min_count_of_childs = b;
-            }
-
-            Parallel.ForEach(nodes, (node, _) =>
-             {
-                 var rand = rand_local.Value;
-                 var count_of_childs = rand.Next(max_count_of_childs - min_count_of_childs) + min_count_of_childs + 1;
-                 List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
-                 copy.Remove(node);
-                 node.Childs.AddRange(copy);
-             });
-
-            return nodes;
-        }
-        /// <summary>
-        /// Creates count_of_nodes nodes with >= min_count_of_childs and <= max_count_of_childs childs.
-        /// </summary>
-        /// <param name="count_of_nodes">Count of nodes to create</param>
-        /// <param name="max_count_of_childs">Max count of childs per node</param>
-        /// <param name="min_count_of_childs">Min count of childs per node</param>
-        /// <typeparam name="_Node">Type inherited from <see cref="NodeBase"/></typeparam>
-        /// <returns>Created nodes</returns>
-        public static List<_Node> CreateRandomConnected<_Node>(int count_of_nodes, int max_count_of_childs, int min_count_of_childs, Random rand = null)
-        where _Node : NodeBase
-        {
-            rand = rand ?? new Random();
-            var nodes = new List<_Node>();
-            //create nodes
-            foreach (int i in Enumerable.Range(0, count_of_nodes))
-            {
-                var node = Activator.CreateInstance(typeof(_Node), i) as _Node;
-                nodes.Add(node);
-            }
-
-            if (min_count_of_childs > max_count_of_childs)
-            {
-                var b = min_count_of_childs;
-                max_count_of_childs = min_count_of_childs;
-                min_count_of_childs = b;
-            }
-            //create childs
+            rand ??= new Random();
+            createChild ??= node => new Child(node);
+            count_of_connections = count_of_connections > nodes.Count ? nodes.Count : count_of_connections;
 
             foreach (var node in nodes)
             {
-                var count_of_childs = rand.Next(max_count_of_childs - min_count_of_childs) + min_count_of_childs + 1;
-                List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
-                copy.Remove(node);
-                node.Childs.AddRange(copy);
+                var start_index = rand.Next(nodes.Count);
+                ConnectNodeToNodes(node,nodes,start_index,count_of_connections,createChild);
             }
-
-            return nodes;
         }
-        /// <summary>
-        /// Create nodes with each of them have approximately <see cref="count_of_childs"/> childs.
-        /// </summary>
-        /// <param name="count_of_nodes">Count of nodes to create</param>
-        /// <param name="count_of_childs">Count of childs for each node</param>
-        /// <typeparam name="_Node">Type inherited from <see cref="NodeBase"/></typeparam>
-        /// <returns>Created nodes</returns>
-        public static List<_Node> CreateConnected<_Node>(int count_of_nodes, int count_of_childs, Random rand = null) where _Node : NodeBase
+        public static void ConnectRandomCountOfNodes(IList<INode> nodes, int min_count_of_nodes, int max_count_of_nodes, Random rand = null, Func<INode, IChild> createChild = null)
         {
-            rand = rand ?? new Random();
-            var nodes = new List<_Node>(count_of_nodes);
+            rand ??= new Random();
+            createChild ??= node => new Child(node);
+            min_count_of_nodes = min_count_of_nodes < 1 ? 1 : min_count_of_nodes;
+            max_count_of_nodes = max_count_of_nodes > nodes.Count ? nodes.Count : max_count_of_nodes;
 
-            //create nodes
-            for (int i = 0; i < count_of_nodes; i++)
+            //swap using xor
+            if (min_count_of_nodes > max_count_of_nodes)
             {
-                var node = Activator.CreateInstance(typeof(_Node), i) as _Node;
-                nodes.Add(node);
+                min_count_of_nodes = min_count_of_nodes ^ max_count_of_nodes;
+                max_count_of_nodes = min_count_of_nodes ^ max_count_of_nodes;
+                min_count_of_nodes = min_count_of_nodes ^ max_count_of_nodes;
             }
 
-            //create childs
             foreach (var node in nodes)
             {
-                List<NodeBase> copy = new List<NodeBase>(nodes.GetRange(rand.Next(nodes.Count - count_of_childs), count_of_childs));
-                copy.Remove(node);
-                node.Childs.AddRange(copy);
-            };
-
-            return nodes;
+                int count_of_connections = rand.Next(max_count_of_nodes-min_count_of_nodes)+min_count_of_nodes;
+                var start_index = rand.Next(nodes.Count);
+                ConnectNodeToNodes(node,nodes,start_index,count_of_connections,createChild);
+            }
         }
-
+        private static void ConnectNodeToNodes(INode node, IList<INode> nodes,int start_index, int count_of_connections,Func<INode, IChild> createChild)
+        {
+            lock(node)
+            for (int i = 0; i < count_of_connections; i++)
+            {
+                var child = nodes[(start_index + i) % nodes.Count];
+                if(child.Id == node.Id) {
+                    start_index++;
+                    i--;
+                    continue;
+                }
+                node.Children.Add(createChild(child));
+                
+            }
+        }
     }
 }
