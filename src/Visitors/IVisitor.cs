@@ -10,13 +10,13 @@ namespace GraphSharp.Visitors
     public interface IVisitor
     {
         /// <summary>
-        /// 
+        /// This method will be called on every child of node.
         /// </summary>
         /// <param name="child"></param>
         /// <returns>Whatever this child must be visited or not</returns>
         bool Select(IChild child);
         /// <summary>
-        /// Visit child. Note: this method will be called only once at particular node.
+        /// Visit child. Note: this method will be called only once at particular node of whole graph.
         /// </summary>
         /// <param name="child"></param>
         void Visit(IChild child);
