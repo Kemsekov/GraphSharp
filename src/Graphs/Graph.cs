@@ -16,9 +16,6 @@ using Microsoft.Toolkit.HighPerformance;
 
 namespace GraphSharp.Graphs
 {
-    /// <summary>
-    /// Implementation for <see cref="ParallelGraphBase{,,}"/>
-    /// </summary>
     public class Graph : IGraph
     {
         private INode[] _nodes;

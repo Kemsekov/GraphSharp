@@ -21,6 +21,7 @@ var watch1 = new Stopwatch();
 watch1.Start();
 var nodes = NodeGraphFactory.CreateNodes(nodes_count);
 NodeGraphFactory.ConnectNodes(nodes,children_count);
+NodeGraphFactory.ConnectRandomCountOfNodes(nodes,10,20);
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);

@@ -4,189 +4,87 @@ GraphSharp is a node based implementation of graph.
 
 # Example of usage
 
-First of all we need to create a bunch of connected nodes
+First of all we need to create a bunch of nodes
 You can do this using `NodeGraphFactory`
 ```cs
-var nodes = NodeGraphFactory.CreateConnected<Node>(1000,20);
+var nodes = NodeGraphFactory.CreateNodes(100);
 ```
+By default `NodeGraphFactory.CreateNodes` creates `List<INode>` of 1000 nodes type of `Node`, where each of them have unique `Id` from 0 to 100 in this case.
 
-This will create a 1000 nodes of type `Node` with each of them connected to approximately other 20 nodes
-
-If you want more random in count of childs then use
+Next we need to connect nodes.
+This also can be made my `NodeGraphFactory`
 
 ```cs
-var nodes = NodeGraphFactory.CreateRandomConnected<Node>(1000,5,20);
+NodeGraphFactory.ConnectNodes(nodes : nodes,count_of_connections: 10);
 ```
 
-Which will create 1000 nodes with each of them connected to at least 5 and at max 20 others nodes
+This method will connect each node of `nodes` to other 10 nodes.
 
-Next what you need to create `Graph` and pass it nodes
+If you wanna to have some random range of connections you can use
+`ConnectRandomCountOfNodes` method
 
 ```cs
-var graph = new Graph(nodes);
+NodeGraphFactory.ConnectRandomCountOfNodes(
+    nodes: nodes,
+    min_count_of_nodes: 2,
+    max_count_of_nodes : 10);
 ```
+This one will connect each node to at least 2 nodes and at most 10 nodes.
 
-Next you need to create `Visitor`.
+Or you could connect nodes to each other my yourself. `INode` have a property 
+`IList<IChild> Children`, where you could do whatever you want. Just remeber to add children from the same list of nodes.
 
-`Visitor` is object that visiting your `graph` when you need to 'walk' through it.
+Note, that `IChild` is just a wrapper for `INode`, so that way you could define `Children` with some properties like weight or some other value that will say something about this node for node to node connection.
+
+Next we need to create visitor and graph.
+
+We define graph with created nodes, create visitor(s), add visitors to graph and bind them to some starting point nodes, and then call method `Step` to propagate visitor(s) trough graph to precise one generation.
 
 ```cs
-var visitor = new ActionVisitor(node=>
-{    
-    Console.Writeline(node);
-});
-```
-In this one we wanna write all nodes that we visit to console.
+var visitor = new ActionVisitor(
+    //this method called once of every node in graph
+    visitor : child => Console.WriteLine(child.Node),
+    //this method sort out children we need to visit
+    selector: child => true,
+    //this method called right after visitor is propagated in graph 
+    endVisit: () => {}
+);
 
-And now we need add visitor to graph
-
-```cs
-graph.AddVisitor(visitor);
-```
-Now our `visitor` is bound to some node from `nodes` that we loaded to `graph`.
-If you wanna your `visitor` to be bound to some exact nodes then you can do this
-
-```cs
-graph.AddVisitor(visitor,index1,index2...);
-```
-
-This will bound `visitor` to nodes with `Id` equals to corresponding `indexN`.
-
-Then when we can start.
-
-```cs
-graph.Step();
-```
-
-After invoking this method you will see this in console 
-```
-Node : NUMBER
-```
-
-In the graph we created every node connected to minimum 5 and at least 20 other nodes.
-So when we step through graph next time `visitor` will print to us `Node` childs.
-
-```cs
-graph.Step();
-```
-
-And in console
-
-```
-Node : NUMBER1
-Node : NUMBER2
-Node : NUMBER3
-Node : NUMBER4
-...
-```
-
-If you need to clean your graph then use `Clear` function and then you will have to add visitors again, but nodes inside of `Graph`
-will stay the same.
-```cs
-graph.Clear();
-```
-
-A whole example
-```cs
-using GraphSharp;
-using GraphSharp.Graphs;
-using GraphSharp.Nodes;
-using GraphSharp.Visitors;
-
-//create 20 nodes with each of them have from 0 to 2 childs
-var nodes = NodeGraphFactory.CreateRandomConnectedParallel<Node>(20, 0, 2);
-
+//create graph from nodes we created
 var graph = new Graph(nodes);
 
-//print node if it is visited first time
-var visitor = new ActionVisitor(node=>{
-    System.Console.WriteLine(node);
-});
-
-//add visitor to node 1 and node 2
+//add visitor to graph with starting nodes with id = 1 and 2
 graph.AddVisitor(visitor,1,2);
 
 System.Console.WriteLine("---Step 1---");
-graph.Step();
+graph.Step(visitor); //propagate this one visitor
 System.Console.WriteLine("---Step 2---");
-graph.Step();
+graph.Step();        //propagate trough all added visitors
+
 ```
-Output
+Possible output:
+
 ```
 ---Step 1---
-Node : 1
-Node : 2
+Node 1
+Node 2
 ---Step 2---
-Node : 6
-Node : 7
-Node : 8
-Node : 14
-Node : 15
-Node : 16
+Node 99
+Node 0
+Node 2
+Node 3
+Node 4
+Node 5
+Node 6
+Node 7
+Node 8
+Node 98
+Node 1
+Node 9
 ```
 
-# Node type
-Your custom `Node` type must be inherited from `NodeBase`.
-If you wanna to use your custom `Node` type win `NodeGraphFactory` then it MUST have constructor with single integer as input.
-```cs
-    public class Node : NodeBase
-    {
-        public Node(int id) : base(id)
-        {
-        }
-    }
-```
-
-# Visitor type
-
-To write your own visitor inherit it from `IVisitor`
-
-```cs
-public class Visitor : IVisitor
-    {
-
-        public MyVisitor()
-        {
-        }
-        
-        //When you call Graph.Step() this method is called first.
-        //It will filter which node must be visited, and which not.
-        public bool Select(NodeBase node){
-            //select only even nodes
-            return node.Id % 2 == 0;
-        }
-        //This method will recieve nodes on each Graph.Step() for this visitor.
-        public void Visit(NodeBase node)
-        {   
-                Console.Writeline(node);
-        }
-        //this method ends visiting nodes. This method called 
-        public void EndVisit(NodeBase node)
-        {
-            //do nothing
-        }
-    }
-```
-
-And with this visitor output may be like this after calling `Graph.Step()`.
-```
-Node : 2
-Node : 4
-Node : 6
-```
-
-
-# Graph type
-
-To write your own `Graph` type inherit it from `IGraph`
-
-```cs
-class Graph : IGraph{
-    //...
-}
-```
-
-# What it is best suited for
-
-Graph is best suited for a not big number of visitors and a lot of nodes.
-A lot of visitors and nodes can greatly affect memory usage, so be ware.
+As you can see, visitor visited node 1 and node 2 in step 1.
+In step 2 the same visitor visited node's 1 and node's 2 children in such a way,
+that even if node 1 and node 2 connected to node 3(both of them have this node in `Children`), 
+then `visit` method of `ActionVisitor` will visit node 3 only once, meanwhile `select` method
+will be called both times from node 1 and node 2.

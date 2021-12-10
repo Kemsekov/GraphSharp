@@ -22,12 +22,6 @@ namespace tests
             this._nodes = NodeGraphFactory.CreateNodes(5000);
             NodeGraphFactory.ConnectRandomCountOfNodes(_nodes, 5, 30);
         }
-        [Fact]
-        public void Graph_VisitSelectorWorks(){
-            dynamic t = new object();
-            t.PrintHello = new Action(()=>{System.Console.WriteLine("Hello!");});
-            t.PrintHello();
-        }
 
         [Fact]
         public void Graph_ValidateOrderWithManualData()
