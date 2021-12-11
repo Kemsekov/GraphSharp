@@ -8,6 +8,6 @@ namespace GraphSharp.Children
         {
             Value = value;
         }
-        T Value { get; }
+        public T Value { get; protected set; }
     }
 }
