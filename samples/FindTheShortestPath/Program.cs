@@ -5,7 +5,7 @@ using GraphSharp.Nodes;
 using GraphSharp.Graphs;
 
 //this program showing how to find the shortest path betwen two nodes
-//by brute forcing
+//by summing and comparing sum of visited path
 
 var rand = new Random(0);
 var nodes = NodeGraphFactory.CreateNodes(500);
