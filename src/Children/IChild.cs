@@ -10,6 +10,6 @@ namespace GraphSharp.Children
     /// </summary>
     public interface IChild : IComparable<IChild>
     {
-        INode Node{get;}
+        INode Node{get;init;}
     }
 }

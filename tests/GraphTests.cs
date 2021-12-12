@@ -91,12 +91,12 @@ namespace tests
             {
                 visitor1 = new ActionVisitor(node =>
                 {
-                    lock (visitor1_store) visitor1_store.Add(node.Node);
+                    lock (visitor1_store) visitor1_store.Add(node);
                 }, null, null);
 
                 visitor2 = new ActionVisitor(node =>
                 {
-                    lock (visitor2_store) visitor2_store.Add(node.Node);
+                    lock (visitor2_store) visitor2_store.Add(node);
                 }, null, null);
                 graph.RemoveAllVisitors();
 
@@ -152,8 +152,8 @@ namespace tests
             {
                 lock (current_gen)
                 {
-                    current_gen.Add(node.Node);
-                    foreach (var n in node.Node.Children)
+                    current_gen.Add(node);
+                    foreach (var n in node.Children)
                     {
                         if (selector is null)
                             next_gen.Add(n.Node);
@@ -220,7 +220,7 @@ namespace tests
                 {
 
                     lock (forward_list)
-                        forward_list.Add(node.Node);
+                        forward_list.Add(node);
                 },
                 //select happening before vesit
                 node =>
@@ -234,7 +234,7 @@ namespace tests
                     {
 
                         lock (back_list)
-                            back_list.Add(node.Node);
+                            back_list.Add(node);
                     },
                     node =>
                     {

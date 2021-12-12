@@ -9,7 +9,7 @@ namespace GraphSharp.Nodes
     /// </summary>
     public interface INode : IComparable<INode>
     {
-        int Id{get;}
+        int Id{get;init;}
         IList<IChild> Children{get;}
     }
 }

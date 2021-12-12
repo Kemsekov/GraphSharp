@@ -6,6 +6,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Kemsekov.GraphSharp" Version="1.0.5"/>
+    <ProjectReference Include="../../src/Graph.csproj"/>
   </ItemGroup>
 </Project>

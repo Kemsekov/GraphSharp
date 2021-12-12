@@ -17,7 +17,7 @@ namespace GraphSharp.Nodes
             Children = new List<IChild>();
         }
 
-        public int Id{get;}
+        public int Id{get;init;}
 
         public IList<IChild> Children{get;}
 

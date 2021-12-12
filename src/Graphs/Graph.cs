@@ -91,7 +91,7 @@ namespace GraphSharp.Graphs
                     lock (__node)
                     {
                         if (__visited > 0) continue;
-                        visitor.Visit(__child);
+                        visitor.Visit(__node);
                         ++__visited;
                         __buf.Add(__node);
                     }

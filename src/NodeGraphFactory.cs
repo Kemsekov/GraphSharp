@@ -10,6 +10,12 @@ namespace GraphSharp
 {
     public static partial class NodeGraphFactory
     {
+        /// <summary>
+        /// Create IList of INode's
+        /// </summary>
+        /// <param name="count">Count of codes to create</param>
+        /// <param name="createNode">Function to create nodes. Use it to CreateNodes for your own implementations of INode</param>
+        /// <returns></returns>
         public static IList<INode> CreateNodes(int count, Func<int, INode> createNode = null)
         {
             createNode ??= id => new Node(id);
@@ -24,41 +30,57 @@ namespace GraphSharp
             }
             return nodes;
         }
-        public static void ConnectNodes(IList<INode> nodes, int count_of_connections, Random rand = null, Func<INode, IChild> createChild = null)
+        /// <summary>
+        /// Randomly add to each node's Children another nodes. It connect nodes to each other.
+        /// </summary>
+        /// <param name="nodes">Nodes to connect</param>
+        /// <param name="countOfConnections">How much children each node need</param>
+        /// <param name="rand">Use your own rand if you need to get the same output per invoke. Let it null to use new random.</param>
+        /// <param name="createChild">Method that consists of node, parent and returns child. createChild = (node,parent)=>new SomeNode(node,parent,...) // etc..</param>
+        public static void ConnectNodes(IList<INode> nodes, int countOfConnections, Random rand = null, Func<INode,INode, IChild> createChild = null)
         {
             rand ??= new Random();
-            createChild ??= node => new Child(node);
-            count_of_connections = count_of_connections > nodes.Count ? nodes.Count : count_of_connections;
+            createChild ??= (node,parent) => new Child(node);
+            countOfConnections = countOfConnections > nodes.Count ? nodes.Count : countOfConnections;
 
             foreach (var node in nodes)
             {
                 var start_index = rand.Next(nodes.Count);
-                ConnectNodeToNodes(node,nodes,start_index,count_of_connections,createChild);
+                ConnectNodeToNodes(node,nodes,start_index,countOfConnections,createChild);
             }
         }
-        public static void ConnectRandomCountOfNodes(IList<INode> nodes, int min_count_of_nodes, int max_count_of_nodes, Random rand = null, Func<INode, IChild> createChild = null)
+        /// <summary>
+        /// Randomly add to each node's Children another nodes, but create random count of connections per node. It connect nodes to each other.
+        /// </summary>
+        /// <param name="nodes">Nodes to connect</param>
+        /// <param name="minCountOfNodes">Min count of children of each node</param>
+        /// <param name="maxCountOfNodes">Max count of children of each node</param>
+        /// <param name="rand">Use your own rand if you need to get the same output per invoke. Let it null to use new random.</param>
+        /// <param name="createChild">Method that consists of node, parent and returns child. createChild = (node,parent)=>new SomeNode(node,parent,...) // etc..</param>
+        public static void ConnectRandomCountOfNodes(IList<INode> nodes, int minCountOfNodes, int maxCountOfNodes, Random rand = null, Func<INode,INode, IChild> createChild = null)
         {
             rand ??= new Random();
-            createChild ??= node => new Child(node);
-            min_count_of_nodes = min_count_of_nodes < 1 ? 1 : min_count_of_nodes;
-            max_count_of_nodes = max_count_of_nodes > nodes.Count ? nodes.Count : max_count_of_nodes;
+            createChild ??= (node,parent) => new Child(node);
+            minCountOfNodes = minCountOfNodes < 1 ? 1 : minCountOfNodes;
+            maxCountOfNodes = maxCountOfNodes > nodes.Count ? nodes.Count : maxCountOfNodes;
 
             //swap using xor
-            if (min_count_of_nodes > max_count_of_nodes)
+            if (minCountOfNodes > maxCountOfNodes)
             {
-                min_count_of_nodes = min_count_of_nodes ^ max_count_of_nodes;
-                max_count_of_nodes = min_count_of_nodes ^ max_count_of_nodes;
-                min_count_of_nodes = min_count_of_nodes ^ max_count_of_nodes;
+                minCountOfNodes = minCountOfNodes ^ maxCountOfNodes;
+                maxCountOfNodes = minCountOfNodes ^ maxCountOfNodes;
+                minCountOfNodes = minCountOfNodes ^ maxCountOfNodes;
             }
 
             foreach (var node in nodes)
             {
-                int count_of_connections = rand.Next(max_count_of_nodes-min_count_of_nodes)+min_count_of_nodes;
+                int count_of_connections = rand.Next(maxCountOfNodes-minCountOfNodes)+minCountOfNodes;
                 var start_index = rand.Next(nodes.Count);
                 ConnectNodeToNodes(node,nodes,start_index,count_of_connections,createChild);
             }
         }
-        private static void ConnectNodeToNodes(INode node, IList<INode> nodes,int start_index, int count_of_connections,Func<INode, IChild> createChild)
+        //connect some node to List of nodes with some parameters.
+        private static void ConnectNodeToNodes(INode node, IList<INode> nodes,int start_index, int count_of_connections,Func<INode,INode, IChild> createChild)
         {
             lock(node)
             for (int i = 0; i < count_of_connections; i++)
@@ -69,7 +91,7 @@ namespace GraphSharp
                     i--;
                     continue;
                 }
-                node.Children.Add(createChild(child));
+                node.Children.Add(createChild(child,node));
                 
             }
         }

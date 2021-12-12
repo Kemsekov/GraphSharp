@@ -13,13 +13,13 @@ namespace GraphSharp.Visitors
         /// This method will be called on every child of node.
         /// </summary>
         /// <param name="child"></param>
-        /// <returns>Whatever this child must be visited or not</returns>
+        /// <returns>Whatever this child must be passed to next generation of nodes or not.</returns>
         bool Select(IChild child);
         /// <summary>
-        /// Visit child. Note: this method will be called only once at particular node of whole graph.
+        /// Visit node. Note: this method will be called only once at particular node of whole graph.
         /// </summary>
-        /// <param name="child"></param>
-        void Visit(IChild child);
+        /// <param name="node"></param>
+        void Visit(INode node);
         /// <summary>
         /// This method called right after visitor propagation is end.
         /// </summary>

@@ -8,7 +8,7 @@ namespace GraphSharp.Children
         {
             this.Node = node;
         }
-        public INode Node{get;}
+        public INode Node{get;init;}
         public int CompareTo(IChild other) => Node.CompareTo(other.Node);
     }
 }

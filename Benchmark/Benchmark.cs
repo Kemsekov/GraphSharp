@@ -25,7 +25,7 @@ NodeGraphFactory.ConnectRandomCountOfNodes(nodes,10,20);
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
 var graph = new Graph(nodes);
-var visitor = new ActionVisitor(child=>{
+var visitor = new ActionVisitor(node=>{
     
 });
 
