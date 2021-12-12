@@ -18,16 +18,16 @@ var pathFinder = new PathFinder(startNode);
 var graph = new Graph(nodes);
 graph.AddVisitor(pathFinder, startNode.Id);
 
-
 System.Console.WriteLine($"Trying to find path from {startNode} to {endNode}...");
 for(int i = 0;i<20;i++){
     graph.Step();
 }
+
 System.Console.WriteLine("---Path");
 
 var path = pathFinder.GetPath(endNode) ?? new List<INode>();
 
-Helpers.ValidatePath(path,nodes);
+Helpers.ValidatePath(path);
 
 foreach (var n in path)
 {

@@ -25,23 +25,23 @@ public class PathFinder : IVisitor
 
     public bool Select(IChild child)
     {
-        lock (_path)
+        bool updatePath = true;
             if (child is NodeConnector connection)
             {
                 var pathLength = _pathLength[connection.Parent] + connection.Weight;
 
                 if (_pathLength.TryGetValue(connection.Node, out double pathSoFar))
                 {
-                    if (pathSoFar > pathLength)
+                    if (pathSoFar <= pathLength)
                     {
+                        updatePath = false;
+                    }
+                }
+                if(updatePath){
+                    lock (_path){
                         _pathLength[connection.Node] = pathLength;
                         _path[connection.Node] = connection.Parent;
                     }
-                }
-                else
-                {
-                    _pathLength[connection.Node] = pathLength;
-                    _path[connection.Node] = connection.Parent;
                 }
             }
         return true;
