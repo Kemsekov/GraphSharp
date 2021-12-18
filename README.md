@@ -88,3 +88,17 @@ In step 2 the same visitor visited node's 1 and node's 2 children in such a way,
 that even if node 1 and node 2 connected to node 3(both of them have this node in `Children`), 
 then `visit` method of `ActionVisitor` will visit node 3 only once, meanwhile `select` method
 will be called both times from node 1 and node 2.
+
+# `Gaph` and `ParallelGraph`
+
+Both `Graph` and `ParallelGraph` doing the same thing - they propagate your visitor through graph(connection of nodes).
+`Graph` doing it sync - in one thread.
+`ParallelGraph` doing it concurrently - in many threads.
+Second one is a lot faster to use, but have require you to write visitor with concurrency in mind.
+
+All you need to know:
+In `Graph` both `IVisitor.Select` and `IVisitor.Visit` calling in one thread - it does not 
+require any `lock`s from you.
+
+In `ParallelGraph` `IVisitor.Select` calling absoulutely concurrently - you must lock some common to a visitor object to achive thread safety.
+But `IVisitor.Visit` is locked by default by passing in object. It means that if you need to achive thread safety inside of `Visit` method while using `ParallelGraph` you only need to lock incoming `INode`. That's it.
