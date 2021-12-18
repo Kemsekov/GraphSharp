@@ -26,8 +26,8 @@ If you wanna to have some random range of connections you can use
 ```cs
 NodeGraphFactory.ConnectRandomCountOfNodes(
     nodes: nodes,
-    min_count_of_nodes: 2,
-    max_count_of_nodes : 10);
+    minCountOfNodes: 2,
+    maxCountOfNodes : 10);
 ```
 This one will connect each node to at least 2 nodes and at most 10 nodes.
 
@@ -42,10 +42,10 @@ We define graph with created nodes, create visitor(s), add visitors to graph and
 
 ```cs
 var visitor = new ActionVisitor(
-    //this method called once of every node in graph
-    visitor : child => Console.WriteLine(child.Node),
+    //this method called once of every node in current graph generation
+    visit : node => Console.WriteLine(node),
     //this method sort out children we need to visit
-    selector: child => true,
+    select: child => true,
     //this method called right after visitor is propagated in graph 
     endVisit: () => {}
 );
