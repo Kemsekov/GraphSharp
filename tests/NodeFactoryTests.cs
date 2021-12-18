@@ -19,6 +19,17 @@ namespace tests
             this._nodes = NodeGraphFactory.CreateNodes(_nodes_count);
         }
         [Fact]
+        public void NodeGraphFactory_EnsureMakeDirectedWorks(){
+            var nodes = NodeGraphFactory.CreateNodes(2000);
+            NodeGraphFactory.ConnectNodes(nodes,20);
+            NodeGraphFactory.MakeDirected(nodes);
+            foreach(var n in nodes){
+                foreach(var child in n.Children){
+                    Assert.True(!child.Node.Children.Select(x=>x.Node).Contains(n));
+                }
+            }
+        }
+        [Fact]
         public void NodeGraphFactory_EnsureNodesCount()
         {
             Assert.Equal(_nodes.Count, _nodes_count);
@@ -55,5 +66,6 @@ namespace tests
                 Assert.False(parent.Children.Any(child => child.Node.CompareTo(parent) == 0), $"There is parent in children. Parent : {parent}");
             }
         }
+
     }
 }

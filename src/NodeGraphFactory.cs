@@ -79,6 +79,23 @@ namespace GraphSharp
                 ConnectNodeToNodes(node,nodes,start_index,count_of_connections,createChild);
             }
         }
+        
+        /// <summary>
+        /// Removes parent's node from it's children connection.
+        /// </summary>
+        /// <param name="nodes"></param>
+        public static void MakeDirected(IList<INode> nodes){
+            foreach(var n in nodes){
+                foreach(var child in n.Children){
+                    foreach(var c in child.Node.Children){
+                        if(c.Node.CompareTo(n)==0){
+                            child.Node.Children.Remove(c);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         //connect some node to List of nodes with some parameters.
         private static void ConnectNodeToNodes(INode node, IList<INode> nodes,int start_index, int count_of_connections,Func<INode,INode, IChild> createChild)
         {
@@ -95,5 +112,6 @@ namespace GraphSharp
                 
             }
         }
+
     }
 }
