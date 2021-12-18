@@ -96,6 +96,18 @@ namespace GraphSharp
                 }
             }
         }
+        public static void MakeUndirected(IList<INode> nodes,Func<INode,INode, IChild> createChild = null){
+            createChild ??= (node,parent) => new Child(node);
+            
+            foreach(var n in nodes){
+                foreach(var c in n.Children){
+                    if(c.Node.Id==n.Id) continue;
+                    if(c.Node.Children.FirstOrDefault(x=>x.Node.Id==n.Id) is null){
+                        c.Node.Children.Add(createChild(c.Node,n));
+                    }
+                }
+            }
+        }
         //connect some node to List of nodes with some parameters.
         private static void ConnectNodeToNodes(INode node, IList<INode> nodes,int start_index, int count_of_connections,Func<INode,INode, IChild> createChild)
         {

@@ -69,5 +69,10 @@ public class PathFinder : IVisitor
         path.Reverse();
         return path;
     }
-    public double GetPathLength(INode node) => _pathLength[node];
+    public double GetPathLength(INode node){
+        if(_pathLength.TryGetValue(node,out double length)){
+            return length;
+        }
+        return 0;
+    }
 }

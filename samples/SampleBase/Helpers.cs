@@ -1,6 +1,6 @@
 using System.Diagnostics;
 using GraphSharp.Nodes;
-
+using System.Drawing;
 public static class Helpers
 {
     public static void MeasureTime(Action operation)
