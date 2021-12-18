@@ -8,34 +8,30 @@ using GraphSharp.Graphs;
 //by summing and comparing sum of visited path
 
 var rand = new Random(0);
-var nodes = NodeGraphFactory.CreateNodes(500);
+var nodes = NodeGraphFactory.CreateNodes(20000);
 NodeGraphFactory.ConnectRandomCountOfNodes(nodes, 1, 4, rand, (node, parent) => new NodeConnector(node, parent, rand.NextDouble()));
 
 var startNode = nodes[0];
-var endNode = nodes[450];
+var endNode = nodes[12450];
 
 var pathFinder = new PathFinder(startNode);
-var graph = new Graph(nodes);
+
+//~1500 ms
+// var graph = new Graph(nodes);
+//~500 ms
+var graph = new ParallelGraph(nodes);
 graph.AddVisitor(pathFinder, startNode.Id);
 
 System.Console.WriteLine($"Trying to find path from {startNode} to {endNode}...");
-for(int i = 0;i<20;i++){
-    graph.Step();
-}
-
-System.Console.WriteLine("---Path");
+Helpers.MeasureTime(() =>{
+    for (int i = 0; i < 300; i++)
+        graph.Step();
+});
 
 var path = pathFinder.GetPath(endNode) ?? new List<INode>();
 
 Helpers.ValidatePath(path);
 
-foreach (var n in path)
-{
-    Console.WriteLine(n);
-    foreach (var c in n.Children)
-    {
-        if(c is NodeConnector con)
-        System.Console.WriteLine($"\t{con.Node} {(float)con.Weight}");
-    }
-}
+// Helpers.PrintPath(path);
+
 System.Console.WriteLine($"---Path length {pathFinder.GetPathLength(endNode)}");

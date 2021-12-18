@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using GraphSharp.Children;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
@@ -6,11 +7,11 @@ public class PathFinder : IVisitor
     /// <summary>
     /// _path[node] = parent 
     /// </summary>
-    Dictionary<INode, INode> _path = new();
+    IDictionary<INode, INode> _path = new ConcurrentDictionary<INode, INode>();
     /// <summary>
     /// what is the length of path from startNode to some other node so far.  
     /// </summary>
-    Dictionary<INode, double> _pathLength = new();
+    IDictionary<INode, double> _pathLength = new ConcurrentDictionary<INode, double>();
     private INode _startNode;
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>
@@ -26,24 +27,23 @@ public class PathFinder : IVisitor
     public bool Select(IChild child)
     {
         bool updatePath = true;
-            if (child is NodeConnector connection)
-            {
-                var pathLength = _pathLength[connection.Parent] + connection.Weight;
+        if (child is NodeConnector connection)
+        {
+            var pathLength = _pathLength[connection.Parent] + connection.Weight;
 
-                if (_pathLength.TryGetValue(connection.Node, out double pathSoFar))
+            if (_pathLength.TryGetValue(connection.Node, out double pathSoFar))
+            {
+                if (pathSoFar <= pathLength)
                 {
-                    if (pathSoFar <= pathLength)
-                    {
-                        updatePath = false;
-                    }
-                }
-                if(updatePath){
-                    lock (_path){
-                        _pathLength[connection.Node] = pathLength;
-                        _path[connection.Node] = connection.Parent;
-                    }
+                    updatePath = false;
                 }
             }
+            if (updatePath)
+            {
+                _pathLength[connection.Node] = pathLength;
+                _path[connection.Node] = connection.Parent;
+            }
+        }
         return true;
     }
 
