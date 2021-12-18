@@ -15,12 +15,14 @@ namespace tests
 {
     public class GraphTests
     {
-        private IList<INode> _nodes;
-
+        IList<INode> _nodes;
+        Func<IEnumerable<INode>,IGraph> createGraph;
         public GraphTests()
         {
             this._nodes = NodeGraphFactory.CreateNodes(5000);
             NodeGraphFactory.ConnectRandomCountOfNodes(_nodes, 5, 30);
+            //change it to test various Graph implementations.
+            createGraph = nodes=>new ParallelGraph(nodes);
         }
 
         [Fact]
@@ -80,7 +82,7 @@ namespace tests
                 nodes[9].Children.Add(new Child(nodes[3]));
             }
 
-            var graph = new Graph(nodes);
+            var graph = createGraph(nodes);
             var visitor1_store = new List<INode>();
             var visitor2_store = new List<INode>();
 
@@ -139,7 +141,7 @@ namespace tests
         }
         [Fact]
         public void Graph_ValidateOrder(){
-            var graph = new Graph(_nodes);
+            var graph = createGraph(_nodes);
             validate_graphOrder(graph,_nodes,child=>true);
         }
         static void validate_graphOrder(IGraph graph, IList<INode> nodes, Func<IChild, bool> selector = null)
@@ -242,7 +244,7 @@ namespace tests
                         return back_list.Last().Id > node.Node.Id;
                     });
 
-                var graph = new Graph(nodes);
+                var graph = createGraph(nodes);
 
                 graph.AddVisitor(forward_visitor, 0);
                 graph.AddVisitor(back_visitor, 13);
@@ -257,7 +259,7 @@ namespace tests
         [Fact]
         public void Graph_RemoveVisitor_Works()
         {
-            var graph = new Graph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
+            var graph = createGraph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
             var visitor1 = new ActionVisitor(node => { });
             var visitor2 = new ActionVisitor(node => { Assert.True(false); });
             graph.AddVisitor(visitor1, 1);
@@ -268,7 +270,7 @@ namespace tests
         [Fact]
         public void Graph_Step_WrongVisitorThrows()
         {
-            var graph = new Graph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
+            var graph = createGraph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
             var visitor1 = new ActionVisitor(node => { });
             var visitor2 = new ActionVisitor(node => { });
 

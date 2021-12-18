@@ -1,10 +1,9 @@
-using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs
 {
     /// <summary>
-    /// Implements logic for proparating visitors trough graph
+    /// Implements logic for propagating visitors trough graph
     /// </summary>
     public interface IGraph
     {
