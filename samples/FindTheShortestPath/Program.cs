@@ -10,12 +10,12 @@ using SixLabors.ImageSharp.PixelFormats;
 //this program showing how to find the shortest path betwen two nodes
 //by summing and comparing sum of visited path
 
-var rand = new Random(0);
+var rand = new Random(1212);
 var nodes = NodeGraphFactory.CreateNodes(400,id=>new NodeXY(id,rand.NextDouble(),rand.NextDouble()));
 
 // NodeGraphFactory.ConnectRandomCountOfNodes(nodes, 0, 2, rand, (node, parent) => new NodeConnector(node, parent));
 
-Helpers.ConnectToClosestNodes(nodes.Select(x=>(NodeXY)x).ToList(),1,4,rand);
+Helpers.ConnectToClosestNodes(nodes.Select(x=>(NodeXY)x).ToList(),1,4);
 NodeGraphFactory.MakeUndirected(nodes,(node,parent)=>new NodeConnector(node,parent));
 
 var startNode = nodes[366];
@@ -50,6 +50,6 @@ if(path.Count>0){
     drawer.DrawLineBrush = Brushes.Solid(Color.Wheat);
     drawer.DrawPath(image,path);
 }
-image.SaveAsJpeg("file1.jpg");
+image.SaveAsJpeg("example.jpg");
 
 System.Console.WriteLine($"---Path length {pathFinder.GetPathLength(endNode)}");
