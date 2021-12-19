@@ -10,5 +10,9 @@ namespace GraphSharp.Children
         }
         public INode Node{get;init;}
         public int CompareTo(IChild other) => Node.CompareTo(other.Node);
+        public override string ToString()
+        {
+            return $"Child to node {Node.Id}";
+        }
     }
 }

@@ -95,7 +95,7 @@ namespace GraphSharp
                     for (int i = 0; i < parent.Children.Count; i++)
                     {
                         var child = parent.Children[i];
-                        
+
                         var toRemove = child.Node.Children.Any(x => x.Node.Id == parent.Id);
                         if (toRemove)
                         {
@@ -115,13 +115,16 @@ namespace GraphSharp
         {
             createChild ??= (node, parent) => new Child(node);
 
-            foreach (var n in nodes)
+            foreach (var parent in nodes)
             {
-                foreach (var c in n.Children)
+                for (int i = 0; i < parent.Children.Count; i++)
                 {
-                    if (c.Node.Children.FirstOrDefault(x => x.Node.Id == n.Id) is null)
+                    var child = parent.Children[i];
+
+                    var toAdd = !child.Node.Children.Any(x => x.Node.Id == parent.Id);
+                    if (toAdd)
                     {
-                        c.Node.Children.Add(createChild(c.Node, n));
+                        child.Node.Children.Add(createChild(parent,child.Node));
                     }
                 }
             }

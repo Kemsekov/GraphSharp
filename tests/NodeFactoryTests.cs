@@ -30,8 +30,8 @@ namespace tests
             var undirected = NodeGraphFactory.CreateNodes(2000);
 
             //connect them the same way
-            NodeGraphFactory.ConnectNodes(directed, 20,new Random(123));
-            NodeGraphFactory.ConnectNodes(undirected, 20,new Random(123));
+            NodeGraphFactory.ConnectNodes(directed, 20, new Random(123));
+            NodeGraphFactory.ConnectNodes(undirected, 20, new Random(123));
 
             //one of them make directed
             NodeGraphFactory.MakeDirected(directed);
@@ -44,7 +44,7 @@ namespace tests
             {
                 foreach (var child in parent.Children)
                 {
-                    Assert.False(child.Node.Children.Any(c=>c.Node.Id==parent.Id));
+                    Assert.False(child.Node.Children.Any(c => c.Node.Id == parent.Id));
                 }
             }
 
@@ -53,11 +53,13 @@ namespace tests
             {
                 //ensure they are the facto different objects in memory
                 Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
-                var directedChildren = parents.First.Children.Select(x=>x.Node);
-                var undirectedChildren = parents.Second.Children.Select(x=>x.Node);
-                var diff = undirectedChildren.Except(directedChildren,new NodeEqualityComparer());
-                foreach(var n in diff){
-                    Assert.True(n.Children.Any(x=>x.Node.Id==parents.First.Id));
+                var directedChildren = parents.First.Children.Select(x => x.Node);
+                var undirectedChildren = parents.Second.Children.Select(x => x.Node);
+                var diff = undirectedChildren.Except(directedChildren, new NodeEqualityComparer());
+                
+                foreach (var n in diff)
+                {
+                    Assert.True(n.Children.Any(x => x.Node.Id == parents.First.Id));
                 }
             }
 
@@ -65,10 +67,48 @@ namespace tests
         [Fact]
         public void EnsureMakeUndirectedWorks()
         {
-            var nodes = NodeGraphFactory.CreateNodes(2000);
-            var nodes_copy = nodes.ToList();
+            var maybeUndirected = NodeGraphFactory.CreateNodes(2000);
+            var undirected = NodeGraphFactory.CreateNodes(2000);
 
-            NodeGraphFactory.ConnectNodes(nodes, 20);
+            //connect them the same way
+            NodeGraphFactory.ConnectNodes(maybeUndirected, 20, new Random(123));
+            NodeGraphFactory.ConnectNodes(undirected, 20, new Random(123));
+
+            //one of them make 100% undirected
+            NodeGraphFactory.MakeUndirected(undirected);
+
+            //ensure they are the same
+            Assert.Equal(maybeUndirected, undirected);
+
+            //make sure each child have connection to parent
+            foreach (var parent in undirected)
+            {
+                foreach (var child in parent.Children)
+                {
+                    Assert.True(child.Node.Children.Any(c => c.Node.Id == parent.Id));
+                }
+            }
+
+            //make sure we did not add anything redundant
+            foreach (var parents in undirected.Zip(maybeUndirected))
+            {
+                //ensure they are the facto different objects in memory
+                Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
+                
+                var undirectedChildren = parents.First.Children.Select(x => x.Node);
+                var maybeUndirectedChildren = parents.Second.Children.Select(x => x.Node);
+                
+                var diff = maybeUndirectedChildren.Except(undirectedChildren, new NodeEqualityComparer());
+                Assert.Empty(diff);
+                
+                diff = undirectedChildren.Except(maybeUndirectedChildren, new NodeEqualityComparer());
+
+                foreach (var n in diff)
+                {
+                    Assert.True(maybeUndirected[n.Id].Children.Any(x=>x.Node.Id==parents.First.Id));
+                }
+            }
+
 
         }
         [Fact]
