@@ -26,7 +26,7 @@ namespace tests
         }
 
         [Fact]
-        public void Graph_ValidateOrderWithManualData()
+        public void ValidateOrderWithManualData()
         {
             var nodes = new Node[10];
             var expectedNodes1 = new int[][]{
@@ -140,7 +140,7 @@ namespace tests
 
         }
         [Fact]
-        public void Graph_ValidateOrder(){
+        public void ValidateOrder(){
             var graph = createGraph(_nodes);
             validate_graphOrder(graph,_nodes,child=>true);
         }
@@ -190,7 +190,7 @@ namespace tests
             }
         }
         [Fact]
-        public void Graph_ForthBackwardVisitors_Test()
+        public void ForthBackwardVisitors_Test()
         {
             for (int k = 0; k < 20; k++)
             {
@@ -257,7 +257,7 @@ namespace tests
             }
         }
         [Fact]
-        public void Graph_RemoveVisitor_Works()
+        public void RemoveVisitor_Works()
         {
             var graph = createGraph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
             var visitor1 = new ActionVisitor(node => { });
@@ -268,7 +268,7 @@ namespace tests
             graph.Step();
         }
         [Fact]
-        public void Graph_Step_WrongVisitorThrows()
+        public void Step_WrongVisitorThrows()
         {
             var graph = createGraph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
             var visitor1 = new ActionVisitor(node => { });

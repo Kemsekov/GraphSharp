@@ -37,16 +37,16 @@ namespace GraphSharp
         /// <param name="countOfConnections">How much children each node need</param>
         /// <param name="rand">Use your own rand if you need to get the same output per invoke. Let it null to use new random.</param>
         /// <param name="createChild">Method that consists of node, parent and returns child. createChild = (node,parent)=>new SomeNode(node,parent,...) // etc..</param>
-        public static void ConnectNodes(IList<INode> nodes, int countOfConnections, Random rand = null, Func<INode,INode, IChild> createChild = null)
+        public static void ConnectNodes(IList<INode> nodes, int countOfConnections, Random rand = null, Func<INode, INode, IChild> createChild = null)
         {
             rand ??= new Random();
-            createChild ??= (node,parent) => new Child(node);
+            createChild ??= (node, parent) => new Child(node);
             countOfConnections = countOfConnections > nodes.Count ? nodes.Count : countOfConnections;
 
             foreach (var node in nodes)
             {
                 var start_index = rand.Next(nodes.Count);
-                ConnectNodeToNodes(node,nodes,start_index,countOfConnections,createChild);
+                ConnectNodeToNodes(node, nodes, start_index, countOfConnections, createChild);
             }
         }
         /// <summary>
@@ -57,10 +57,10 @@ namespace GraphSharp
         /// <param name="maxCountOfNodes">Max count of children of each node</param>
         /// <param name="rand">Use your own rand if you need to get the same output per invoke. Let it null to use new random.</param>
         /// <param name="createChild">Method that consists of node, parent and returns child. createChild = (node,parent)=>new SomeNode(node,parent,...) // etc..</param>
-        public static void ConnectRandomCountOfNodes(IList<INode> nodes, int minCountOfNodes, int maxCountOfNodes, Random rand = null, Func<INode,INode, IChild> createChild = null)
+        public static void ConnectRandomCountOfNodes(IList<INode> nodes, int minCountOfNodes, int maxCountOfNodes, Random rand = null, Func<INode, INode, IChild> createChild = null)
         {
             rand ??= new Random();
-            createChild ??= (node,parent) => new Child(node);
+            createChild ??= (node, parent) => new Child(node);
             minCountOfNodes = minCountOfNodes < 1 ? 1 : minCountOfNodes;
             maxCountOfNodes = maxCountOfNodes > nodes.Count ? nodes.Count : maxCountOfNodes;
 
@@ -74,55 +74,74 @@ namespace GraphSharp
 
             foreach (var node in nodes)
             {
-                int count_of_connections = rand.Next(maxCountOfNodes-minCountOfNodes)+minCountOfNodes;
+                int count_of_connections = rand.Next(maxCountOfNodes - minCountOfNodes) + minCountOfNodes;
                 var start_index = rand.Next(nodes.Count);
-                ConnectNodeToNodes(node,nodes,start_index,count_of_connections,createChild);
+                ConnectNodeToNodes(node, nodes, start_index, count_of_connections, createChild);
             }
         }
-        
+
         /// <summary>
-        /// Removes parent's node from it's children connection.
+        /// Removes parent's node from it's children connection. Or simply makes any connection between nodes onedirectional.
         /// </summary>
         /// <param name="nodes"></param>
-        public static void MakeDirected(IList<INode> nodes){
-            foreach(var n in nodes){
-                foreach(var child in n.Children){
-                    foreach(var c in child.Node.Children){
-                        if(c.Node.CompareTo(n)==0){
-                            child.Node.Children.Remove(c);
-                            break;
+        public static void MakeDirected(IList<INode> nodes)
+        {
+            foreach (var parent in nodes)
+            {
+                bool fine = false;
+                while (!fine)
+                {
+                    fine = true;
+                    for (int i = 0; i < parent.Children.Count; i++)
+                    {
+                        var child = parent.Children[i];
+                        
+                        var toRemove = child.Node.Children.Any(x => x.Node.Id == parent.Id);
+                        if (toRemove)
+                        {
+                            parent.Children.Remove(child);
+                            fine = false;
                         }
                     }
                 }
             }
         }
-        public static void MakeUndirected(IList<INode> nodes,Func<INode,INode, IChild> createChild = null){
-            createChild ??= (node,parent) => new Child(node);
-            
-            foreach(var n in nodes){
-                foreach(var c in n.Children){
-                    if(c.Node.Id==n.Id) continue;
-                    if(c.Node.Children.FirstOrDefault(x=>x.Node.Id==n.Id) is null){
-                        c.Node.Children.Add(createChild(c.Node,n));
+        /// <summary>
+        /// ensures that every child of each node in nodes collection have it's parent included in children. Or simply make sure that any connection between two nodes are bidirectional. 
+        /// </summary>
+        /// <param name="nodes"></param>
+        /// <param name="createChild"></param>
+        public static void MakeUndirected(IList<INode> nodes, Func<INode, INode, IChild> createChild = null)
+        {
+            createChild ??= (node, parent) => new Child(node);
+
+            foreach (var n in nodes)
+            {
+                foreach (var c in n.Children)
+                {
+                    if (c.Node.Children.FirstOrDefault(x => x.Node.Id == n.Id) is null)
+                    {
+                        c.Node.Children.Add(createChild(c.Node, n));
                     }
                 }
             }
         }
         //connect some node to List of nodes with some parameters.
-        private static void ConnectNodeToNodes(INode node, IList<INode> nodes,int start_index, int count_of_connections,Func<INode,INode, IChild> createChild)
+        private static void ConnectNodeToNodes(INode node, IList<INode> nodes, int start_index, int count_of_connections, Func<INode, INode, IChild> createChild)
         {
-            lock(node)
-            for (int i = 0; i < count_of_connections; i++)
-            {
-                var child = nodes[(start_index + i) % nodes.Count];
-                if(child.Id == node.Id) {
-                    start_index++;
-                    i--;
-                    continue;
+            lock (node)
+                for (int i = 0; i < count_of_connections; i++)
+                {
+                    var child = nodes[(start_index + i) % nodes.Count];
+                    if (child.Id == node.Id)
+                    {
+                        start_index++;
+                        i--;
+                        continue;
+                    }
+                    node.Children.Add(createChild(child, node));
+
                 }
-                node.Children.Add(createChild(child,node));
-                
-            }
         }
 
     }
