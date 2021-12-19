@@ -15,32 +15,11 @@ var nodes = NodeGraphFactory.CreateNodes(400,id=>new NodeXY(id,rand.NextDouble()
 
 // NodeGraphFactory.ConnectRandomCountOfNodes(nodes, 0, 2, rand, (node, parent) => new NodeConnector(node, parent));
 
-foreach(var m in nodes){ 
-    if(m is NodeXY n)
-    for(int i = rand.Next(5)+1;i>0;--i){
-        (NodeXY node,double distance) min = (null,0);
-        foreach(var child in nodes){
-            if(child is NodeXY pretendent){
-                if(pretendent.Id==n.Id) continue;
-                if(min.node is null){
-                    min = (pretendent,n.Distance(pretendent));
-                    continue;
-                }
-                var pretendent_distance = n.Distance(pretendent);
-                if(pretendent_distance<min.distance && n.Children.FirstOrDefault(x=>x.Node.Id==pretendent.Id) is null){
-                    min = (pretendent,pretendent_distance);                        
-                }
-            }
-        }
-        min.node.Children.Add(new NodeConnector(n,min.node));
-        n.Children.Add(new NodeConnector(min.node,n));
-    }
+Helpers.ConnectToClosestNodes(nodes.Select(x=>(NodeXY)x).ToList(),1,4,rand);
+NodeGraphFactory.MakeUndirected(nodes,(node,parent)=>new NodeConnector(node,parent));
 
-}
-
-
-var startNode = nodes[310];
-var endNode = nodes[55];
+var startNode = nodes[366];
+var endNode = nodes[63];
 
 var pathFinder = new PathFinder(startNode);
 
@@ -52,7 +31,7 @@ graph.AddVisitor(pathFinder, startNode.Id);
 
 System.Console.WriteLine($"Trying to find path from {startNode} to {endNode}...");
 Helpers.MeasureTime(() =>{
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 100; i++)
         graph.Step();
 });
 
@@ -71,6 +50,6 @@ if(path.Count>0){
     drawer.DrawLineBrush = Brushes.Solid(Color.Wheat);
     drawer.DrawPath(image,path);
 }
-image.SaveAsJpeg("file.jpg");
+image.SaveAsJpeg("file1.jpg");
 
 System.Console.WriteLine($"---Path length {pathFinder.GetPathLength(endNode)}");

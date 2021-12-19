@@ -110,7 +110,7 @@ namespace GraphSharp
         /// ensures that every child of each node in nodes collection have it's parent included in children. Or simply make sure that any connection between two nodes are bidirectional. 
         /// </summary>
         /// <param name="nodes"></param>
-        /// <param name="createChild"></param>
+        /// <param name="createChild">(node,parent)=>new SomeChild(...)</param>
         public static void MakeUndirected(IList<INode> nodes, Func<INode, INode, IChild> createChild = null)
         {
             createChild ??= (node, parent) => new Child(node);
