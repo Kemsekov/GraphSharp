@@ -42,11 +42,14 @@ public static class Helpers
             {
                 (NodeXY node, double distance) min = (null, 0);
                 int shift = rand.Next(nodes.Count);
+
                 for(int b = 0;b<nodes.Count;b++)
                 {
                     var pretendent = nodes[(b+shift)%nodes.Count];
+                    
                     if (pretendent.Id == parent.Id) continue;
                     if(pretendent.Children.Count>maxChildCount) continue;
+
                     if (min.node is null)
                     {
                         min = (pretendent, parent.Distance(pretendent));
@@ -59,6 +62,7 @@ public static class Helpers
                     }
                 }
                 var node = min.node;
+                if(node is null) continue;
                 parent.Children.Add(new NodeConnector(node, parent));
                 node.Children.Add(new NodeConnector(parent,node));
             }

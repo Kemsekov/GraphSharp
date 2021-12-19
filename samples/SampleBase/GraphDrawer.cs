@@ -10,43 +10,48 @@ using SixLabors.Fonts;
 public class GraphDrawer
 {
     public IBrush DrawNodeBrush;
-    public float Radius;
     public IBrush DrawLineBrush;
     public float Thickness;
-
+    public float NodeSize;
+    public Image<Rgba32> Image;
 
     public Font Font;
 
-    public GraphDrawer(IBrush drawNodeBrush, float radius, IBrush drawLineBrush, float thickness, float fontSize)
+    public GraphDrawer(Image<Rgba32> image, IBrush drawNodeBrush, IBrush drawLineBrush, float fontSize)
     {
+        Image = image;
         DrawNodeBrush = drawNodeBrush;
-        Radius = radius;
         DrawLineBrush = drawLineBrush;
-        Thickness = thickness;
+        
+        var fi = SixLabors.Fonts.FontInstance.LoadFont("NotoSans-Bold.ttf");
+        FontCollection fonts = new FontCollection();
+        fonts.Install("NotoSans-Bold.ttf");
 
-        Font = SystemFonts.CreateFont("Noto Sans", fontSize, FontStyle.Regular);
+        var notoSans = fonts.CreateFont("Noto Sans", fontSize * (image.Width + image.Height) / 2, FontStyle.Regular);
+
+        Font = notoSans;
     }
-    public Image<Rgba32> Clear(Image<Rgba32> image, Color color)
+    public Image<Rgba32> Clear(Color color)
     {
-        image.Mutate(x => x.Clear(new GraphicsOptions(), new SolidBrush(color)));
-        return image;
+        Image.Mutate(x => x.Clear(new GraphicsOptions(), new SolidBrush(color)));
+        return Image;
     }
-    public Image<Rgba32> DrawNodes(Image<Rgba32> image, IList<INode> nodes)
+    public Image<Rgba32> DrawNodes(IList<INode> nodes)
     {
-        image.Mutate(x =>
+        Image.Mutate(x =>
         {
             var size = x.GetCurrentSize();
 
             Parallel.ForEach(nodes, node =>
-                DrawNode(x, node, size));
+                DrawNode(x, node, size, NodeSize));
             Parallel.ForEach(nodes, node =>
-                DrawNodeId(x,node,size));
+                DrawNodeId(x, node, size));
         });
-        return image;
+        return Image;
     }
-    public Image<Rgba32> DrawNodeConnections(Image<Rgba32> image, IList<INode> nodes)
+    public Image<Rgba32> DrawNodeConnections(IList<INode> nodes)
     {
-        image.Mutate(x =>
+        Image.Mutate(x =>
         {
             var size = x.GetCurrentSize();
             Parallel.ForEach(nodes, node =>
@@ -56,14 +61,14 @@ public class GraphDrawer
                     DrawConnection(x, node, c.Node, size);
                 }
             });
-            
+
         });
-        return image;
+        return Image;
     }
 
-    public Image<Rgba32> DrawPath(Image<Rgba32> image, IList<INode> path)
+    public Image<Rgba32> DrawPath(IList<INode> path)
     {
-        image.Mutate(x =>
+        Image.Mutate(x =>
         {
 
             path.Aggregate((n1, n2) =>
@@ -72,34 +77,34 @@ public class GraphDrawer
                 return n2;
             });
         });
-        return image;
+        return Image;
     }
-    public void DrawNodeId(IImageProcessingContext x, INode node, Size imageSize)
+    public void DrawNodeId(IImageProcessingContext x, INode node, Size ImageSize)
     {
         if (node is NodeXY nodeXY)
         {
 
-            var point = new PointF((float)nodeXY.X * imageSize.Width, (float)nodeXY.Y * imageSize.Height);
+            var point = new PointF((float)nodeXY.X * ImageSize.Width, (float)nodeXY.Y * ImageSize.Height);
             x.DrawText(node.Id.ToString(), Font, Color.Violet, point);
         }
     }
-    public void DrawNode(IImageProcessingContext x, INode node, Size imageSize)
+    public void DrawNode(IImageProcessingContext x, INode node, Size ImageSize, float nodeSize)
     {
         if (node is NodeXY nodeXY)
         {
-            var point = new PointF((float)nodeXY.X * imageSize.Width, (float)nodeXY.Y * imageSize.Height);
-            var ellipse = new EllipsePolygon(point, 0.01f * (imageSize.Width + imageSize.Height) / 2);
+            var point = new PointF((float)nodeXY.X * ImageSize.Width, (float)nodeXY.Y * ImageSize.Height);
+            var ellipse = new EllipsePolygon(point, nodeSize * (ImageSize.Width + ImageSize.Height) / 2);
             x.FillPolygon(new DrawingOptions() { }, DrawNodeBrush, ellipse.Points.ToArray());
         }
     }
-    public void DrawConnection(IImageProcessingContext x, INode node1, INode node2, Size imageSize)
+    public void DrawConnection(IImageProcessingContext x, INode node1, INode node2, Size ImageSize)
     {
         if (node1 is NodeXY n1 && node2 is NodeXY n2)
         {
-            var point1 = new PointF((float)n1.X * imageSize.Width, (float)n1.Y * imageSize.Height);
-            var point2 = new PointF((float)n2.X * imageSize.Width, (float)n2.Y * imageSize.Height);
+            var point1 = new PointF((float)n1.X * ImageSize.Width, (float)n1.Y * ImageSize.Height);
+            var point2 = new PointF((float)n2.X * ImageSize.Width, (float)n2.Y * ImageSize.Height);
 
-            x.DrawLines(new DrawingOptions() { }, DrawLineBrush, Thickness * (imageSize.Height + imageSize.Width) / 2, point1, point2);
+            x.DrawLines(new DrawingOptions() { }, DrawLineBrush, Thickness * (ImageSize.Height + ImageSize.Width) / 2, point1, point2);
         }
     }
 }
