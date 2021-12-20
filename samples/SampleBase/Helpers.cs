@@ -5,11 +5,16 @@ public static class Helpers
 {
     public static void MeasureTime(Action operation)
     {
+        Console.ForegroundColor = ConsoleColor.Green;
+        System.Console.WriteLine("Starting operation");
+        Console.ResetColor();
         var watch = new Stopwatch();
         watch.Start();
         operation();
         watch.Stop();
-        System.Console.WriteLine($"Elapsed Milliseconds {watch.ElapsedMilliseconds}");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"End operation in {watch.ElapsedMilliseconds} Milliseconds");
+        Console.ResetColor();
     }
     public static void ValidatePath(List<INode> path)
     {
@@ -32,20 +37,20 @@ public static class Helpers
             }
         }
     }
-    public static void ConnectToClosestNodes(IList<NodeXY> nodes,int minChildCount, int maxChildCount,Random rand = null)
+    public static void ConnectToClosestNodes(IList<INode> nodes,int minChildCount, int maxChildCount,Random? rand = null)
     {
         rand = rand ?? new Random();
-        foreach (var parent in nodes)
+        foreach (var parent in nodes.Select(x=>x as NodeXY ?? new NodeXY(0,0,0)))
         {
             var childCount = rand.Next(maxChildCount-minChildCount)+minChildCount;
             for (int i = 0; i < childCount; i++)
             {
-                (NodeXY node, double distance) min = (null, 0);
+                (NodeXY? node, double distance) min = (null, 0);
                 int shift = rand.Next(nodes.Count);
 
                 for(int b = 0;b<nodes.Count;b++)
                 {
-                    var pretendent = nodes[(b+shift)%nodes.Count];
+                    var pretendent = nodes[(b+shift)%nodes.Count] as NodeXY ?? new NodeXY(0,0,0);
                     
                     if (pretendent.Id == parent.Id) continue;
                     if(pretendent.Children.Count>maxChildCount) continue;

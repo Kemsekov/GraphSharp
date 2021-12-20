@@ -1,14 +1,14 @@
 {
     "nodeSeed" : 0,
-    "connectionSeed" : 0,
-    "nodesCount" : 400,
-    "node1" : 10,
-    "node2" : 30,
+    "connectionSeed" : -1,
+    "nodesCount" : 800,
+    "node1" : 432,
+    "node2" : 63,
     "minChildren" : 1,
     "maxChildren" : 5,
-    "steps" : 100,
+    "steps" : 150,
     "outputResolution" : 1500,
-    "nodeSize" : 0.012,
-    "thickness" : 0.007,
-    "fontSize" : 0.012
+    "nodeSize" : 0.006,
+    "thickness" : 0.003,
+    "fontSize" : 0.006
 }
