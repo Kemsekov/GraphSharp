@@ -7,6 +7,8 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Drawing;
 using SixLabors.Fonts;
+using System.Reflection;
+
 public class GraphDrawer
 {
     public IBrush DrawNodeBrush;
@@ -22,12 +24,16 @@ public class GraphDrawer
         Image = image;
         DrawNodeBrush = drawNodeBrush;
         DrawLineBrush = drawLineBrush;
-        
-        var fi = SixLabors.Fonts.FontInstance.LoadFont("NotoSans-Bold.ttf");
         FontCollection fonts = new FontCollection();
-        fonts.Install("NotoSans-Bold.ttf");
 
-        var notoSans = fonts.CreateFont("Noto Sans", fontSize * (image.Width + image.Height) / 2, FontStyle.Regular);
+        var assembly = Assembly.GetExecutingAssembly();
+        var resourceName = "SampleBase.NotoSans-Bold.ttf";
+        using (Stream stream = assembly.GetManifestResourceStream(resourceName) ?? Stream.Null)
+        {
+            fonts.Install(stream);
+        }
+
+        var notoSans = fonts.CreateFont("Noto Sans", fontSize * image.Height , FontStyle.Regular);
 
         Font = notoSans;
     }
@@ -93,7 +99,7 @@ public class GraphDrawer
         if (node is NodeXY nodeXY)
         {
             var point = new PointF((float)nodeXY.X * ImageSize.Width, (float)nodeXY.Y * ImageSize.Height);
-            var ellipse = new EllipsePolygon(point, nodeSize * (ImageSize.Width + ImageSize.Height) / 2);
+            var ellipse = new EllipsePolygon(point, nodeSize * Image.Height);
             x.FillPolygon(new DrawingOptions() { }, DrawNodeBrush, ellipse.Points.ToArray());
         }
     }
@@ -104,7 +110,7 @@ public class GraphDrawer
             var point1 = new PointF((float)n1.X * ImageSize.Width, (float)n1.Y * ImageSize.Height);
             var point2 = new PointF((float)n2.X * ImageSize.Width, (float)n2.Y * ImageSize.Height);
 
-            x.DrawLines(new DrawingOptions() { }, DrawLineBrush, Thickness * (ImageSize.Height + ImageSize.Width) / 2, point1, point2);
+            x.DrawLines(new DrawingOptions() { }, DrawLineBrush, Thickness * ImageSize.Height, point1, point2);
         }
     }
 }

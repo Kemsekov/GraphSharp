@@ -12,6 +12,7 @@
         <Content Include="*.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
     </ItemGroup>
 </Project>
