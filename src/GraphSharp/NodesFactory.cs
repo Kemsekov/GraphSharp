@@ -13,18 +13,23 @@ namespace GraphSharp
         protected Random _rand;
         protected Func<int, INode> _createNode;
         protected Func<INode, INode, IChild> _createChild;
-        public IList<INode> Nodes{get;protected set;}
+        public IList<INode> Nodes { get; protected set; }
 
         /// <param name="createNode">Function to create nodes. Use it to CreateNodes for your own implementations of INode</param>
         /// <param name="createChild">Method that consists of node, parent and returns child. createChild = (node,parent)=>new SomeNode(node,parent,...) // etc..</param>
         /// <param name="rand">Use your own rand if you need to get the same output per invoke. Let it null to use new random.</param>
-        public NodesFactory(Func<int, INode> createNode = null,Func<INode, INode, IChild> createChild = null, Random rand = null)
+        public NodesFactory(Func<int, INode> createNode = null, Func<INode, INode, IChild> createChild = null, Random rand = null)
         {
             createNode ??= id => new Node(id);
             createChild ??= (node, parent) => new Child(node);
-            _rand = rand ?? new Random();;
+            _rand = rand ?? new Random(); ;
             _createNode = createNode;
             _createChild = createChild;
+        }
+        public NodesFactory UseNodes(IList<INode> nodes)
+        {
+            Nodes = nodes;
+            return this;
         }
         /// <summary>
         /// Create IList of INode's
@@ -156,47 +161,54 @@ namespace GraphSharp
         }
 
         /// <summary>
-        /// Randomly connects current nodes to it's closest nodes by. How one node close to other defines in distance
+        /// Randomly connects nodes to it's closest nodes by distance.
         /// </summary>
         /// <param name="minChildCount"></param>
         /// <param name="maxChildCount"></param>
         /// <param name="distance">Func to determine how much one node is distant from another</param>
         /// <returns></returns>
-        public NodesFactory ConnectToClosest(int minChildCount, int maxChildCount,Func<INode,INode,double> distance)
+        public NodesFactory ConnectToClosest(int minChildCount, int maxChildCount, Func<INode, INode, double> distance)
         {
             foreach (var parent in Nodes)
             {
-                var childCount = _rand.Next(maxChildCount - minChildCount) + minChildCount;
-                for (int i = 0; i < childCount; i++)
-                {
-                    (INode? node, double distance) min = (null, 0);
-                    int shift = _rand.Next(Nodes.Count);
-
-                    for (int b = 0; b < Nodes.Count; b++)
-                    {
-                        var pretendent = Nodes[(b + shift) % Nodes.Count];
-
-                        if (pretendent.Id == parent.Id) continue;
-                        if (pretendent.Children.Count > maxChildCount) continue;
-
-                        if (min.node is null)
-                        {
-                            min = (pretendent, distance(parent,pretendent));
-                            continue;
-                        }
-                        var pretendent_distance = distance(parent,pretendent);
-                        if (pretendent_distance < min.distance && parent.Children.FirstOrDefault(x => x.Node.Id == pretendent.Id) is null)
-                        {
-                            min = (pretendent, pretendent_distance);
-                        }
-                    }
-                    var node = min.node;
-                    if (node is null) continue;
-                    parent.Children.Add(_createChild(node, parent));
-                    node.Children.Add(_createChild(parent, node));
-                }
+                ConnectOneToClosest(parent.Id,minChildCount,maxChildCount,distance);
             }
             return this;
         }
+        public NodesFactory ConnectOneToClosest(int parentId, int minChildCount, int maxChildCount, Func<INode, INode, double> distance)
+        {
+            var parent = Nodes[parentId];
+            var childCount = _rand.Next(maxChildCount - minChildCount) + minChildCount;
+            for (int i = 0; i < childCount; i++)
+            {
+                (INode? node, double distance) min = (null, 0);
+                int shift = _rand.Next(Nodes.Count);
+
+                for (int b = 0; b < Nodes.Count; b++)
+                {
+                    var pretendent = Nodes[(b + shift) % Nodes.Count];
+
+                    if (pretendent.Id == parent.Id) continue;
+                    if (pretendent.Children.Count > maxChildCount) continue;
+
+                    if (min.node is null)
+                    {
+                        min = (pretendent, distance(parent, pretendent));
+                        continue;
+                    }
+                    var pretendent_distance = distance(parent, pretendent);
+                    if (pretendent_distance < min.distance && parent.Children.FirstOrDefault(x => x.Node.Id == pretendent.Id) is null)
+                    {
+                        min = (pretendent, pretendent_distance);
+                    }
+                }
+                var node = min.node;
+                if (node is null) continue;
+                parent.Children.Add(_createChild(node, parent));
+                node.Children.Add(_createChild(parent, node));
+            }
+            return this;
+        }
+
     }
 }

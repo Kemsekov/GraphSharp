@@ -3,7 +3,7 @@ using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 
 /// <summary>
-/// this visitor will try to visit all nodes from some starting node, and it possible return to starting node
+/// this visitor will try to visit all nodes from some starting node, and if possible return to the starting node
 /// </summary>
 public class AllNodesPathFinder : IVisitor
 {

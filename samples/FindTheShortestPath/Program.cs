@@ -14,9 +14,9 @@ using Newtonsoft.Json;
 ArgumentsHandler argz = new("settings.json");
 
 var rand = new Random(argz.nodeSeed >=0 ? argz.nodeSeed : new Random().Next());
-
+var conRand = new Random(argz.connectionSeed >=0 ? argz.connectionSeed : new Random().Next());
 var nodes = 
-    new NodesFactory( id => new NodeXY(id, rand.NextDouble(), rand.NextDouble()),(node,parent)=>new NodeConnector(node,parent),rand)
+    new NodesFactory( id => new NodeXY(id, rand.NextDouble(), rand.NextDouble()),(node,parent)=>new NodeConnector(node,parent),conRand)
     .CreateNodes(argz.nodesCount)
     .ConnectToClosest(argz.minChildren,argz.maxChildren,(node1,node2)=>((NodeXY)node1).Distance((NodeXY)node2))
     .MakeUndirected()
