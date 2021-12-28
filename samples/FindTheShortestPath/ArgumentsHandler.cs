@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+
 public class ArgumentsHandler
 {
     public int nodeSeed = 0;
@@ -12,8 +14,9 @@ public class ArgumentsHandler
     public int outputResolution = 1500;
     public float nodeSize = 0.015f;
     public float fontSize = 0.012f;
-    public ArgumentsHandler(dynamic paramz)
+    public ArgumentsHandler(string settingsFile)
     {
+        dynamic paramz = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(settingsFile)) ?? new object();
         nodeSize = paramz.nodeSize;
         nodeSeed = paramz.nodeSeed;
         connectionSeed = paramz.connectionSeed;
@@ -26,19 +29,5 @@ public class ArgumentsHandler
         steps = paramz.steps;
         outputResolution = paramz.outputResolution;
         fontSize = paramz.fontSize;
-    }
-    public ArgumentsHandler() => Randomize();
-    public void Randomize()
-    {
-        var rand = new Random();
-        nodeSeed = rand.Next();
-        connectionSeed = rand.Next();
-        nodesCount = rand.Next(300) + 200;
-        node1 = rand.Next(nodesCount);
-        node2 = (rand.Next(nodesCount) + 1) % nodesCount;
-        minChildren = rand.Next(3) + 1;
-        maxChildren = rand.Next(6) + 1;
-        steps = 100;
-        outputResolution = 1500;
     }
 }
