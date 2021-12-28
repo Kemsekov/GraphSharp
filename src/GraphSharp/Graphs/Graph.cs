@@ -15,7 +15,7 @@ namespace GraphSharp.Graphs
         protected INode[] _nodes;
         protected Dictionary<IVisitor, IPropagator> _work = new();
         /// <param name="nodes">Nodes to use</param>
-        /// <param name="propagatorFactory">propagator factory. You can change how graph handle Step function by different <see cref="IPropagator"/> implementaitions. If null this value will be set to <see cref="PropagatorFactory.Parallel"/></param>
+        /// <param name="propagatorFactory">propagator factory. You can change how graph handle Step function by different <see cref="IPropagator"/> implementaitions. If null this value will be set to <see cref="PropagatorFactory.Parallel"/>.</param>
         public Graph(IEnumerable<INode> nodes, PropagatorFactory.Factory propagatorFactory = null)
         {
             _factory = propagatorFactory ?? PropagatorFactory.SingleThreaded();

@@ -6,7 +6,7 @@
         
     </PropertyGroup>
     <ItemGroup>
-        <ProjectReference Include="../../src/Graph.csproj"/>
+        <ProjectReference Include="../../src/GraphSharp/GraphSharp.csproj"/>
     </ItemGroup>
     <ItemGroup>
         <Content Include="*.ttf">

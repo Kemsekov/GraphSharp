@@ -14,33 +14,32 @@ namespace tests
     {
 
         private int _nodes_count;
-        private IList<INode> _nodes;
+        private NodesFactory _nodesFactory;
 
         public NodeFactoryTests()
         {
             this._nodes_count = 500;
-            this._nodes = NodeGraphFactory.CreateNodes(_nodes_count);
+            this._nodesFactory = new NodesFactory().CreateNodes(_nodes_count);
         }
         [Fact]
         public void EnsureMakeDirectedWorks()
         {
             //create two identical nodes list
+            var seed = new Random().Next();
+            var directed = 
+                new NodesFactory(rand : new Random(seed))
+                    .CreateNodes(2000)
+                    .ConnectNodes(20)
+                    .MakeDirected();
+            var undirected = 
+                new NodesFactory(rand : new Random(seed))
+                    .CreateNodes(2000)
+                    .ConnectNodes(20);
 
-            var directed = NodeGraphFactory.CreateNodes(2000);
-            var undirected = NodeGraphFactory.CreateNodes(2000);
-
-            //connect them the same way
-            NodeGraphFactory.ConnectNodes(directed, 20, new Random(123));
-            NodeGraphFactory.ConnectNodes(undirected, 20, new Random(123));
-
-            //one of them make directed
-            NodeGraphFactory.MakeDirected(directed);
-
-            //ensure they are the same
-            Assert.Equal(directed, undirected);
+            Assert.Equal(directed.Nodes, undirected.Nodes);
 
             //make sure each child have no connection to parent
-            foreach (var parent in directed)
+            foreach (var parent in directed.Nodes)
             {
                 foreach (var child in parent.Children)
                 {
@@ -49,7 +48,7 @@ namespace tests
             }
 
             //make sure we did not remove anything that is not connected to node
-            foreach (var parents in directed.Zip(undirected))
+            foreach (var parents in directed.Nodes.Zip(undirected.Nodes))
             {
                 //ensure they are the facto different objects in memory
                 Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
@@ -67,21 +66,23 @@ namespace tests
         [Fact]
         public void EnsureMakeUndirectedWorks()
         {
-            var maybeUndirected = NodeGraphFactory.CreateNodes(2000);
-            var undirected = NodeGraphFactory.CreateNodes(2000);
-
-            //connect them the same way
-            NodeGraphFactory.ConnectNodes(maybeUndirected, 20, new Random(123));
-            NodeGraphFactory.ConnectNodes(undirected, 20, new Random(123));
-
+            var seed = new Random().Next();
+            var maybeUndirected = 
+                new NodesFactory(rand : new Random(seed))
+                .CreateNodes(2000)
+                .ConnectNodes(20);
+            var undirected = 
+                new NodesFactory(rand : new Random(seed))
+                .CreateNodes(2000)
+                .ConnectNodes(20)
             //one of them make 100% undirected
-            NodeGraphFactory.MakeUndirected(undirected);
+                .MakeUndirected();
 
             //ensure they are the same
-            Assert.Equal(maybeUndirected, undirected);
+            Assert.Equal(maybeUndirected.Nodes, undirected.Nodes);
 
             //make sure each child have connection to parent
-            foreach (var parent in undirected)
+            foreach (var parent in undirected.Nodes)
             {
                 foreach (var child in parent.Children)
                 {
@@ -90,7 +91,7 @@ namespace tests
             }
 
             //make sure we did not add anything redundant
-            foreach (var parents in undirected.Zip(maybeUndirected))
+            foreach (var parents in undirected.Nodes.Zip(maybeUndirected.Nodes))
             {
                 //ensure they are the facto different objects in memory
                 Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
@@ -105,7 +106,7 @@ namespace tests
 
                 foreach (var n in diff)
                 {
-                    Assert.True(maybeUndirected[n.Id].Children.Any(x=>x.Node.Id==parents.First.Id));
+                    Assert.True(maybeUndirected.Nodes[n.Id].Children.Any(x=>x.Node.Id==parents.First.Id));
                 }
             }
 
@@ -114,15 +115,15 @@ namespace tests
         [Fact]
         public void EnsureNodesCount()
         {
-            Assert.Equal(_nodes.Count, _nodes_count);
+            Assert.Equal(_nodesFactory.Nodes.Count, _nodes_count);
         }
         [Fact]
         public void ValidateConnected()
         {
             int children_count = 100;
-            NodeGraphFactory.ConnectNodes(_nodes, children_count);
-            validateThereIsNoCopiesAndParentInChildren(_nodes);
-            Parallel.ForEach(_nodes, node =>
+            _nodesFactory.ConnectNodes(children_count);
+            validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
+            Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
                  Assert.Equal(node.Children.Count, children_count);
                  validateThereIsNoCopiesAndParentInChildren(node.Children.Select(child => child.Node).ToList());
@@ -133,9 +134,9 @@ namespace tests
         {
             const int min_count_of_nodes = 5;
             const int max_count_of_nodes = 30;
-            NodeGraphFactory.ConnectRandomCountOfNodes(_nodes, min_count_of_nodes, max_count_of_nodes);
-            validateThereIsNoCopiesAndParentInChildren(_nodes);
-            Parallel.ForEach(_nodes, node =>
+            _nodesFactory.ConnectRandomly(min_count_of_nodes,max_count_of_nodes);
+            validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
+            Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
                  Assert.True(node.Children.Count is >= min_count_of_nodes and <= max_count_of_nodes);
                  validateThereIsNoCopiesAndParentInChildren(node.Children.Select(child => child.Node).ToList());

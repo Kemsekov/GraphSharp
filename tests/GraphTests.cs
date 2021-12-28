@@ -20,9 +20,7 @@ namespace tests
         Func<IEnumerable<INode>,IGraph> createGraph;
         public GraphTests()
         {
-            this._nodes = NodeGraphFactory.CreateNodes(5000);
-            NodeGraphFactory.ConnectRandomCountOfNodes(_nodes, 5, 30);
-            //change it to test various Graph implementations.
+            this._nodes = new NodesFactory().CreateNodes(5000).ConnectRandomly(5,30).Nodes;
             createGraph = nodes=>new Graph(nodes);
             // createGraph = nodes=>new Graph(nodes,PropagatorFactory.Create<Propagator>());
         }
