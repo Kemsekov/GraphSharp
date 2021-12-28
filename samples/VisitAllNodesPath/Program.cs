@@ -4,9 +4,13 @@ using GraphSharp;
 using GraphSharp.Graphs;
 
 var rand = new Random(0);
-var nodes = NodeGraphFactory.CreateNodes(20000);
-NodeGraphFactory.ConnectRandomCountOfNodes(nodes, 1, 4, rand, (node, parent) => new NodeConnector(node, parent, rand.NextDouble()));
-NodeGraphFactory.MakeDirected(nodes);
+var nodes = NodeGraphFactory.CreateNodes(800);
+var startNode = nodes[0] as NodeXY ?? new NodeXY(0,0,0);
+Helpers.ConnectToClosestNodes(nodes,1,5,rand);
 
 var graph = new ParallelGraph(nodes);
+
+var visitor = new AllNodesPathFinder(startNode);
+
+graph.AddVisitor(visitor,startNode.Id);
 

@@ -9,6 +9,7 @@ using GraphSharp;
 using GraphSharp.Children;
 using GraphSharp.Graphs;
 using GraphSharp.Nodes;
+using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 using Xunit;
 namespace tests
@@ -22,7 +23,8 @@ namespace tests
             this._nodes = NodeGraphFactory.CreateNodes(5000);
             NodeGraphFactory.ConnectRandomCountOfNodes(_nodes, 5, 30);
             //change it to test various Graph implementations.
-            createGraph = nodes=>new ParallelGraph(nodes);
+            createGraph = nodes=>new Graph(nodes);
+            // createGraph = nodes=>new Graph(nodes,PropagatorFactory.Create<Propagator>());
         }
 
         [Fact]

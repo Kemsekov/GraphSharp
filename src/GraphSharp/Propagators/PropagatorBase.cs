@@ -1,17 +1,20 @@
+using System;
 using System.Collections.Generic;
 using GraphSharp.Children;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 
-namespace GraphSharp.Graphs.Propagators
+namespace GraphSharp.Propagators
 {
     public abstract class PropagatorBase : IPropagator
     {
+        protected int[] _indices;
         protected INode[] _nodes;
         protected IVisitor _visitor;
 
-        public PropagatorBase(INode[] nodes, IVisitor visitor)
+        public PropagatorBase(INode[] nodes, IVisitor visitor,params int[] indices)
         {
+            _indices = indices;
             _nodes = nodes;
             _visitor = visitor;
         }
