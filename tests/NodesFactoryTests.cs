@@ -23,7 +23,7 @@ namespace tests
         }
         [Fact]
         public void ConnectToClosestWorks(){
-            _nodesFactory.ForEach(node=>_nodesFactory.ConnectToClosest(node,1,6,(n1,n2)=>n1.Id-n2.Id));
+            _nodesFactory.ForEach((node,factory)=>factory.ConnectToClosest(node,1,6,(n1,n2)=>n1.Id-n2.Id));
             validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
         }
         [Fact]
