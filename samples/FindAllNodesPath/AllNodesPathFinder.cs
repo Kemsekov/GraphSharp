@@ -22,6 +22,7 @@ public class AllNodesPathFinder : IVisitor
     public bool Select(IChild child)
     {
         if(child is NodeConnector con){
+            
         }
         return true;
     }

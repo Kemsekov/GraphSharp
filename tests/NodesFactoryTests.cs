@@ -10,31 +10,36 @@ using Xunit;
 
 namespace tests
 {
-    public class NodeFactoryTests
+    public class NodesFactoryTests
     {
 
         private int _nodes_count;
         private NodesFactory _nodesFactory;
 
-        public NodeFactoryTests()
+        public NodesFactoryTests()
         {
             this._nodes_count = 500;
             this._nodesFactory = new NodesFactory().CreateNodes(_nodes_count);
         }
         [Fact]
-        public void EnsureMakeDirectedWorks()
+        public void ConnectToClosestWorks(){
+            _nodesFactory.ForEach((n,f)=>f.ConnectToClosest(n,1,6,(n1,n2)=>n1.Id-n2.Id));
+            validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
+        }
+        [Fact]
+        public void MakeDirectedWorks()
         {
             //create two identical nodes list
             var seed = new Random().Next();
             var directed = 
                 new NodesFactory(rand : new Random(seed))
                     .CreateNodes(2000)
-                    .ConnectNodes(20)
-                    .MakeDirected();
+                    .ForEach((n,f)=>f.ConnectNodes(n,20))
+                    .ForEach((n,f)=>f.MakeDirected(n));
             var undirected = 
                 new NodesFactory(rand : new Random(seed))
                     .CreateNodes(2000)
-                    .ConnectNodes(20);
+                    .ForEach((n,f)=>f.ConnectNodes(n,20));
 
             Assert.Equal(directed.Nodes, undirected.Nodes);
 
@@ -64,19 +69,19 @@ namespace tests
 
         }
         [Fact]
-        public void EnsureMakeUndirectedWorks()
+        public void MakeUndirectedWorks()
         {
             var seed = new Random().Next();
             var maybeUndirected = 
                 new NodesFactory(rand : new Random(seed))
                 .CreateNodes(2000)
-                .ConnectNodes(20);
+                .ForEach((node,factory)=>factory.ConnectNodes(node,20));
             var undirected = 
                 new NodesFactory(rand : new Random(seed))
                 .CreateNodes(2000)
-                .ConnectNodes(20)
-            //one of them make 100% undirected
-                .MakeUndirected();
+                .ForEach((node,factory)=>factory.ConnectNodes(node,20))
+                //one of them make 100% undirected
+                .ForEach((node,factory)=>factory.MakeUndirected(node));
 
             //ensure they are the same
             Assert.Equal(maybeUndirected.Nodes, undirected.Nodes);
@@ -118,10 +123,10 @@ namespace tests
             Assert.Equal(_nodesFactory.Nodes.Count, _nodes_count);
         }
         [Fact]
-        public void ValidateConnected()
+        public void ConnectNodesWorks()
         {
             int children_count = 100;
-            _nodesFactory.ConnectNodes(children_count);
+            _nodesFactory.ForEach((n,f)=>f.ConnectNodes(n,children_count));
             validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
             Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
@@ -130,11 +135,11 @@ namespace tests
              });
         }
         [Fact]
-        public void ValidateRandomConnected()
+        public void ConnectRandomlyWorks()
         {
             const int min_count_of_nodes = 5;
             const int max_count_of_nodes = 30;
-            _nodesFactory.ConnectRandomly(min_count_of_nodes,max_count_of_nodes);
+            _nodesFactory.ForEach((n,f)=>f.ConnectRandomly(n,min_count_of_nodes,max_count_of_nodes));
             validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
             Parallel.ForEach(_nodesFactory.Nodes, node =>
              {

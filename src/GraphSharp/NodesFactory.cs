@@ -26,13 +26,18 @@ namespace GraphSharp
             _createNode = createNode;
             _createChild = createChild;
         }
+        /// <summary>
+        /// Replace Nodes in current instance of NodesFactory to nodes
+        /// </summary>
+        /// <param name="nodes">What need to be used as Nodes</param>
+        /// <returns></returns>
         public NodesFactory UseNodes(IList<INode> nodes)
         {
             Nodes = nodes;
             return this;
         }
         /// <summary>
-        /// Create IList of INode's
+        /// Create count nodes. This method will replace existing Nodes in current instance of NodesFactory.
         /// </summary>
         /// <param name="count">Count of codes to create</param>
         /// <returns></returns>
@@ -49,29 +54,39 @@ namespace GraphSharp
             Nodes = nodes;
             return this;
         }
+
         /// <summary>
-        /// Randomly add to each node's Children another nodes. It connect nodes to each other.
+        /// Apply some operation to all nodes. 
         /// </summary>
-        /// <param name="nodes">Nodes to connect</param>
-        /// <param name="countOfConnections">How much children each node need</param>
-        public NodesFactory ConnectNodes(int countOfConnections)
+        /// <param name="operation">Function that will be applied to all nodes. Looks like this:<br/>(node,nodesFactory)=>nodesFactory.DoSomething(node)</param>
+        /// <returns></returns>
+        public NodesFactory ForEach(Func<INode, NodesFactory, NodesFactory> operation)
+        {
+            foreach (var node in Nodes)
+                operation(node, this);
+            return this;
+        }
+
+        /// <summary>
+        /// Randomly add to node's Children another nodes. It connect nodes to each other.
+        /// </summary>
+        /// <param name="node">Node that need to be connected</param>
+        /// <param name="countOfConnections">How much children node need</param>
+        public NodesFactory ConnectNodes(INode node, int countOfConnections)
         {
             countOfConnections = countOfConnections > Nodes.Count ? Nodes.Count : countOfConnections;
 
-            foreach (var node in Nodes)
-            {
-                var start_index = _rand.Next(Nodes.Count);
-                ConnectNodeToNodes(node, Nodes, start_index, countOfConnections, _createChild);
-            }
+            var start_index = _rand.Next(Nodes.Count);
+            ConnectNodeToNodes(node, start_index, countOfConnections);
             return this;
         }
         /// <summary>
-        /// Randomly add to each node's Children another nodes, but create random count of connections per node. It connect nodes to each other.
+        /// Randomly add to node's Children another nodes, but create random count of connections. It connect nodes to each other.
         /// </summary>
-        /// <param name="nodes">Nodes to connect</param>
+        /// <param name="node">Node that need to be connected to others</param>
         /// <param name="minCountOfNodes">Min count of children of each node</param>
         /// <param name="maxCountOfNodes">Max count of children of each node</param>
-        public NodesFactory ConnectRandomly(int minCountOfNodes, int maxCountOfNodes)
+        public NodesFactory ConnectRandomly(INode node, int minCountOfNodes, int maxCountOfNodes)
         {
             minCountOfNodes = minCountOfNodes < 1 ? 1 : minCountOfNodes;
             maxCountOfNodes = maxCountOfNodes > Nodes.Count ? Nodes.Count : maxCountOfNodes;
@@ -84,100 +99,81 @@ namespace GraphSharp
                 minCountOfNodes = minCountOfNodes ^ maxCountOfNodes;
             }
 
-            foreach (var node in Nodes)
-            {
-                int count_of_connections = _rand.Next(maxCountOfNodes - minCountOfNodes) + minCountOfNodes;
-                var start_index = _rand.Next(Nodes.Count);
-                ConnectNodeToNodes(node, Nodes, start_index, count_of_connections, _createChild);
-            }
+            int count_of_connections = _rand.Next(maxCountOfNodes - minCountOfNodes) + minCountOfNodes;
+            var start_index = _rand.Next(Nodes.Count);
+            ConnectNodeToNodes(node, start_index, count_of_connections);
             return this;
         }
 
         /// <summary>
-        /// Removes parent's node from it's children connection. Or simply makes any connection between nodes onedirectional.
+        /// Removes parent node from it's children connection. Or simply makes any connection between nodes onedirectional.
         /// </summary>
-        /// <param name="nodes"></param>
-        public NodesFactory MakeDirected()
+        public NodesFactory MakeDirected(INode parent)
         {
-            foreach (var parent in Nodes)
+            bool fine = false;
+            while (!fine)
             {
-                bool fine = false;
-                while (!fine)
+                fine = true;
+                for (int i = 0; i < parent.Children.Count; i++)
                 {
-                    fine = true;
-                    for (int i = 0; i < parent.Children.Count; i++)
-                    {
-                        var child = parent.Children[i];
+                    var child = parent.Children[i];
 
-                        var toRemove = child.Node.Children.Any(x => x.Node.Id == parent.Id);
-                        if (toRemove)
-                        {
-                            parent.Children.Remove(child);
-                            fine = false;
-                        }
+                    var toRemove = child.Node.Children.Any(x => x.Node.Id == parent.Id);
+                    if (toRemove)
+                    {
+                        parent.Children.Remove(child);
+                        fine = false;
                     }
                 }
             }
             return this;
         }
         /// <summary>
-        /// ensures that every child of each node in nodes collection have it's parent included in children. Or simply make sure that any connection between two nodes are bidirectional. 
+        /// ensures that every child of parent's node have parent included in children. Or simply make sure that any connection between two nodes are bidirectional. 
         /// </summary>
-        /// <param name="nodes"></param>
-        public NodesFactory MakeUndirected()
+        public NodesFactory MakeUndirected(INode parent)
         {
-            foreach (var parent in Nodes)
+            for (int i = 0; i < parent.Children.Count; i++)
             {
-                for (int i = 0; i < parent.Children.Count; i++)
-                {
-                    var child = parent.Children[i];
+                var child = parent.Children[i];
 
-                    var toAdd = !child.Node.Children.Any(x => x.Node.Id == parent.Id);
-                    if (toAdd)
-                    {
-                        child.Node.Children.Add(_createChild(parent, child.Node));
-                    }
+                var toAdd = !child.Node.Children.Any(x => x.Node.Id == parent.Id);
+                if (toAdd)
+                {
+                    child.Node.Children.Add(_createChild(parent, child.Node));
                 }
             }
             return this;
         }
 
         //connect some node to List of nodes with some parameters.
-        private static void ConnectNodeToNodes(INode node, IList<INode> nodes, int start_index, int count_of_connections, Func<INode, INode, IChild> createChild)
+        private void ConnectNodeToNodes(INode node, int start_index, int count_of_connections)
         {
             lock (node)
                 for (int i = 0; i < count_of_connections; i++)
                 {
-                    var child = nodes[(start_index + i) % nodes.Count];
+                    var child = Nodes[(start_index + i) % Nodes.Count];
                     if (child.Id == node.Id)
                     {
                         start_index++;
                         i--;
                         continue;
                     }
-                    node.Children.Add(createChild(child, node));
+                    node.Children.Add(_createChild(child, node));
 
                 }
         }
 
         /// <summary>
-        /// Randomly connects nodes to it's closest nodes by distance.
+        /// Randomly connects node to it's closest nodes by distance function.
         /// </summary>
-        /// <param name="minChildCount"></param>
-        /// <param name="maxChildCount"></param>
+        /// <param name="minChildCount">minimum children count</param>
+        /// <param name="maxChildCount">maximum children count</param>
         /// <param name="distance">Func to determine how much one node is distant from another</param>
         /// <returns></returns>
-        public NodesFactory ConnectToClosest(int minChildCount, int maxChildCount, Func<INode, INode, double> distance)
+        public NodesFactory ConnectToClosest(INode parent, int minChildCount, int maxChildCount, Func<INode, INode, double> distance)
         {
-            foreach (var parent in Nodes)
-            {
-                ConnectOneToClosest(parent.Id,minChildCount,maxChildCount,distance);
-            }
-            return this;
-        }
-        public NodesFactory ConnectOneToClosest(int parentId, int minChildCount, int maxChildCount, Func<INode, INode, double> distance)
-        {
-            var parent = Nodes[parentId];
+            if (parent.Children.Count > maxChildCount) return this;
             var childCount = _rand.Next(maxChildCount - minChildCount) + minChildCount;
             for (int i = 0; i < childCount; i++)
             {
@@ -210,5 +206,18 @@ namespace GraphSharp
             return this;
         }
 
+        /// <summary>
+        /// removes all children of parent nodes and every connection to parent node from any other node. It simply isolate node from others.
+        /// </summary>
+        /// <returns></returns>
+        public NodesFactory RemoveAllConnections(INode parent){
+            parent.Children.Clear();
+            foreach(var node in Nodes){
+                var toRemove = node.Children.FirstOrDefault(x=>x.Node.Id==parent.Id);
+                if(toRemove is not null)
+                    node.Children.Remove(toRemove);
+            }
+            return this;
+        }
     }
 }
