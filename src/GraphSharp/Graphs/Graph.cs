@@ -18,7 +18,7 @@ namespace GraphSharp.Graphs
         /// <param name="propagatorFactory">propagator factory. You can change how graph handle Step function by different <see cref="IPropagator"/> implementaitions. If null this value will be set to <see cref="PropagatorFactory.Parallel"/>.</param>
         public Graph(IEnumerable<INode> nodes, PropagatorFactory.Factory propagatorFactory = null)
         {
-            _factory = propagatorFactory ?? PropagatorFactory.SingleThreaded();
+            _factory = propagatorFactory ?? PropagatorFactory.Parallel();
             _nodes = nodes.ToArray();
             Array.Sort(this._nodes);
         }

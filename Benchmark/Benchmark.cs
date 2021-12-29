@@ -19,12 +19,15 @@ Console.ForegroundColor = ConsoleColor.Green;
 
 var watch1 = new Stopwatch();
 watch1.Start();
-var nodes = NodeGraphFactory.CreateNodes(nodes_count);
-NodeGraphFactory.ConnectNodes(nodes,children_count);
-NodeGraphFactory.ConnectRandomCountOfNodes(nodes,10,20);
+var nodes = 
+    new NodesFactory()
+    .CreateNodes(nodes_count)
+    .ForEach((n,f)=>f.ConnectNodes(n,children_count))
+    .Nodes;
+
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
-var graph = new ParallelGraph(nodes);
+var graph = new Graph(nodes);
 var visitor = new ActionVisitor(node=>{
     
 });
