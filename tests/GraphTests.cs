@@ -23,7 +23,8 @@ namespace tests
             this._nodes = 
                 new NodesFactory()
                 .CreateNodes(5000)
-                .ForEach((n,f)=>f.ConnectRandomly(n,5,30))
+                .ForEach()
+                .ConnectRandomly(5,30)
                 .Nodes;
             createGraph = nodes=>new Graph(nodes);
             // createGraph = nodes=>new Graph(nodes,PropagatorFactory.Create<Propagator>());

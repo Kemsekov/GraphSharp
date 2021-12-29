@@ -18,8 +18,9 @@ var conRand = new Random(argz.connectionSeed >=0 ? argz.connectionSeed : new Ran
 var nodes = 
     new NodesFactory( id => new NodeXY(id, rand.NextDouble(), rand.NextDouble()),(node,parent)=>new NodeConnector(node,parent),conRand)
     .CreateNodes(argz.nodesCount)
-    .ForEach((node,f)=>f.ConnectToClosest(node,argz.minChildren,argz.maxChildren,(node1,node2)=>((NodeXY)node1).Distance((NodeXY)node2)))
-    .ForEach((node,f)=>f.MakeUndirected(node))
+    .ForEach()
+    .ConnectToClosest(argz.minChildren,argz.maxChildren,(node1,node2)=>((NodeXY)node1).Distance((NodeXY)node2))
+    .MakeUndirected()
     .Nodes;
 
 

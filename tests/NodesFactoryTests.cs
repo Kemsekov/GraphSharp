@@ -23,7 +23,8 @@ namespace tests
         }
         [Fact]
         public void ConnectToClosestWorks(){
-            _nodesFactory.ForEach((node,factory)=>factory.ConnectToClosest(node,1,6,(n1,n2)=>n1.Id-n2.Id));
+            _nodesFactory.ForEach()
+            .ConnectToClosest(1,6,(n1,n2)=>n1.Id-n2.Id);
             validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
         }
         [Fact]
@@ -34,12 +35,14 @@ namespace tests
             var directed = 
                 new NodesFactory(rand : new Random(seed))
                     .CreateNodes(2000)
-                    .ForEach((n,f)=>f.ConnectNodes(n,20))
-                    .ForEach((n,f)=>f.MakeDirected(n));
+                    .ForEach()
+                    .ConnectNodes(20)
+                    .MakeDirected();
             var undirected = 
                 new NodesFactory(rand : new Random(seed))
                     .CreateNodes(2000)
-                    .ForEach((n,f)=>f.ConnectNodes(n,20));
+                    .ForEach()
+                    .ConnectNodes(20);
 
             Assert.Equal(directed.Nodes, undirected.Nodes);
 
@@ -75,13 +78,16 @@ namespace tests
             var maybeUndirected = 
                 new NodesFactory(rand : new Random(seed))
                 .CreateNodes(2000)
-                .ForEach((node,factory)=>factory.ConnectNodes(node,20));
+                .ForEach()
+                .ConnectNodes(20);
+
             var undirected = 
                 new NodesFactory(rand : new Random(seed))
                 .CreateNodes(2000)
-                .ForEach((node,factory)=>factory.ConnectNodes(node,20))
+                .ForEach()
+                .ConnectNodes(20)
                 //one of them make 100% undirected
-                .ForEach((node,factory)=>factory.MakeUndirected(node));
+                .MakeUndirected();
 
             //ensure they are the same
             Assert.Equal(maybeUndirected.Nodes, undirected.Nodes);
@@ -126,7 +132,8 @@ namespace tests
         public void ConnectNodesWorks()
         {
             int children_count = 100;
-            _nodesFactory.ForEach((n,f)=>f.ConnectNodes(n,children_count));
+            _nodesFactory.ForEach()
+            .ConnectNodes(children_count);
             validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
             Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
@@ -139,7 +146,9 @@ namespace tests
         {
             const int min_count_of_nodes = 5;
             const int max_count_of_nodes = 30;
-            _nodesFactory.ForEach((n,f)=>f.ConnectRandomly(n,min_count_of_nodes,max_count_of_nodes));
+            _nodesFactory.ForEach()
+            .ConnectRandomly(min_count_of_nodes,max_count_of_nodes);
+
             validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
             Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
@@ -149,6 +158,7 @@ namespace tests
         }
         public void validateThereIsNoCopiesAndParentInChildren(IList<INode> nodes)
         {
+            Assert.NotEmpty(nodes);
             foreach (var parent in nodes)
             {
                 Assert.Equal(parent.Children.Distinct(), parent.Children);

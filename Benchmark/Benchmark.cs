@@ -22,7 +22,8 @@ watch1.Start();
 var nodes = 
     new NodesFactory()
     .CreateNodes(nodes_count)
-    .ForEach((n,f)=>f.ConnectNodes(n,children_count))
+    .ForEach()
+    .ConnectNodes(children_count)
     .Nodes;
 
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
