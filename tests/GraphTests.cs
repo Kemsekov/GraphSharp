@@ -16,16 +16,15 @@ namespace tests
 {
     public class GraphTests
     {
-        IList<INode> _nodes;
-        Func<IEnumerable<INode>,IGraph> createGraph;
+        NodesFactory _nodes;
+        Func<NodesFactory,IGraph> createGraph;
         public GraphTests()
         {
             this._nodes = 
                 new NodesFactory()
                 .CreateNodes(5000)
                 .ForEach()
-                .ConnectRandomly(5,30)
-                .Nodes;
+                .ConnectRandomly(5,30);
             createGraph = nodes=>new Graph(nodes);
             // createGraph = nodes=>new Graph(nodes,PropagatorFactory.Create<Propagator>());
         }
@@ -87,7 +86,7 @@ namespace tests
                 nodes[9].Children.Add(new Child(nodes[3]));
             }
 
-            var graph = createGraph(nodes);
+            var graph = createGraph(new NodesFactory().UseNodes(nodes));
             var visitor1_store = new List<INode>();
             var visitor2_store = new List<INode>();
 
@@ -147,7 +146,7 @@ namespace tests
         [Fact]
         public void ValidateOrder(){
             var graph = createGraph(_nodes);
-            validate_graphOrder(graph,_nodes,child=>true);
+            validate_graphOrder(graph,_nodes.Nodes,child=>true);
         }
         static void validate_graphOrder(IGraph graph, IList<INode> nodes, Func<IChild, bool> selector = null)
         {
@@ -249,7 +248,7 @@ namespace tests
                         return back_list.Last().Id > node.Node.Id;
                     });
 
-                var graph = createGraph(nodes);
+                var graph = createGraph(new NodesFactory().UseNodes(nodes));
 
                 graph.AddVisitor(forward_visitor, 0);
                 graph.AddVisitor(back_visitor, 13);
@@ -264,7 +263,7 @@ namespace tests
         [Fact]
         public void RemoveVisitor_Works()
         {
-            var graph = createGraph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
+            var graph = createGraph(_nodes);
             var visitor1 = new ActionVisitor(node => { });
             var visitor2 = new ActionVisitor(node => { Assert.True(false); });
             graph.AddVisitor(visitor1, 1);
@@ -275,7 +274,7 @@ namespace tests
         [Fact]
         public void Step_WrongVisitorThrows()
         {
-            var graph = createGraph(new List<Node>() { new Node(0), new Node(1), new Node(2), new Node(3) });
+            var graph = createGraph(_nodes);
             var visitor1 = new ActionVisitor(node => { });
             var visitor2 = new ActionVisitor(node => { });
 

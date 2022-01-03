@@ -20,12 +20,10 @@ var nodes =
     .CreateNodes(argz.nodesCount)
     .ForEach()
     .ConnectToClosest(argz.minChildren,argz.maxChildren,(node1,node2)=>((NodeXY)node1).Distance((NodeXY)node2))
-    .MakeUndirected()
-    .Nodes;
+    .MakeUndirected();
 
-
-var startNode = nodes[argz.node1 % nodes.Count];
-var endNode = nodes[argz.node2 % nodes.Count];
+var startNode = nodes.Nodes[argz.node1 % nodes.Nodes.Count];
+var endNode = nodes.Nodes[argz.node2 % nodes.Nodes.Count];
 
 var pathFinder = new PathFinder(startNode);
 
@@ -54,8 +52,8 @@ Helpers.MeasureTime(() =>
     drawer.NodeSize = argz.nodeSize;
     drawer.Thickness = argz.thickness;
     drawer.Clear(Color.Black);
-    drawer.DrawNodeConnections(nodes);
-    drawer.DrawNodes(nodes);
+    drawer.DrawNodeConnections(nodes.Nodes);
+    drawer.DrawNodes(nodes.Nodes);
 
     if (path.Count > 0)
     {

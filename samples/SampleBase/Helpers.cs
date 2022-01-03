@@ -24,7 +24,7 @@ public static class Helpers
                 throw new Exception("Bad thing! Path is not valid!");
         }
     }
-    public static void PrintPath(List<INode> path)
+    public static void PrintPath(IList<INode> path)
     {
         System.Console.WriteLine("---Path");
         foreach (var n in path)

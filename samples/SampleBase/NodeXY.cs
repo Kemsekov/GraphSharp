@@ -13,4 +13,8 @@ public class NodeXY : Node
     public double Distance(NodeXY other){
         return Math.Sqrt((X-other.X)*(X-other.X)+(Y-other.Y)*(Y-other.Y));
     }
+    public override string ToString()
+    {
+        return $"{Id}\t({(float)X}\t{(float)Y})";
+    }
 }

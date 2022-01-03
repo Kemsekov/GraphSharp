@@ -23,8 +23,7 @@ var nodes =
     new NodesFactory()
     .CreateNodes(nodes_count)
     .ForEach()
-    .ConnectNodes(children_count)
-    .Nodes;
+    .ConnectNodes(children_count);
 
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();
