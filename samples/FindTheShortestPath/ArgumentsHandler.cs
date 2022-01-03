@@ -7,8 +7,8 @@ public class ArgumentsHandler
     public int nodesCount = 200;
     public int node1 = 0;
     public int node2 = 10;
-    public int minChildren = 1;
-    public int maxChildren = 4;
+    public int minEdges = 1;
+    public int maxEdges = 4;
     public int steps = 100;
     public float thickness = 0.01f;
     public int outputResolution = 1500;
@@ -23,8 +23,8 @@ public class ArgumentsHandler
         nodesCount = paramz.nodesCount;
         node1 = paramz.node1;
         node2 = paramz.node2;
-        minChildren = paramz.minChildren;
-        maxChildren = paramz.maxChildren;
+        minEdges = paramz.minEdges;
+        maxEdges = paramz.maxEdges;
         thickness = paramz.thickness;
         steps = paramz.steps;
         outputResolution = paramz.outputResolution;

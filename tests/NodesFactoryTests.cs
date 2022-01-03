@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using tests.Helpers;
 using Xunit;
@@ -25,7 +25,7 @@ namespace tests
         public void ConnectToClosestWorks(){
             _nodesFactory.ForEach()
             .ConnectToClosest(1,6,(n1,n2)=>n1.Id-n2.Id);
-            validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
+            validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
         }
         [Fact]
         public void MakeDirectedWorks()
@@ -49,9 +49,9 @@ namespace tests
             //make sure each child have no connection to parent
             foreach (var parent in directed.Nodes)
             {
-                foreach (var child in parent.Children)
+                foreach (var child in parent.Edges)
                 {
-                    Assert.False(child.Node.Children.Any(c => c.Node.Id == parent.Id));
+                    Assert.False(child.Node.Edges.Any(c => c.Node.Id == parent.Id));
                 }
             }
 
@@ -60,13 +60,13 @@ namespace tests
             {
                 //ensure they are the facto different objects in memory
                 Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
-                var directedChildren = parents.First.Children.Select(x => x.Node);
-                var undirectedChildren = parents.Second.Children.Select(x => x.Node);
-                var diff = undirectedChildren.Except(directedChildren, new NodeEqualityComparer());
+                var directedEdges = parents.First.Edges.Select(x => x.Node);
+                var undirectedEdges = parents.Second.Edges.Select(x => x.Node);
+                var diff = undirectedEdges.Except(directedEdges, new NodeEqualityComparer());
                 
                 foreach (var n in diff)
                 {
-                    Assert.True(n.Children.Any(x => x.Node.Id == parents.First.Id));
+                    Assert.True(n.Edges.Any(x => x.Node.Id == parents.First.Id));
                 }
             }
 
@@ -95,9 +95,9 @@ namespace tests
             //make sure each child have connection to parent
             foreach (var parent in undirected.Nodes)
             {
-                foreach (var child in parent.Children)
+                foreach (var child in parent.Edges)
                 {
-                    Assert.True(child.Node.Children.Any(c => c.Node.Id == parent.Id));
+                    Assert.True(child.Node.Edges.Any(c => c.Node.Id == parent.Id));
                 }
             }
 
@@ -107,17 +107,17 @@ namespace tests
                 //ensure they are the facto different objects in memory
                 Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
                 
-                var undirectedChildren = parents.First.Children.Select(x => x.Node);
-                var maybeUndirectedChildren = parents.Second.Children.Select(x => x.Node);
+                var undirectedEdges = parents.First.Edges.Select(x => x.Node);
+                var maybeUndirectedEdges = parents.Second.Edges.Select(x => x.Node);
                 
-                var diff = maybeUndirectedChildren.Except(undirectedChildren, new NodeEqualityComparer());
+                var diff = maybeUndirectedEdges.Except(undirectedEdges, new NodeEqualityComparer());
                 Assert.Empty(diff);
                 
-                diff = undirectedChildren.Except(maybeUndirectedChildren, new NodeEqualityComparer());
+                diff = undirectedEdges.Except(maybeUndirectedEdges, new NodeEqualityComparer());
 
                 foreach (var n in diff)
                 {
-                    Assert.True(maybeUndirected.Nodes[n.Id].Children.Any(x=>x.Node.Id==parents.First.Id));
+                    Assert.True(maybeUndirected.Nodes[n.Id].Edges.Any(x=>x.Node.Id==parents.First.Id));
                 }
             }
 
@@ -134,11 +134,11 @@ namespace tests
             int children_count = 100;
             _nodesFactory.ForEach()
             .ConnectNodes(children_count);
-            validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
+            validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
             Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
-                 Assert.Equal(node.Children.Count, children_count);
-                 validateThereIsNoCopiesAndParentInChildren(node.Children.Select(child => child.Node).ToList());
+                 Assert.Equal(node.Edges.Count, children_count);
+                 validateThereIsNoCopiesAndParentInEdges(node.Edges.Select(child => child.Node).ToList());
              });
         }
         [Fact]
@@ -149,20 +149,20 @@ namespace tests
             _nodesFactory.ForEach()
             .ConnectRandomly(min_count_of_nodes,max_count_of_nodes);
 
-            validateThereIsNoCopiesAndParentInChildren(_nodesFactory.Nodes);
+            validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
             Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
-                 Assert.True(node.Children.Count is >= min_count_of_nodes and <= max_count_of_nodes);
-                 validateThereIsNoCopiesAndParentInChildren(node.Children.Select(child => child.Node).ToList());
+                 Assert.True(node.Edges.Count is >= min_count_of_nodes and <= max_count_of_nodes);
+                 validateThereIsNoCopiesAndParentInEdges(node.Edges.Select(child => child.Node).ToList());
              });
         }
-        public void validateThereIsNoCopiesAndParentInChildren(IList<INode> nodes)
+        public void validateThereIsNoCopiesAndParentInEdges(IList<INode> nodes)
         {
             Assert.NotEmpty(nodes);
             foreach (var parent in nodes)
             {
-                Assert.Equal(parent.Children.Distinct(), parent.Children);
-                Assert.False(parent.Children.Any(child => child.Node.CompareTo(parent) == 0), $"There is parent in children. Parent : {parent}");
+                Assert.Equal(parent.Edges.Distinct(), parent.Edges);
+                Assert.False(parent.Edges.Any(child => child.Node.CompareTo(parent) == 0), $"There is parent in children. Parent : {parent}");
             }
         }
 

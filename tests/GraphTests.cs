@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using GraphSharp;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
@@ -57,33 +57,33 @@ namespace tests
             }
             //init graph with nodes
             {
-                nodes[0].Children.Add(new Child(nodes[4]));
-                nodes[0].Children.Add(new Child(nodes[1]));
+                nodes[0].Edges.Add(new Edge(nodes[4]));
+                nodes[0].Edges.Add(new Edge(nodes[1]));
 
-                nodes[1].Children.Add(new Child(nodes[2]));
-                nodes[1].Children.Add(new Child(nodes[3]));
-                nodes[1].Children.Add(new Child(nodes[8]));
+                nodes[1].Edges.Add(new Edge(nodes[2]));
+                nodes[1].Edges.Add(new Edge(nodes[3]));
+                nodes[1].Edges.Add(new Edge(nodes[8]));
 
-                nodes[2].Children.Add(new Child(nodes[7]));
-                nodes[2].Children.Add(new Child(nodes[9]));
+                nodes[2].Edges.Add(new Edge(nodes[7]));
+                nodes[2].Edges.Add(new Edge(nodes[9]));
 
-                nodes[3].Children.Add(new Child(nodes[7]));
+                nodes[3].Edges.Add(new Edge(nodes[7]));
 
-                nodes[4].Children.Add(new Child(nodes[5]));
+                nodes[4].Edges.Add(new Edge(nodes[5]));
 
-                nodes[5].Children.Add(new Child(nodes[0]));
-                nodes[5].Children.Add(new Child(nodes[1]));
-                nodes[5].Children.Add(new Child(nodes[3]));
-                nodes[5].Children.Add(new Child(nodes[6]));
+                nodes[5].Edges.Add(new Edge(nodes[0]));
+                nodes[5].Edges.Add(new Edge(nodes[1]));
+                nodes[5].Edges.Add(new Edge(nodes[3]));
+                nodes[5].Edges.Add(new Edge(nodes[6]));
 
-                nodes[6].Children.Add(new Child(nodes[3]));
+                nodes[6].Edges.Add(new Edge(nodes[3]));
 
-                nodes[7].Children.Add(new Child(nodes[1]));
-                nodes[7].Children.Add(new Child(nodes[9]));
+                nodes[7].Edges.Add(new Edge(nodes[1]));
+                nodes[7].Edges.Add(new Edge(nodes[9]));
 
-                nodes[8].Children.Add(new Child(nodes[9]));
+                nodes[8].Edges.Add(new Edge(nodes[9]));
 
-                nodes[9].Children.Add(new Child(nodes[3]));
+                nodes[9].Edges.Add(new Edge(nodes[3]));
             }
 
             var graph = createGraph(new NodesFactory().UseNodes(nodes));
@@ -146,9 +146,9 @@ namespace tests
         [Fact]
         public void ValidateOrder(){
             var graph = createGraph(_nodes);
-            validate_graphOrder(graph,_nodes.Nodes,child=>true);
+            validate_graphOrder(graph,_nodes.Nodes,edge=>true);
         }
-        static void validate_graphOrder(IGraph graph, IList<INode> nodes, Func<IChild, bool> selector = null)
+        static void validate_graphOrder(IGraph graph, IList<INode> nodes, Func<IEdge, bool> selector = null)
         {
             var next_gen = new HashSet<INode>();
             var current_gen = new List<INode>();
@@ -159,7 +159,7 @@ namespace tests
                 lock (current_gen)
                 {
                     current_gen.Add(node);
-                    foreach (var n in node.Children)
+                    foreach (var n in node.Edges)
                     {
                         if (selector is null)
                             next_gen.Add(n.Node);
@@ -207,7 +207,7 @@ namespace tests
                 {
                     if (i + 1 < nodes.Length)
                     {
-                        nodes[i].Children.Add(new Child(nodes[i + 1]));
+                        nodes[i].Edges.Add(new Edge(nodes[i + 1]));
                     }
                 }
 
@@ -215,7 +215,7 @@ namespace tests
                 {
                     if (i - 1 >= 0)
                     {
-                        nodes[i].Children.Add(new Child(nodes[i - 1]));
+                        nodes[i].Edges.Add(new Edge(nodes[i - 1]));
                     }
                 }
 

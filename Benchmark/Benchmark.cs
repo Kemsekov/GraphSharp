@@ -12,7 +12,7 @@ using System.Threading.Tasks.Dataflow;
 using System.Threading;
 
 const int nodes_count = 11000;
-const int children_count = 20;
+const int edges_count = 20;
 const int steps_count = 1200*2;
 
 Console.ForegroundColor = ConsoleColor.Green;
@@ -23,7 +23,7 @@ var nodes =
     new NodesFactory()
     .CreateNodes(nodes_count)
     .ForEach()
-    .ConnectNodes(children_count);
+    .ConnectNodes(edges_count);
 
 System.Console.WriteLine($"Time {watch1.ElapsedMilliseconds} milliseconds to create nodes");
 watch1.Stop();

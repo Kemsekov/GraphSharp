@@ -62,7 +62,7 @@ public class GraphDrawer
             var size = x.GetCurrentSize();
             Parallel.ForEach(nodes, node =>
             {
-                foreach (var c in node.Children)
+                foreach (var c in node.Edges)
                 {
                     DrawConnection(x, node, c.Node, size);
                 }

@@ -1,10 +1,10 @@
 using GraphSharp.Nodes;
 
-namespace GraphSharp.Children
+namespace GraphSharp.Edges
 {
-    public class Child<T> : Child
+    public class Edge<T> : Edge
     {
-        public Child(INode node, T value) : base(node)
+        public Edge(INode node, T value) : base(node)
         {
             Value = value;
         }

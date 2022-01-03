@@ -1,6 +1,6 @@
 ﻿using GraphSharp;
 using GraphSharp.Visitors;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using GraphSharp.Graphs;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -19,7 +19,7 @@ var nodes =
     new NodesFactory( id => new NodeXY(id, rand.NextDouble(), rand.NextDouble()),(node,parent)=>new NodeConnector(node,parent),conRand)
     .CreateNodes(argz.nodesCount)
     .ForEach()
-    .ConnectToClosest(argz.minChildren,argz.maxChildren,(node1,node2)=>((NodeXY)node1).Distance((NodeXY)node2))
+    .ConnectToClosest(argz.minEdges,argz.maxEdges,(node1,node2)=>((NodeXY)node1).Distance((NodeXY)node2))
     .MakeUndirected();
 
 var startNode = nodes.Nodes[argz.node1 % nodes.Nodes.Count];

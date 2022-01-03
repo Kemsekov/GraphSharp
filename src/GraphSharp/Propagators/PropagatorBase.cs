@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 
@@ -23,8 +23,8 @@ namespace GraphSharp.Propagators
             var start_node = new Node(-1);
             foreach (var index in indices)
             {
-                var child = new Child(_nodes[index % _nodes.Length]);
-                start_node.Children.Add(child);
+                var child = new Edge(_nodes[index % _nodes.Length]);
+                start_node.Edges.Add(child);
             }
             nodes.Add(start_node);
         }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 using Microsoft.Toolkit.HighPerformance;
@@ -47,17 +47,17 @@ namespace GraphSharp.Propagators
         {
             //this horrible code is here because it is fast... Don't blame me pls.
             var __buf = _genBuf.Value;
-            int __count = node.Children.Count;
-            IChild __child;
+            int __count = node.Edges.Count;
+            IEdge __edge;
             ref byte __visited = ref _visited.DangerousGetReferenceAt(0);
-            var __children = node.Children;
+            var __edges = node.Edges;
             INode __node;
 
             for (int i = 0; i < __count; ++i)
             {
-                __child = __children[i];
-                if (!_visitor.Select(__child)) continue;
-                __node = __child.Node;
+                __edge = __edges[i];
+                if (!_visitor.Select(__edge)) continue;
+                __node = __edge.Node;
                 __visited = ref _visited.DangerousGetReferenceAt(__node.Id);
 
                 if (__visited > 0) continue;

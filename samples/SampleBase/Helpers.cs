@@ -20,7 +20,7 @@ public static class Helpers
     {
         for (int i = 0; i < path.Count - 1; i++)
         {
-            if (!path[i].Children.Select(x => x.Node).Contains(path[i + 1]))
+            if (!path[i].Edges.Select(x => x.Node).Contains(path[i + 1]))
                 throw new Exception("Bad thing! Path is not valid!");
         }
     }
@@ -30,7 +30,7 @@ public static class Helpers
         foreach (var n in path)
         {
             Console.WriteLine(n);
-            foreach (var c in n.Children)
+            foreach (var c in n.Edges)
             {
                 if (c is NodeConnector con)
                     System.Console.WriteLine($"\t{con.Node} {(float)con.Weight}");

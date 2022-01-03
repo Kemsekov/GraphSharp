@@ -1,5 +1,5 @@
 using System;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 
 namespace GraphSharp.Visitors
@@ -12,9 +12,9 @@ namespace GraphSharp.Visitors
         /// <summary>
         /// This method will be called on every child of node.
         /// </summary>
-        /// <param name="child"></param>
-        /// <returns>Whatever this child must be passed to next generation of nodes or not.</returns>
-        bool Select(IChild child);
+        /// <param name="edge"></param>
+        /// <returns>Whatever this node of this edge must be passed to next generation of nodes or not.</returns>
+        bool Select(IEdge edge);
         /// <summary>
         /// Visit node. Note: this method will be called only once at particular node of whole graph.
         /// </summary>

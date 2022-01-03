@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 
 namespace GraphSharp.Nodes
 {
@@ -10,6 +10,6 @@ namespace GraphSharp.Nodes
     public interface INode : IComparable<INode>
     {
         int Id{get;init;}
-        IList<IChild> Children{get;}
+        IList<IEdge> Edges{get;}
     }
 }

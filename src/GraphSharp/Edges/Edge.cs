@@ -1,15 +1,15 @@
 using GraphSharp.Nodes;
 
-namespace GraphSharp.Children
+namespace GraphSharp.Edges
 {
-    public class Child : IChild
+    public class Edge : IEdge
     {
-        public Child(INode node)
+        public Edge(INode node)
         {
             this.Node = node;
         }
         public INode Node{get;init;}
-        public int CompareTo(IChild other) => Node.CompareTo(other.Node);
+        public int CompareTo(IEdge other) => Node.CompareTo(other.Node);
         public override string ToString()
         {
             return $"Child to node {Node.Id}";

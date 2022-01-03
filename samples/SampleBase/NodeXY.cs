@@ -1,4 +1,4 @@
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 
 public class NodeXY : Node

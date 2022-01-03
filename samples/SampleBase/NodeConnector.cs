@@ -1,7 +1,7 @@
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 
-public class NodeConnector : Child
+public class NodeConnector : Edge
 {
     public NodeConnector(INode node, INode parent) : base(node)
     {

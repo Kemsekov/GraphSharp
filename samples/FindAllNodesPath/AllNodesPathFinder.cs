@@ -1,6 +1,6 @@
 #pragma warning disable
 using System.Collections.Concurrent;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 
@@ -23,6 +23,7 @@ public class AllNodesPathFinder : IVisitor
     public void EndVisit()
     {
         if(buffer is null && _path.Count>0){
+            states[_path.Last().Id] = NodeState.Visited;
             _path.Remove(_path.Last());
             return;
         }
@@ -32,19 +33,19 @@ public class AllNodesPathFinder : IVisitor
     }
 
     //add node-parent to path. If it is already exists, then return
-    public bool Select(IChild child)
+    public bool Select(IEdge edge)
     {
-        var currentState = states[child.Node.Id];
-        states[child.Node.Id] = NodeState.Visited;
+        var currentState = states[edge.Node.Id];
+        states[edge.Node.Id] = NodeState.Visited;
         if(currentState == NodeState.AddedToPath) return false;
 
-        var parent = child.Node as NodeXY;
+        var parent = edge.Node as NodeXY;
         var needVisit = parent.Id==_path.Last().Id;
         
-        buffer ??= child.Node as NodeXY;
+        buffer ??= edge.Node as NodeXY;
         var bufferState = states[buffer.Id];
 
-        if(child is NodeConnector c){
+        if(edge is NodeConnector c){
             lock(buffer)
             if(c.Node is NodeXY current){
                 if(parent.Distance(current)<parent.Distance(buffer)){
@@ -60,7 +61,7 @@ public class AllNodesPathFinder : IVisitor
     /*
     Visit one node per Step.
     Right in the beggining test this node state to visited.
-    Select any node from it's children that are not added to path
+    Select any node from it's edgeren that are not added to path
     Select any node that not visited, if there is no one, then
     Select any visited
     If there is no one, then roll back to previous node and return.

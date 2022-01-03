@@ -1,5 +1,5 @@
 using System.Collections.Concurrent;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 public class PathFinder : IVisitor
@@ -24,10 +24,10 @@ public class PathFinder : IVisitor
     {
     }
 
-    public bool Select(IChild child)
+    public bool Select(IEdge Edge)
     {
         bool updatePath = true;
-        if (child is NodeConnector connection)
+        if (Edge is NodeConnector connection)
         {
             var pathLength = _pathLength[connection.Parent] + connection.Weight;
 

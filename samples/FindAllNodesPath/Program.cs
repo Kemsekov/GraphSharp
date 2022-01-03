@@ -13,13 +13,12 @@ var nodes =
     .CreateNodes(800)
     .ForEach()
     .ConnectToClosest(2, 5, (n1, n2) => ((NodeXY)n1).Distance((NodeXY)n2))
-    .MakeUndirected()
-    .Nodes;
+    .MakeUndirected();
 
-var startNode = nodes[123] as NodeXY;
+var startNode = nodes.Nodes[123] as NodeXY;
 var graph = new Graph(nodes);
 
-var visitor = new AllNodesPathFinder(startNode, nodes.Count);
+var visitor = new AllNodesPathFinder(startNode, nodes.Nodes.Count);
 
 graph.AddVisitor(visitor, startNode.Id);
 
@@ -40,14 +39,14 @@ var drawer = new GraphDrawer(image, Brushes.Solid(Color.Brown), Brushes.Solid(Co
 drawer.NodeSize = 0.006f;
 drawer.Thickness = 0.003f;
 drawer.Clear(Color.Black);
-drawer.DrawNodeConnections(nodes);
+drawer.DrawNodeConnections(nodes.Nodes);
 
 if (path.Count > 0)
 {
     drawer.DrawLineBrush = Brushes.Solid(Color.Wheat);
     drawer.DrawPath(path);
 }
-drawer.DrawNodes(nodes);
+drawer.DrawNodes(nodes.Nodes);
 System.Console.WriteLine("Saving image...");
 image.SaveAsJpeg("example.jpg");
 

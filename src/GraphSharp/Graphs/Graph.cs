@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GraphSharp.Children;
+using GraphSharp.Edges;
 using GraphSharp.Propagators;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
