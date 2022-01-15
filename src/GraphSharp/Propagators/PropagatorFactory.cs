@@ -5,10 +5,17 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Propagators
 {
     /// <summary>
-    /// feel free to extend it with your own implementations of Propagator
+    /// Set of ready to use <see cref="IPropagator"/>s. Feel free to extend it with your own implementations of Propagator
     /// </summary>
     public partial class PropagatorFactory
     {
+        /// <summary>
+        /// delegate for creating some <see cref="IPropagator"/>.
+        /// </summary>
+        /// <param name="nodes">Nodes in a graph</param>
+        /// <param name="visitor">Visitor associated with returning propagator</param>
+        /// <param name="indices">Starting node indices for visitor</param>
+        /// <returns></returns>
         public delegate IPropagator Factory(INode[] nodes, IVisitor visitor,int[] indices);
         /// <summary>
         /// Returns factory for single threaded propagator. It means that Graph that uses this factory will handle every step in one thread only.

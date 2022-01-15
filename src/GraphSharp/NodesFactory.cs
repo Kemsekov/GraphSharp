@@ -16,10 +16,10 @@ namespace GraphSharp
         public IList<INode> Nodes { get; protected set; }
         /// <summary>
         /// group of nodes that selected to be modified in next invocations.<br/>
-        /// For example nodesFactory.ForEach() will set this property just to Nodes and
+        /// For example <see cref="NodesFactory.ForEach"/> will set this property just to <see cref="NodesFactory.Nodes"/> and
         /// next invocations of any operation will be performed on all nodes.
-        /// nodesFactory.ForOne(nodeId) will set this property to just one particular node from Nodes.
-        /// nodeFactory.ForNodes(nodes=>nodes.Where(...)) will set this property to any set of nodes
+        /// <see cref="NodesFactory.ForOne"/> will set this property to just one particular node from <see cref="NodesFactory.Nodes"/>.
+        /// <see cref="NodesFactory.ForNodes"/> will set this property to any subset of <see cref="NodesFactory.Nodes"/> 
         /// </summary>
         /// <value></value>
         public IEnumerable<INode> WorkingGroup { get; protected set; }
@@ -36,7 +36,7 @@ namespace GraphSharp
             _createEdge = createChild;
         }
         /// <summary>
-        /// Replace Nodes in current instance of NodesFactory to nodes
+        /// Replace current <see cref="NodesFactory.Nodes"/> to nodes
         /// </summary>
         /// <param name="nodes">What need to be used as Nodes</param>
         /// <returns></returns>
@@ -75,7 +75,7 @@ namespace GraphSharp
         }
 
         /// <summary>
-        /// Will set <see cref="NodesFactory.WorkingGroup"/> to particular node from <see cref="NodesFactory.Nodes"/> with id = nodeId
+        /// Will set <see cref="NodesFactory.WorkingGroup"/> to particular node from <see cref="NodesFactory.Nodes"/> with id == nodeId
         /// </summary>
         /// <param name="nodeId"></param>
         /// <returns></returns>
@@ -85,7 +85,7 @@ namespace GraphSharp
         }
 
         /// <summary>
-        /// Will set <see cref="NodesFactory.WorkingGroup"/> to some enumerable of nodes from that must be selected from <see cref="NodesFactory.Nodes"/>
+        /// Will set <see cref="NodesFactory.WorkingGroup"/> to some subset of <see cref="NodesFactory.Nodes"/>
         /// </summary>
         /// <param name="selector">receive <see cref="NodesFactory.Nodes"/> and returns some set of values from them</param>
         /// <returns></returns>
@@ -97,7 +97,7 @@ namespace GraphSharp
         /// <summary>
         /// Randomly adds to node's Edges another nodes. It connect nodes to each other from current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
-        /// <param name="countOfConnections">How much edgeren node need</param>
+        /// <param name="countOfConnections">How much edges each node need</param>
         public NodesFactory ConnectNodes(int countOfConnections)
         {
             countOfConnections = countOfConnections > Nodes.Count ? Nodes.Count : countOfConnections;
@@ -112,8 +112,8 @@ namespace GraphSharp
         /// <summary>
         /// Randomly add to node's Edges another nodes, but create random count of connections. It connect nodes to each other from current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
-        /// <param name="minCountOfNodes">Min count of edgeren of each node</param>
-        /// <param name="maxCountOfNodes">Max count of edgeren of each node</param>
+        /// <param name="minCountOfNodes">Min count of edges of each node</param>
+        /// <param name="maxCountOfNodes">Max count of edges of each node</param>
         public NodesFactory ConnectRandomly(int minCountOfNodes, int maxCountOfNodes)
         {
             minCountOfNodes = minCountOfNodes < 1 ? 1 : minCountOfNodes;
@@ -137,7 +137,7 @@ namespace GraphSharp
         }
 
         /// <summary>
-        /// Removes parent node from it's edgeren connection. Or simply makes any connection between nodes onedirectional in current <see cref="NodesFactory.WorkingGroup"/>
+        /// Removes parent node from it's edges connection. Or simply makes any connection between nodes onedirectional in current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
         public NodesFactory MakeDirected()
         {
@@ -163,7 +163,7 @@ namespace GraphSharp
             return this;
         }
         /// <summary>
-        /// ensures that every edge of parent's node have parent included in edgeren. Or simply make sure that any connection between two nodes are bidirectional in current <see cref="NodesFactory.WorkingGroup"/>
+        /// ensures that every edge of parent's node have parent included in edges. Or simply make sure that any connection between two nodes are bidirectional in current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
         public NodesFactory MakeUndirected()
         {
@@ -201,20 +201,20 @@ namespace GraphSharp
 
                 }
         }
-
+        #nullable enable
         /// <summary>
         /// Randomly connects node to it's closest nodes by distance function in current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
-        /// <param name="minChildCount">minimum edgeren count</param>
-        /// <param name="maxChildCount">maximum edgeren count</param>
+        /// <param name="minEdgesCount">minimum edges count</param>
+        /// <param name="maxEdgesCount">maximum edges count</param>
         /// <param name="distance">Func to determine how much one node is distant from another</param>
         /// <returns></returns>
-        public NodesFactory ConnectToClosest(int minChildCount, int maxChildCount, Func<INode, INode, double> distance)
+        public NodesFactory ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<INode, INode, double> distance)
         {
             foreach (var parent in WorkingGroup)
             {
-                if (parent.Edges.Count > maxChildCount) continue;
-                var edgeCount = _rand.Next(maxChildCount - minChildCount) + minChildCount;
+                if (parent.Edges.Count > maxEdgesCount) continue;
+                var edgeCount = _rand.Next(maxEdgesCount - minEdgesCount) + minEdgesCount;
                 for (int i = 0; i < edgeCount; i++)
                 {
                     (INode? node, double distance) min = (null, 0);
@@ -225,7 +225,7 @@ namespace GraphSharp
                         var pretendent = Nodes[(b + shift) % Nodes.Count];
 
                         if (pretendent.Id == parent.Id) continue;
-                        if (pretendent.Edges.Count > maxChildCount) continue;
+                        if (pretendent.Edges.Count > maxEdgesCount) continue;
 
                         if (min.node is null)
                         {
@@ -248,7 +248,7 @@ namespace GraphSharp
         }
 
         /// <summary>
-        /// removes all edgeren of parent nodes and every connection to parent node from any other node. It simply isolate node from others in current <see cref="NodesFactory.WorkingGroup"/>
+        /// Removes all edges from it's parent in current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
         /// <returns></returns>
         public NodesFactory RemoveAllConnections()

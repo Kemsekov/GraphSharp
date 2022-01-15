@@ -1,5 +1,8 @@
 namespace GraphSharp.Propagators
 {
+    /// <summary>
+    /// Logic of how should any graph move from previous generation of node to next, and what to do with them in the proccess.
+    /// </summary>
     public interface IPropagator
     {
         /// <summary>

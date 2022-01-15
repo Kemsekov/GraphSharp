@@ -3,7 +3,7 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Graphs
 {
     /// <summary>
-    /// Implements logic for propagating visitors trough graph
+    /// Implements logic for adding/propagating/removing multiple visitors trough graph
     /// </summary>
     public interface IGraph
     {
@@ -18,12 +18,12 @@ namespace GraphSharp.Graphs
         void RemoveVisitor(IVisitor visitor);
         void RemoveAllVisitors();
         /// <summary>
-        /// Propagate visitor trough graph one generation -> from current nodes to their children
+        /// Propagate visitor trough graph by one generation -> from current nodes to their children by edges
         /// </summary>
         /// <param name="visitor"></param>
         void Step(IVisitor visitor);
         /// <summary>
-        /// Propagate all visitors trough graph one generation -> from current nodes to their children
+        /// Propagate all visitors trough graph one generation -> from current nodes to their children by edges
         /// </summary>
         void Step();
     }

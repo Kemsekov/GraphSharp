@@ -34,14 +34,20 @@ namespace GraphSharp.Propagators
                     DoLogic(node);
                 });
 
+            // clear all states of visited for current nodes for next generation
             Array.Clear(_visited, 0, _visited.Length);
 
             _visitor.EndVisit();
 
+            //swap next generaton and current.
             var b = _genBuf;
             _genBuf = _genNodes;
             _genNodes = b;
         }
+        /// <summary>
+        /// Propagates trough all edges of node and set visit field for each particular node to visited.
+        /// </summary>
+        /// <param name="node"></param>
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         void DoLogic(INode node)
         {

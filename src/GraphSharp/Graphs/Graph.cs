@@ -40,9 +40,9 @@ namespace GraphSharp.Graphs
         {
             if (_work.ContainsKey(visitor)) return;
 
-            var temp = _factory(_nodes, visitor, indices);
+            var propagator = _factory(_nodes, visitor, indices);
 
-            _work.Add(visitor, temp);
+            _work.Add(visitor, propagator);
             return;
         }
 
@@ -56,7 +56,7 @@ namespace GraphSharp.Graphs
             _work.Remove(visitor);
         }
         /// <summary>
-        /// Once propagate trough all visitor 
+        /// Propagate trough all visitor once
         /// </summary>
         public void Step()
         {
@@ -65,7 +65,7 @@ namespace GraphSharp.Graphs
         }
 
         /// <summary>
-        /// Once propagate trough specific visitor
+        /// Propagate trough specific visitor once
         /// </summary>
         /// <param name="visitor">visitor to propagate</param>
         public void Step(IVisitor visitor)
