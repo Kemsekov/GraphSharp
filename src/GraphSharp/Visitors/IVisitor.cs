@@ -16,12 +16,12 @@ namespace GraphSharp.Visitors
         /// <returns>Whatever this node of this edge must be passed to next generation of nodes or not.</returns>
         bool Select(IEdge edge);
         /// <summary>
-        /// Visiting node. If node passed in <see cref="IVisitor.Select"/> method then it will be called here again, but only once per propagation.
+        /// Visiting node. If node passed in <see cref="IVisitor.Select"/> method then it will be called here once again.
         /// </summary>
         /// <param name="node"></param>
         void Visit(INode node);
         /// <summary>
-        /// This method called right after visitor propagation is end.
+        /// This method called right after visitor ended visiting.
         /// </summary>
         void EndVisit();
     }

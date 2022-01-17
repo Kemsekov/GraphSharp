@@ -43,7 +43,7 @@ namespace GraphSharp
         public NodesFactory UseNodes(IList<INode> nodes)
         {
             Nodes = nodes;
-            return this;
+            return ForEach();
         }
         /// <summary>
         /// Create count nodes. This method will replace existing Nodes in current instance of NodesFactory.
@@ -60,8 +60,7 @@ namespace GraphSharp
                 var node = _createNode(i);
                 nodes.Add(node);
             }
-            Nodes = nodes;
-            return this;
+            return UseNodes(nodes);
         }
 
         /// <summary>
@@ -97,41 +96,41 @@ namespace GraphSharp
         /// <summary>
         /// Randomly adds to node's Edges another nodes. It connect nodes to each other from current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
-        /// <param name="countOfConnections">How much edges each node need</param>
-        public NodesFactory ConnectNodes(int countOfConnections)
+        /// <param name="edgesCount">How much edges each node need</param>
+        public NodesFactory ConnectNodes(int edgesCount)
         {
-            countOfConnections = countOfConnections > Nodes.Count ? Nodes.Count : countOfConnections;
+            edgesCount = edgesCount > Nodes.Count ? Nodes.Count : edgesCount;
 
             foreach (var node in WorkingGroup)
             {
                 var start_index = _rand.Next(Nodes.Count);
-                ConnectNodeToNodes(node, start_index, countOfConnections);
+                ConnectNodeToNodes(node, start_index, edgesCount);
             }
             return this;
         }
         /// <summary>
         /// Randomly add to node's Edges another nodes, but create random count of connections. It connect nodes to each other from current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
-        /// <param name="minCountOfNodes">Min count of edges of each node</param>
-        /// <param name="maxCountOfNodes">Max count of edges of each node</param>
-        public NodesFactory ConnectRandomly(int minCountOfNodes, int maxCountOfNodes)
+        /// <param name="minEdgesCount">Min count of edges of each node</param>
+        /// <param name="maxEdgesCount">Max count of edges of each node</param>
+        public NodesFactory ConnectRandomly(int minEdgesCount, int maxEdgesCount)
         {
-            minCountOfNodes = minCountOfNodes < 1 ? 1 : minCountOfNodes;
-            maxCountOfNodes = maxCountOfNodes > Nodes.Count ? Nodes.Count : maxCountOfNodes;
+            minEdgesCount = minEdgesCount < 1 ? 1 : minEdgesCount;
+            maxEdgesCount = maxEdgesCount > Nodes.Count ? Nodes.Count : maxEdgesCount;
 
             //swap using xor
-            if (minCountOfNodes > maxCountOfNodes)
+            if (minEdgesCount > maxEdgesCount)
             {
-                minCountOfNodes = minCountOfNodes ^ maxCountOfNodes;
-                maxCountOfNodes = minCountOfNodes ^ maxCountOfNodes;
-                minCountOfNodes = minCountOfNodes ^ maxCountOfNodes;
+                minEdgesCount = minEdgesCount ^ maxEdgesCount;
+                maxEdgesCount = minEdgesCount ^ maxEdgesCount;
+                minEdgesCount = minEdgesCount ^ maxEdgesCount;
             }
 
             foreach (var node in WorkingGroup)
             {
-                int count_of_connections = _rand.Next(maxCountOfNodes - minCountOfNodes) + minCountOfNodes;
-                var start_index = _rand.Next(Nodes.Count);
-                ConnectNodeToNodes(node, start_index, count_of_connections);
+                int edgesCount = _rand.Next(maxEdgesCount - minEdgesCount) + minEdgesCount;
+                var startIndex = _rand.Next(Nodes.Count);
+                ConnectNodeToNodes(node, startIndex, edgesCount);
             }
             return this;
         }
@@ -185,15 +184,15 @@ namespace GraphSharp
         }
 
         //connect some node to List of nodes with some parameters.
-        private void ConnectNodeToNodes(INode node, int start_index, int count_of_connections)
+        private void ConnectNodeToNodes(INode node, int startIndex, int edgesCount)
         {
             lock (node)
-                for (int i = 0; i < count_of_connections; i++)
+                for (int i = 0; i < edgesCount; i++)
                 {
-                    var edge = Nodes[(start_index + i) % Nodes.Count];
+                    var edge = Nodes[(startIndex + i) % Nodes.Count];
                     if (edge.Id == node.Id)
                     {
-                        start_index++;
+                        startIndex++;
                         i--;
                         continue;
                     }
@@ -214,30 +213,12 @@ namespace GraphSharp
             foreach (var parent in WorkingGroup)
             {
                 if (parent.Edges.Count > maxEdgesCount) continue;
-                var edgeCount = _rand.Next(maxEdgesCount - minEdgesCount) + minEdgesCount;
-                for (int i = 0; i < edgeCount; i++)
+                var edgesCount = _rand.Next(maxEdgesCount - minEdgesCount) + minEdgesCount;
+                
+                for (int i = 0; i < edgesCount; i++)
                 {
-                    (INode? node, double distance) min = (null, 0);
                     int shift = _rand.Next(Nodes.Count);
-
-                    for (int b = 0; b < Nodes.Count; b++)
-                    {
-                        var pretendent = Nodes[(b + shift) % Nodes.Count];
-
-                        if (pretendent.Id == parent.Id) continue;
-                        if (pretendent.Edges.Count > maxEdgesCount) continue;
-
-                        if (min.node is null)
-                        {
-                            min = (pretendent, distance(parent, pretendent));
-                            continue;
-                        }
-                        var pretendent_distance = distance(parent, pretendent);
-                        if (pretendent_distance < min.distance && parent.Edges.FirstOrDefault(x => x.Node.Id == pretendent.Id) is null)
-                        {
-                            min = (pretendent, pretendent_distance);
-                        }
-                    }
+                    (INode node, double distance) min = ChooseClosestNode(maxEdgesCount, distance, parent, shift);
                     var node = min.node;
                     if (node is null) continue;
                     parent.Edges.Add(_createEdge(node, parent));
@@ -245,6 +226,30 @@ namespace GraphSharp
                 }
             }
             return this;
+        }
+        (INode node, double distance) ChooseClosestNode(int maxEdgesCount, Func<INode, INode, double> distance, INode parent, int shift)
+        {
+            (INode? node, double distance) min = (null, 0);
+            for (int b = 0; b < Nodes.Count; b++)
+            {
+                var pretendent = Nodes[(b + shift) % Nodes.Count];
+
+                if (pretendent.Id == parent.Id) continue;
+                if (pretendent.Edges.Count > maxEdgesCount) continue;
+
+                if (min.node is null)
+                {
+                    min = (pretendent, distance(parent, pretendent));
+                    continue;
+                }
+                var pretendent_distance = distance(parent, pretendent);
+                if (pretendent_distance < min.distance && parent.Edges.FirstOrDefault(x => x.Node.Id == pretendent.Id) is null)
+                {
+                    min = (pretendent, pretendent_distance);
+                }
+            }
+
+            return min;
         }
 
         /// <summary>

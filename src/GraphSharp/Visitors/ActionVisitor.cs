@@ -4,6 +4,9 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Visitors
 {
+    /// <summary>
+    /// Implementation of <see cref="IVisitor"/> that uses delegates.
+    /// </summary>
     public class ActionVisitor : IVisitor
     {
         private Action<INode> visit;
