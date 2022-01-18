@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using GraphSharp.Nodes;
 using System.Drawing;
+using GraphSharp.Edges;
 public static class Helpers
 {
     public static void MeasureTime(Action operation)
@@ -16,7 +17,7 @@ public static class Helpers
         Console.WriteLine($"End operation in {watch.ElapsedMilliseconds} Milliseconds");
         Console.ResetColor();
     }
-    public static void ValidatePath(List<INode> path)
+    public static void ValidatePath(IList<INode> path)
     {
         for (int i = 0; i < path.Count - 1; i++)
         {
