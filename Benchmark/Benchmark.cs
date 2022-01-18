@@ -13,7 +13,7 @@ using System.Threading;
 
 const int nodes_count = 11000;
 const int edges_count = 20;
-const int steps_count = 1200*2;
+const int steps_count = 2400;
 
 Console.ForegroundColor = ConsoleColor.Green;
 
@@ -35,13 +35,11 @@ var visitor = new ActionVisitor(node=>{
 var watch2 = new Stopwatch();
 watch2.Start();
 graph.AddVisitor(visitor);
-
 for(int i = 0;i<steps_count;i++){
     graph.Step();
 }
-System.Console.WriteLine($"Time {watch2.ElapsedMilliseconds} milliseconds to work");
-// System.Console.WriteLine($"Step time {graph._StepTroughGen}");
-// System.Console.WriteLine($"End visit time {graph._EndVisit}");
+
+System.Console.WriteLine($"Time {watch2.ElapsedMilliseconds} milliseconds to do {steps_count} steps with {nodes_count} nodes and {edges_count} edges");
 
 Console.ResetColor();
 watch2.Stop();
