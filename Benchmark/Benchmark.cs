@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using GraphSharp;
 using GraphSharp.Graphs;
+using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
 Stopwatch MeasureTime(Action operation)
@@ -31,7 +32,7 @@ var timer = MeasureTime(()=>{
 Console.ForegroundColor = ConsoleColor.Green;
 System.Console.WriteLine($"Time {timer.ElapsedMilliseconds} milliseconds to create nodes");
 
-var graph = new Graph(nodes);
+var graph = new Graph(nodes,PropagatorFactory.Parallel());
 var visitor = new ActionVisitor(node => {});
 graph.AddVisitor(visitor);
 

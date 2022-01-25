@@ -8,14 +8,41 @@ namespace GraphSharp.Propagators
 {
     public abstract class PropagatorBase : IPropagator
     {
-        protected int[] _indices;
         protected INode[] _nodes;
+        protected IVisitor _visitor;
+        protected byte[] _visited;
+        protected byte[] _toVisit;
+        protected Action PropagateRun = null;
 
         /// <param name="indices">Starting nodes indices</param>
-        public PropagatorBase(INode[] nodes,params int[] indices)
+        public PropagatorBase(INode[] nodes, IVisitor visitor, params int[] indices)
         {
-            _indices = indices;
             _nodes = nodes;
+            _visitor = visitor;
+            _visited = new byte[_nodes.Length];
+            _toVisit = new byte[_nodes.Length];
+            var startNode = CreateStartingNode(indices);
+            //first time we call Propagate we need to process starting Node.
+            PropagateRun = () =>
+            {
+                PropagateNode(startNode);
+                //later we need to let program run itself with visit cycle.
+                PropagateRun = PropagateNodes;
+            };
+        }
+        public virtual void Propagate()
+        {
+            // clear all states of visited for current nodes for next generation
+            Array.Clear(_visited, 0, _visited.Length);
+
+            PropagateRun();
+
+            _visitor.EndVisit();
+
+            //swap next generaton and current.
+            var buf = _visited;
+            _visited = _toVisit;
+            _toVisit = buf;
         }
         /// <summary>
         /// create node with id = -1 and with edges that contain nodes with following indices
@@ -32,7 +59,8 @@ namespace GraphSharp.Propagators
             }
             return startNode;
         }
-
-        public abstract void Propagate();
+        protected abstract void PropagateNode(INode node);
+        protected abstract void PropagateNodes();
+        
     }
 }
