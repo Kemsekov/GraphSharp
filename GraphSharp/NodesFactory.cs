@@ -218,7 +218,7 @@ namespace GraphSharp
                 for (int i = 0; i < edgesCount; i++)
                 {
                     int shift = _rand.Next(Nodes.Count);
-                    (INode node, double distance) min = ChooseClosestNode(maxEdgesCount, distance, parent, shift);
+                    (INode? node, double distance) min = ChooseClosestNode(maxEdgesCount, distance, parent, shift);
                     var node = min.node;
                     if (node is null) continue;
                     parent.Edges.Add(_createEdge(node, parent));
@@ -227,7 +227,7 @@ namespace GraphSharp
             }
             return this;
         }
-        (INode node, double distance) ChooseClosestNode(int maxEdgesCount, Func<INode, INode, double> distance, INode parent, int shift)
+        (INode? node, double distance) ChooseClosestNode(int maxEdgesCount, Func<INode, INode, double> distance, INode parent, int shift)
         {
             (INode? node, double distance) min = (null, 0);
             for (int b = 0; b < Nodes.Count; b++)

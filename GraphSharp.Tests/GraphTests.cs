@@ -25,8 +25,7 @@ namespace GraphSharp.Tests
                 .CreateNodes(5000)
                 .ForEach()
                 .ConnectNodes(10);
-            createGraph = nodes=>new Graph(nodes,PropagatorFactory.SingleThreaded());
-            // createGraph = nodes=>new Graph(nodes,PropagatorFactory.Create<Propagator>());
+            createGraph = nodes=>new Graph(nodes,PropagatorFactory.Parallel());
         }
 
         [Fact]
