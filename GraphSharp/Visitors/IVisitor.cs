@@ -9,6 +9,7 @@ namespace GraphSharp.Visitors
     /// </summary>
     public interface IVisitor
     {
+        
         /// <summary>
         /// This method selects which node to pass to next generation of nodes from edges.
         /// </summary>

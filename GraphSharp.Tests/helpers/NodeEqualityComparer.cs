@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using GraphSharp.Nodes;
 
-namespace tests.Helpers
+namespace GraphSharp.Tests.Helpers
 {
     public class NodeEqualityComparer : IEqualityComparer<INode>
     {

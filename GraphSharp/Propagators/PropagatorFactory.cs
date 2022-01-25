@@ -24,10 +24,9 @@ namespace GraphSharp.Propagators
         /// <returns></returns>
         public static Factory SingleThreaded()=> (nodes, visitor,indices) => new Propagator(nodes,visitor,indices);
         /// <summary>
-        /// Returns factory for parallel propagator implementation. This implementation is a lot faster that single threaded, but 
-        /// every Step of Graph will be have different order, although results of each step will be the same as single threaded.
-        /// BE WARY! If you use parallel version with visitors than your visitor implementation must be thread-safe, elseware 
-        /// execution of visitor logic can lead to undefined behavior. 
+        /// Returns factory for parallel propagator implementation. This implementation is a lot faster that <see cref="PropagatorFactory.SingleThreaded"/>, but 
+        /// every call of <see cref="IPropagator.Propagate"/> will have different order, although results of each call will be the same as single threaded.
+        /// BE WARY! When you use this version of <see cref="IPropagator"/> factory you'll have to implement following <see cref="IVisitor"/> parameter with concurency in mind.
         /// </summary>
         /// <returns></returns>
         public static Factory Parallel() => (nodes, visitor,indices) => new ParallelPropagator(nodes,visitor,indices);

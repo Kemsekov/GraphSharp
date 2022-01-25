@@ -12,7 +12,7 @@ using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 using Xunit;
-namespace tests
+namespace GraphSharp.Tests
 {
     public class GraphTests
     {
@@ -24,8 +24,8 @@ namespace tests
                 new NodesFactory()
                 .CreateNodes(5000)
                 .ForEach()
-                .ConnectRandomly(5,30);
-            createGraph = nodes=>new Graph(nodes);
+                .ConnectNodes(10);
+            createGraph = nodes=>new Graph(nodes,PropagatorFactory.Parallel());
             // createGraph = nodes=>new Graph(nodes,PropagatorFactory.Create<Propagator>());
         }
 

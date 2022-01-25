@@ -10,13 +10,12 @@ namespace GraphSharp.Propagators
     {
         protected int[] _indices;
         protected INode[] _nodes;
-        protected IVisitor _visitor;
 
-        public PropagatorBase(INode[] nodes, IVisitor visitor,params int[] indices)
+        /// <param name="indices">Starting nodes indices</param>
+        public PropagatorBase(INode[] nodes,params int[] indices)
         {
             _indices = indices;
             _nodes = nodes;
-            _visitor = visitor;
         }
         protected void createStartingNode(IList<INode> nodes, params int[] indices)
         {

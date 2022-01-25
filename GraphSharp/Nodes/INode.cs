@@ -16,7 +16,6 @@ namespace GraphSharp.Nodes
         /// <summary>
         /// Edges of a current node.
         /// </summary>
-        /// <value></value>
         IList<IEdge> Edges{get;}
     }
 }

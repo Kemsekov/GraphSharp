@@ -4,6 +4,6 @@
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="../src/GraphSharp/GraphSharp.csproj"/>
+    <ProjectReference Include="../GraphSharp/GraphSharp.csproj"/>
   </ItemGroup>
 </Project>

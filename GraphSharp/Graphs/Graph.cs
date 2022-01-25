@@ -26,7 +26,6 @@ namespace GraphSharp.Graphs
         /// <summary>
         /// adds visitor to graph and assign it to some one random node
         /// </summary>
-        /// <param name="visitor"></param>
         public void AddVisitor(IVisitor visitor)
         {
             AddVisitor(visitor, new Random().Next(_nodes.Count()));

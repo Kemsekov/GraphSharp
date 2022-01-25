@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using GraphSharp;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
-using tests.Helpers;
+using GraphSharp.Tests.Helpers;
 using Xunit;
 
-namespace tests
+namespace GraphSharp.Tests
 {
     public class NodesFactoryTests
     {

@@ -14,10 +14,12 @@ namespace GraphSharp.Propagators
     {
         protected ThreadLocal<List<INode>> _genNodes;
         protected ThreadLocal<List<INode>> _genBuf;
+        protected IVisitor _visitor;
         protected byte[] _visited;
 
-        public ParallelPropagator(INode[] nodes, IVisitor visitor, params int[] indices) : base(nodes, visitor,indices)
+        public ParallelPropagator(INode[] nodes, IVisitor visitor, params int[] indices) : base(nodes,indices)
         {
+            _visitor = visitor;
             _genNodes = new(() => new(), true);
             _genBuf = new(() => new(), true);
             _visited = new byte[_nodes.Length];

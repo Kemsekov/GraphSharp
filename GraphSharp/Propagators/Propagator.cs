@@ -12,11 +12,11 @@ namespace GraphSharp.Propagators
     {
         protected List<INode> _genNodes;
         protected List<INode> _genBuf;
-
+        protected IVisitor _visitor;
         byte[] _visited;
-
-        public Propagator(INode[] nodes, IVisitor visitor, params int[] indices) : base(nodes,visitor,indices)
+        public Propagator(INode[] nodes, IVisitor visitor, params int[] indices) : base(nodes,indices)
         {
+            _visitor = visitor;
             _genNodes = new();
             _genBuf = new();
             _visited = new byte[_nodes.Length];
