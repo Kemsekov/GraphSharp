@@ -1,0 +1,8 @@
+--old
+Time 4032 milliseconds to do 2400 steps with 11000 nodes and 20 edges
+
+Time 4059 milliseconds to do 2400 steps with 11000 nodes and 20 edges
+
+Time 4059 milliseconds to do 2400 steps with 11000 nodes and 20 edges
+
+--new

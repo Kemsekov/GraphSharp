@@ -54,27 +54,26 @@ namespace GraphSharp.Propagators
         void DoLogic(INode node)
         {
             //this horrible code is here because it is fast... Don't blame me pls.
-            var __buf = _genBuf.Value;
-            int __count = node.Edges.Count;
-            IEdge __edge;
-            ref byte __visited = ref _visited.DangerousGetReferenceAt(0);
-            var __edges = node.Edges;
-            INode __node;
+            var buf = _genBuf.Value;
+            int count = node.Edges.Count;
+            IEdge edge;
+            ref byte visited = ref _visited.DangerousGetReferenceAt(0);
+            var edges = node.Edges;
 
-            for (int i = 0; i < __count; ++i)
+            for (int i = 0; i < count; ++i)
             {
-                __edge = __edges[i];
-                if (!_visitor.Select(__edge)) continue;
-                __node = __edge.Node;
-                __visited = ref _visited.DangerousGetReferenceAt(__node.Id);
+                edge = edges[i];
+                if (!_visitor.Select(edge)) continue;
+                node = edge.Node;
+                visited = ref _visited.DangerousGetReferenceAt(node.Id);
 
-                if (__visited > 0) continue;
-                lock (__node)
+                if (visited > 0) continue;
+                lock (node)
                 {
-                    if (__visited > 0) continue;
-                    _visitor.Visit(__node);
-                    ++__visited;
-                    __buf.Add(__node);
+                    if (visited > 0) continue;
+                    _visitor.Visit(node);
+                    ++visited;
+                    buf.Add(node);
                 }
             }
         }
