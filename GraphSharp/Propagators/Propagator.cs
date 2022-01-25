@@ -10,39 +10,49 @@ namespace GraphSharp.Propagators
 {
     public class Propagator : PropagatorBase
     {
-        protected List<INode> _genNodes;
-        protected List<INode> _genBuf;
+        protected byte[] _visited;
+        protected byte[] _toVisit;
         protected IVisitor _visitor;
-        byte[] _visited;
-        public Propagator(INode[] nodes, IVisitor visitor, params int[] indices) : base(nodes,indices)
+        protected Action PropagateRun = null;
+        public Propagator(INode[] nodes, IVisitor visitor, params int[] indices) : base(nodes)
         {
             _visitor = visitor;
-            _genNodes = new();
-            _genBuf = new();
             _visited = new byte[_nodes.Length];
-            createStartingNode(_genNodes, indices);
+            _toVisit = new byte[_nodes.Length];
+            var startNode = CreateStartingNode(indices);
+            //first time we call Propagate we need to process starting Node.
+            PropagateRun = () =>
+            {
+                DoLogic(startNode);
+                //later we need to let program run itself with visit cycle
+                PropagateRun = () =>
+                {
+                    for (int nodeId = 0; nodeId < _toVisit.Length; ++nodeId)
+                    {
+                        if (_toVisit[nodeId] > 0)
+                            DoLogic(_nodes[nodeId]);
+                    };
+                };
+            };
         }
         public override void Propagate()
         {
-            _genBuf.Clear();
-            foreach (var node in _genNodes)
-                DoLogic(node);
-
             Array.Clear(_visited, 0, _visited.Length);
+
+            PropagateRun();
 
             _visitor.EndVisit();
 
-            var b = _genBuf;
-            _genBuf = _genNodes;
-            _genNodes = b;
+            //swap next generaton and current.
+            var buf = _visited;
+            _visited = _toVisit;
+            _toVisit = buf;
         }
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         void DoLogic(INode node)
         {
-            //this horrible code is here because it is fast... Don't blame me pls.
             int count = node.Edges.Count;
             IEdge edge;
-            ref byte __visited = ref _visited.DangerousGetReferenceAt(0);
             var edges = node.Edges;
 
             for (int i = 0; i < count; ++i)
@@ -50,12 +60,11 @@ namespace GraphSharp.Propagators
                 edge = edges[i];
                 if (!_visitor.Select(edge)) continue;
                 node = edge.Node;
-                __visited = ref _visited.DangerousGetReferenceAt(node.Id);
+                ref var visited = ref _visited.DangerousGetReferenceAt(node.Id);
 
-                if (__visited > 0) continue;
+                if (visited > 0) continue;
                 _visitor.Visit(node);
-                ++__visited;
-                _genBuf.Add(node);
+                ++visited;
             }
         }
     }

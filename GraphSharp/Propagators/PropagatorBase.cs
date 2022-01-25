@@ -17,15 +17,20 @@ namespace GraphSharp.Propagators
             _indices = indices;
             _nodes = nodes;
         }
-        protected void createStartingNode(IList<INode> nodes, params int[] indices)
+        /// <summary>
+        /// create node with id = -1 and with edges that contain nodes with following indices
+        /// </summary>
+        /// <param name="indices"></param>
+        /// <returns></returns>
+        protected INode CreateStartingNode(params int[] indices)
         {
-            var start_node = new Node(-1);
+            var startNode = new Node(-1);
             foreach (var index in indices)
             {
                 var child = new Edge(_nodes[index % _nodes.Length]);
-                start_node.Edges.Add(child);
+                startNode.Edges.Add(child);
             }
-            nodes.Add(start_node);
+            return startNode;
         }
 
         public abstract void Propagate();

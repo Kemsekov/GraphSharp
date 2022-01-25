@@ -12,39 +12,46 @@ namespace GraphSharp.Propagators
 {
     public class ParallelPropagator : PropagatorBase
     {
-        protected ThreadLocal<List<INode>> _genNodes;
-        protected ThreadLocal<List<INode>> _genBuf;
         protected IVisitor _visitor;
         protected byte[] _visited;
+        protected byte[] _toVisit;
+        protected Action PropagateRun = null;
 
-        public ParallelPropagator(INode[] nodes, IVisitor visitor, params int[] indices) : base(nodes,indices)
+        public ParallelPropagator(INode[] nodes, IVisitor visitor, params int[] indices) : base(nodes)
         {
             _visitor = visitor;
-            _genNodes = new(() => new(), true);
-            _genBuf = new(() => new(), true);
             _visited = new byte[_nodes.Length];
-            createStartingNode(_genNodes.Value, indices);
+            _toVisit = new byte[_nodes.Length];
+            var startNode = CreateStartingNode(indices);
+            //first time we call Propagate we need to process starting Node.
+            PropagateRun = () =>
+            {
+                DoLogic(startNode);
+                //later we need to let program run itself with visit cycle.
+                PropagateRun = () =>
+                {
+                    Parallel.For(0,_toVisit.Length, nodeId =>
+                    {
+                        if (_toVisit[nodeId] > 0)
+                            DoLogic(_nodes[nodeId]);
+                    });
+                };
+            };
         }
 
         public override void Propagate()
         {
-            foreach (var n in _genBuf.Values) n.Clear();
-
-            foreach (var n in _genNodes.Values)
-                Parallel.ForEach(n, node =>
-                {
-                    DoLogic(node);
-                });
-
             // clear all states of visited for current nodes for next generation
             Array.Clear(_visited, 0, _visited.Length);
+
+            PropagateRun();
 
             _visitor.EndVisit();
 
             //swap next generaton and current.
-            var b = _genBuf;
-            _genBuf = _genNodes;
-            _genNodes = b;
+            var buf = _visited;
+            _visited = _toVisit;
+            _toVisit = buf;
         }
         /// <summary>
         /// Propagates trough all edges of node and set visit field for each particular node to visited.
@@ -53,8 +60,6 @@ namespace GraphSharp.Propagators
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         void DoLogic(INode node)
         {
-            //this horrible code is here because it is fast... Don't blame me pls.
-            var buf = _genBuf.Value;
             int count = node.Edges.Count;
             IEdge edge;
             ref byte visited = ref _visited.DangerousGetReferenceAt(0);
@@ -73,7 +78,6 @@ namespace GraphSharp.Propagators
                     if (visited > 0) continue;
                     _visitor.Visit(node);
                     ++visited;
-                    buf.Add(node);
                 }
             }
         }
