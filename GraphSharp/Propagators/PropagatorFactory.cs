@@ -16,7 +16,7 @@ namespace GraphSharp.Propagators
         /// <param name="visitor">Visitor associated with returning propagator</param>
         /// <param name="indices">Starting node indices for visitor</param>
         /// <returns></returns>
-        public delegate IPropagator Factory(INode[] nodes, IVisitor visitor,int[] indices);
+        public delegate IPropagator Factory(INode[] nodes, IVisitor visitor,params int[] indices);
         /// <summary>
         /// Returns factory for single threaded propagator. It means that Graph that uses this factory will handle every step in one thread only.
         /// This will allow you to get predictable behavior in every run of Graph Step function

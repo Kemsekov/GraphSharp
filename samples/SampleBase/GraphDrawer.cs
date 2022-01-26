@@ -74,12 +74,14 @@ public class GraphDrawer
 
     public Image<Rgba32> DrawPath(IList<INode> path)
     {
+        Dictionary<(int,int),bool> drawn = new();
         Image.Mutate(x =>
         {
-
             path.Aggregate((n1, n2) =>
             {
+                if(drawn.TryGetValue((n1.Id,n2.Id),out var _)) return n2;
                 DrawConnection(x, n1, n2, x.GetCurrentSize());
+                drawn[(n1.Id,n2.Id)] = true;
                 return n2;
             });
         });

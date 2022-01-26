@@ -21,8 +21,10 @@ public static class Helpers
     {
         for (int i = 0; i < path.Count - 1; i++)
         {
-            if (!path[i].Edges.Select(x => x.Node).Contains(path[i + 1]))
-                throw new Exception("Bad thing! Path is not valid!");
+            var current = path[i];
+            var next = path[i + 1];
+            if (!current.Edges.Select(x => x.Node).Contains(next))
+                throw new Exception("Path is not valid!");
         }
     }
     public static void PrintPath(IList<INode> path)

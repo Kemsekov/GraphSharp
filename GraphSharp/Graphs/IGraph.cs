@@ -1,3 +1,4 @@
+using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs
@@ -26,5 +27,12 @@ namespace GraphSharp.Graphs
         /// Propagate all visitors trough graph one generation -> from current nodes to their children by edges
         /// </summary>
         void Propagate();
+        #nullable enable
+        /// <summary>
+        /// Get <see cref="IPropagator"/> associated with visitor
+        /// </summary>
+        /// <param name="visitor"></param>
+        /// <returns><see cref="IPropagator"/> if found, else null</returns>
+        IPropagator? GetPropagatorFrom(IVisitor visitor);
     }
 }

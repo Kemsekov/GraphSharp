@@ -22,18 +22,10 @@ namespace GraphSharp.Graphs
             Array.Sort(this._nodes);
         }
 
-        /// <summary>
-        /// adds visitor to graph and assign it to some one random node
-        /// </summary>
         public void AddVisitor(IVisitor visitor)
         {
             AddVisitor(visitor, new Random().Next(_nodes.Count()));
         }
-        /// <summary>
-        /// add visitor to graph and assign it to nodes with specific indices
-        /// </summary>
-        /// <param name="visitor">visitor to add</param>
-        /// <param name="indices">Id's of each node that need to be assigned to visitor at the start</param>
         public virtual void AddVisitor(IVisitor visitor, params int[] indices)
         {
             if (_work.ContainsKey(visitor)) return;
@@ -53,9 +45,6 @@ namespace GraphSharp.Graphs
         {
             _work.Remove(visitor);
         }
-        /// <summary>
-        /// Propagate trough all visitor once
-        /// </summary>
         public void Propagate()
         {
             foreach (var work in _work)
@@ -69,6 +58,13 @@ namespace GraphSharp.Graphs
         public void Propagate(IVisitor visitor)
         {
             _work[visitor].Propagate();
+        }
+        #nullable enable
+        public IPropagator? GetPropagatorFrom(IVisitor visitor)
+        {
+            if(_work.TryGetValue(visitor, out var propagator))
+                return propagator;
+            return null;
         }
     }
 }

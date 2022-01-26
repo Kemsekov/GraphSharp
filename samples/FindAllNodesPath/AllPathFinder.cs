@@ -1,39 +1,54 @@
 
+using System.Collections.Concurrent;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
+using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
 /// <summary>
 /// works only with
 /// </summary>
-public class AllPathFinder : IVisitor
+public class AllPathFinder : IVisitor<NodeXY,NodeConnector>
 {
     byte[] _visited;
-    IList<INode> _path;
-    public AllPathFinder(INode startingNode,int nodesCount)
+    public IList<INode> Path;
+    public IPropagator? Propagator = default;
+    public bool PathDone = false;
+    /// <summary>
+    /// _trace[node] = parent
+    /// </summary>
+    IDictionary<INode,INode> _trace = new ConcurrentDictionary<INode,INode>();
+    public AllPathFinder(int nodesCount)
     {
         _visited = new byte[nodesCount];
-        _path = new List<INode>(nodesCount){startingNode};
+        Path = new List<INode>(nodesCount);
     }
     public void EndVisit()
     {
 
     }
 
-    public bool Select(IEdge edge)
+    public bool Select(NodeConnector edge)
     {
-        return edge.Node.Id==_path.Last().Id;
+        var n = edge.Node;
+        return Path.Count==0 || n.Id==Path.Last().Id;
     }
-
-    public void Visit(INode node)
+    public void Visit(NodeXY node)
     {
+        if(PathDone) return;
+
         _visited[node.Id] = 1;
         foreach(var n in node.Edges){
             if(_visited[n.Node.Id]==0){
-                _path.Add(n.Node);
+                _trace[n.Node] = node;
+                Path.Add(n.Node);
                 return;
             }
         }
-        _path.RemoveAt(_path.Count-1);
+        if(_trace.TryGetValue(node,out var parent))
+            Path.Add(parent);
+        else
+            PathDone = true;
+
     }
 }

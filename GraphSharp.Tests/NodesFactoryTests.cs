@@ -162,7 +162,7 @@ namespace GraphSharp.Tests
             foreach (var parent in nodes)
             {
                 Assert.Equal(parent.Edges.Distinct(), parent.Edges);
-                Assert.False(parent.Edges.Any(child => child.Node.CompareTo(parent) == 0), $"There is parent in children. Parent : {parent}");
+                Assert.False(parent.Edges.Any(child => child.Node.Id == parent.Id), $"There is parent in children. Parent : {parent}");
             }
         }
 
