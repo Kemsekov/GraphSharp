@@ -44,9 +44,6 @@ void FindPath(INode startNode, IGraph graph)
             return;
         }
         graph.Propagate();
-        if(i>8000){
-            int n= 1;
-        }
     }
 }
 NodesFactory CreateNodes(ArgumentsHandler argz)
