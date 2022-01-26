@@ -15,8 +15,7 @@ namespace GraphSharp.Propagators
         /// Assign propagator to node indices.
         /// </summary>
         /// <param name="indices">Nodes</param>
-        /// <param name="visitor">Visitor to run</param>
-        void AssignToNodes(IVisitor visitor,params int[] indices);
+        void AssignToNodes(params int[] indices);
 
     }
 }

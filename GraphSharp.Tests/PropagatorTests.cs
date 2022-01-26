@@ -33,7 +33,7 @@ namespace GraphSharp.Tests
             propagator.Propagate();
             Assert.Equal(visitedNodes,new[]{_nodes[1],_nodes[2]});
             visitedNodes.Clear();
-            propagator.AssignToNodes(visitor,5,6);
+            propagator.AssignToNodes(5,6);
             
             propagator.Propagate();
             Assert.Equal(visitedNodes,new[]{_nodes[5],_nodes[6]});
