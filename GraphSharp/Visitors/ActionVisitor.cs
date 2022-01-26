@@ -1,6 +1,7 @@
 using System;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
+using GraphSharp.Propagators;
 
 namespace GraphSharp.Visitors
 {
@@ -12,7 +13,6 @@ namespace GraphSharp.Visitors
         private Action<INode> visit;
         private Func<IEdge, bool> select;
         private Action endVisit;
-
         public ActionVisitor(Action<INode> visit ,Func<IEdge,bool> select = null, Action endVisit = null)
         {
             this.visit = visit;

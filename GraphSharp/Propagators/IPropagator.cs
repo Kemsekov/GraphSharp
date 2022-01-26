@@ -1,7 +1,9 @@
+using GraphSharp.Visitors;
+
 namespace GraphSharp.Propagators
 {
     /// <summary>
-    /// Logic of how should any graph move from previous generation of node to next, and what to do with them in the proccess.
+    /// Propagate trough nodes
     /// </summary>
     public interface IPropagator
     {
@@ -9,5 +11,12 @@ namespace GraphSharp.Propagators
         /// Move previous generation of nodes to next, visiting them in the process by some <see cref="GraphSharp.Visitors.IVisitor"/>.
         /// </summary>
         void Propagate();
+        /// <summary>
+        /// Assign propagator to node indices.
+        /// </summary>
+        /// <param name="indices">Nodes</param>
+        /// <param name="visitor">Visitor to run</param>
+        void AssignToNodes(IVisitor visitor,params int[] indices);
+
     }
 }

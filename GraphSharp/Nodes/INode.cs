@@ -17,5 +17,9 @@ namespace GraphSharp.Nodes
         /// Edges of a current node.
         /// </summary>
         IList<IEdge> Edges{get;}
+        int IComparable<INode>.CompareTo(INode other){
+            return this.Id-other.Id;
+        }
+
     }
 }

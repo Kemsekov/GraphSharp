@@ -1,15 +1,15 @@
 using System;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
+using GraphSharp.Propagators;
 
 namespace GraphSharp.Visitors
 {
     /// <summary>
-    /// Implement logic of visiting / selecting nodes.
+    /// Implement logic of selecting and visiting nodes.
     /// </summary>
     public interface IVisitor
     {
-        
         /// <summary>
         /// This method selects which node to pass to next generation of nodes from edges.
         /// </summary>

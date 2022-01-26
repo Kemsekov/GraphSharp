@@ -21,6 +21,11 @@ namespace GraphSharp.Propagators
             _visitor = visitor;
             _visited = new byte[_nodes.Length];
             _toVisit = new byte[_nodes.Length];
+            AssignToNodes(visitor,indices);
+        }
+        public void AssignToNodes(IVisitor visitor,params int[] indices){
+            Array.Clear(_visited,0,_visited.Length);
+            Array.Clear(_toVisit,0,_toVisit.Length);
             var startNode = CreateStartingNode(indices);
             //first time we call Propagate we need to process starting Node.
             PropagateRun = () =>

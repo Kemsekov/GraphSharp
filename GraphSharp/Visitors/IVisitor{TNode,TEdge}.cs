@@ -5,7 +5,7 @@ using GraphSharp.Nodes;
 namespace GraphSharp.Visitors
 {
     /// <summary>
-    /// Proxy type-strict version of <see cref="IVisitor"/> interface.
+    /// Works as wrapper to <see cref="IVisitor"/> interface. It sorts out everything that do not match the types.
     /// </summary>
     /// <typeparam name="TNode">Node type</typeparam>
     /// <typeparam name="TEdge">Edge type</typeparam>
@@ -18,7 +18,7 @@ namespace GraphSharp.Visitors
         {
             if (edge is TEdge e)
                 return Select(e);
-            return false;
+            return true;
         }
         void IVisitor.Visit(INode node)
         {
