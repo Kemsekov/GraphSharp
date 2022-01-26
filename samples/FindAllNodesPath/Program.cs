@@ -19,7 +19,6 @@ var startNode = nodes.Nodes[argz.node1 % nodes.Nodes.Count];
 var visitor = new AllPathFinder(argz.nodesCount);
 var graph = new Graph(nodes,PropagatorFactory.SingleThreaded());
 graph.AddVisitor(visitor,argz.node1);
-visitor.Propagator = graph.GetPropagatorFrom(visitor);
 
 Helpers.MeasureTime(() =>
 {
@@ -32,7 +31,7 @@ Helpers.ValidatePath(path);
 System.Console.WriteLine($"Path length {path.Count}");
 
 
-CreateImage();
+Helpers.CreateImage(nodes,path,argz);
 
 
 void FindPath(INode startNode, IGraph graph)
@@ -57,24 +56,4 @@ NodesFactory CreateNodes(ArgumentsHandler argz)
         .ConnectToClosest(argz.minEdges, argz.maxEdges, (node1, node2) => ((NodeXY)node1).Distance((NodeXY)node2))
         .MakeUndirected();
 
-}
-
-void CreateImage()
-{
-    System.Console.WriteLine("Creating image...");
-
-    using var image = new Image<Rgba32>(argz.outputResolution, argz.outputResolution);
-    var drawer = new GraphDrawer(image, Brushes.Solid(Color.Brown), Brushes.Solid(Color.BlueViolet), argz.fontSize);
-    drawer.NodeSize = argz.nodeSize;
-    drawer.Thickness = argz.thickness;
-    drawer.Clear(Color.Black);
-    drawer.DrawNodeConnections(nodes.Nodes);
-    drawer.DrawNodes(nodes.Nodes);
-
-    if (path.Count > 0)
-    {
-        drawer.DrawLineBrush = Brushes.Solid(Color.Wheat);
-        drawer.DrawPath(path);
-    }
-    image.SaveAsJpeg("example.jpg");
 }

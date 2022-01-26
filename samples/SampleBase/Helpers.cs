@@ -1,7 +1,11 @@
 using System.Diagnostics;
 using GraphSharp.Nodes;
-using System.Drawing;
 using GraphSharp.Edges;
+using GraphSharp;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Drawing.Processing;
+
 public static class Helpers
 {
     public static void MeasureTime(Action operation)
@@ -39,5 +43,24 @@ public static class Helpers
                     System.Console.WriteLine($"\t{con.Node} {(float)con.Weight}");
             }
         }
+    }
+    public static void CreateImage(NodesFactory nodes, IList<INode>? path, ArgumentsHandler argz)
+    {
+        System.Console.WriteLine("Creating image...");
+
+        using var image = new Image<Rgba32>(argz.outputResolution, argz.outputResolution);
+        var drawer = new GraphDrawer(image, Brushes.Solid(Color.Brown), Brushes.Solid(Color.BlueViolet), argz.fontSize);
+        drawer.NodeSize = argz.nodeSize;
+        drawer.Thickness = argz.thickness;
+        drawer.Clear(Color.Black);
+        drawer.DrawNodeConnections(nodes.Nodes);
+        drawer.DrawNodes(nodes.Nodes);
+
+        if (path.Count > 0)
+        {
+            drawer.DrawLineBrush = Brushes.Solid(Color.Wheat);
+            drawer.DrawPath(path);
+        }
+        image.SaveAsJpeg("example.jpg");
     }
 }

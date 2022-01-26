@@ -31,12 +31,12 @@ Helpers.MeasureTime(() =>
 
 var path = pathFinder.GetPath(endNode) ?? new List<INode>();
 Helpers.ValidatePath(path);
-Helpers.PrintPath(path);
+// Helpers.PrintPath(path);
 System.Console.WriteLine($"---Path length {pathFinder.GetPathLength(endNode)}");
 
 Helpers.MeasureTime(() =>
 {
-    CreateImage();
+    Helpers.CreateImage(nodes,path,argz);
 });
 
 void FindPath(INode startNode, INode endNode, IGraph graph)
@@ -56,23 +56,4 @@ NodesFactory CreateNodes(ArgumentsHandler argz)
         .ConnectToClosest(argz.minEdges, argz.maxEdges, (node1, node2) => ((NodeXY)node1).Distance((NodeXY)node2))
         .MakeUndirected();
 
-}
-void CreateImage()
-{
-    System.Console.WriteLine("Creating image...");
-
-    using var image = new Image<Rgba32>(argz.outputResolution, argz.outputResolution);
-    var drawer = new GraphDrawer(image, Brushes.Solid(Color.Brown), Brushes.Solid(Color.BlueViolet), argz.fontSize);
-    drawer.NodeSize = argz.nodeSize;
-    drawer.Thickness = argz.thickness;
-    drawer.Clear(Color.Black);
-    drawer.DrawNodeConnections(nodes.Nodes);
-    drawer.DrawNodes(nodes.Nodes);
-
-    if (path.Count > 0)
-    {
-        drawer.DrawLineBrush = Brushes.Solid(Color.Wheat);
-        drawer.DrawPath(path);
-    }
-    image.SaveAsJpeg("example.jpg");
 }

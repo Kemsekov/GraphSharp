@@ -12,7 +12,6 @@ public class AllPathFinder : IVisitor<NodeXY,NodeConnector>
 {
     byte[] _visited;
     public IList<INode> Path;
-    public IPropagator? Propagator = default;
     public bool PathDone = false;
     /// <summary>
     /// _trace[node] = parent
