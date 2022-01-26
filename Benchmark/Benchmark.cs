@@ -39,7 +39,7 @@ graph.AddVisitor(visitor);
 timer = MeasureTime(()=>{
     for (int i = 0; i < steps_count; i++)
     {
-        graph.Step();
+        graph.Propagate();
     }
 });
 

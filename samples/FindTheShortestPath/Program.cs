@@ -43,7 +43,7 @@ void FindPath(INode startNode, INode endNode, IGraph graph)
 {
     System.Console.WriteLine($"Trying to find path from {startNode} to {endNode}...");
     for (int i = 0; i < argz.steps; i++)
-        graph.Step();
+        graph.Propagate();
 }
 NodesFactory CreateNodes(ArgumentsHandler argz)
 {

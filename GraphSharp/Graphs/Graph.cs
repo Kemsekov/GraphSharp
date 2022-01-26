@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GraphSharp.Edges;
 using GraphSharp.Propagators;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
@@ -57,7 +56,7 @@ namespace GraphSharp.Graphs
         /// <summary>
         /// Propagate trough all visitor once
         /// </summary>
-        public void Step()
+        public void Propagate()
         {
             foreach (var work in _work)
                 work.Value.Propagate();
@@ -67,7 +66,7 @@ namespace GraphSharp.Graphs
         /// Propagate trough specific visitor once
         /// </summary>
         /// <param name="visitor">visitor to propagate</param>
-        public void Step(IVisitor visitor)
+        public void Propagate(IVisitor visitor)
         {
             _work[visitor].Propagate();
         }

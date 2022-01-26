@@ -111,7 +111,7 @@ namespace GraphSharp.Tests
                 foreach (var ex1 in expectedNodes1)
                 {
                     visitor1_store.Clear();
-                    graph.Step(visitor1);
+                    graph.Propagate(visitor1);
                     visitor1_store.Sort();
                     Assert.Equal(visitor1_store.Select(v => v.Id), ex1);
                 }
@@ -119,7 +119,7 @@ namespace GraphSharp.Tests
                 foreach (var ex2 in expectedNodes2)
                 {
                     visitor2_store.Clear();
-                    graph.Step(visitor2);
+                    graph.Propagate(visitor2);
                     visitor2_store.Sort();
                     Assert.Equal(visitor2_store.Select(v => v.Id), ex2);
                 }
@@ -133,7 +133,7 @@ namespace GraphSharp.Tests
                 {
                     visitor1_store.Clear();
                     visitor2_store.Clear();
-                    graph.Step();
+                    graph.Propagate();
                     visitor1_store.Sort();
                     visitor2_store.Sort();
                     Assert.Equal(visitor1_store.Select(v => v.Id), ex.First);
@@ -170,7 +170,7 @@ namespace GraphSharp.Tests
 
             graph.AddVisitor(visitor, 1,2,3,4);
 
-            graph.Step();
+            graph.Propagate();
             buf_gen = next_gen.ToList();
             buf_gen.Sort();
 
@@ -179,7 +179,7 @@ namespace GraphSharp.Tests
 
             for (int i = 0; i < 50; i++)
             {
-                graph.Step();
+                graph.Propagate();
                 current_gen.Sort();
                 Assert.True(buf_gen.Distinct().Count()==current_gen.Count(),"There is copies in buffer");
                 Assert.Equal(buf_gen.Count, current_gen.Count);
@@ -252,9 +252,9 @@ namespace GraphSharp.Tests
                 graph.AddVisitor(forward_visitor, 0);
                 graph.AddVisitor(back_visitor, 13);
 
-                graph.Step();
+                graph.Propagate();
                 for (int i = 0; i < nodes.Length; i++)
-                    graph.Step();
+                    graph.Propagate();
                 back_list.Reverse();
                 Assert.Equal(forward_list, back_list);
             }
@@ -268,10 +268,10 @@ namespace GraphSharp.Tests
             graph.AddVisitor(visitor1, 1);
             graph.AddVisitor(visitor2, 2);
             graph.RemoveVisitor(visitor2);
-            graph.Step();
+            graph.Propagate();
         }
         [Fact]
-        public void Step_WrongVisitorThrows()
+        public void Propagate_WrongVisitorThrows()
         {
             var graph = createGraph(_nodes);
             var visitor1 = new ActionVisitor(node => { });
@@ -280,7 +280,7 @@ namespace GraphSharp.Tests
             graph.AddVisitor(visitor1, 1);
 
             Assert.Throws<KeyNotFoundException>(() =>
-                graph.Step(visitor2));
+                graph.Propagate(visitor2));
         }
     }
 }
