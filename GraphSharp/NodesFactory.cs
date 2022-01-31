@@ -78,8 +78,9 @@ namespace GraphSharp
         /// </summary>
         /// <param name="nodeId"></param>
         /// <returns></returns>
-        public NodesFactory ForOne(int nodeId){
-            WorkingGroup = Nodes.Where(x=>x.Id==nodeId);
+        public NodesFactory ForOne(int nodeId)
+        {
+            WorkingGroup = Nodes.Where(x => x.Id == nodeId);
             return this;
         }
 
@@ -88,7 +89,8 @@ namespace GraphSharp
         /// </summary>
         /// <param name="selector">receive <see cref="NodesFactory.Nodes"/> and returns some set of values from them</param>
         /// <returns></returns>
-        public NodesFactory ForNodes(Func<IList<INode>,IEnumerable<INode>> selector){
+        public NodesFactory ForNodes(Func<IList<INode>, IEnumerable<INode>> selector)
+        {
             WorkingGroup = selector(Nodes);
             return this;
         }
@@ -166,20 +168,23 @@ namespace GraphSharp
         /// </summary>
         public NodesFactory MakeUndirected()
         {
-            foreach (var parent in WorkingGroup)
-            {
+            Parallel.ForEach(WorkingGroup, parent =>
+             {
 
-                for (int i = 0; i < parent.Edges.Count; i++)
-                {
-                    var edge = parent.Edges[i];
+                 for (int i = 0; i < parent.Edges.Count; i++)
+                 {
+                     var edge = parent.Edges[i];
 
-                    var toAdd = !edge.Node.Edges.Any(x => x.Node.Id == parent.Id);
-                    if (toAdd)
-                    {
-                        edge.Node.Edges.Add(_createEdge(parent, edge.Node));
-                    }
-                }
-            }
+                     lock (edge.Node)
+                     {
+                        var toAdd = !edge.Node.Edges.Any(x => x.Node.Id == parent.Id);
+                        if (toAdd)
+                        {
+                            edge.Node.Edges.Add(_createEdge(parent, edge.Node));
+                        }
+                     }
+                 }
+             });
             return this;
         }
 
@@ -200,7 +205,7 @@ namespace GraphSharp
 
                 }
         }
-        #nullable enable
+#nullable enable
         /// <summary>
         /// Randomly connects node to it's closest nodes by distance function in current <see cref="NodesFactory.WorkingGroup"/>
         /// </summary>
@@ -210,39 +215,40 @@ namespace GraphSharp
         /// <returns></returns>
         public NodesFactory ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<INode, INode, double> distance)
         {
-            Parallel.ForEach(WorkingGroup,parent=>{
-                var edgesCount = _rand.Next(maxEdgesCount - minEdgesCount+1) + minEdgesCount;
+            Parallel.ForEach(WorkingGroup, parent =>
+            {
+                var edgesCount = _rand.Next(maxEdgesCount - minEdgesCount + 1) + minEdgesCount;
                 var toAdd = ChooseClosestNodes(maxEdgesCount, edgesCount, distance, parent);
-                foreach(var nodeId in toAdd)
+                foreach (var nodeId in toAdd)
                     parent.Edges.Add(_createEdge(Nodes[nodeId], parent));
             });
             return this;
         }
-        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount,int edgesCount, Func<INode, INode, double> distance, INode parent)
+        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, Func<INode, INode, double> distance, INode parent)
         {
-            if(WorkingGroup.Count()==0) return Enumerable.Empty<int>();
-            
-            var startNode = WorkingGroup.FirstOrDefault(x=>x.Id!=parent.Id);
-            if(startNode is null) return Enumerable.Empty<int>();
-            
+            if (WorkingGroup.Count() == 0) return Enumerable.Empty<int>();
+
+            var startNode = WorkingGroup.FirstOrDefault(x => x.Id != parent.Id);
+            if (startNode is null) return Enumerable.Empty<int>();
+
             //front elements is smaller that back elements
             var buffer = new int[edgesCount];
             int size = 0;
 
             foreach (var el in WorkingGroup)
             {
-                if(el.Id==parent.Id) continue;
-                if (size!=edgesCount)
+                if (el.Id == parent.Id) continue;
+                if (size != edgesCount)
                 {
                     buffer[size++] = el.Id;
                     continue;
                 }
-                Array.Sort(buffer,(t1, t2) => (int)(100*(distance(Nodes[t1], parent)-distance(Nodes[t2],parent))));
+                Array.Sort(buffer, (t1, t2) => (int)(100 * (distance(Nodes[t1], parent) - distance(Nodes[t2], parent))));
 
-                if (distance(el,parent)<distance(Nodes[buffer[^1]],parent))
+                if (distance(el, parent) < distance(Nodes[buffer[^1]], parent))
                 {
                     //do circular-buffer push front
-                    Buffer.BlockCopy(buffer,0,buffer,1*sizeof(int),(size-1)*sizeof(int));
+                    Buffer.BlockCopy(buffer, 0, buffer, 1 * sizeof(int), (size - 1) * sizeof(int));
                     buffer[0] = el.Id;
                 }
             }
