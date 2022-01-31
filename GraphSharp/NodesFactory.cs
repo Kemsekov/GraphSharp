@@ -210,46 +210,44 @@ namespace GraphSharp
         /// <returns></returns>
         public NodesFactory ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<INode, INode, double> distance)
         {
-            foreach (var parent in WorkingGroup)
-            {
-                if (parent.Edges.Count > maxEdgesCount) continue;
-                var edgesCount = _rand.Next(maxEdgesCount - minEdgesCount) + minEdgesCount;
-                
-                for (int i = 0; i < edgesCount; i++)
-                {
-                    int shift = _rand.Next(Nodes.Count);
-                    (INode? node, double distance) min = ChooseClosestNode(maxEdgesCount, distance, parent, shift);
-                    var node = min.node;
-                    if (node is null) continue;
-                    parent.Edges.Add(_createEdge(node, parent));
-                    node.Edges.Add(_createEdge(parent, node));
-                }
-            }
+            Parallel.ForEach(WorkingGroup,parent=>{
+                var edgesCount = _rand.Next(maxEdgesCount - minEdgesCount+1) + minEdgesCount;
+                var toAdd = ChooseClosestNodes(maxEdgesCount, edgesCount, distance, parent);
+                foreach(var nodeId in toAdd)
+                    parent.Edges.Add(_createEdge(Nodes[nodeId], parent));
+            });
             return this;
         }
-        (INode? node, double distance) ChooseClosestNode(int maxEdgesCount, Func<INode, INode, double> distance, INode parent, int shift)
+        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount,int edgesCount, Func<INode, INode, double> distance, INode parent)
         {
-            (INode? node, double distance) min = (null, 0);
-            for (int b = 0; b < Nodes.Count; b++)
+            if(WorkingGroup.Count()==0) return Enumerable.Empty<int>();
+            
+            var startNode = WorkingGroup.FirstOrDefault(x=>x.Id!=parent.Id);
+            if(startNode is null) return Enumerable.Empty<int>();
+            
+            //front elements is smaller that back elements
+            var buffer = new int[edgesCount];
+            int size = 0;
+
+            foreach (var el in WorkingGroup)
             {
-                var pretendent = Nodes[(b + shift) % Nodes.Count];
-
-                if (pretendent.Id == parent.Id) continue;
-                if (pretendent.Edges.Count > maxEdgesCount) continue;
-
-                if (min.node is null)
+                if(el.Id==parent.Id) continue;
+                if (size!=edgesCount)
                 {
-                    min = (pretendent, distance(parent, pretendent));
+                    buffer[size++] = el.Id;
                     continue;
                 }
-                var pretendent_distance = distance(parent, pretendent);
-                if (pretendent_distance < min.distance && parent.Edges.FirstOrDefault(x => x.Node.Id == pretendent.Id) is null)
+                Array.Sort(buffer,(t1, t2) => (int)(100*(distance(Nodes[t1], parent)-distance(Nodes[t2],parent))));
+
+                if (distance(el,parent)<distance(Nodes[buffer[^1]],parent))
                 {
-                    min = (pretendent, pretendent_distance);
+                    //do circular-buffer push front
+                    Buffer.BlockCopy(buffer,0,buffer,1*sizeof(int),(size-1)*sizeof(int));
+                    buffer[0] = el.Id;
                 }
             }
 
-            return min;
+            return buffer;
         }
 
         /// <summary>

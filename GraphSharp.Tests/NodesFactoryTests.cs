@@ -22,24 +22,26 @@ namespace GraphSharp.Tests
             this._nodesFactory = new NodesFactory().CreateNodes(_nodes_count);
         }
         [Fact]
-        public void ConnectToClosestWorks(){
+        public void ConnectToClosestWorks()
+        {
             _nodesFactory.ForEach()
-            .ConnectToClosest(1,6,(n1,n2)=>n1.Id-n2.Id);
+            .ConnectToClosest(1, 6, (n1, n2) => n1.Id - n2.Id);
             validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
+            ensureRightCountOfEdgesPerNode(_nodesFactory.Nodes, 1, 6);
         }
         [Fact]
         public void MakeDirectedWorks()
         {
             //create two identical nodes list
             var seed = new Random().Next();
-            var directed = 
-                new NodesFactory(rand : new Random(seed))
+            var directed =
+                new NodesFactory(rand: new Random(seed))
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20)
                     .MakeDirected();
-            var undirected = 
-                new NodesFactory(rand : new Random(seed))
+            var undirected =
+                new NodesFactory(rand: new Random(seed))
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20);
@@ -63,7 +65,7 @@ namespace GraphSharp.Tests
                 var directedEdges = parents.First.Edges.Select(x => x.Node);
                 var undirectedEdges = parents.Second.Edges.Select(x => x.Node);
                 var diff = undirectedEdges.Except(directedEdges, new NodeEqualityComparer());
-                
+
                 foreach (var n in diff)
                 {
                     Assert.True(n.Edges.Any(x => x.Node.Id == parents.First.Id));
@@ -75,14 +77,14 @@ namespace GraphSharp.Tests
         public void MakeUndirectedWorks()
         {
             var seed = new Random().Next();
-            var maybeUndirected = 
-                new NodesFactory(rand : new Random(seed))
+            var maybeUndirected =
+                new NodesFactory(rand: new Random(seed))
                 .CreateNodes(2000)
                 .ForEach()
                 .ConnectNodes(20);
 
-            var undirected = 
-                new NodesFactory(rand : new Random(seed))
+            var undirected =
+                new NodesFactory(rand: new Random(seed))
                 .CreateNodes(2000)
                 .ForEach()
                 .ConnectNodes(20)
@@ -106,22 +108,20 @@ namespace GraphSharp.Tests
             {
                 //ensure they are the facto different objects in memory
                 Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
-                
+
                 var undirectedEdges = parents.First.Edges.Select(x => x.Node);
                 var maybeUndirectedEdges = parents.Second.Edges.Select(x => x.Node);
-                
+
                 var diff = maybeUndirectedEdges.Except(undirectedEdges, new NodeEqualityComparer());
                 Assert.Empty(diff);
-                
+
                 diff = undirectedEdges.Except(maybeUndirectedEdges, new NodeEqualityComparer());
 
                 foreach (var n in diff)
                 {
-                    Assert.True(maybeUndirected.Nodes[n.Id].Edges.Any(x=>x.Node.Id==parents.First.Id));
+                    Assert.True(maybeUndirected.Nodes[n.Id].Edges.Any(x => x.Node.Id == parents.First.Id));
                 }
             }
-
-
         }
         [Fact]
         public void EnsureNodesCount()
@@ -135,25 +135,30 @@ namespace GraphSharp.Tests
             _nodesFactory.ForEach()
             .ConnectNodes(children_count);
             validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
+            ensureRightCountOfEdgesPerNode(_nodesFactory.Nodes, 100, 100);
             Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
+                 var edges = node.Edges.Select(child => child.Node).ToList();
                  Assert.Equal(node.Edges.Count, children_count);
-                 validateThereIsNoCopiesAndParentInEdges(node.Edges.Select(child => child.Node).ToList());
+                 validateThereIsNoCopiesAndParentInEdges(edges);
              });
         }
         [Fact]
         public void ConnectRandomlyWorks()
         {
-            const int min_count_of_nodes = 5;
-            const int max_count_of_nodes = 30;
+            const int minCountOfNodes = 5;
+            const int maxCountOfNodes = 30;
             _nodesFactory.ForEach()
-            .ConnectRandomly(min_count_of_nodes,max_count_of_nodes);
+            .ConnectRandomly(minCountOfNodes, maxCountOfNodes);
 
             validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
+            ensureRightCountOfEdgesPerNode(_nodesFactory.Nodes, minCountOfNodes, maxCountOfNodes);
+
             Parallel.ForEach(_nodesFactory.Nodes, node =>
              {
-                 Assert.True(node.Edges.Count is >= min_count_of_nodes and <= max_count_of_nodes);
-                 validateThereIsNoCopiesAndParentInEdges(node.Edges.Select(child => child.Node).ToList());
+                 var edges = node.Edges.Select(child => child.Node).ToList();
+                 ensureRightCountOfEdgesPerNode(_nodesFactory.Nodes, minCountOfNodes, maxCountOfNodes);
+                 validateThereIsNoCopiesAndParentInEdges(edges);
              });
         }
         public void validateThereIsNoCopiesAndParentInEdges(IList<INode> nodes)
@@ -163,6 +168,14 @@ namespace GraphSharp.Tests
             {
                 Assert.Equal(parent.Edges.Distinct(), parent.Edges);
                 Assert.False(parent.Edges.Any(child => child.Node.Id == parent.Id), $"There is parent in children. Parent : {parent}");
+            }
+        }
+        public void ensureRightCountOfEdgesPerNode(IList<INode> nodes, int minEdges, int maxEdges)
+        {
+            Assert.NotEmpty(nodes);
+            foreach (var node in nodes)
+            {
+                Assert.True(node.Edges.Count >= minEdges && node.Edges.Count <= maxEdges,$"{node.Edges.Count} <= {minEdges} && {node.Edges.Count} <= {maxEdges}");
             }
         }
 

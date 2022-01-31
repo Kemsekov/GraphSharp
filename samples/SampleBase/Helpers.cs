@@ -27,7 +27,7 @@ public static class Helpers
         {
             var current = path[i];
             var next = path[i + 1];
-            if (!current.Edges.Select(x => x.Node).Contains(next))
+            if (!current.Edges.Select(x => x.Node.Id).Contains(next.Id))
                 throw new Exception("Path is not valid!");
         }
     }
@@ -46,21 +46,25 @@ public static class Helpers
     }
     public static void CreateImage(NodesFactory nodes, IList<INode>? path, ArgumentsHandler argz)
     {
-        System.Console.WriteLine("Creating image...");
-
-        using var image = new Image<Rgba32>(argz.outputResolution, argz.outputResolution);
-        var drawer = new GraphDrawer(image, Brushes.Solid(Color.Brown), Brushes.Solid(Color.BlueViolet), argz.fontSize);
-        drawer.NodeSize = argz.nodeSize;
-        drawer.Thickness = argz.thickness;
-        drawer.Clear(Color.Black);
-        drawer.DrawNodeConnections(nodes.Nodes);
-        drawer.DrawNodes(nodes.Nodes);
-
-        if (path.Count > 0)
+        MeasureTime(() =>
         {
-            drawer.DrawLineBrush = Brushes.Solid(Color.Wheat);
-            drawer.DrawPath(path);
-        }
-        image.SaveAsJpeg("example.jpg");
+            System.Console.WriteLine("Creating image...");
+
+            using var image = new Image<Rgba32>(argz.outputResolution, argz.outputResolution);
+            var drawer = new GraphDrawer(image, Brushes.Solid(Color.Brown), Brushes.Solid(Color.BlueViolet), argz.fontSize);
+            drawer.NodeSize = argz.nodeSize;
+            drawer.Thickness = argz.thickness;
+            drawer.Clear(Color.Black);
+            drawer.DrawNodeConnections(nodes.Nodes);
+            drawer.DrawNodes(nodes.Nodes);
+
+            if (path.Count > 0)
+            {
+                drawer.DrawLineBrush = Brushes.Solid(Color.Wheat);
+                drawer.DrawPath(path);
+            }
+            System.Console.WriteLine("Saving image...");
+            image.SaveAsJpeg("example.jpg");
+        });
     }
 }
