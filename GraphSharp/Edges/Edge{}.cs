@@ -8,6 +8,6 @@ namespace GraphSharp.Edges
         {
             Value = value;
         }
-        public T Value { get; protected set; }
+        public T Value { get; set; }
     }
 }

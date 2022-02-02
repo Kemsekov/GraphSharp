@@ -9,10 +9,16 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp
 {
+    /// <summary>
+    /// Class that contains logic for creation nodes / connecting edges / converting things.
+    /// </summary>
     public partial class NodesFactory
     {
         protected Random _rand;
         protected Func<int, INode> _createNode;
+        /// <summary>
+        /// (node,parent)=>new ...
+        /// </summary>
         protected Func<INode, INode, IEdge> _createEdge;
         public IList<INode> Nodes { get; protected set; }
         /// <summary>
@@ -26,15 +32,15 @@ namespace GraphSharp
         public IEnumerable<INode> WorkingGroup { get; protected set; }
 
         /// <param name="createNode">Function to create nodes. Use it to CreateNodes for your own implementations of INode</param>
-        /// <param name="createChild">Method that consists of node, parent and returns edge. createChild = (node,parent)=>new SomeNode(node,parent,...) // etc..</param>
+        /// <param name="createEdge">Method that consists of node, parent and returns edge. createChild = (node,parent)=>new SomeNode(node,parent,...) // etc..</param>
         /// <param name="rand">Use your own rand if you need to get the same output per invoke. Let it null to use new random.</param>
-        public NodesFactory(Func<int, INode> createNode = null, Func<INode, INode, IEdge> createChild = null, Random rand = null)
+        public NodesFactory(Func<int, INode> createNode = null, Func<INode, INode, IEdge> createEdge = null, Random rand = null)
         {
             createNode ??= id => new Node(id);
-            createChild ??= (node, parent) => new Edge(node);
+            createEdge ??= (node, parent) => new Edge(node);
             _rand = rand ?? new Random(); ;
             _createNode = createNode;
-            _createEdge = createChild;
+            _createEdge = createEdge;
         }
         /// <summary>
         /// Replace current <see cref="NodesFactory.Nodes"/> to nodes
