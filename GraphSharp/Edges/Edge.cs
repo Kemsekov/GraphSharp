@@ -12,7 +12,7 @@ namespace GraphSharp.Edges
         public virtual int CompareTo(IEdge other) => Node.CompareTo(other.Node);
         public override string ToString()
         {
-            return $"Child to node {Node.Id}";
+            return $"Edge to node {Node.Id}";
         }
     }
 }

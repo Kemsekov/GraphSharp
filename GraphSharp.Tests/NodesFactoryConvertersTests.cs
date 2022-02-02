@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using MathNet.Numerics.LinearAlgebra.Single;
 using Xunit;
 
 namespace GraphSharp.Tests
@@ -65,9 +66,8 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FromAdjacencyMatrix_ThrowsIfMatrixNotSquare(){
-            var adjacencyMatrix = new float[5,6];
+            var adjacencyMatrix = DenseMatrix.Create(5,6,0);
             Assert.Throws<ArgumentException>(()=>_nodesFactory.FromAdjacencyMatrix(adjacencyMatrix));
-
         }
         [Fact]
         public void ToAdjacencyMatrix_Works()
@@ -94,12 +94,12 @@ namespace GraphSharp.Tests
             
             Assert.Equal(adjacencyMatrix,result);
         }
-        public float[,] CreateSquareMatrix(int size,Func<int,int,float> createElement){
+        public Matrix CreateSquareMatrix(int size,Func<int,int,float> createElement){
             var result = new float[size, size];
             for (int i = 0; i < size; i++)
                 for (int b = 0; b < size; b++)
                     result[i, b] = createElement(i,b);
-            return result;
+            return DenseMatrix.OfArray(result);
         }
     }
 }
