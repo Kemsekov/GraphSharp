@@ -42,8 +42,13 @@ Helpers.MeasureTime(() =>
 void FindPath(INode startNode, INode endNode, IGraph graph)
 {
     System.Console.WriteLine($"Trying to find path from {startNode} to {endNode}...");
-    for (int i = 0; i < argz.steps; i++)
+    for (int i = 0; i < argz.steps; i++){
         graph.Propagate();
+        if(pathFinder.GetPath(endNode) is not null){
+            System.Console.WriteLine($"Path found at {i} step");
+            break;
+        }
+    }
 }
 NodesFactory CreateNodes(ArgumentsHandler argz)
 {
@@ -53,7 +58,7 @@ NodesFactory CreateNodes(ArgumentsHandler argz)
     return new NodesFactory(id => new NodeXY(id, rand.NextDouble(), rand.NextDouble()), (node, parent) => new NodeConnector(node, parent), conRand)
         .CreateNodes(argz.nodesCount)
         .ForEach()
-        .ConnectToClosest(argz.minEdges, argz.maxEdges, (node1, node2) => ((NodeXY)node1).Distance((NodeXY)node2))
+        .ConnectToClosest(argz.minEdges, argz.maxEdges, (node1, node2) => (float)((NodeXY)node1).Distance((NodeXY)node2))
         .MakeUndirected();
 
 }

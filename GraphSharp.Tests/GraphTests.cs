@@ -29,7 +29,7 @@ namespace GraphSharp.Tests
         }
 
         [Fact]
-        public void ValidateOrderWithManualData()
+        public void Propagate_InRightOrderWithManualData()
         {
             var nodes = new Node[10];
             var expectedNodes1 = new int[][]{
@@ -143,7 +143,7 @@ namespace GraphSharp.Tests
 
         }
         [Fact]
-        public void ValidateOrder(){
+        public void Propagate_InRightOrder(){
             var graph = createGraph(_nodes);
             validate_graphOrder(graph,_nodes.Nodes,edge=>true);
         }
@@ -193,7 +193,7 @@ namespace GraphSharp.Tests
             }
         }
         [Fact]
-        public void ForthBackwardVisitors_Test()
+        public void ForthBackwardPropagate_TheSame()
         {
             for (int k = 0; k < 20; k++)
             {
@@ -227,7 +227,7 @@ namespace GraphSharp.Tests
                     lock (forward_list)
                         forward_list.Add(node);
                 },
-                //select happening before vesit
+                //select happening before visit
                 node =>
                 {
                     if (forward_list.Count == 0) return true;
