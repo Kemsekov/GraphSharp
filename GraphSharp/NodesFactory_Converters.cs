@@ -34,6 +34,11 @@ namespace GraphSharp
             }
             return this;
         }
+        /// <summary>
+        /// Converts current <see cref="NodesFactory.Nodes"/> to adjacency matrix
+        /// </summary>
+        /// <param name="calculateWeightFromEdge">By default any releationship in adjacency matrix is 1 if there is connection between nodes and 0 if there is no one. You can replace this numbers with weights calculated from edge with this <see cref="Func{IEdge,float}"/></param>
+        /// <returns></returns>
         public float[,] ToAdjacencyMatrix(Func<IEdge,float> calculateWeightFromEdge = null){
             calculateWeightFromEdge ??= edge=>1;
             var adjacencyMatrix = new float[Nodes.Count,Nodes.Count];

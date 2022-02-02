@@ -11,5 +11,6 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.1"/>
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0-alpha08"/>
   </ItemGroup>
 </Project>
