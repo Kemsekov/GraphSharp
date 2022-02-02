@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -205,6 +206,7 @@ namespace GraphSharp
 
                 }
         }
+        
 #nullable enable
         /// <summary>
         /// Randomly connects node to it's closest nodes by distance function in current <see cref="NodesFactory.WorkingGroup"/>
@@ -213,47 +215,41 @@ namespace GraphSharp
         /// <param name="maxEdgesCount">maximum edges count</param>
         /// <param name="distance">Func to determine how much one node is distant from another</param>
         /// <returns></returns>
-        public NodesFactory ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<INode, INode, double> distance)
+        public NodesFactory ConnectToClosest(int minEdgesCount,int maxEdgesCount, Func<INode, INode, float> distance)
         {
-            Parallel.ForEach(WorkingGroup, parent =>
+            var edgesCountMap = new ConcurrentDictionary<INode,int>();
+            foreach(var parent in WorkingGroup)
+                edgesCountMap[parent] = _rand.Next(minEdgesCount,maxEdgesCount);
+
+            var locker = new object();
+            Parallel.ForEach(WorkingGroup,parent=>
             {
-                var edgesCount = _rand.Next(maxEdgesCount - minEdgesCount + 1) + minEdgesCount;
-                var toAdd = ChooseClosestNodes(maxEdgesCount, edgesCount, distance, parent);
+                var edgesCount = edgesCountMap[parent];
+                if(parent.Edges.Count()>=edgesCount) return;
+                var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, distance, parent);
                 foreach (var nodeId in toAdd)
-                    parent.Edges.Add(_createEdge(Nodes[nodeId], parent));
+                lock(locker)
+                {
+                    var node = Nodes[nodeId];
+                    if(parent.Edges.Count()>=maxEdgesCount) return;
+                    if(node.Edges.Count>=maxEdgesCount) continue;
+                    parent.Edges.Add(_createEdge(node, parent));
+                    node.Edges.Add(_createEdge(parent,node));
+                }
             });
             return this;
         }
-        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, Func<INode, INode, double> distance, INode parent)
+        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, Func<INode, INode, float> distance, INode parent)
         {
             if (WorkingGroup.Count() == 0) return Enumerable.Empty<int>();
 
-            var startNode = WorkingGroup.FirstOrDefault(x => x.Id != parent.Id);
-            if (startNode is null) return Enumerable.Empty<int>();
+            var result = Helpers.Helpers.FindFirstNMinimalElements(
+                n: edgesCount,
+                src: WorkingGroup.Select(x=>x.Id),
+                comparison: (t1,t2)=>distance(parent,Nodes[t1])>distance(parent,Nodes[t2]) ? 1 : -1,
+                skipElement: (nodeId)=>Nodes[nodeId].Id==parent.Id || Nodes[nodeId].Edges.Count>=maxEdgesCount);
 
-            //front elements is smaller that back elements
-            var buffer = new int[edgesCount];
-            int size = 0;
-
-            foreach (var el in WorkingGroup)
-            {
-                if (el.Id == parent.Id) continue;
-                if (size != edgesCount)
-                {
-                    buffer[size++] = el.Id;
-                    continue;
-                }
-                Array.Sort(buffer, (t1, t2) => (int)(100 * (distance(Nodes[t1], parent) - distance(Nodes[t2], parent))));
-
-                if (distance(el, parent) < distance(Nodes[buffer[^1]], parent))
-                {
-                    //do circular-buffer push front
-                    Buffer.BlockCopy(buffer, 0, buffer, 1 * sizeof(int), (size - 1) * sizeof(int));
-                    buffer[0] = el.Id;
-                }
-            }
-
-            return buffer;
+            return result;
         }
 
         /// <summary>

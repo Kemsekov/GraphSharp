@@ -17,17 +17,17 @@ public class ArgumentsHandler
     public ArgumentsHandler(string settingsFile)
     {
         dynamic paramz = JsonConvert.DeserializeObject<dynamic>(File.ReadAllText(settingsFile)) ?? new object();
-        nodeSize = paramz.nodeSize;
-        nodeSeed = paramz.nodeSeed;
-        connectionSeed = paramz.connectionSeed;
-        nodesCount = paramz.nodesCount;
-        node1 = paramz.node1;
-        node2 = paramz.node2;
-        minEdges = paramz.minEdges;
-        maxEdges = paramz.maxEdges;
-        thickness = paramz.thickness;
-        steps = paramz.steps;
-        outputResolution = paramz.outputResolution;
-        fontSize = paramz.fontSize;
+        nodeSize = paramz.nodeSize ?? 0.003;
+        nodeSeed = paramz.nodeSeed ?? 0;
+        connectionSeed = paramz.connectionSeed ?? 1;
+        nodesCount = paramz.nodesCount ?? 1000;
+        node1 = paramz.node1 ?? 0;
+        node2 = paramz.node2 ?? 100;
+        minEdges = paramz.minEdges ?? 0;
+        maxEdges = paramz.maxEdges ?? 5;
+        thickness = paramz.thickness ?? 0.0015;
+        steps = paramz.steps ?? 3000;
+        outputResolution = paramz.outputResolution ?? 4000;
+        fontSize = paramz.fontSize ?? 0.001;
     }
 }

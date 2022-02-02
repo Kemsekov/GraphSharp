@@ -25,9 +25,8 @@ namespace GraphSharp.Tests
         public void ConnectToClosestWorks()
         {
             _nodesFactory.ForEach()
-            .ConnectToClosest(1, 6, (n1, n2) => n1.Id - n2.Id);
+            .ConnectToClosest(1,6, (n1, n2) => n1.Id - n2.Id);
             validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
-            ensureRightCountOfEdgesPerNode(_nodesFactory.Nodes, 1, 6);
         }
         [Fact]
         public void MakeDirectedWorks()
@@ -175,7 +174,7 @@ namespace GraphSharp.Tests
             Assert.NotEmpty(nodes);
             foreach (var node in nodes)
             {
-                Assert.True(node.Edges.Count >= minEdges && node.Edges.Count <= maxEdges,$"{node.Edges.Count} <= {minEdges} && {node.Edges.Count} <= {maxEdges}");
+                Assert.True(node.Edges.Count >= minEdges && node.Edges.Count <= maxEdges,$"{node.Edges.Count} >= {minEdges} && {node.Edges.Count} <= {maxEdges}");
             }
         }
 

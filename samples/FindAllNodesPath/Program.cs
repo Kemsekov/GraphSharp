@@ -59,8 +59,7 @@ NodesFactory CreateNodes(ArgumentsHandler argz)
         result = new NodesFactory(id => new NodeXY(id, rand.NextDouble(), rand.NextDouble()), (node, parent) => new NodeConnector(node, parent), conRand)
             .CreateNodes(argz.nodesCount)
             .ForEach()
-            .ConnectToClosest(argz.minEdges, argz.maxEdges, (node1, node2) => ((NodeXY)node1).Distance((NodeXY)node2))
-            .MakeUndirected();
+            .ConnectToClosest(argz.minEdges, argz.maxEdges, (node1, node2) => (float)((NodeXY)node1).Distance((NodeXY)node2));
     });
     return result;
 }
