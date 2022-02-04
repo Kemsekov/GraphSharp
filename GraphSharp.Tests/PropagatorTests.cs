@@ -14,7 +14,7 @@ namespace GraphSharp.Tests
         public PropagatorTests()
         {
             _propagatorFactory = PropagatorFactory.SingleThreaded();
-            _nodes = new NodesFactory().CreateNodes(1000).ConnectNodes(10).Nodes.ToArray();
+            _nodes = new GraphStructure().CreateNodes(1000).ForEach().ConnectNodes(10).Nodes.ToArray();
         }
         [Fact]
         public void AssignToNodes_Works()

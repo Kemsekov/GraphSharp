@@ -10,23 +10,23 @@ using Xunit;
 
 namespace GraphSharp.Tests
 {
-    public class NodesFactoryTests
+    public class GraphStructureTests
     {
 
         private int _nodes_count;
-        private NodesFactory _nodesFactory;
+        private GraphStructure _GraphStructure;
 
-        public NodesFactoryTests()
+        public GraphStructureTests()
         {
             this._nodes_count = 500;
-            this._nodesFactory = new NodesFactory().CreateNodes(_nodes_count);
+            this._GraphStructure = new GraphStructure().CreateNodes(_nodes_count);
         }
         [Fact]
         public void ConnectToClosestWorks()
         {
-            _nodesFactory.ForEach()
+            _GraphStructure.ForEach()
             .ConnectToClosest(1,6, (n1, n2) => n1.Id - n2.Id);
-            validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
+            validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
         }
         [Fact]
         public void MakeDirectedWorks()
@@ -34,13 +34,13 @@ namespace GraphSharp.Tests
             //create two identical nodes list
             var seed = new Random().Next();
             var directed =
-                new NodesFactory(rand: new Random(seed))
+                new GraphStructure(rand: new Random(seed))
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20)
                     .MakeDirected();
             var undirected =
-                new NodesFactory(rand: new Random(seed))
+                new GraphStructure(rand: new Random(seed))
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20);
@@ -77,13 +77,13 @@ namespace GraphSharp.Tests
         {
             var seed = new Random().Next();
             var maybeUndirected =
-                new NodesFactory(rand: new Random(seed))
+                new GraphStructure(rand: new Random(seed))
                 .CreateNodes(2000)
                 .ForEach()
                 .ConnectNodes(20);
 
             var undirected =
-                new NodesFactory(rand: new Random(seed))
+                new GraphStructure(rand: new Random(seed))
                 .CreateNodes(2000)
                 .ForEach()
                 .ConnectNodes(20)
@@ -125,17 +125,17 @@ namespace GraphSharp.Tests
         [Fact]
         public void EnsureNodesCount()
         {
-            Assert.Equal(_nodesFactory.Nodes.Count, _nodes_count);
+            Assert.Equal(_GraphStructure.Nodes.Count, _nodes_count);
         }
         [Fact]
         public void ConnectNodesWorks()
         {
             int children_count = 100;
-            _nodesFactory.ForEach()
+            _GraphStructure.ForEach()
             .ConnectNodes(children_count);
-            validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
-            ensureRightCountOfEdgesPerNode(_nodesFactory.Nodes, 100, 100);
-            Parallel.ForEach(_nodesFactory.Nodes, node =>
+            validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
+            ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, 100, 100);
+            Parallel.ForEach(_GraphStructure.Nodes, node =>
              {
                  var edges = node.Edges.Select(child => child.Node).ToList();
                  Assert.Equal(node.Edges.Count, children_count);
@@ -147,16 +147,16 @@ namespace GraphSharp.Tests
         {
             const int minCountOfNodes = 5;
             const int maxCountOfNodes = 30;
-            _nodesFactory.ForEach()
+            _GraphStructure.ForEach()
             .ConnectRandomly(minCountOfNodes, maxCountOfNodes);
 
-            validateThereIsNoCopiesAndParentInEdges(_nodesFactory.Nodes);
-            ensureRightCountOfEdgesPerNode(_nodesFactory.Nodes, minCountOfNodes, maxCountOfNodes);
+            validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
+            ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, minCountOfNodes, maxCountOfNodes);
 
-            Parallel.ForEach(_nodesFactory.Nodes, node =>
+            Parallel.ForEach(_GraphStructure.Nodes, node =>
              {
                  var edges = node.Edges.Select(child => child.Node).ToList();
-                 ensureRightCountOfEdgesPerNode(_nodesFactory.Nodes, minCountOfNodes, maxCountOfNodes);
+                 ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, minCountOfNodes, maxCountOfNodes);
                  validateThereIsNoCopiesAndParentInEdges(edges);
              });
         }

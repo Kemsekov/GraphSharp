@@ -5,6 +5,7 @@ using GraphSharp.Propagators;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 using Microsoft.Toolkit.HighPerformance;
+using GraphSharp.GraphStructures;
 
 namespace GraphSharp.Graphs
 {
@@ -13,12 +14,12 @@ namespace GraphSharp.Graphs
         private PropagatorFactory.Factory _factory;
         protected INode[] _nodes;
         protected Dictionary<IVisitor, IPropagator> _work = new();
-        /// <param name="nodes">Nodes to use</param>
+        /// <param name="graphStructure">Graph structure to use</param>
         /// <param name="propagatorFactory">propagator factory. You can change how graph handle Step function by different <see cref="IPropagator"/> implementaitions. If null this value will be set to <see cref="PropagatorFactory.Parallel"/>.</param>
-        public Graph(NodesFactory nodes, PropagatorFactory.Factory propagatorFactory = null)
+        public Graph(GraphStructureBase graphStructure, PropagatorFactory.Factory propagatorFactory = null)
         {
             _factory = propagatorFactory ?? PropagatorFactory.Parallel();
-            _nodes = nodes.Nodes.ToArray();
+            _nodes = graphStructure.Nodes.ToArray();
             Array.Sort(this._nodes);
         }
 

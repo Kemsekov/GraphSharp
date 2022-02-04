@@ -12,16 +12,17 @@ using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 using Xunit;
+using GraphSharp.GraphStructures;
 namespace GraphSharp.Tests
 {
     public class GraphTests
     {
-        NodesFactory _nodes;
-        Func<NodesFactory,IGraph> createGraph;
+        GraphStructureOperation _nodes;
+        Func<GraphStructureBase,IGraph> createGraph;
         public GraphTests()
         {
             this._nodes = 
-                new NodesFactory()
+                new GraphStructure()
                 .CreateNodes(5000)
                 .ForEach()
                 .ConnectNodes(10);
@@ -85,7 +86,7 @@ namespace GraphSharp.Tests
                 nodes[9].Edges.Add(new Edge(nodes[3]));
             }
 
-            var graph = createGraph(new NodesFactory().UseNodes(nodes));
+            var graph = createGraph(new GraphStructure().UseNodes(nodes));
             var visitor1_store = new List<INode>();
             var visitor2_store = new List<INode>();
 
@@ -247,7 +248,7 @@ namespace GraphSharp.Tests
                         return back_list.Last().Id > node.Node.Id;
                     });
 
-                var graph = createGraph(new NodesFactory().UseNodes(nodes));
+                var graph = createGraph(new GraphStructure().UseNodes(nodes));
 
                 graph.AddVisitor(forward_visitor, 0);
                 graph.AddVisitor(back_visitor, 13);

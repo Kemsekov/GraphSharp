@@ -8,15 +8,15 @@ using Xunit;
 
 namespace GraphSharp.Tests
 {
-    public class NodesFactoryConvertersTests
+    public class GraphStructureConvertersTests
     {
         private Random _rand;
-        private NodesFactory _nodesFactory;
+        private GraphStructure _GraphStructure;
 
-        public NodesFactoryConvertersTests()
+        public GraphStructureConvertersTests()
         {
             _rand = new Random();
-            _nodesFactory = new NodesFactory(createEdge: (node1,node2)=>new Edge<float>(node1,0));
+            _GraphStructure = new GraphStructure(createEdge: (node1,node2)=>new Edge<float>(node1,0));
         }
 
         [Fact]
@@ -25,10 +25,10 @@ namespace GraphSharp.Tests
             int size = _rand.Next(20)+5;
             var adjacencyMatrix = CreateSquareMatrix(size,(i,b)=>_rand.Next(2));
 
-            _nodesFactory.FromAdjacencyMatrix(adjacencyMatrix);
+            _GraphStructure.FromAdjacencyMatrix(adjacencyMatrix);
             for (int i = 0; i < size; i++)
             {
-                var node = _nodesFactory.Nodes[i];
+                var node = _GraphStructure.Nodes[i];
                 for (int b = 0; b < size; b++)
                 {
                     if (adjacencyMatrix[i, b] == 1)
@@ -47,13 +47,13 @@ namespace GraphSharp.Tests
                 return weight<0.5 ? 0 : weight;
             });
 
-            _nodesFactory.FromAdjacencyMatrix(
+            _GraphStructure.FromAdjacencyMatrix(
                 adjacencyMatrix,
                 (edge,weight)=>(edge as Edge<float>).Value = weight
             );
             for (int i = 0; i < size; i++)
             {
-                var node = _nodesFactory.Nodes[i];
+                var node = _GraphStructure.Nodes[i];
                 for (int b = 0; b < size; b++)
                 {
                     if (adjacencyMatrix[i, b]>0)
@@ -67,14 +67,14 @@ namespace GraphSharp.Tests
         [Fact]
         public void FromAdjacencyMatrix_ThrowsIfMatrixNotSquare(){
             var adjacencyMatrix = DenseMatrix.Create(5,6,0);
-            Assert.Throws<ArgumentException>(()=>_nodesFactory.FromAdjacencyMatrix(adjacencyMatrix));
+            Assert.Throws<ArgumentException>(()=>_GraphStructure.FromAdjacencyMatrix(adjacencyMatrix));
         }
         [Fact]
         public void ToAdjacencyMatrix_Works()
         {
             int size = _rand.Next(20)+5;
             var adjacencyMatrix = CreateSquareMatrix(size,(i,b)=>_rand.Next(2));
-            var result = _nodesFactory.FromAdjacencyMatrix(adjacencyMatrix).ToAdjacencyMatrix();
+            var result = _GraphStructure.FromAdjacencyMatrix(adjacencyMatrix).ToAdjacencyMatrix();
             Assert.Equal(adjacencyMatrix,result);
         }
         [Fact]
@@ -86,7 +86,7 @@ namespace GraphSharp.Tests
                 return weight<0.5 ? 0 : weight;
             });
             var result = 
-                _nodesFactory
+                _GraphStructure
                 .FromAdjacencyMatrix(
                     adjacencyMatrix,
                     (edge,weight)=>(edge as Edge<float>).Value = weight)
