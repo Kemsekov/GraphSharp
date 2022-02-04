@@ -5,14 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
 using GraphSharp.Nodes;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Single;
 //rename it to GraphStructure. Make subclasses for it that divide logic.
 //don't store everything in one class.
 
-namespace GraphSharp
+namespace GraphSharp.GraphStructures
 {
     /// <summary>
     /// Class that contains logic for creation nodes / connecting edges / converting things.
