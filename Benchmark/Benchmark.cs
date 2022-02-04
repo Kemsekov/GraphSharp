@@ -4,7 +4,7 @@ using GraphSharp;
 using GraphSharp.Graphs;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
-
+using GraphSharp.GraphStructures;
 Stopwatch MeasureTime(Action operation)
 {
     var watch = new Stopwatch();
@@ -19,11 +19,11 @@ const int edges_count = 20;
 const int steps_count = 2400;
 
 
-NodesFactory nodes = default;
+GraphStructureBase nodes = default;
 
 var timer = MeasureTime(()=>{
     nodes =
-        new NodesFactory()
+        new GraphStructure()
         .CreateNodes(nodes_count)
         .ForEach()
         .ConnectNodes(edges_count);
