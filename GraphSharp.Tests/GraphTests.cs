@@ -18,7 +18,7 @@ namespace GraphSharp.Tests
     public class GraphTests
     {
         GraphStructureOperation _nodes;
-        Func<GraphStructureBase,IGraph> createGraph;
+        Func<IGraphStructure,IGraph> createGraph;
         public GraphTests()
         {
             this._nodes = 

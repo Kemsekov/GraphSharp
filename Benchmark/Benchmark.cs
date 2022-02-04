@@ -19,7 +19,7 @@ const int edges_count = 20;
 const int steps_count = 2400;
 
 
-GraphStructureBase nodes = default;
+IGraphStructure nodes = default;
 
 var timer = MeasureTime(()=>{
     nodes =

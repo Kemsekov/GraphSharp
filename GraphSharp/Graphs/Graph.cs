@@ -16,7 +16,7 @@ namespace GraphSharp.Graphs
         protected Dictionary<IVisitor, IPropagator> _work = new();
         /// <param name="graphStructure">Graph structure to use</param>
         /// <param name="propagatorFactory">propagator factory. You can change how graph handle Step function by different <see cref="IPropagator"/> implementaitions. If null this value will be set to <see cref="PropagatorFactory.Parallel"/>.</param>
-        public Graph(GraphStructureBase graphStructure, PropagatorFactory.Factory propagatorFactory = null)
+        public Graph(IGraphStructure graphStructure, PropagatorFactory.Factory propagatorFactory = null)
         {
             _factory = propagatorFactory ?? PropagatorFactory.Parallel();
             _nodes = graphStructure.Nodes.ToArray();
