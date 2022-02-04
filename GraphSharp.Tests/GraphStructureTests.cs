@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp;
 using GraphSharp.Edges;
+using GraphSharp.GraphStructures;
 using GraphSharp.Nodes;
 using GraphSharp.Tests.Helpers;
 using Xunit;

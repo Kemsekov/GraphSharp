@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.GraphStructures;
 using MathNet.Numerics.LinearAlgebra.Single;
 using Xunit;
 
@@ -29,6 +30,7 @@ namespace GraphSharp.Tests
             for (int i = 0; i < size; i++)
             {
                 var node = _GraphStructure.Nodes[i];
+                Assert.Equal(node.Id,i);
                 for (int b = 0; b < size; b++)
                 {
                     if (adjacencyMatrix[i, b] == 1)
@@ -54,6 +56,7 @@ namespace GraphSharp.Tests
             for (int i = 0; i < size; i++)
             {
                 var node = _GraphStructure.Nodes[i];
+                Assert.Equal(node.Id,i);
                 for (int b = 0; b < size; b++)
                 {
                     if (adjacencyMatrix[i, b]>0)

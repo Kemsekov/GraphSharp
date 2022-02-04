@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using GraphSharp.GraphStructures;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
