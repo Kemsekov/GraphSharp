@@ -17,7 +17,10 @@ namespace GraphSharp.Tests
         public GraphStructureConvertersTests()
         {
             _rand = new Random();
-            _GraphStructure = new GraphStructure(createEdge: (node1,node2)=>new Edge<float>(node1,0));
+            _GraphStructure = new GraphStructure(){
+                GetWeight = edge=>(edge as Edge<float>).Value,
+                CreateEdge = (node1,node2)=>new Edge<float>(node1,1)
+            };
         }
 
         [Fact]
@@ -93,7 +96,7 @@ namespace GraphSharp.Tests
                 .FromAdjacencyMatrix(
                     adjacencyMatrix,
                     (edge,weight)=>(edge as Edge<float>).Value = weight)
-                .ToAdjacencyMatrix(edge=>(edge as Edge<float>).Value);
+                .ToAdjacencyMatrix();
             
             Assert.Equal(adjacencyMatrix,result);
         }

@@ -19,11 +19,30 @@ namespace GraphSharp.GraphStructures
         /// <value></value>
         IEnumerable<INode> WorkingGroup { get; }
         IList<INode> Nodes { get; }
-        Random Rand { get; init; }
-        Func<int, INode> CreateNode { get; init; }
+        /// <summary>
+        /// <see cref="Random"/> that used by any <see cref="IGraphStructure"/> to implement's it's logic when it need random values
+        /// </summary>
+        /// <value></value>
+        Random Rand { get; }
+        /// <summary>
+        /// Method that used to create instance of <see cref="INode"/> from it's <see cref="INode.Id"/> as argument
+        /// </summary>
+        /// <value></value>
+        Func<int, INode> CreateNode { get;}
         /// <summary>
         /// (node,parent)=>new Edge...
         /// </summary>
-        Func<INode, INode, IEdge> CreateEdge { get; init; }
+        Func<INode, INode, IEdge> CreateEdge { get; }
+        /// <summary>
+        /// Method that used to get weight from particular <see cref="IEdge"/>
+        /// </summary>
+        /// <value></value>
+        public Func<IEdge,float> GetWeight { get;}
+        /// <summary>
+        /// Method that used to determite how to calculate distance between two <see cref="INode"/>
+        /// </summary>
+        /// <value></value>
+        public Func<INode,INode,float> Distance{get;}
+
     }
 }

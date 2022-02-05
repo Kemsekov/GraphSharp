@@ -14,17 +14,14 @@ using MathNet.Numerics.LinearAlgebra.Single;
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Class that contains logic for creation nodes / connecting edges / converting things.
+    /// Create graph structure
     /// </summary>
     public partial class GraphStructure : GraphStructureBase
     {
-
-        /// <param name="createNode">Function to create nodes. Use it to CreateNodes for your own implementations of INode</param>
-        /// <param name="createEdge">Method that consists of node, parent and returns edge. createChild = (node,parent)=>new SomeNode(node,parent,...) // etc..</param>
-        /// <param name="rand">Use your own rand if you need to get the same output per invoke. Let it null to use new random.</param>
-        public GraphStructure(Func<int, INode> createNode = null, Func<INode, INode, IEdge> createEdge = null, Random rand = null) : base(createNode,createEdge,rand)
+        public GraphStructure(Func<int, INode> createNode = null, Func<INode, INode, IEdge> createEdge = null, Func<IEdge, float> getWeight = null, Func<INode, INode, float> distance = null, Random rand = null) : base(createNode, createEdge, getWeight, distance, rand)
         {
         }
+
         /// <summary>
         /// Replace current <see cref="GraphStructure.Nodes"/> to nodes
         /// </summary>

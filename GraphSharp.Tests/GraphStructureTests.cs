@@ -20,13 +20,15 @@ namespace GraphSharp.Tests
         public GraphStructureTests()
         {
             this._nodes_count = 500;
-            this._GraphStructure = new GraphStructure().CreateNodes(_nodes_count);
+            this._GraphStructure = new GraphStructure(){
+                Distance = (n1, n2) => n1.Id - n2.Id
+            }.CreateNodes(_nodes_count);
         }
         [Fact]
         public void ConnectToClosestWorks()
         {
             _GraphStructure.ForEach()
-            .ConnectToClosest(1,6, (n1, n2) => n1.Id - n2.Id);
+            .ConnectToClosest(1,6);
             validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
         }
         [Fact]

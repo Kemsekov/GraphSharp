@@ -12,10 +12,10 @@ namespace GraphSharp.GraphStructures
 {
     public class GraphStructureOperation : GraphStructureBase
     {
-        public GraphStructureOperation(GraphStructureBase structureBase) : base(structureBase.CreateNode, structureBase.CreateEdge, structureBase.Rand)
+        public GraphStructureOperation(IGraphStructure graphStructure) : base(graphStructure.CreateNode, graphStructure.CreateEdge,graphStructure.GetWeight,graphStructure.Distance, graphStructure.Rand)
         {
-            Nodes = structureBase.Nodes;
-            WorkingGroup = structureBase.WorkingGroup;
+            Nodes = graphStructure.Nodes;
+            WorkingGroup = graphStructure.WorkingGroup;
         }
 
         /// <summary>
@@ -82,13 +82,12 @@ namespace GraphSharp.GraphStructures
 
 #nullable enable
         /// <summary>
-        /// Randomly connects node to it's closest nodes by distance function in current <see cref="GraphStructure.WorkingGroup"/>
+        /// Randomly connects node to it's closest nodes in current <see cref="IGraphStructure.WorkingGroup"/> using <see cref="IGraphStructure.Distance"/>
         /// </summary>
         /// <param name="minEdgesCount">minimum edges count</param>
         /// <param name="maxEdgesCount">maximum edges count</param>
-        /// <param name="distance">Func to determine how much one node is distant from another</param>
         /// <returns></returns>
-        public GraphStructureOperation ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<INode, INode, float> distance)
+        public GraphStructureOperation ConnectToClosest(int minEdgesCount, int maxEdgesCount)
         {
             var edgesCountMap = new ConcurrentDictionary<INode, int>();
             foreach (var parent in WorkingGroup)
@@ -99,7 +98,7 @@ namespace GraphSharp.GraphStructures
              {
                  var edgesCount = edgesCountMap[parent];
                  if (parent.Edges.Count() >= edgesCount) return;
-                 var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, distance, parent);
+                 var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, Distance, parent);
                  foreach (var nodeId in toAdd)
                      lock (locker)
                      {
@@ -113,13 +112,11 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Converts current <see cref="GraphStructureFactory.Nodes"/> to adjacency matrix
+        /// Converts current <see cref="GraphStructureFactory.Nodes"/> to adjacency matrix using <see cref="IGraphStructure.GetWeight"/> to determine matrix value per edge
         /// </summary>
-        /// <param name="calculateWeightFromEdge">By default any releationship in adjacency matrix is 1 if there is connection between nodes and 0 if there is no one. You can replace this numbers with weights calculated from edge with this <see cref="Func{IEdge,float}"/></param>
         /// <returns></returns>
-        public Matrix ToAdjacencyMatrix(Func<IEdge, float>? calculateWeightFromEdge = null)
+        public Matrix ToAdjacencyMatrix()
         {
-            calculateWeightFromEdge ??= edge => 1;
             Matrix adjacencyMatrix;
 
             //if matrix size will be bigger than 64 mb place store it as sparse.
@@ -132,7 +129,7 @@ namespace GraphSharp.GraphStructures
             {
                 foreach (var e in Nodes[i].Edges)
                 {
-                    adjacencyMatrix[i, e.Node.Id] = calculateWeightFromEdge(e);
+                    adjacencyMatrix[i, e.Node.Id] = GetWeight(e);
                 }
             }
             return adjacencyMatrix;
@@ -200,7 +197,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Removes all edges from it's parent in current <see cref="GraphStructureFactory.WorkingGroup"/>
+        /// Removes all edges from <see cref="GraphStructureFactory.WorkingGroup"/>
         /// </summary>
         /// <returns></returns>
         public GraphStructureOperation RemoveAllConnections()
