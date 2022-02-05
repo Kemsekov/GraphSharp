@@ -22,7 +22,7 @@ namespace GraphSharp.Visitors
         /// <param name="node"></param>
         void Visit(INode node);
         /// <summary>
-        /// This method called right after visitor ended visiting.
+        /// This method called right after the generation of node changes. 
         /// </summary>
         void EndVisit();
     }

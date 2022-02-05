@@ -7,6 +7,11 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Visitors
 {
+    /// <summary>
+    /// <see cref="IVisitor<TNode, TEdge>"/> implementation that uses lambda functions.
+    /// </summary>
+    /// <typeparam name="TNode"></typeparam>
+    /// <typeparam name="TEdge"></typeparam>
     public class ActionVisitor<TNode, TEdge> : IVisitor<TNode, TEdge>
     where TNode : INode
     where TEdge : IEdge

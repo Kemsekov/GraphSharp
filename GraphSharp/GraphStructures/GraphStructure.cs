@@ -8,33 +8,30 @@ using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Single;
-//rename it to GraphStructure. Make subclasses for it that divide logic.
-//don't store everything in one class.
-
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Create graph structure
+    /// Create nodes for graph structure / set working group
     /// </summary>
     public partial class GraphStructure : GraphStructureBase
     {
         public GraphStructure(Func<int, INode> createNode = null, Func<INode, INode, IEdge> createEdge = null, Func<IEdge, float> getWeight = null, Func<INode, INode, float> distance = null, Random rand = null) : base(createNode, createEdge, getWeight, distance, rand)
-        {
-        }
+        {}
+        public GraphStructure(IGraphStructure graphStructure) : base(graphStructure) 
+        {}
 
         /// <summary>
-        /// Replace current <see cref="GraphStructure.Nodes"/> to nodes
+        /// Replace current <see cref="IGraphStructure.Nodes"/> to nodes
         /// </summary>
-        /// <param name="nodes">What need to be used as Nodes</param>
+        /// <param name="nodes">What need to be used as <see cref="IGraphStructure.Nodes"/></param>
         /// <returns></returns>
         public GraphStructure UseNodes(IList<INode> nodes)
         {
             Nodes = nodes;
-            ForEach();
             return this;
         }
         /// <summary>
-        /// Create count nodes. This method will replace existing Nodes in current instance of GraphStructure.
+        /// Create some count of nodes. This method will replace current <see cref="IGraphStructure.Nodes"/>.
         /// </summary>
         /// <param name="count">Count of codes to create</param>
         /// <returns></returns>
@@ -52,7 +49,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Will set <see cref="GraphStructure.WorkingGroup"/> to <see cref="GraphStructure.Nodes"/>
+        /// Will set <see cref="IGraphStructure.WorkingGroup"/> to <see cref="IGraphStructure.Nodes"/>
         /// </summary>
         /// <returns></returns>
         public GraphStructureOperation ForEach()
@@ -62,9 +59,9 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Will set <see cref="GraphStructure.WorkingGroup"/> to particular node from <see cref="GraphStructure.Nodes"/> with id == nodeId
+        /// Will set <see cref="IGraphStructure.WorkingGroup"/> to some particular node from <see cref="IGraphStructure.Nodes"/> with id == nodeId
         /// </summary>
-        /// <param name="nodeId"></param>
+        /// <param name="nodeId">Node id</param>
         /// <returns></returns>
         public GraphStructureOperation ForOne(int nodeId)
         {
@@ -73,11 +70,11 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Will set <see cref="GraphStructure.WorkingGroup"/> to some subset of <see cref="GraphStructure.Nodes"/>
+        /// Will set <see cref="IGraphStructure.WorkingGroup"/> to some subset of <see cref="IGraphStructure.Nodes"/>
         /// </summary>
-        /// <param name="selector">receive <see cref="GraphStructure.Nodes"/> and returns some set of values from them</param>
+        /// <param name="selector">Method that used to select subset of nodes from current <see cref="IGraphStructure.Nodes"/></param>
         /// <returns></returns>
-        public GraphStructureOperation ForNodes(Func<IList<INode>, IEnumerable<INode>> selector)
+        public GraphStructureOperation ForNodes(Func<IEnumerable<INode>, IEnumerable<INode>> selector)
         {
             WorkingGroup = selector(Nodes);
             return new(this);
@@ -88,7 +85,7 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="adjacencyMatrix"></param>
         /// <returns></returns>
-        public GraphStructureOperation FromAdjacencyMatrix(Matrix adjacencyMatrix,Action<IEdge,float> applyWeight = null){
+        public GraphStructure FromAdjacencyMatrix(Matrix adjacencyMatrix,Action<IEdge,float> applyWeight = null){
             if(adjacencyMatrix.RowCount!=adjacencyMatrix.ColumnCount)
                 throw new ArgumentException("adjacencyMatrix argument must be square matrix!",nameof(adjacencyMatrix));
             applyWeight ??= (edge,weight)=>{};
@@ -104,7 +101,7 @@ namespace GraphSharp.GraphStructures
                     }
                 }
             }
-            return new(this);
+            return this;
         }
        
 

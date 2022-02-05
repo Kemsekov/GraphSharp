@@ -17,7 +17,6 @@ namespace GraphSharp.GraphStructures
             {
                 result += n.Edges.Count;
             }
-
             return result;
         }
         public static float MeanEdgesCountPerNode(this IGraphStructure graphStructureBase) => 

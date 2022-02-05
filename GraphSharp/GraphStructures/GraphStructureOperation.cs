@@ -10,6 +10,9 @@ using MathNet.Numerics.LinearAlgebra.Single;
 
 namespace GraphSharp.GraphStructures
 {
+    /// <summary>
+    /// Contains methods to modify relationships between nodes and contain converters for graph structure, see <see cref="GraphStructureOperation.ToAdjacencyMatrix"/>
+    /// </summary>
     public class GraphStructureOperation : GraphStructureBase
     {
         public GraphStructureOperation(IGraphStructure graphStructure) : base(graphStructure.CreateNode, graphStructure.CreateEdge,graphStructure.GetWeight,graphStructure.Distance, graphStructure.Rand)
@@ -19,7 +22,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Randomly adds to node's Edges another nodes. It connect nodes to each other from current <see cref="GraphStructure.WorkingGroup"/>
+        /// Randomly adds <see cref="IEdge"/>s to nodes. It connect nodes to each other from current <see cref="IGraphStructure.WorkingGroup"/>
         /// </summary>
         /// <param name="edgesCount">How much edges each node need</param>
         public GraphStructureOperation ConnectNodes(int edgesCount)
@@ -34,7 +37,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Randomly add to node's Edges another nodes, but create random count of connections. It connect nodes to each other from current <see cref="GraphStructure.WorkingGroup"/>
+        /// Randomly adds <see cref="IEdge"/>s to nodes, but create random count of them. It connect nodes to each other from current <see cref="GraphStructure.WorkingGroup"/>
         /// </summary>
         /// <param name="minEdgesCount">Min count of edges of each node</param>
         /// <param name="maxEdgesCount">Max count of edges of each node</param>
@@ -80,9 +83,8 @@ namespace GraphSharp.GraphStructures
                 }
         }
 
-#nullable enable
         /// <summary>
-        /// Randomly connects node to it's closest nodes in current <see cref="IGraphStructure.WorkingGroup"/> using <see cref="IGraphStructure.Distance"/>
+        /// Randomly connects node to it's closest nodes in current <see cref="IGraphStructure.WorkingGroup"/> using <see cref="IGraphStructure.Distance"/>. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
         /// </summary>
         /// <param name="minEdgesCount">minimum edges count</param>
         /// <param name="maxEdgesCount">maximum edges count</param>
@@ -112,7 +114,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Converts current <see cref="GraphStructureFactory.Nodes"/> to adjacency matrix using <see cref="IGraphStructure.GetWeight"/> to determine matrix value per edge
+        /// Converts current <see cref="IGraphStructure.Nodes"/> to adjacency matrix using <see cref="IGraphStructure.GetWeight"/> to determine matrix value per <see cref="IEdge"/>
         /// </summary>
         /// <returns></returns>
         public Matrix ToAdjacencyMatrix()
@@ -147,7 +149,7 @@ namespace GraphSharp.GraphStructures
             return result;
         }
         /// <summary>
-        /// Removes parent node from it's edges connection. Or simply makes any connection between nodes onedirectional in current <see cref="GraphStructureFactory.WorkingGroup"/>
+        /// Removes parent node from it's edges connection. Or simply makes any connection between nodes onedirectional in current <see cref="IGraphStructure.WorkingGroup"/>
         /// </summary>
         public GraphStructureOperation MakeDirected()
         {
@@ -173,7 +175,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// ensures that every edge of parent's node have parent included in edges. Or simply make sure that any connection between two nodes are bidirectional in current <see cref="GraphStructureFactory.WorkingGroup"/>
+        /// Ensures that every edge of parent's node have parent included in edges. Or simply make sure that any connection between two nodes are bidirectional in current <see cref="IGraphStructure.WorkingGroup"/>
         /// </summary>
         public GraphStructureOperation MakeUndirected()
         {
@@ -197,7 +199,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Removes all edges from <see cref="GraphStructureFactory.WorkingGroup"/>
+        /// Removes all edges from current <see cref="IGraphStructure.WorkingGroup"/>
         /// </summary>
         /// <returns></returns>
         public GraphStructureOperation RemoveAllConnections()
@@ -214,6 +216,13 @@ namespace GraphSharp.GraphStructures
             }
             return this;
         }
-
+        /// <summary>
+        /// Clears current <see cref="IGraphStructure.WorkingGroup"/> 
+        /// </summary>
+        /// <returns><see cref="GraphStructure"/> that can be used to re-create <see cref="IGraphStructure.Nodes"/>  and reset <see cref="IGraphStructure.WorkingGroup"/> </returns>
+        public GraphStructure ClearWorkingGroup(){
+            this.WorkingGroup = Enumerable.Empty<INode>();
+            return new(this);
+        }
     }
 }

@@ -16,6 +16,16 @@ namespace GraphSharp.GraphStructures
         public IList<INode> Nodes { get; protected set; }
         public Func<IEdge,float> GetWeight { get;set; }
         public Func<INode,INode,float> Distance{get; set; }
+        public GraphStructureBase(IGraphStructure structureBase)
+        {
+            Rand = structureBase.Rand;
+            CreateNode = structureBase.CreateNode;
+            CreateEdge = structureBase.CreateEdge;
+            WorkingGroup = structureBase.WorkingGroup;
+            Nodes = structureBase.Nodes;
+            GetWeight = structureBase.GetWeight;
+            Distance = structureBase.Distance;
+        }
 
         public GraphStructureBase(Func<int, INode> createNode = null, Func<INode, INode, IEdge> createEdge = null,Func<IEdge,float> getWeight = null,Func<INode,INode,float> distance = null, Random rand = null)
         {

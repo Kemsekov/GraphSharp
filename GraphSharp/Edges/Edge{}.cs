@@ -2,12 +2,16 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Edges
 {
-    public class Edge<T> : Edge
+    /// <summary>
+    /// Edge with some value alongside with it.
+    /// </summary>
+    /// <typeparam name="TWeight"></typeparam>
+    public class Edge<TWeight> : Edge
     {
-        public Edge(INode node, T value) : base(node)
+        public Edge(INode node, TWeight value) : base(node)
         {
             Value = value;
         }
-        public T Value { get; set; }
+        public TWeight Value { get; set; }
     }
 }

@@ -6,7 +6,7 @@ using GraphSharp.Propagators;
 namespace GraphSharp.Visitors
 {
     /// <summary>
-    /// Implementation of <see cref="IVisitor"/> that uses delegates.
+    /// Implementation of <see cref="IVisitor"/> that uses lambda functions.
     /// </summary>
     public class ActionVisitor : IVisitor
     {

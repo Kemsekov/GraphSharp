@@ -8,6 +8,15 @@ namespace GraphSharp.Helpers
 {
     public static class Helpers
     {
+        /// <summary>
+        /// Search for first N min elements in enumeration using <see cref="Comparison{}"/>
+        /// </summary>
+        /// <param name="n">Count if elements to search</param>
+        /// <param name="src">Source of elements</param>
+        /// <param name="comparison">Method to compare two elements</param>
+        /// <param name="skipElement">Method to skip some elements</param>
+        /// <typeparam name="T">Element type</typeparam>
+        /// <returns>First N min elements that was not skipped</returns>
         public static IEnumerable<T> FindFirstNMinimalElements<T>(int n, IEnumerable<T> src,Comparison<T> comparison,Func<T,bool> skipElement = null)
         where T : unmanaged
         {

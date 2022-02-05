@@ -7,10 +7,13 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
+    /// <summary>
+    /// Graph structure holder.
+    /// </summary>
     public interface IGraphStructure
     {
         /// <summary>
-        /// group of nodes that selected to be modified in next invocations.<br/>
+        /// Group of nodes that selected to be modified.<br/>
         /// For example <see cref="GraphStructure.ForEach"/> will set this property just to <see cref="GraphStructure.Nodes"/> and
         /// next invocations of any operation will be performed on all nodes.
         /// <see cref="GraphStructure.ForOne"/> will set this property to just one particular node from <see cref="GraphStructure.Nodes"/>.

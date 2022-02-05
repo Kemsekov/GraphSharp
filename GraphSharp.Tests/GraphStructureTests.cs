@@ -163,6 +163,21 @@ namespace GraphSharp.Tests
                  validateThereIsNoCopiesAndParentInEdges(edges);
              });
         }
+        [Fact]
+        public void ClearWorkingGroup_Works()
+        {
+            var nodes = _GraphStructure
+                .ForNodes(x=>x.Where(n=>n.Id%2==0))
+                .ConnectNodes(10)
+                .ClearWorkingGroup()
+                .ForNodes(x=>x.Where(n=>n.Edges.Count==0))
+                .ConnectNodes(5)
+                .Nodes;
+            foreach(var n in nodes.Where(n=>n.Id%2==0))
+                Assert.Equal(n.Edges.Count,10);
+            foreach(var n in nodes.Where(n=>n.Id%2!=0))
+                Assert.Equal(n.Edges.Count,5);
+        }
         public void validateThereIsNoCopiesAndParentInEdges(IList<INode> nodes)
         {
             Assert.NotEmpty(nodes);
@@ -180,6 +195,7 @@ namespace GraphSharp.Tests
                 Assert.True(node.Edges.Count >= minEdges && node.Edges.Count <= maxEdges,$"{node.Edges.Count} >= {minEdges} && {node.Edges.Count} <= {maxEdges}");
             }
         }
+
 
     }
 }
