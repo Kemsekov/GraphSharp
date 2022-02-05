@@ -30,6 +30,7 @@ namespace GraphSharp.GraphStructures
         /// <value></value>
         Func<int, INode> CreateNode { get;}
         /// <summary>
+        /// Method that used to create new <see cref="IEdge"/> from two <see cref="INode"/>, where first is node itself and second is it's parent
         /// (node,parent)=>new Edge...
         /// </summary>
         Func<INode, INode, IEdge> CreateEdge { get; }
