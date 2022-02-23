@@ -7,6 +7,7 @@ using GraphSharp.Edges;
 using GraphSharp.GraphStructures;
 using GraphSharp.Nodes;
 using GraphSharp.Tests.Helpers;
+using GraphSharp.Tests.Models;
 using Xunit;
 
 namespace GraphSharp.Tests
@@ -15,12 +16,12 @@ namespace GraphSharp.Tests
     {
 
         private int _nodes_count;
-        private GraphStructure _GraphStructure;
+        private GraphStructure<TestNode,TestEdge> _GraphStructure;
 
         public GraphStructureTests()
         {
             this._nodes_count = 500;
-            this._GraphStructure = new GraphStructure(){
+            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(id=>new TestNode(id),(n,p)=>new TestEdge(n)){
                 Distance = (n1, n2) => n1.Id - n2.Id
             }.CreateNodes(_nodes_count);
         }
@@ -37,13 +38,13 @@ namespace GraphSharp.Tests
             //create two identical nodes list
             var seed = new Random().Next();
             var directed =
-                new GraphStructure(rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(id=>new(id),(n,_)=>new(n),rand: new Random(seed))
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20)
                     .MakeDirected();
             var undirected =
-                new GraphStructure(rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(id=>new(id),(n,_)=>new(n),rand: new Random(seed))
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20);
@@ -80,13 +81,13 @@ namespace GraphSharp.Tests
         {
             var seed = new Random().Next();
             var maybeUndirected =
-                new GraphStructure(rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(id=>new(id),(n,_)=>new(n),rand: new Random(seed))
                 .CreateNodes(2000)
                 .ForEach()
                 .ConnectNodes(20);
 
             var undirected =
-                new GraphStructure(rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(id=>new(id),(n,_)=>new(n),rand: new Random(seed))
                 .CreateNodes(2000)
                 .ForEach()
                 .ConnectNodes(20)
@@ -178,7 +179,7 @@ namespace GraphSharp.Tests
             foreach(var n in nodes.Where(n=>n.Id%2!=0))
                 Assert.Equal(n.Edges.Count,5);
         }
-        public void validateThereIsNoCopiesAndParentInEdges(IList<INode> nodes)
+        public void validateThereIsNoCopiesAndParentInEdges(IEnumerable<INode> nodes)
         {
             Assert.NotEmpty(nodes);
             foreach (var parent in nodes)
@@ -187,12 +188,13 @@ namespace GraphSharp.Tests
                 Assert.False(parent.Edges.Any(child => child.Node.Id == parent.Id), $"There is parent in children. Parent : {parent}");
             }
         }
-        public void ensureRightCountOfEdgesPerNode(IList<INode> nodes, int minEdges, int maxEdges)
+        public void ensureRightCountOfEdgesPerNode(IEnumerable<INode> nodes, int minEdges, int maxEdges)
         {
             Assert.NotEmpty(nodes);
             foreach (var node in nodes)
             {
-                Assert.True(node.Edges.Count >= minEdges && node.Edges.Count <= maxEdges,$"{node.Edges.Count} >= {minEdges} && {node.Edges.Count} <= {maxEdges}");
+                var edgesCount = node.Edges.Count();
+                Assert.True(edgesCount >= minEdges && edgesCount <= maxEdges,$"{edgesCount} >= {minEdges} && {edgesCount} <= {maxEdges}");
             }
         }
 

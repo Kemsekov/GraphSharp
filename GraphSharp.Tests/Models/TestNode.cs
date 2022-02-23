@@ -7,10 +7,14 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Tests.Models
 {
-    public class TestNode : INode
+    public class TestNode : INode<TestEdge>
     {
-        public int Id {get;init;} = 0;
-
-        public IList<IEdge> Edges => new List<IEdge>();
+        public TestNode(int id)
+        {
+            Id = id;
+            Edges = new List<TestEdge>();
+        }
+        public int Id {get;init;}
+        public IList<TestEdge> Edges{get;}
     }
 }

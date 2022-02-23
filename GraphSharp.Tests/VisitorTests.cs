@@ -9,7 +9,7 @@ namespace GraphSharp.Tests
     public class VisitorTests
     {
         [Fact]
-        public void GenericIVisitor_DoNotPassWrongTypes()
+        public void GenericIVisitor_DoNotSelectVisitWrongType()
         {
             bool visited = false;
             bool selected = false;
@@ -31,6 +31,25 @@ namespace GraphSharp.Tests
 
         }
         [Fact]
+        public void GenericVisitor_PassWrongType()
+        {
+            bool visited = false;
+            bool selected = false;
+            bool passed = false;
+            var node = new Node(1);
+            var edge = new Edge(node);
+            var visitor = 
+                new ActionVisitor<TestNode,TestEdge>(
+                n=>visited=true,
+                e=>selected=true) as IVisitor;
+            
+            if(passed = visitor.Select(edge)){
+                visitor.Visit(node);
+            }
+            Assert.True(!selected && !visited && passed);
+
+        }
+        [Fact]
         public void GenericIVisitor_PassRightTypes()
         {
             bool visited = false;
@@ -42,7 +61,7 @@ namespace GraphSharp.Tests
                 () => { }
             );
             var visitor = genericVisitor as IVisitor;
-            var node = new TestNode();
+            var node = new TestNode(0);
             var edge = new TestEdge(node);
 
             if (visitor.Select(edge))

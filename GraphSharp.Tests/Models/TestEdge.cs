@@ -7,9 +7,10 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Tests.Models
 {
-    public class TestEdge : IEdge
+    public class TestEdge : IEdge<TestNode>
     {
-        public INode Node {get;init;}
+        public TestNode Node {get;init;}
+        public float Weight;
         public TestEdge(TestNode node)
         {
             Node = node;
