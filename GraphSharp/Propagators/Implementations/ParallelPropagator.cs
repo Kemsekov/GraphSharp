@@ -22,7 +22,6 @@ namespace GraphSharp.Propagators
         {
             Visitor = visitor;
         }
-        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         protected override void PropagateNode(INode node)
         {
             foreach(var edge in node.Edges)

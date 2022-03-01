@@ -14,7 +14,7 @@ namespace GraphSharp.Propagators
     public abstract class PropagatorBase<TNode> : IPropagator<TNode>
     where TNode : INode
     {
-        protected ReadOnlyCollection<TNode> _nodes;
+        protected IList<TNode> _nodes;
         protected byte[] _visited;
         protected byte[] _toVisit;
         protected Action PropagateRun = null;
@@ -37,7 +37,7 @@ namespace GraphSharp.Propagators
         }
         public void SetNodes(IList<TNode> nodes)
         {
-            _nodes = new(nodes);
+            _nodes = nodes;
             _visited = new byte[_nodes.Count];
             _toVisit = new byte[_nodes.Count];
         }

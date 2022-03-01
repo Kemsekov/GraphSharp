@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
@@ -18,11 +19,12 @@ namespace GraphSharp.Nodes
         {
             Id = id;
             Edges = new List<TEdge>();
-            _convertedEdges = new(Edges);
+            _convertedEdges = new ConvertableList<TEdge,IEdge>(Edges);
         }
         public int Id{get;init;}
         public IList<TEdge> Edges{get;}
-        ConvertableEnumerable<TEdge,IEdge> _convertedEdges;
-        IEnumerable<IEdge> INode.Edges => _convertedEdges;
+        ConvertableList<TEdge, IEdge> _convertedEdges;
+
+        IList<IEdge> INode.Edges => _convertedEdges;
     }
 }
