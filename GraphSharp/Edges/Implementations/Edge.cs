@@ -5,9 +5,9 @@ namespace GraphSharp.Edges
     /// <summary>
     /// Basic <see cref="IEdge{INode}"/> implementation
     /// </summary>
-    public class Edge : IEdge<INode>
+    public class Edge : EdgeBase<INode>
     {
-        public Edge(INode node)
+        public Edge(INode node) : base(node)
         {
             this.Node = node;
         }

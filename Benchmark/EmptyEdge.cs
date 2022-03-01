@@ -5,12 +5,10 @@ using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
 
-public class EmptyEdge : IEdge<EmptyNode>
+public class EmptyEdge : EdgeBase<EmptyNode>
 {
-    public EmptyEdge(EmptyNode n)
+    public EmptyEdge(EmptyNode n) : base(n)
     {
-        Node = n;
     }
-    public EmptyNode Node { get; }
 
 }

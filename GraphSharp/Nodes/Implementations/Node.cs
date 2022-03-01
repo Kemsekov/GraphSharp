@@ -7,22 +7,14 @@ using GraphSharp.Edges;
 namespace GraphSharp.Nodes
 {
     /// <summary>
-    /// Base implementation of <see cref="INode"/>
+    /// Base <see cref="INode"/> implementation.
     /// </summary>
-    public class Node : INode<Edge>
+    public class Node : NodeBase<Edge>
     {
-        public Node(int id)
+        public Node(int id) : base(id)
         {
-            Id = id;
-            Edges = new List<Edge>();
+            
         }
-
-        public int Id{get;init;}
-
-        public IList<Edge> Edges{get;}
-
-        public int CompareTo(INode other)=>Id-other.Id;
-
         public override string ToString(){
             return $"Node {Id}";
         }

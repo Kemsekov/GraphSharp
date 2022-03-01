@@ -14,8 +14,8 @@ namespace GraphSharp.GraphStructures
     /// Create nodes for graph structure / set working group
     /// </summary>
     public partial class GraphStructure<TNode,TEdge> : GraphStructureBase<TNode,TEdge> 
-    where TNode : INode<TEdge>
-    where TEdge : IEdge<TNode>
+    where TNode : NodeBase<TEdge>
+    where TEdge : EdgeBase<TNode>
     {
         public GraphStructure(Func<int, TNode> createNode, Func<TNode, TNode, TEdge> createEdge, Func<TEdge, float> getWeight = null, Func<TNode, TNode, float> distance = null, Random rand = null) : base(createNode, createEdge, getWeight, distance, rand)
         {}

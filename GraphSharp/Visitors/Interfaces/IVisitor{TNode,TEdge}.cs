@@ -6,8 +6,8 @@ using GraphSharp.Propagators;
 namespace GraphSharp.Visitors
 {
     public interface IVisitor<TNode, TEdge> : IVisitor
-    where TNode : INode<TEdge>
-    where TEdge : IEdge<TNode>
+    where TNode : NodeBase<TEdge>
+    where TEdge : EdgeBase<TNode>
     {
         bool Select(TEdge edge);
         bool IVisitor.Select(IEdge edge)

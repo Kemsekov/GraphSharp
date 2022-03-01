@@ -12,8 +12,8 @@ namespace GraphSharp.Visitors
     /// Base implementation of <see cref="IVisitor{,}"/> and proxy of <see cref="IPropagator"/> in one instance.
     /// </summary>
     public abstract class Visitor<TNode, TEdge> : IVisitor<TNode, TEdge>, IPropagator<TNode>
-    where TNode : INode<TEdge>
-    where TEdge : IEdge<TNode>
+    where TNode : NodeBase<TEdge>
+    where TEdge : EdgeBase<TNode>
     {
         /// <summary>
         /// <see cref="IPropagator"/> implementation that used for this proxy class

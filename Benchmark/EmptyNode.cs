@@ -4,14 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
 
-public class EmptyNode : INode<EmptyEdge>
+public class EmptyNode : NodeBase<EmptyEdge>
 {
-    public EmptyNode(int id)
+    public EmptyNode(int id) : base(id)
     {
-        Id = id;
-        Edges = new List<EmptyEdge>();
     }
-    public IList<EmptyEdge> Edges { get; }
-
-    public int Id { get; set; }
 }

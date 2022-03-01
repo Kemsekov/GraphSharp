@@ -15,8 +15,8 @@ namespace GraphSharp.GraphStructures
     /// Contains methods to modify relationships between nodes and contain converters for graph structure, see <see cref="GraphStructureOperation.ToAdjacencyMatrix"/>
     /// </summary>
     public class GraphStructureOperation<TNode,TEdge> : GraphStructureBase<TNode,TEdge>
-    where TNode : INode<TEdge>
-    where TEdge : IEdge<TNode>
+    where TNode : NodeBase<TEdge>
+    where TEdge : EdgeBase<TNode>
     {
         public GraphStructureOperation(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure.CreateNode, graphStructure.CreateEdge,graphStructure.GetWeight,graphStructure.Distance, graphStructure.Rand)
         {

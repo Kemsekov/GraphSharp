@@ -25,13 +25,11 @@ namespace GraphSharp.Propagators
         [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         protected override void PropagateNode(INode node)
         {
-            int count = node.Edges.Count();
-            ref byte visited = ref _visited.DangerousGetReferenceAt(0);
             foreach(var edge in node.Edges)
             {
                 if (!Visitor.Select(edge)) continue;
                 node = edge.Node;
-                visited = ref _visited.DangerousGetReferenceAt(node.Id);
+                ref byte visited = ref _visited.DangerousGetReferenceAt(node.Id);
 
                 if (visited > 0) continue;
                 lock (node)

@@ -8,8 +8,8 @@ using GraphSharp.Nodes;
 namespace GraphSharp.GraphStructures
 {
     public abstract class GraphStructureBase<TNode, TEdge> : IGraphStructure<TNode>
-    where TNode : INode<TEdge>
-    where TEdge : IEdge<TNode>
+    where TNode : NodeBase<TEdge>
+    where TEdge : EdgeBase<TNode>
     {
 
         /// <summary>
