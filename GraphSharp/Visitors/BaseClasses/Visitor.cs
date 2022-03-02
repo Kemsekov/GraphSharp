@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.GraphStructures;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 
@@ -35,7 +36,7 @@ namespace GraphSharp.Visitors
             Propagator.SetPosition(nodeIndices);
         }
 
-        public void SetNodes(IList<INode> nodes)
+        public void SetNodes(IGraphStructure<INode> nodes)
         {
             Propagator.SetNodes(nodes);
         }

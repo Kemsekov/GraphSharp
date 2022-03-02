@@ -21,8 +21,12 @@ namespace GraphSharp.Propagators
         }
         protected override void PropagateNode(INode node)
         {
-            foreach(var edge in node.Edges)
+            var edges = node.Edges;
+            int count = node.Edges.Count;
+            IEdge edge;
+            for(int i = 0;i<count;++i)
             {
+                edge = edges[i];
                 if (!Visitor.Select(edge)) continue;
                 node = edge.Node;
                 ref var visited = ref _visited.DangerousGetReferenceAt(node.Id);

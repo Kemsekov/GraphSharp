@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace GraphSharp.Extensions
 {
@@ -9,19 +8,15 @@ namespace GraphSharp.Extensions
     where T : TBase
     {
         protected IList<T> Source{get;}
-
         public int Count => Source.Count;
-
         public bool IsReadOnly => Source.IsReadOnly;
-
         int ICollection<TBase>.Count => Source.Count;
-
         bool ICollection<TBase>.IsReadOnly => Source.IsReadOnly;
         public TBase this[int index] { 
             get => Source[index];
             set {
                 if(value is T t)
-                Source[index] = t;
+                    Source[index] = t;
             }
         }
 
@@ -29,7 +24,6 @@ namespace GraphSharp.Extensions
         {
             Source = source;
         }
-
        
         IEnumerator<TBase> IEnumerable<TBase>.GetEnumerator()
         {

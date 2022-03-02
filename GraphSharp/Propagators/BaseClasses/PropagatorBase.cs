@@ -5,6 +5,7 @@ using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 using System.Linq;
+using GraphSharp.GraphStructures;
 
 namespace GraphSharp.Propagators
 {
@@ -17,7 +18,7 @@ namespace GraphSharp.Propagators
         protected IList<TNode> _nodes;
         protected byte[] _visited;
         protected byte[] _toVisit;
-        protected Action PropagateRun = null;
+        protected Action PropagateRun;
         /// <summary>
         /// Change current propagator visit position.
         /// </summary>
@@ -35,9 +36,9 @@ namespace GraphSharp.Propagators
                 PropagateRun = PropagateNodes;
             };
         }
-        public void SetNodes(IList<TNode> nodes)
+        public void SetNodes(IGraphStructure<TNode> nodes)
         {
-            _nodes = nodes;
+            _nodes = nodes.Nodes;
             _visited = new byte[_nodes.Count];
             _toVisit = new byte[_nodes.Count];
         }
