@@ -19,11 +19,8 @@ namespace GraphSharp.Nodes
         {
             Id = id;
             Edges = new List<TEdge>();
-            _convertedEdges = new ConvertableList<TEdge,IEdge>(Edges);
         }
         public int Id{get;init;}
         public IList<TEdge> Edges{get;}
-        ConvertableList<TEdge, IEdge> _convertedEdges;
-        IList<IEdge> INode.Edges => _convertedEdges;
     }
 }

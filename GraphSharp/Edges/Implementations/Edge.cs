@@ -10,7 +10,6 @@ namespace GraphSharp.Edges
         public Edge(INode node) : base(node)
         {
         }
-        public virtual int CompareTo(IEdge other) => Node.CompareTo(other.Node);
         public override string ToString()
         {
             return $"Edge of node {Node.Id}";

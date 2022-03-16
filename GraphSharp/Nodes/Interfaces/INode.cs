@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.Extensions;
 
 namespace GraphSharp.Nodes
 {
@@ -13,10 +14,6 @@ namespace GraphSharp.Nodes
         /// Unique identifier for node
         /// </summary>
         int Id{get;}
-        /// <summary>
-        /// Edges of a current node.
-        /// </summary>
-        IList<IEdge> Edges{get;}
         int IComparable<INode>.CompareTo(INode other){
             return this.Id-other.Id;
         }

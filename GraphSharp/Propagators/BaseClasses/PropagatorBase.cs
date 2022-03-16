@@ -6,19 +6,26 @@ using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 using System.Linq;
 using GraphSharp.GraphStructures;
+using Microsoft.Toolkit.HighPerformance;
 
 namespace GraphSharp.Propagators
 {
     /// <summary>
     /// Base class for <see cref="IPropagator"/> that contains basic things for any specific <see cref="IPropagator"/> implementation
     /// </summary>
-    public abstract class PropagatorBase<TNode> : IPropagator<TNode>
-    where TNode : INode
+    public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode>
+    where TNode : NodeBase<TEdge>
+    where TEdge : EdgeBase<TNode>
     {
+        public IVisitor<TNode,TEdge> Visitor { get; init; }
         protected IList<TNode> _nodes;
         protected byte[] _visited;
         protected byte[] _toVisit;
         protected Action PropagateRun;
+        public PropagatorBase(IVisitor<TNode,TEdge> visitor)
+        {
+            Visitor = visitor;
+        }
         /// <summary>
         /// Change current propagator visit position.
         /// </summary>
@@ -27,11 +34,11 @@ namespace GraphSharp.Propagators
         {
             Array.Clear(_visited, 0, _visited.Length);
             Array.Clear(_toVisit, 0, _toVisit.Length);
-            var startNode = CreateStartingNode(nodeIndices);
             //first time we call Propagate we need to process starting Node.
             PropagateRun = () =>
             {
-                PropagateNode(startNode);
+                var startNode = CreateStartingNode(nodeIndices);
+                PropagateStartingNode(startNode);
                 //later we need to let program run itself with visit cycle.
                 PropagateRun = PropagateNodes;
             };
@@ -59,7 +66,7 @@ namespace GraphSharp.Propagators
         /// </summary>
         /// <param name="indices"></param>
         /// <returns></returns>
-        protected INode CreateStartingNode(params int[] indices)
+        private Node CreateStartingNode(params int[] indices)
         {
             var startNode = new Node(-1);
             foreach (var index in indices)
@@ -69,7 +76,21 @@ namespace GraphSharp.Propagators
             }
             return startNode;
         }
-        protected abstract void PropagateNode(INode node);
+        private void PropagateStartingNode(Node node){
+            var edges = node.Edges;
+            int count = edges.Count;
+            IEdge edge;
+            for(int i = 0;i<count;++i)
+            {
+                edge = edges[i];
+                var _node = edge.Node as TNode;
+                ref var visited = ref _visited.DangerousGetReferenceAt(_node.Id);
+                if (visited > 0) continue;
+                Visitor.Visit(_node);
+                ++visited;
+            }
+        }
+        protected abstract void PropagateNode(TNode node);
         protected abstract void PropagateNodes();
 
     }

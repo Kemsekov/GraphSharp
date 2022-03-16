@@ -14,20 +14,20 @@ namespace GraphSharp.Propagators
     /// <summary>
     /// Concurrent <see cref="IPropagator"/> implementation
     /// </summary>
-    public class ParallelPropagator<TNode> : PropagatorBase<TNode>
-    where TNode : INode
+    public class ParallelPropagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
+    where TNode : NodeBase<TEdge>
+    where TEdge : EdgeBase<TNode>
     {
-        public IVisitor Visitor{get;init;}
-        public ParallelPropagator(IVisitor visitor)
+        public ParallelPropagator(IVisitor<TNode, TEdge> visitor) : base(visitor)
         {
-            Visitor = visitor;
         }
-        protected override void PropagateNode(INode node)
+
+        protected override void PropagateNode(TNode node)
         {
             var edges = node.Edges;
-            int count = node.Edges.Count;
-            IEdge edge;
-            for(int i = 0;i<count;++i)
+            int count = edges.Count;
+            TEdge edge;
+            for (int i = 0; i < count; ++i)
             {
                 edge = edges[i];
                 if (!Visitor.Select(edge)) continue;

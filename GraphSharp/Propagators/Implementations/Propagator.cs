@@ -11,19 +11,19 @@ namespace GraphSharp.Propagators
     /// <summary>
     /// Single threaded <see cref="IPropagator"/> implementation
     /// </summary>
-    public class Propagator<TNode> : PropagatorBase<TNode>
-    where TNode : INode
+    public class Propagator<TNode,TEdge> : PropagatorBase<TNode,TEdge>
+    where TNode : NodeBase<TEdge>
+    where TEdge : EdgeBase<TNode>
     {
-        public IVisitor Visitor{get;init;}
-        public Propagator(IVisitor visitor)
+        public Propagator(IVisitor<TNode, TEdge> visitor) : base(visitor)
         {
-            Visitor = visitor;
         }
-        protected override void PropagateNode(INode node)
+
+        protected override void PropagateNode(TNode node)
         {
             var edges = node.Edges;
-            int count = node.Edges.Count;
-            IEdge edge;
+            int count = edges.Count;
+            TEdge edge;
             for(int i = 0;i<count;++i)
             {
                 edge = edges[i];

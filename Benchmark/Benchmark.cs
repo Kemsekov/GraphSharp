@@ -35,7 +35,7 @@ Console.ForegroundColor = ConsoleColor.Green;
 System.Console.WriteLine($"Time {timer.ElapsedMilliseconds} milliseconds to create nodes");
 
 var visitor = new EmptyVisitor();
-visitor.SetNodes(nodes.Nodes);
+visitor.SetNodes(nodes);
 visitor.SetPosition(0);
 timer = MeasureTime(()=>{
     for (int i = 0; i < steps_count; i++)

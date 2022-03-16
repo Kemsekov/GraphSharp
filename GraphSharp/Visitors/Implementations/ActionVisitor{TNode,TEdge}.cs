@@ -20,10 +20,10 @@ namespace GraphSharp.Visitors
         /// <param name="visit"><see cref="IVisitor{,}.Visit"/> function</param>
         /// <param name="select"><see cref="IVisitor{,}.Select"/> function</param>
         /// <param name="endVisit"><see cref="IVisitor.EndVisit"/> function</param>
-        public ActionVisitor(Action<TNode> visit ,Func<TEdge,bool> select = null, Action endVisit = null)
+        public ActionVisitor(Action<TNode> visit ,Func<TEdge,bool> select, Action endVisit = null)
         {
             this.visit = visit;
-            this.select = select ?? new Func<TEdge,bool>(c=>true);
+            this.select = select;
             this.endVisit = endVisit ?? new Action(()=>{});
         }
         public bool Select(TEdge edge) => select(edge);

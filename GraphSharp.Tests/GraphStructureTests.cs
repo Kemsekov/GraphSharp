@@ -69,7 +69,7 @@ namespace GraphSharp.Tests
                 var undirectedEdges = parents.Second.Edges.Select(x => x.Node);
                 var diff = undirectedEdges.Except(directedEdges, new NodeEqualityComparer());
 
-                foreach (var n in diff)
+                foreach (var n in diff.Select(x=>x as TestNode))
                 {
                     Assert.True(n.Edges.Any(x => x.Node.Id == parents.First.Id));
                 }
@@ -179,7 +179,7 @@ namespace GraphSharp.Tests
             foreach(var n in nodes.Where(n=>n.Id%2!=0))
                 Assert.Equal(n.Edges.Count,5);
         }
-        public void validateThereIsNoCopiesAndParentInEdges(IEnumerable<INode> nodes)
+        public void validateThereIsNoCopiesAndParentInEdges(IEnumerable<TestNode> nodes)
         {
             Assert.NotEmpty(nodes);
             foreach (var parent in nodes)
@@ -188,7 +188,7 @@ namespace GraphSharp.Tests
                 Assert.False(parent.Edges.Any(child => child.Node.Id == parent.Id), $"There is parent in children. Parent : {parent}");
             }
         }
-        public void ensureRightCountOfEdgesPerNode(IEnumerable<INode> nodes, int minEdges, int maxEdges)
+        public void ensureRightCountOfEdgesPerNode(IEnumerable<TestNode> nodes, int minEdges, int maxEdges)
         {
             Assert.NotEmpty(nodes);
             foreach (var node in nodes)

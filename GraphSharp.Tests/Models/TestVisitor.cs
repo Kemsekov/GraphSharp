@@ -10,10 +10,13 @@ namespace GraphSharp.Tests.Models
 {
     public class TestVisitor : Visitor<TestNode, TestEdge>
     {
+        
         public TestVisitor()
         {
-            this.Propagator = new ParallelPropagator<TestNode>(this);
+            this.Propagator = new ParallelPropagator<TestNode,TestEdge>(this);
         }
+
+        public override IPropagator<TestNode> Propagator{get;}
 
         public override void EndVisit()
         {

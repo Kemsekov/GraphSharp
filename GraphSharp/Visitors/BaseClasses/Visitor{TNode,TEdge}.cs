@@ -20,15 +20,10 @@ namespace GraphSharp.Visitors
         /// <see cref="IPropagator"/> implementation that used for this proxy class
         /// </summary>
         /// <value></value>
-        public IPropagator<TNode> Propagator { get; init; }
-        public Visitor()
-        {
-            Propagator = new Propagator<TNode>(this);
-        }
+        public abstract IPropagator<TNode> Propagator { get; }
         public abstract void EndVisit();
         public abstract bool Select(TEdge edge);
         public abstract void Visit(TNode node);
-
         public void Propagate()
         {
             Propagator.Propagate();

@@ -10,8 +10,9 @@ namespace GraphSharp.GraphStructures
 {
     public static class GraphStructureInfoExtension
     {
-        public static int TotalEdgesCount<TNode>(this IGraphStructure<TNode> graphStructure)
-        where TNode : INode
+        public static int TotalEdgesCount<TNode,TEdge>(this IGraphStructure<TNode> graphStructure)
+        where TEdge : IEdge
+        where TNode : NodeBase<TEdge>
         {
             var result = 0;
             foreach (var n in graphStructure.Nodes)
@@ -20,8 +21,9 @@ namespace GraphSharp.GraphStructures
             }
             return result;
         }
-        public static float MeanEdgesCountPerNode<TNode>(this IGraphStructure<TNode> graphStructureBase)
-        where TNode : INode
-            => graphStructureBase.TotalEdgesCount() / graphStructureBase.Nodes.Count;
+        public static float MeanEdgesCountPerNode<TNode,TEdge>(this IGraphStructure<TNode> graphStructureBase)
+        where TNode : NodeBase<TEdge>
+        where TEdge : IEdge
+            => graphStructureBase.TotalEdgesCount<TNode,TEdge>() / graphStructureBase.Nodes.Count;
     }
 }

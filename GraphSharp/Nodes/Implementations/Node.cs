@@ -9,7 +9,7 @@ namespace GraphSharp.Nodes
     /// <summary>
     /// Base <see cref="INode"/> implementation.
     /// </summary>
-    public class Node : NodeBase<Edge>
+    public class Node : NodeBase<IEdge>
     {
         public Node(int id) : base(id)
         {
