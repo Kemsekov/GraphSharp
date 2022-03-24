@@ -10,7 +10,7 @@ namespace GraphSharp.Tests.Models
     public class TestEdge : EdgeBase<TestNode>
     {
         public float Weight;
-        public TestEdge(TestNode node) : base(node)
+        public TestEdge(TestNode parent,TestNode node) : base(parent,node)
         {
         }
     }

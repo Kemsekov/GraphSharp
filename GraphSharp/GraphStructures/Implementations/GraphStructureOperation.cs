@@ -79,7 +79,7 @@ namespace GraphSharp.GraphStructures
                         i--;
                         continue;
                     }
-                    node.Edges.Add(CreateEdge(edge, node));
+                    node.Edges.Add(CreateEdge(node,edge));
 
                 }
         }
@@ -108,8 +108,8 @@ namespace GraphSharp.GraphStructures
                          var node = Nodes[nodeId];
                          if (parent.Edges.Count() >= maxEdgesCount) return;
                          if (node.Edges.Count >= maxEdgesCount) continue;
-                         parent.Edges.Add(CreateEdge(node, parent));
-                         node.Edges.Add(CreateEdge(parent, node));
+                         parent.Edges.Add(CreateEdge(parent,node));
+                         node.Edges.Add(CreateEdge(node,parent));
                      }
              });
             return this;
@@ -122,7 +122,7 @@ namespace GraphSharp.GraphStructures
         {
             Matrix adjacencyMatrix;
 
-            //if matrix size will be bigger than 64 mb place store it as sparse.
+            //if matrix size will take more than 64 mb of RAM then make it sparse
             if (Nodes.Count > 4096)
                 adjacencyMatrix = SparseMatrix.Create(Nodes.Count, Nodes.Count, 0);
             else
@@ -191,7 +191,7 @@ namespace GraphSharp.GraphStructures
                         var toAdd = !edge.Node.Edges.Any(x => x.Node.Id == parent.Id);
                         if (toAdd)
                         {
-                            edge.Node.Edges.Add(CreateEdge(parent, edge.Node));
+                            edge.Node.Edges.Add(CreateEdge(edge.Node,parent));
                         }
                      }
                  }

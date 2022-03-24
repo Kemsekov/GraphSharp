@@ -8,7 +8,7 @@ namespace GraphSharp.Edges
     /// <typeparam name="TWeight"></typeparam>
     public class Edge<TWeight> : Edge
     {
-        public Edge(Node node, TWeight value) : base(node)
+        public Edge(Node parent, Node node, TWeight value) : base(parent, node)
         {
             Value = value;
         }

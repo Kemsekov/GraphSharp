@@ -98,7 +98,7 @@ namespace GraphSharp.GraphStructures
             for(int i = 0;i<Nodes.Count;i++){
                 for(int b = 0;b<width;b++){
                     if(adjacencyMatrix[i,b]!=0){
-                        var edge = CreateEdge(Nodes[b],Nodes[i]);
+                        var edge = CreateEdge(Nodes[i],Nodes[b]);
                         Nodes[i].Edges.Add(edge);
                         applyWeight(edge,adjacencyMatrix[i,b]);
                     }
@@ -106,8 +106,30 @@ namespace GraphSharp.GraphStructures
             }
             return this;
         }
-        
-
+        /// <summary>
+        /// Creates <see cref="GraphStructure{,}"/> from incidence matrix
+        /// </summary>
+        public GraphStructure<TNode,TEdge> FromIncidenceMatrix(Matrix incidenceMatrix){
+            int nodesCount = incidenceMatrix.RowCount;
+            var edgesCount = incidenceMatrix.ColumnCount;
+            CreateNodes(nodesCount);
+            
+            for(int i = 0;i<edgesCount;++i){
+                (TNode Node,float Value) n1 = (null,0),n2 = (null,0);
+                for(int b = 0;b<nodesCount;++b){
+                    var value = incidenceMatrix[b,i];
+                    if(value!=0){
+                        n1 = n2;
+                        n2 = (Nodes[b],value);
+                    }
+                }
+                if(n1.Value==1)
+                    n1.Node.Edges.Add(CreateEdge(n1.Node,n2.Node));
+                if(n2.Value==1)
+                    n2.Node.Edges.Add(CreateEdge(n2.Node,n1.Node));
+            }
+            return this;
+        }
 
     }
 }

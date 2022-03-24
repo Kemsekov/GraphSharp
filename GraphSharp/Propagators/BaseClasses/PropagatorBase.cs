@@ -32,6 +32,8 @@ namespace GraphSharp.Propagators
         /// <param name="indices">indices of nodes that will be used.</param>
         public void SetPosition(params int[] nodeIndices)
         {
+            if(_toVisit is null || _visited is null)
+                throw new ApplicationException("Call SetNodes before calling SetPosition!");
             Array.Clear(_visited, 0, _visited.Length);
             Array.Clear(_toVisit, 0, _toVisit.Length);
             //first time we call Propagate we need to process starting Node.
@@ -71,7 +73,7 @@ namespace GraphSharp.Propagators
             var startNode = new Node(-1);
             foreach (var index in indices)
             {
-                var child = new Edge(_nodes[index % _nodes.Count]);
+                var child = new Edge(startNode, _nodes[index % _nodes.Count]);
                 startNode.Edges.Add(child);
             }
             return startNode;

@@ -9,11 +9,14 @@ namespace GraphSharp.Edges
     public abstract class EdgeBase<TNode> : IEdge
     where TNode : INode
     {
-        public EdgeBase(TNode node)
+        public EdgeBase(TNode parent, TNode node)
         {
             Node = node;
+            Parent = parent;
         }
         public TNode Node{get;}
+        public TNode Parent{get;}
         INode IEdge.Node=>this.Node;
+        INode IEdge.Parent=>this.Parent;
     }
 }

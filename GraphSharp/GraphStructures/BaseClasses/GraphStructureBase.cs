@@ -24,7 +24,7 @@ namespace GraphSharp.GraphStructures
         public Func<int, TNode> CreateNode { get;init; }
         /// <summary>
         /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>, where first is node itself and second is it's parent
-        /// (node,parent)=>new Edge...
+        /// (parent,node)=>new Edge...
         /// </summary>
         public Func<TNode, TNode, TEdge> CreateEdge { get;init; }
         /// <summary>
