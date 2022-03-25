@@ -84,7 +84,7 @@ namespace GraphSharp.Tests
         {
             int size = _rand.Next(20) + 5;
             var adjacencyMatrix = CreateSquareMatrix(size, (i, b) => _rand.Next(2));
-            var result = _GraphStructure.FromAdjacencyMatrix(adjacencyMatrix, (edge, weight) => edge.Weight = weight).ForEach().ToAdjacencyMatrix();
+            var result = _GraphStructure.FromAdjacencyMatrix(adjacencyMatrix, (edge, weight) => edge.Weight = weight).ToAdjacencyMatrix();
             Assert.Equal(adjacencyMatrix, result);
         }
         [Fact]
@@ -139,7 +139,6 @@ namespace GraphSharp.Tests
                 .FromAdjacencyMatrix(
                     adjacencyMatrix,
                     (edge, weight) => edge.Weight = weight)
-                .ForEach()
                 .ToAdjacencyMatrix();
 
             Assert.Equal(adjacencyMatrix, result);
