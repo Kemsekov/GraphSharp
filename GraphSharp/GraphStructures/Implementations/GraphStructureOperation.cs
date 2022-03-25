@@ -12,20 +12,20 @@ using MathNet.Numerics.LinearAlgebra.Single;
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Contains methods to modify relationships between nodes and contain converters for graph structure, see <see cref="GraphStructureOperation.ToAdjacencyMatrix"/>
+    /// Contains methods to modify relationships between nodes and contain converters for graph structure.
     /// </summary>
     public class GraphStructureOperation<TNode,TEdge> : GraphStructureBase<TNode,TEdge>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
-        public GraphStructureOperation(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure.CreateNode, graphStructure.CreateEdge,graphStructure.GetWeight,graphStructure.Distance, graphStructure.Rand)
+        public GraphStructureOperation(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure)
         {
             Nodes = graphStructure.Nodes;
             WorkingGroup = graphStructure.WorkingGroup;
         }
 
         /// <summary>
-        /// Randomly adds <see cref="IEdge"/>s to nodes. It connect nodes to each other from current <see cref="IGraphStructure.WorkingGroup"/>
+        /// Randomly create edgesCount edges for each node from <see cref="IGraphStructure{}.WorkingGroup"/>
         /// </summary>
         /// <param name="edgesCount">How much edges each node need</param>
         public GraphStructureOperation<TNode,TEdge> ConnectNodes(int edgesCount)
@@ -40,10 +40,10 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Randomly adds <see cref="IEdge"/>s to nodes, but create random count of them. It connect nodes to each other from current <see cref="GraphStructure.WorkingGroup"/>
+        /// Randomly create some range of edges for each node from <see cref="IGraphStructure{}.WorkingGroup"/>
         /// </summary>
-        /// <param name="minEdgesCount">Min count of edges of each node</param>
-        /// <param name="maxEdgesCount">Max count of edges of each node</param>
+        /// <param name="minEdgesCount">Min count of edges for each node</param>
+        /// <param name="maxEdgesCount">Max count of edges for each node</param>
         public GraphStructureOperation<TNode,TEdge> ConnectRandomly(int minEdgesCount, int maxEdgesCount)
         {
             minEdgesCount = minEdgesCount < 1 ? 1 : minEdgesCount;
@@ -66,7 +66,9 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         
-        //connect some node to List of nodes with some parameters.
+        /// <summary>
+        /// Connect some node to edgesCount of other nodes
+        /// </summary>
         private void ConnectNodeToNodes(TNode node, int startIndex, int edgesCount)
         {
             lock (node)
@@ -85,11 +87,10 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Randomly connects node to it's closest nodes in current <see cref="IGraphStructure.WorkingGroup"/> using <see cref="IGraphStructure.Distance"/>. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
+        /// Randomly connects closest nodes in current <see cref="IGraphStructure{}.WorkingGroup"/> using <see cref="GraphStructureBase{,}.Distance"/>. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
         /// </summary>
-        /// <param name="minEdgesCount">minimum edges count</param>
-        /// <param name="maxEdgesCount">maximum edges count</param>
-        /// <returns></returns>
+        /// <param name="minEdgesCount">Approximately minimum edges count</param>
+        /// <param name="maxEdgesCount">Approximately maximum edges count</param>
         public GraphStructureOperation<TNode,TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount)
         {
             var edgesCountMap = new ConcurrentDictionary<INode, int>();
@@ -98,58 +99,35 @@ namespace GraphSharp.GraphStructures
 
             var locker = new object();
             Parallel.ForEach(WorkingGroup, parent =>
-             {
-                 var edgesCount = edgesCountMap[parent];
-                 if (parent.Edges.Count() >= edgesCount) return;
-                 var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, Distance, parent);
-                 foreach (var nodeId in toAdd)
-                     lock (locker)
-                     {
-                         var node = Nodes[nodeId];
-                         if (parent.Edges.Count() >= maxEdgesCount) return;
-                         if (node.Edges.Count >= maxEdgesCount) continue;
-                         parent.Edges.Add(CreateEdge(parent,node));
-                         node.Edges.Add(CreateEdge(node,parent));
-                     }
-             });
+            {
+                var edgesCount = edgesCountMap[parent];
+                if (parent.Edges.Count() >= edgesCount) return;
+                var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, parent);
+                foreach (var nodeId in toAdd)
+                    lock (locker)
+                    {
+                        var node = Nodes[nodeId];
+                        if (parent.Edges.Count() >= maxEdgesCount) return;
+                        if (node.Edges.Count >= maxEdgesCount) continue;
+                        parent.Edges.Add(CreateEdge(parent,node));
+                        node.Edges.Add(CreateEdge(node,parent));
+                    }
+            });
             return this;
         }
-        /// <summary>
-        /// Converts current <see cref="IGraphStructure.Nodes"/> to adjacency matrix using <see cref="IGraphStructure.GetWeight"/> to determine matrix value per <see cref="IEdge"/>
-        /// </summary>
-        /// <returns></returns>
-        public Matrix ToAdjacencyMatrix()
-        {
-            Matrix adjacencyMatrix;
-
-            //if matrix size will take more than 64 mb of RAM then make it sparse
-            if (Nodes.Count > 4096)
-                adjacencyMatrix = SparseMatrix.Create(Nodes.Count, Nodes.Count, 0);
-            else
-                adjacencyMatrix = DenseMatrix.Create(Nodes.Count, Nodes.Count, 0);
-
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                foreach (var e in Nodes[i].Edges)
-                {
-                    adjacencyMatrix[i, e.Node.Id] = GetWeight(e);
-                }
-            }
-            return adjacencyMatrix;
-        }
-        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, Func<TNode, TNode, float> distance, TNode parent)
+        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, TNode parent)
         {
             if (WorkingGroup.Count() == 0) return Enumerable.Empty<int>();
 
             var result = WorkingGroup.Select(x => x.Id).FindFirstNMinimalElements(
                 n: edgesCount,
-                comparison: (t1, t2) => distance(parent, Nodes[t1]) > distance(parent, Nodes[t2]) ? 1 : -1,
+                comparison: (t1, t2) => Distance(parent, Nodes[t1]) > Distance(parent, Nodes[t2]) ? 1 : -1,
                 skipElement: (nodeId) => Nodes[nodeId].Id == parent.Id || Nodes[nodeId].Edges.Count >= maxEdgesCount);
 
             return result;
         }
         /// <summary>
-        /// Removes parent node from it's edges connection. Or simply makes any connection between nodes onedirectional in current <see cref="IGraphStructure.WorkingGroup"/>
+        /// Makes every connection between two nodes from <see cref="IGraphStructure{}.WorkingGroup"/> onedirectional.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> MakeDirected()
         {
@@ -175,7 +153,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Ensures that every edge of parent's node have parent included in edges. Or simply make sure that any connection between two nodes are bidirectional in current <see cref="IGraphStructure.WorkingGroup"/>
+        /// Makes every connection between two nodes from <see cref="IGraphStructure{}.WorkingGroup"/> bidirectional.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> MakeUndirected()
         {
@@ -199,10 +177,9 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Removes all edges from current <see cref="IGraphStructure.WorkingGroup"/>
+        /// Removes all edges from nodes from <see cref="IGraphStructure{}.WorkingGroup"/>
         /// </summary>
-        /// <returns></returns>
-        public GraphStructureOperation<TNode,TEdge> RemoveAllConnections()
+        public GraphStructureOperation<TNode,TEdge> RemoveAllEdges()
         {
             foreach (var parent in WorkingGroup)
             {
@@ -217,9 +194,9 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Clears current <see cref="IGraphStructure.WorkingGroup"/> 
+        /// Clears current <see cref="IGraphStructure{}.WorkingGroup"/> 
         /// </summary>
-        /// <returns><see cref="GraphStructure"/> that can be used to re-create <see cref="IGraphStructure.Nodes"/>  and reset <see cref="IGraphStructure.WorkingGroup"/> </returns>
+        /// <returns><see cref="GraphStructure{,}"/> that can be used to reset <see cref="IGraphStructure{}.WorkingGroup"/> </returns>
         public GraphStructure<TNode,TEdge> ClearWorkingGroup(){
             this.WorkingGroup = Enumerable.Empty<TNode>();
             return new(this);

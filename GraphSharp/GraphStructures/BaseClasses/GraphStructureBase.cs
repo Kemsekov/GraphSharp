@@ -7,13 +7,15 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
+    /// <summary>
+    /// Base class for graph structure.
+    /// </summary>
     public abstract class GraphStructureBase<TNode, TEdge> : IGraphStructure<TNode>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
-
         /// <summary>
-        /// <see cref="Random"/> that used by any <see cref="IGraphStructure"/> to implement's it's logic when it need random values
+        /// <see cref="Random"/> that used to implement's any logic when it reqires random values
         /// </summary>
         /// <value></value>
         public Random Rand { get;init; }
@@ -23,7 +25,7 @@ namespace GraphSharp.GraphStructures
         /// <value></value>
         public Func<int, TNode> CreateNode { get;init; }
         /// <summary>
-        /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>, where first is node itself and second is it's parent
+        /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>, where first node is parent and second is it's neighbor
         /// (parent,node)=>new Edge...
         /// </summary>
         public Func<TNode, TNode, TEdge> CreateEdge { get;init; }
@@ -42,26 +44,28 @@ namespace GraphSharp.GraphStructures
 
         public IList<TNode> Nodes { get; protected set; }
 
+        /// <summary>
+        /// Base copy constructor. Will make shallow copy of structureBase
+        /// </summary>
+        /// <param name="structureBase"></param>
         public GraphStructureBase(GraphStructureBase<TNode, TEdge> structureBase)
         {
-            Rand = structureBase.Rand;
-            CreateNode = structureBase.CreateNode;
-            CreateEdge = structureBase.CreateEdge;
+            Rand         = structureBase.Rand;
+            CreateNode   = structureBase.CreateNode;
+            CreateEdge   = structureBase.CreateEdge;
             WorkingGroup = structureBase.WorkingGroup;
-            Nodes = structureBase.Nodes;
-            GetWeight = structureBase.GetWeight;
-            Distance = structureBase.Distance;
+            Nodes        = structureBase.Nodes;
+            GetWeight    = structureBase.GetWeight;
+            Distance     = structureBase.Distance;
         }
 
-        public GraphStructureBase(Func<int, TNode> createNode, Func<TNode, TNode, TEdge> createEdge, Func<TEdge, float> getWeight = null, Func<TNode, TNode, float> distance = null, Random rand = null)
+        public GraphStructureBase(Func<int, TNode> createNode, Func<TNode, TNode, TEdge> createEdge, Func<TEdge, float> getWeight, Func<TNode, TNode, float> distance, Random rand = null)
         {
-            getWeight ??= edge => 1;
-            distance ??= (n1, n2) => 1;
-            Rand = rand ?? new Random(); ;
+            Rand       = rand ?? new Random();
             CreateNode = createNode;
             CreateEdge = createEdge;
-            Distance = distance;
-            GetWeight = getWeight;
+            Distance   = distance;
+            GetWeight  = getWeight;
         }
 
     }

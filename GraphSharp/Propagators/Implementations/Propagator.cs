@@ -9,7 +9,7 @@ using Microsoft.Toolkit.HighPerformance;
 namespace GraphSharp.Propagators
 {
     /// <summary>
-    /// Single threaded <see cref="IPropagator"/> implementation
+    /// Single threaded <see cref="PropagatorBase{,}"/> implementation
     /// </summary>
     public class Propagator<TNode,TEdge> : PropagatorBase<TNode,TEdge>
     where TNode : NodeBase<TEdge>
@@ -19,7 +19,7 @@ namespace GraphSharp.Propagators
         {
         }
 
-        protected override void PropagateNode(TNode node)
+        protected void PropagateNode(TNode node)
         {
             var edges = node.Edges;
             int count = edges.Count;

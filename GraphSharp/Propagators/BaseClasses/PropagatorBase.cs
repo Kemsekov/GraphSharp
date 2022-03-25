@@ -11,7 +11,7 @@ using Microsoft.Toolkit.HighPerformance;
 namespace GraphSharp.Propagators
 {
     /// <summary>
-    /// Base class for <see cref="IPropagator"/> that contains basic things for any specific <see cref="IPropagator"/> implementation
+    /// Base class for <see cref="IPropagator{}"/> that contains basic things for any specific implementation
     /// </summary>
     public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode>
     where TNode : NodeBase<TEdge>
@@ -67,7 +67,6 @@ namespace GraphSharp.Propagators
         /// create node with id = -1 and with edges that contain nodes with following indices
         /// </summary>
         /// <param name="indices"></param>
-        /// <returns></returns>
         private Node CreateStartingNode(params int[] indices)
         {
             var startNode = new Node(-1);
@@ -78,6 +77,9 @@ namespace GraphSharp.Propagators
             }
             return startNode;
         }
+        /// <summary>
+        /// Will propagate once starting node created by <see cref="PropagatorBase{,}.CreateStartingNode"/>
+        /// </summary>
         private void PropagateStartingNode(Node node){
             var edges = node.Edges;
             int count = edges.Count;
@@ -92,7 +94,9 @@ namespace GraphSharp.Propagators
                 ++visited;
             }
         }
-        protected abstract void PropagateNode(TNode node);
+        /// <summary>
+        /// Method that will do main logic. It will propagate nodes from current generation to next generation selecting and visiting them in the proccess.
+        /// </summary>
         protected abstract void PropagateNodes();
 
     }

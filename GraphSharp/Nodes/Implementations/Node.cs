@@ -7,7 +7,7 @@ using GraphSharp.Edges;
 namespace GraphSharp.Nodes
 {
     /// <summary>
-    /// Base <see cref="INode"/> implementation.
+    /// Base <see cref="INode"/> implementation
     /// </summary>
     public class Node : NodeBase<IEdge>
     {
