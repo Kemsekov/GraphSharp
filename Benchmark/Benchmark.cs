@@ -25,7 +25,7 @@ IGraphStructure<EmptyNode> nodes = default;
 
 var timer = MeasureTime(()=>{
     nodes =
-        new GraphStructure<EmptyNode,EmptyEdge>(id=>new(id),(n,p)=>new(n))
+        new GraphStructure<EmptyNode,EmptyEdge>(id=>new(id),(p,n)=>new(p,n))
         .CreateNodes(nodes_count)
         .ForEach()
         .ConnectNodes(edges_count);
