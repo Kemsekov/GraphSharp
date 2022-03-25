@@ -21,7 +21,6 @@ namespace GraphSharp.Propagators
         protected IList<TNode> _nodes;
         protected byte[] _visited;
         protected byte[] _toVisit;
-        protected Action PropagateRun;
         public PropagatorBase(IVisitor<TNode,TEdge> visitor)
         {
             Visitor = visitor;
@@ -36,14 +35,9 @@ namespace GraphSharp.Propagators
                 throw new ApplicationException("Call SetNodes before calling SetPosition!");
             Array.Clear(_visited, 0, _visited.Length);
             Array.Clear(_toVisit, 0, _toVisit.Length);
-            //first time we call Propagate we need to process starting Node.
-            PropagateRun = () =>
-            {
-                var startNode = CreateStartingNode(nodeIndices);
-                PropagateStartingNode(startNode);
-                //later we need to let program run itself with visit cycle.
-                PropagateRun = PropagateNodes;
-            };
+            for(int i = 0;i<nodeIndices.Count();i++){
+                _visited[nodeIndices[i]] = 1;
+            }
         }
         public void SetNodes(IGraphStructure<TNode> nodes)
         {
@@ -54,11 +48,11 @@ namespace GraphSharp.Propagators
         public virtual void Propagate()
         {
             // clear all states of visited for current nodes for next generation
-            Array.Clear(_visited, 0, _visited.Length);
 
-            PropagateRun();
+            PropagateNodes();
 
             //swap next generaton and current.
+            Array.Clear(_toVisit, 0, _toVisit.Length);
             var buf = _visited;
             _visited = _toVisit;
             _toVisit = buf;

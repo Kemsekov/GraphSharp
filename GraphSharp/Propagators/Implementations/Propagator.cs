@@ -24,16 +24,11 @@ namespace GraphSharp.Propagators
             var edges = node.Edges;
             int count = edges.Count;
             TEdge edge;
-            for(int i = 0;i<count;++i)
+            for (int i = 0; i < count; ++i)
             {
                 edge = edges[i];
                 if (!Visitor.Select(edge)) continue;
-                node = edge.Node;
-                ref var visited = ref _visited.DangerousGetReferenceAt(node.Id);
-
-                if (visited > 0) continue;
-                Visitor.Visit(node);
-                ++visited;
+                _visited.DangerousGetReferenceAt(edge.Node.Id)=1;
             }
         }
         protected override void PropagateNodes()
@@ -42,6 +37,11 @@ namespace GraphSharp.Propagators
             {
                 if (_toVisit[nodeId] > 0)
                     PropagateNode(_nodes[nodeId]);
+            };
+            for (int nodeId = 0; nodeId < _visited.Length; ++nodeId)
+            {
+                if (_visited[nodeId] > 0)
+                    Visitor.Visit(_nodes[nodeId]);
             };
             Visitor.EndVisit();
         }

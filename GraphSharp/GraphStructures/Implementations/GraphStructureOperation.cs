@@ -87,7 +87,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Randomly connects closest nodes in current <see cref="IGraphStructure{}.WorkingGroup"/> using <see cref="GraphStructureBase{,}.Distance"/>. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
+        /// Randomly connects closest nodes in current <see cref="IGraphStructure{}.WorkingGroup"/> using <see cref="GraphStructureBase{,}.Distance"/>. Producing bidirectional graph. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
         /// </summary>
         /// <param name="minEdgesCount">Approximately minimum edges count</param>
         /// <param name="maxEdgesCount">Approximately maximum edges count</param>

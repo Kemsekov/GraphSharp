@@ -31,15 +31,7 @@ namespace GraphSharp.Propagators
             {
                 edge = edges[i];
                 if (!Visitor.Select(edge)) continue;
-                node = edge.Node;
-                ref byte visited = ref _visited.DangerousGetReferenceAt(node.Id);
-                if (visited > 0) continue;
-                lock (node)
-                {
-                    if (visited > 0) continue;
-                    Visitor.Visit(node);
-                    ++visited;
-                }
+                _visited.DangerousGetReferenceAt(edge.Node.Id)=1;
             }
         }
         protected override void PropagateNodes()
@@ -48,6 +40,11 @@ namespace GraphSharp.Propagators
             {
                 if (_toVisit[nodeId] > 0)
                     PropagateNode(_nodes[nodeId]);
+            });
+            Parallel.For(0, _toVisit.Length, nodeId =>
+            {
+                if(_visited[nodeId]>0)
+                    Visitor.Visit(_nodes[nodeId]);
             });
             Visitor.EndVisit();
         }
