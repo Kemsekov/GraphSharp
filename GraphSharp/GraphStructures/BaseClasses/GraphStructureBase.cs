@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -67,6 +68,38 @@ namespace GraphSharp.GraphStructures
             Distance   = distance;
             GetWeight  = getWeight;
         }
-
+        /// <summary>
+        /// Builds connections dictionary from graph structure. Result of this method only make sense if graph is a tree, because in this representation any node can have only one parent.
+        /// </summary>
+        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is parent id</returns>
+        public IDictionary<int,int> BuildTreeConnectionsDictionary(){
+            Dictionary<int,int> c = new();
+            foreach(var n in Nodes){
+                foreach(var e in n.Edges){
+                    c[e.Node.Id]=e.Parent.Id;
+                }
+            }
+            return c;
+        }
+        /// <summary>
+        /// Calculate parents count (degree) for each node
+        /// </summary>
+        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is parents count</returns>
+        public IDictionary<int,int> CountDegrees(){
+            ConcurrentDictionary<int,int> c = new();
+            foreach(var n in Nodes)
+                c[n.Id]=0;
+            
+            Parallel.ForEach(Nodes,node=>{
+                foreach(var e in node.Edges){
+                    c[e.Node.Id]++;
+                }
+            });
+            return c;
+        }
+        /// <returns>Whatever given graph structure is a tree</returns>
+        public bool IsTree(){
+            return CountDegrees().All(x=>x.Value==1);
+        }
     }
 }

@@ -24,6 +24,6 @@ namespace GraphSharp.GraphStructures
         public static float MeanEdgesCountPerNode<TNode,TEdge>(this IGraphStructure<TNode> graphStructureBase)
         where TNode : NodeBase<TEdge>
         where TEdge : IEdge
-            => (float)(graphStructureBase.TotalEdgesCount<TNode,TEdge>()) / graphStructureBase.Nodes.Count;
+            => (float)(graphStructureBase.TotalEdgesCount<TNode,TEdge>()) / graphStructureBase.Nodes.Count;        
     }
 }
