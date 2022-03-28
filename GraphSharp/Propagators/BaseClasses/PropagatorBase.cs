@@ -33,10 +33,11 @@ namespace GraphSharp.Propagators
         {
             if(_toVisit is null || _visited is null)
                 throw new ApplicationException("Call SetNodes before calling SetPosition!");
+            int nodesCount = _nodes.Count;
             Array.Clear(_visited, 0, _visited.Length);
             Array.Clear(_toVisit, 0, _toVisit.Length);
             for(int i = 0;i<nodeIndices.Count();i++){
-                _visited[nodeIndices[i]] = 1;
+                _visited[nodeIndices[i]%nodesCount] = 1;
             }
         }
         public void SetNodes(IGraphStructure<TNode> nodes)
