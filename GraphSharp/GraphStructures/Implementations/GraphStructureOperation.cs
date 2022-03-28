@@ -192,7 +192,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Removes all edges from nodes from <see cref="IGraphStructure{}.WorkingGroup"/>
+        /// Removes all edges from nodes from <see cref="IGraphStructure{}.WorkingGroup"/> including any edge that relates to any member of <see cref="IGraphStructure{}.WorkingGroup"/> even if it is not included in it.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> RemoveAllEdges()
         {
