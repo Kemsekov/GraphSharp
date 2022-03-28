@@ -136,28 +136,6 @@ namespace GraphSharp.GraphStructures
             }
             return this;
         }
-        /// <summary>
-        /// Converts current <see cref="IGraphStructure.Nodes"/> to adjacency matrix using <see cref="IGraphStructure.GetWeight"/> to determine matrix value per <see cref="IEdge"/>
-        /// </summary>
-        /// <returns></returns>
-        public Matrix ToAdjacencyMatrix()
-        {
-            Matrix adjacencyMatrix;
-
-            //if matrix size will take more than 64 mb of RAM then make it sparse
-            if (Nodes.Count > 4096)
-                adjacencyMatrix = SparseMatrix.Create(Nodes.Count, Nodes.Count, 0);
-            else
-                adjacencyMatrix = DenseMatrix.Create(Nodes.Count, Nodes.Count, 0);
-
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                foreach (var e in Nodes[i].Edges)
-                {
-                    adjacencyMatrix[i, e.Node.Id] = GetWeight(e);
-                }
-            }
-            return adjacencyMatrix;
-        }
+       
     }
 }

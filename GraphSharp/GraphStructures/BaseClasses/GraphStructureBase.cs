@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
+using MathNet.Numerics.LinearAlgebra.Single;
 
 namespace GraphSharp.GraphStructures
 {
@@ -72,7 +73,7 @@ namespace GraphSharp.GraphStructures
         /// Convert each edge's parent and node values to tuple (int parent, int node)
         /// </summary>
         /// <returns>A list of tuples where first element is a parent of edge and second is node to other edge</returns>
-        public IList<(int parent,int node)> BuildConnectionsList(){
+        public IList<(int parent,int node)> ToConnectionsList(){
             var result = new List<(int parent,int node)>();
             foreach(var n in Nodes){
                 foreach(var e in n.Edges){
@@ -81,11 +82,33 @@ namespace GraphSharp.GraphStructures
             }
             return result;
         }
+         /// <summary>
+        /// Converts current <see cref="IGraphStructure.Nodes"/> to adjacency matrix using <see cref="IGraphStructure.GetWeight"/> to determine matrix value per <see cref="IEdge"/>
+        /// </summary>
+        public Matrix ToAdjacencyMatrix()
+        {
+            Matrix adjacencyMatrix;
+
+            //if matrix size will take more than 64 mb of RAM then make it sparse
+            if (Nodes.Count > 4096)
+                adjacencyMatrix = SparseMatrix.Create(Nodes.Count, Nodes.Count, 0);
+            else
+                adjacencyMatrix = DenseMatrix.Create(Nodes.Count, Nodes.Count, 0);
+
+            for (int i = 0; i < Nodes.Count; i++)
+            {
+                foreach (var e in Nodes[i].Edges)
+                {
+                    adjacencyMatrix[i, e.Node.Id] = GetWeight(e);
+                }
+            }
+            return adjacencyMatrix;
+        }
         /// <summary>
         /// Builds connections dictionary from graph structure. Result of this method only make sense if graph is a tree, because in this representation any node can have only one parent.
         /// </summary>
         /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is parent id</returns>
-        public IDictionary<int,int> BuildTreeConnectionsDictionary(){
+        public IDictionary<int,int> ToTreeConnectionsDictionary(){
             Dictionary<int,int> c = new();
             foreach(var n in Nodes){
                 foreach(var e in n.Edges){
