@@ -181,7 +181,7 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="connectionsList"></param>
         /// <returns></returns>
-        public GraphStructureOperation<TNode,TEdge> CreateEdgesFromConnectionsList(IList<(int parent,int node)> connectionsList){
+        public GraphStructureOperation<TNode,TEdge> FromConnectionsList(IEnumerable<(int parent,int node)> connectionsList){
             if(WorkingGroup.Count()==0) return this;
             int upIndex = WorkingGroup.Max(x=>x.Id);
             int downIndex = WorkingGroup.Min(x=>x.Id);
