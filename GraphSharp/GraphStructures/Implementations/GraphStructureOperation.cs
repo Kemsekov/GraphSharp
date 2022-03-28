@@ -188,7 +188,7 @@ namespace GraphSharp.GraphStructures
                 }
             }
             foreach(var con in connectionsList)
-                CreateEdge(Nodes[con.parent],Nodes[con.node]);
+                Nodes[con.parent].Edges.Add(CreateEdge(Nodes[con.parent],Nodes[con.node]));
             return this;
         }
         /// <summary>
