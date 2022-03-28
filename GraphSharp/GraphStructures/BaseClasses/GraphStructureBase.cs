@@ -101,5 +101,16 @@ namespace GraphSharp.GraphStructures
         public bool IsTree(){
             return CountDegrees().All(x=>x.Value==1);
         }
+        public int TotalEdgesCount()
+        {
+            var result = 0;
+            foreach (var n in Nodes)
+            {
+                result += n.Edges.Count();
+            }
+            return result;
+        }
+        public float MeanEdgesCountPerNode()
+            => (float)(TotalEdgesCount()) / Nodes.Count;        
     }
 }
