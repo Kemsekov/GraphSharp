@@ -177,6 +177,22 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
+        /// Creates edges from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/>
+        /// </summary>
+        /// <param name="connectionsList"></param>
+        /// <returns></returns>
+        public GraphStructureOperation<TNode,TEdge> CreateEdgesFromConnectionsList(IList<(int parent,int node)> connectionsList){
+            if(WorkingGroup.Count()==0) return this;
+            int upIndex = WorkingGroup.Max(x=>x.Id);
+            int downIndex = WorkingGroup.Min(x=>x.Id);
+            foreach(var con in connectionsList){
+                if(con.node>upIndex || con.node<downIndex) continue;
+                if(con.parent>upIndex || con.parent<downIndex) continue;
+                CreateEdge(Nodes[con.parent],Nodes[con.node]);
+            }
+            return this;
+        }
+        /// <summary>
         /// Removes all edges from nodes from <see cref="IGraphStructure{}.WorkingGroup"/>
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> RemoveAllEdges()

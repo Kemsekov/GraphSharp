@@ -69,6 +69,19 @@ namespace GraphSharp.GraphStructures
             GetWeight  = getWeight;
         }
         /// <summary>
+        /// Convert each edge's parent and node values to tuple (int parent, int node)
+        /// </summary>
+        /// <returns>A list of tuples where first element is a parent of edge and second is node to other edge</returns>
+        public IList<(int parent,int node)> BuildConnectionsList(){
+            var result = new List<(int parent,int node)>();
+            foreach(var n in Nodes){
+                foreach(var e in n.Edges){
+                    result.Add((e.Parent.Id,e.Node.Id));
+                }
+            }
+            return result;
+        }
+        /// <summary>
         /// Builds connections dictionary from graph structure. Result of this method only make sense if graph is a tree, because in this representation any node can have only one parent.
         /// </summary>
         /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is parent id</returns>
