@@ -179,17 +179,16 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Creates edges from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/>
         /// </summary>
-        /// <param name="connectionsList"></param>
-        /// <returns></returns>
         public GraphStructureOperation<TNode,TEdge> FromConnectionsList(IEnumerable<(int parent,int node)> connectionsList){
             if(WorkingGroup.Count()==0) return this;
-            int upIndex = WorkingGroup.Max(x=>x.Id);
-            int downIndex = WorkingGroup.Min(x=>x.Id);
             foreach(var con in connectionsList){
-                if(con.node>upIndex || con.node<downIndex) continue;
-                if(con.parent>upIndex || con.parent<downIndex) continue;
-                CreateEdge(Nodes[con.parent],Nodes[con.node]);
+                if(WorkingGroup.FirstOrDefault(x=>x.Id==con.parent) is null
+                || WorkingGroup.FirstOrDefault(x=>x.Id==con.node) is null){
+                    throw new ArgumentException("parent/node pair from connectionsList are out of WorkingGroup boundary!","connectionsList");
+                }
             }
+            foreach(var con in connectionsList)
+                CreateEdge(Nodes[con.parent],Nodes[con.node]);
             return this;
         }
         /// <summary>
