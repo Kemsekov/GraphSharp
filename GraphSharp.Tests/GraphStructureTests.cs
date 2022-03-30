@@ -138,7 +138,7 @@ namespace GraphSharp.Tests
             _GraphStructure.ForEach()
             .ConnectNodes(children_count);
             validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
-            ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, 100, 100);
+            ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, 100, 101);
             Parallel.ForEach(_GraphStructure.Nodes, node =>
              {
                  var edges = node.Edges.Select(child => child.Node).ToList();
@@ -149,8 +149,8 @@ namespace GraphSharp.Tests
         [Fact]
         public void ConnectRandomlyWorks()
         {
-            const int minCountOfNodes = 5;
-            const int maxCountOfNodes = 30;
+            int minCountOfNodes = Random.Shared.Next(5);
+            int maxCountOfNodes = Random.Shared.Next(5)+20;
             _GraphStructure.ForEach()
             .ConnectRandomly(minCountOfNodes, maxCountOfNodes);
 
@@ -158,11 +158,10 @@ namespace GraphSharp.Tests
             ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, minCountOfNodes, maxCountOfNodes);
 
             Parallel.ForEach(_GraphStructure.Nodes, node =>
-             {
-                 var edges = node.Edges.Select(child => child.Node).ToList();
-                 ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, minCountOfNodes, maxCountOfNodes);
-                 validateThereIsNoCopiesAndParentInEdges(edges);
-             });
+            {
+                var edges = node.Edges.Select(child => child.Node).ToList();
+                validateThereIsNoCopiesAndParentInEdges(edges);
+            });
         }
         [Fact]
         public void ClearWorkingGroup_Works()
@@ -179,6 +178,50 @@ namespace GraphSharp.Tests
             foreach(var n in nodes.Where(n=>n.Id%2!=0))
                 Assert.Equal(n.Edges.Count,5);
         }
+        [Fact]
+        public void TotalEdgesCount_Works(){
+            int count = 0;
+            _GraphStructure.ForEach().ConnectRandomly(0,5);
+            foreach(var n in _GraphStructure.Nodes)
+                count+=n.Edges.Count;
+            Assert.Equal(count,_GraphStructure.EdgesCount());
+        } 
+        [Fact]
+        public void MeanNodeEdgesCount_Works(){
+            _GraphStructure.ForEach().ConnectRandomly(0,5);
+            float expected = (float)(_GraphStructure.EdgesCount())/_GraphStructure.Nodes.Count();
+            float actual = _GraphStructure.MeanNodeEdgesCount();
+            Assert.Equal(expected, actual);
+        }
+        [Fact]
+        public void RemoveEdges_Works(){
+            _GraphStructure.ForEach().ConnectRandomly(1,5);
+            _GraphStructure.ForNodes(x=>x.Where(n=>n.Id%2==0)).RemoveEdges();
+            foreach(var n in _GraphStructure.Nodes){
+                if(n.Id%2==0)
+                    Assert.Empty(n.Edges);
+                foreach(var e in n.Edges){
+                    Assert.True(e.Node.Id%2!=0);
+                }
+            }
+        }
+        [Fact]
+        public void CountParents_Works(){
+            _GraphStructure.ForEach().RemoveEdges();
+            var parentsCount = _GraphStructure.CountParents();
+            Assert.All(parentsCount,x=>Assert.Equal(x.Value,0));
+
+            _GraphStructure.ForEach().ConnectRandomly(2,5);
+            parentsCount = _GraphStructure.CountParents();
+
+            foreach(var n in _GraphStructure.Nodes){
+                foreach(var e in n.Edges){
+                    parentsCount[e.Node.Id]--;
+                }
+            }
+
+            Assert.All(parentsCount,x=>Assert.Equal(x.Value,0));
+        }
         public void validateThereIsNoCopiesAndParentInEdges(IEnumerable<TestNode> nodes)
         {
             Assert.NotEmpty(nodes);
@@ -194,10 +237,9 @@ namespace GraphSharp.Tests
             foreach (var node in nodes)
             {
                 var edgesCount = node.Edges.Count();
-                Assert.True(edgesCount >= minEdges && edgesCount <= maxEdges,$"{edgesCount} >= {minEdges} && {edgesCount} <= {maxEdges}");
+                Assert.True(edgesCount >= minEdges && edgesCount < maxEdges,$"{edgesCount} >= {minEdges} && {edgesCount} < {maxEdges}");
             }
         }
-
 
     }
 }

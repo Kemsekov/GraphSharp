@@ -136,6 +136,17 @@ namespace GraphSharp.GraphStructures
             }
             return this;
         }
-       
+        /// <summary>
+        /// Clears all nodes and
+        /// creates edges and nodes from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/> and <see cref="GraphStructureBase{,}.CreateNode"/>
+        /// </summary>
+        public GraphStructure<TNode,TEdge> FromConnectionsList(IEnumerable<(int parent,int node)> connectionsList){
+            var nodesCount = Math.Max(connectionsList.Max(x=>x.node),connectionsList.Max(x=>x.parent));
+            CreateNodes(nodesCount+1);
+            foreach(var con in connectionsList){
+                Nodes[con.parent].Edges.Add(CreateEdge(Nodes[con.parent],Nodes[con.node]));
+            }
+            return this;
+        }
     }
 }

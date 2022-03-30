@@ -105,39 +105,23 @@ namespace GraphSharp.GraphStructures
             return adjacencyMatrix;
         }
         /// <summary>
-        /// Builds connections dictionary from graph structure. Result of this method only make sense if graph is a tree, because in this representation any node can have only one parent.
-        /// </summary>
-        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is parent id</returns>
-        public IDictionary<int,int> ToTreeConnectionsDictionary(){
-            Dictionary<int,int> c = new();
-            foreach(var n in Nodes){
-                foreach(var e in n.Edges){
-                    c[e.Node.Id]=e.Parent.Id;
-                }
-            }
-            return c;
-        }
-        /// <summary>
         /// Calculate parents count (degree) for each node
         /// </summary>
         /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is parents count</returns>
-        public IDictionary<int,int> CountDegrees(){
+        public IDictionary<int,int> CountParents(){
             ConcurrentDictionary<int,int> c = new();
             foreach(var n in Nodes)
                 c[n.Id]=0;
             
-            Parallel.ForEach(Nodes,node=>{
+            foreach(var node in Nodes){
                 foreach(var e in node.Edges){
                     c[e.Node.Id]++;
                 }
-            });
+            };
             return c;
         }
-        /// <returns>Whatever given graph structure is a tree</returns>
-        public bool IsTree(){
-            return CountDegrees().All(x=>x.Value==1);
-        }
-        public int TotalEdgesCount()
+        /// <returns>Total edges count</returns>
+        public int EdgesCount()
         {
             var result = 0;
             foreach (var n in Nodes)
@@ -146,7 +130,7 @@ namespace GraphSharp.GraphStructures
             }
             return result;
         }
-        public float MeanEdgesCountPerNode()
-            => (float)(TotalEdgesCount()) / Nodes.Count;        
+        public float MeanNodeEdgesCount()
+            => (float)(EdgesCount()) / (Nodes.Count==0 ? 1 : Nodes.Count);        
     }
 }

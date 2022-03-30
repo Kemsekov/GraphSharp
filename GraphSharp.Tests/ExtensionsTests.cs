@@ -42,17 +42,5 @@ namespace GraphSharp.Tests
             var result = new[]{1,2,3,4,5,6}.FindFirstNMinimalElements(3,(t1,t2)=>t1-t2);
             Assert.Equal(result.Count(),3);
         }
-
-        [Fact]
-        public void RandNextExtension_Works()
-        {
-            var rand = new Random();
-            var from = rand.Next(100);
-            var to = rand.Next(100)+from;
-            for(int i = 0;i<100;i++){
-                var value = rand.Next(from,to);
-                Assert.True(value>=from && value<=to);
-            }
-        }
     }
 }

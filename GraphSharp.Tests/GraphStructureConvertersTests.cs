@@ -174,5 +174,15 @@ namespace GraphSharp.Tests
             }
             return DenseMatrix.OfArray(result);
         }
+        [Fact]
+        public void FromConnectionsList_Works(){
+            _GraphStructure.CreateNodes(50)
+            .ForEach().ConnectRandomly(2,10);
+            var expected = _GraphStructure.ToConnectionsList();
+            var actual = _GraphStructure.FromConnectionsList(expected).ToConnectionsList();
+            Assert.NotEmpty(actual);
+            Assert.Equal(expected.Count,actual.Count);
+            Assert.Equal(expected,actual);
+        }
     }
 }

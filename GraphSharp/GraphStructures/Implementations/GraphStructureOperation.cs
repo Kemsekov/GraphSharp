@@ -12,7 +12,7 @@ using MathNet.Numerics.LinearAlgebra.Single;
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Contains methods to modify relationships between nodes and contain converters for graph structure.
+    /// Contains methods to modify relationships between nodes and edges for <see cref="IGraphStructure{}.WorkingGroup"/> which is subgraph of <see cref="IGraphStructure{}.Nodes"/>
     /// </summary>
     public class GraphStructureOperation<TNode,TEdge> : GraphStructureBase<TNode,TEdge>
     where TNode : NodeBase<TEdge>
@@ -40,13 +40,13 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Randomly create some range of edges for each node from <see cref="IGraphStructure{}.WorkingGroup"/>
+        /// Randomly create some range of edges for each node from <see cref="IGraphStructure{}.WorkingGroup"/>, so each node have more or equal than minEdgesCount but than less maxEdgesCount edges.
         /// </summary>
         /// <param name="minEdgesCount">Min count of edges for each node</param>
         /// <param name="maxEdgesCount">Max count of edges for each node</param>
         public GraphStructureOperation<TNode,TEdge> ConnectRandomly(int minEdgesCount, int maxEdgesCount)
         {
-            minEdgesCount = minEdgesCount < 1 ? 1 : minEdgesCount;
+            minEdgesCount = minEdgesCount < 0 ? 0 : minEdgesCount;
             maxEdgesCount = maxEdgesCount > Nodes.Count ? Nodes.Count : maxEdgesCount;
 
             //swap using xor
@@ -59,7 +59,7 @@ namespace GraphSharp.GraphStructures
 
             foreach (var node in WorkingGroup)
             {
-                int edgesCount = Rand.Next(maxEdgesCount - minEdgesCount) + minEdgesCount;
+                int edgesCount = Rand.Next(minEdgesCount,maxEdgesCount);
                 var startIndex = Rand.Next(Nodes.Count);
                 ConnectNodeToNodes(node, startIndex, edgesCount);
             }
@@ -176,25 +176,12 @@ namespace GraphSharp.GraphStructures
              });
             return this;
         }
+
         /// <summary>
-        /// Creates edges from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/>
-        /// </summary>
-        public GraphStructureOperation<TNode,TEdge> FromConnectionsList(IEnumerable<(int parent,int node)> connectionsList){
-            if(WorkingGroup.Count()==0) return this;
-            foreach(var con in connectionsList){
-                if(WorkingGroup.FirstOrDefault(x=>x.Id==con.parent) is null
-                || WorkingGroup.FirstOrDefault(x=>x.Id==con.node) is null){
-                    throw new ArgumentException("parent/node pair from connectionsList are out of WorkingGroup boundary!","connectionsList");
-                }
-            }
-            foreach(var con in connectionsList)
-                Nodes[con.parent].Edges.Add(CreateEdge(Nodes[con.parent],Nodes[con.node]));
-            return this;
-        }
-        /// <summary>
+        /// Disconnects all nodes from <see cref="IGraphStructure{}.WorkingGroup"/> from any other nodes.
         /// Removes all edges from nodes from <see cref="IGraphStructure{}.WorkingGroup"/> including any edge that relates to any member of <see cref="IGraphStructure{}.WorkingGroup"/> even if it is not included in it.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> RemoveAllEdges()
+        public GraphStructureOperation<TNode,TEdge> RemoveEdges()
         {
             foreach (var parent in WorkingGroup)
             {
