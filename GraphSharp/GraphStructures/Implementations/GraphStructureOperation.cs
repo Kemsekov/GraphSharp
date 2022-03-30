@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Extensions;
 using GraphSharp.Nodes;
+using GraphSharp.Propagators;
+using GraphSharp.Visitors;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Single;
 
@@ -151,6 +153,52 @@ namespace GraphSharp.GraphStructures
                 }
             }
             return this;
+        }
+        /// <summary>
+        /// Will run BFS on <see cref="IGraphStructure{}.WorkingGroup"/> from each of nodeIndices which will remove parents for each visited node except those that was visited already. 
+        /// Making source out of each node from nodeIndices and making sinks at intersections of running BFS.
+        /// </summary>
+        /// <param name="nodeIndices"></param>
+        public void MakeDirectedBFS(params int[] nodeIndices){
+            void removeParents(TNode n1,Func<TNode,bool> select){
+                TNode n2;
+                TNode n3;
+                foreach(var e1 in n1.Edges){
+                    n2 = e1.Node;
+                    foreach(var e2 in n2.Edges){
+                        n3 = e2.Node;
+                        if(select(n3))
+                        if(n3.Id==n1.Id)
+                            n2.Edges.Remove(e2);
+                    }
+                }
+            }
+            
+            var allowedNodes = new byte[Nodes.Count];
+            var visited = new byte[Nodes.Count];
+            var workingGroupCount = WorkingGroup.Count();
+            foreach(var p in WorkingGroup)
+                allowedNodes[p.Id] = 1;
+            foreach(var n in nodeIndices)
+                visited[n] = 1;
+            
+            var remover = new ActionVisitor<TNode,TEdge>(
+                (n)=>{
+                    lock(visited){
+                        removeParents(n,toRemove=>visited[toRemove.Id]==0);
+                        visited[n.Id] = 1;
+                        workingGroupCount--;
+                    }
+                },
+                (e)=>allowedNodes[e.Node.Id]>0 && visited[e.Node.Id]==0
+            );
+            var propagator = new ParallelPropagator<TNode,TEdge>(remover);
+            propagator.SetNodes(this);
+            propagator.SetPosition(nodeIndices.Count()==0 ? new[]{0} : nodeIndices);
+            
+            while(workingGroupCount>0)
+                propagator.Propagate();
+
         }
         /// <summary>
         /// Makes every connection between two nodes from <see cref="IGraphStructure{}.WorkingGroup"/> bidirectional.
