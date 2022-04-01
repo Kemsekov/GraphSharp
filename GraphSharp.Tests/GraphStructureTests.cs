@@ -48,33 +48,33 @@ namespace GraphSharp.Tests
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20);
-
-            Assert.Equal(directed.Nodes, undirected.Nodes);
-
-            //make sure each child have no connection to parent
-            foreach (var parent in directed.Nodes)
-            {
-                foreach (var child in parent.Edges)
-                {
-                    Assert.False(child.Node.Edges.Any(c => c.Node.Id == parent.Id));
-                }
-            }
-
-            //make sure we did not remove anything that is not connected to node
-            foreach (var parents in directed.Nodes.Zip(undirected.Nodes))
-            {
-                //ensure they are the facto different objects in memory
-                Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
-                var directedEdges = parents.First.Edges.Select(x => x.Node);
-                var undirectedEdges = parents.Second.Edges.Select(x => x.Node);
-                var diff = undirectedEdges.Except(directedEdges, new NodeEqualityComparer());
-
-                foreach (var n in diff.Select(x=>x as TestNode))
-                {
-                    Assert.True(n.Edges.Any(x => x.Node.Id == parents.First.Id));
-                }
-            }
-
+            ensureDirected(directed,undirected);
+        }
+        [Fact]
+        public void MakeDirectedBFSWorks(){
+            var seed = new Random().Next();
+            int startNode1 = 20;
+            int startNode2 = 600;
+            int startNode3 = 10;
+            var directed =
+                new GraphStructure<TestNode,TestEdge>(id=>new(id),(p,n)=>new(p,n),rand: new Random(seed))
+                    .CreateNodes(2000)
+                    .ForEach()
+                    .ConnectNodes(20)
+                    .MakeUndirected()
+                    .MakeDirectedBFS(startNode1,startNode2,startNode3);
+            var undirected =
+                new GraphStructure<TestNode,TestEdge>(id=>new(id),(p,n)=>new(p,n),rand: new Random(seed))
+                    .CreateNodes(2000)
+                    .ForEach()
+                    .ConnectNodes(20)
+                    .MakeUndirected();
+            ensureDirected(directed,undirected);
+            // var conList = directed.ToConnectionsList();
+            var parentsCount = directed.CountParents();
+            Assert.Equal(0,parentsCount[startNode1]);
+            Assert.Equal(0,parentsCount[startNode2]);
+            Assert.Equal(0,parentsCount[startNode3]);
         }
         [Fact]
         public void MakeUndirectedWorks()
@@ -238,6 +238,34 @@ namespace GraphSharp.Tests
             {
                 var edgesCount = node.Edges.Count();
                 Assert.True(edgesCount >= minEdges && edgesCount < maxEdges,$"{edgesCount} >= {minEdges} && {edgesCount} < {maxEdges}");
+            }
+        }
+        public void ensureDirected(IGraphStructure<TestNode> directed,IGraphStructure<TestNode> undirected){
+
+            Assert.Equal(directed.Nodes, undirected.Nodes);
+
+            //make sure each child have no connection to parent
+            foreach (var parent in directed.Nodes)
+            {
+                foreach (var child in parent.Edges)
+                {
+                    Assert.False(child.Node.Edges.Any(c => c.Node.Id == parent.Id));
+                }
+            }
+
+            //make sure we did not remove anything that is not connected to node
+            foreach (var parents in directed.Nodes.Zip(undirected.Nodes))
+            {
+                //ensure they are the facto different objects in memory
+                Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
+                var directedEdges = parents.First.Edges.Select(x => x.Node);
+                var undirectedEdges = parents.Second.Edges.Select(x => x.Node);
+                var diff = undirectedEdges.Except(directedEdges, new NodeEqualityComparer());
+
+                foreach (var n in diff.Select(x=>x as TestNode))
+                {
+                    Assert.True(n.Edges.Any(x => x.Node.Id == parents.First.Id));
+                }
             }
         }
 

@@ -72,7 +72,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Convert each edge's parent and node values to tuple (int parent, int node)
         /// </summary>
-        /// <returns>A list of tuples where first element is a parent of edge and second is node to other edge</returns>
+        /// <returns>A list of tuples where first element is a parent of edge and second is node of edge</returns>
         public IList<(int parent,int node)> ToConnectionsList(){
             var result = new List<(int parent,int node)>();
             foreach(var n in Nodes){
@@ -113,11 +113,12 @@ namespace GraphSharp.GraphStructures
             foreach(var n in Nodes)
                 c[n.Id]=0;
             
-            foreach(var node in Nodes){
+            Parallel.ForEach(Nodes,node=>{
                 foreach(var e in node.Edges){
-                    c[e.Node.Id]++;
+                    lock(e.Node)
+                        c[e.Node.Id]++;
                 }
-            };
+            });
             return c;
         }
         /// <returns>Total edges count</returns>

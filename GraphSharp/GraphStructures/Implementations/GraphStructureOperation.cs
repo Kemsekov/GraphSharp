@@ -159,35 +159,36 @@ namespace GraphSharp.GraphStructures
         /// Making source out of each node from nodeIndices and making sinks at intersections of running BFS.
         /// </summary>
         /// <param name="nodeIndices"></param>
-        public void MakeDirectedBFS(params int[] nodeIndices){
-            void removeParents(TNode n1,Func<TNode,bool> select){
+        public GraphStructureOperation<TNode,TEdge> MakeDirectedBFS(params int[] nodeIndices){
+            bool didSomething = true;
+            void removeParents(TNode n1,Predicate<TNode> select){
                 TNode n2;
                 TNode n3;
                 foreach(var e1 in n1.Edges){
                     n2 = e1.Node;
-                    foreach(var e2 in n2.Edges){
+                    int edgesCount = n2.Edges.Count;
+                    for(int k = 0;k<edgesCount;k++){
+                        var e2 = n2.Edges[k];
                         n3 = e2.Node;
-                        if(select(n3))
-                        if(n3.Id==n1.Id)
+                        if(n3.Id==n1.Id && select(n3)){
+                            edgesCount--;
                             n2.Edges.Remove(e2);
+                        }
                     }
                 }
             }
             
             var allowedNodes = new byte[Nodes.Count];
             var visited = new byte[Nodes.Count];
-            var workingGroupCount = WorkingGroup.Count();
             foreach(var p in WorkingGroup)
                 allowedNodes[p.Id] = 1;
-            foreach(var n in nodeIndices)
-                visited[n] = 1;
             
             var remover = new ActionVisitor<TNode,TEdge>(
                 (n)=>{
                     lock(visited){
+                        didSomething = true;
                         removeParents(n,toRemove=>visited[toRemove.Id]==0);
                         visited[n.Id] = 1;
-                        workingGroupCount--;
                     }
                 },
                 (e)=>allowedNodes[e.Node.Id]>0 && visited[e.Node.Id]==0
@@ -195,9 +196,12 @@ namespace GraphSharp.GraphStructures
             var propagator = new ParallelPropagator<TNode,TEdge>(remover);
             propagator.SetNodes(this);
             propagator.SetPosition(nodeIndices.Count()==0 ? new[]{0} : nodeIndices);
-            
-            while(workingGroupCount>0)
+            propagator.Propagate();
+            while(didSomething){
+                didSomething = false;
                 propagator.Propagate();
+            }
+            return this;
 
         }
         /// <summary>
