@@ -17,7 +17,7 @@ namespace GraphSharp.Extensions
         /// <param name="skipElement">Method to skip some elements</param>
         /// <typeparam name="T">Element type</typeparam>
         /// <returns>First N min elements that was not skipped</returns>
-        public static IEnumerable<T> FindFirstNMinimalElements<T>(this IEnumerable<T> src, int n,Comparison<T> comparison,Func<T,bool> skipElement = null)
+        public static IEnumerable<T> FindFirstNMinimalElements<T>(this IEnumerable<T> src, int n,Comparison<T> comparison,Predicate<T> skipElement = null)
         where T : unmanaged
         {
             if(n<=0) return Enumerable.Empty<T>();

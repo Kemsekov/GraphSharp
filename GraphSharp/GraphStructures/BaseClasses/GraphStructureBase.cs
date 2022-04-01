@@ -20,32 +20,29 @@ namespace GraphSharp.GraphStructures
         /// <see cref="Random"/> that used to implement's any logic when it reqires random values
         /// </summary>
         /// <value></value>
-        public Random Rand { get;init; }
+        public Random Rand { get;set; }
         /// <summary>
         /// Method that used to create instance of <see cref="TNode"/> from it's <see cref="INode.Id"/> as argument
         /// </summary>
         /// <value></value>
-        public Func<int, TNode> CreateNode { get;init; }
+        public Func<int, TNode> CreateNode { get;set; }
         /// <summary>
         /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>, where first node is parent and second is it's neighbor
         /// (parent,node)=>new Edge...
         /// </summary>
-        public Func<TNode, TNode, TEdge> CreateEdge { get;init; }
+        public Func<TNode, TNode, TEdge> CreateEdge { get;set; }
         /// <summary>
         /// Method that used to get weight from particular <see cref="TEdge"/>
         /// </summary>
         /// <value></value>
-        public Func<TEdge, float> GetWeight { get; init;}
+        public Func<TEdge, float> GetWeight { get; set;}
         /// <summary>
         /// Method that used to determite how to calculate distance between two <see cref="TNode"/>
         /// </summary>
         /// <value></value>
-        public Func<TNode, TNode, float> Distance { get;init; }
-
+        public Func<TNode, TNode, float> Distance { get;set; }
         public IEnumerable<TNode> WorkingGroup { get; protected set; }
-
         public IList<TNode> Nodes { get; protected set; }
-
         /// <summary>
         /// Base copy constructor. Will make shallow copy of structureBase
         /// </summary>
