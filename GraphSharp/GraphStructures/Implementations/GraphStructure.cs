@@ -82,62 +82,14 @@ namespace GraphSharp.GraphStructures
             return new(this);
         }
         
+        public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
         /// <summary>
-        /// Create nodes and edges from adjacency matrix
+        /// Clears current <see cref="IGraphStructure{}.WorkingGroup"/> 
         /// </summary>
-        /// <param name="adjacencyMatrix"></param>
-        public GraphStructure<TNode,TEdge> FromAdjacencyMatrix(Matrix adjacencyMatrix){
-            if(adjacencyMatrix.RowCount!=adjacencyMatrix.ColumnCount)
-                throw new ArgumentException("adjacencyMatrix argument must be square matrix!",nameof(adjacencyMatrix));
-            int width = adjacencyMatrix.RowCount;
-            CreateNodes(width);
-
-            for(int i = 0;i<Nodes.Count;i++){
-                for(int b = 0;b<width;b++){
-                    if(adjacencyMatrix[i,b]!=0){
-                        var edge = Configuration.CreateEdge(Nodes[i],Nodes[b]);
-                        Nodes[i].Edges.Add(edge);
-                        Configuration.SetEdgeWeight(edge,adjacencyMatrix[i,b]);
-                    }
-                }
-            }
-            return this;
-        }
-        /// <summary>
-        /// Create nodes and edges from from incidence matrix
-        /// </summary>
-        public GraphStructure<TNode,TEdge> FromIncidenceMatrix(Matrix incidenceMatrix){
-            int nodesCount = incidenceMatrix.RowCount;
-            var edgesCount = incidenceMatrix.ColumnCount;
-            CreateNodes(nodesCount);
-            
-            for(int i = 0;i<edgesCount;++i){
-                (TNode Node,float Value) n1 = (null,0),n2 = (null,0);
-                for(int b = 0;b<nodesCount;++b){
-                    var value = incidenceMatrix[b,i];
-                    if(value!=0){
-                        n1 = n2;
-                        n2 = (Nodes[b],value);
-                    }
-                }
-                if(n1.Value==1)
-                    n1.Node.Edges.Add(Configuration.CreateEdge(n1.Node,n2.Node));
-                if(n2.Value==1)
-                    n2.Node.Edges.Add(Configuration.CreateEdge(n2.Node,n1.Node));
-            }
-            return this;
-        }
-        /// <summary>
-        /// Clears all nodes and
-        /// creates edges and nodes from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/> and <see cref="GraphStructureBase{,}.CreateNode"/>
-        /// </summary>
-        public GraphStructure<TNode,TEdge> FromConnectionsList(IEnumerable<(int parent,int node)> connectionsList){
-            var nodesCount = Math.Max(connectionsList.Max(x=>x.node),connectionsList.Max(x=>x.parent));
-            CreateNodes(nodesCount+1);
-            foreach(var con in connectionsList){
-                Nodes[con.parent].Edges.Add(Configuration.CreateEdge(Nodes[con.parent],Nodes[con.node]));
-            }
-            return this;
+        /// <returns><see cref="GraphStructure{,}"/> that can be used to reset <see cref="IGraphStructure{}.WorkingGroup"/> </returns>
+        public GraphStructure<TNode,TEdge> ClearWorkingGroup(){
+            WorkingGroup = Enumerable.Empty<TNode>();
+            return new(this);
         }
     }
 }

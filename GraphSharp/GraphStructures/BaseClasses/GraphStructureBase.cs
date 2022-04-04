@@ -42,41 +42,6 @@ namespace GraphSharp.GraphStructures
             Configuration = configuration;
         }
         /// <summary>
-        /// Convert each edge's parent and node values to tuple (int parent, int node)
-        /// </summary>
-        /// <returns>A list of tuples where first element is a parent of edge and second is node of edge</returns>
-        public IList<(int parent,int node)> ToConnectionsList(){
-            var result = new List<(int parent,int node)>();
-            foreach(var n in Nodes){
-                foreach(var e in n.Edges){
-                    result.Add((e.Parent.Id,e.Node.Id));
-                }
-            }
-            return result;
-        }
-         /// <summary>
-        /// Converts current <see cref="IGraphStructure.Nodes"/> to adjacency matrix using <see cref="IGraphStructure.GetWeight"/> to determine matrix value per <see cref="IEdge"/>
-        /// </summary>
-        public Matrix ToAdjacencyMatrix()
-        {
-            Matrix adjacencyMatrix;
-
-            //if matrix size will take more than 64 mb of RAM then make it sparse
-            if (Nodes.Count > 4096)
-                adjacencyMatrix = SparseMatrix.Create(Nodes.Count, Nodes.Count, 0);
-            else
-                adjacencyMatrix = DenseMatrix.Create(Nodes.Count, Nodes.Count, 0);
-
-            for (int i = 0; i < Nodes.Count; i++)
-            {
-                foreach (var e in Nodes[i].Edges)
-                {
-                    adjacencyMatrix[i, e.Node.Id] = Configuration.GetEdgeWeight(e);
-                }
-            }
-            return adjacencyMatrix;
-        }
-        /// <summary>
         /// Calculate parents count (degree) for each node
         /// </summary>
         /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is parents count</returns>

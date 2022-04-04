@@ -39,15 +39,17 @@ namespace GraphSharp.Tests
             var seed = new Random().Next();
             var directed =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                    .CreateNodes(2000)
-                    .ForEach()
-                    .ConnectNodes(20)
-                    .MakeDirected();
+                    .CreateNodes(2000);
+            directed
+                .ForEach()
+                .ConnectNodes(20)
+                .MakeDirected();
             var undirected =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                    .CreateNodes(2000)
-                    .ForEach()
-                    .ConnectNodes(20);
+                    .CreateNodes(2000);
+            undirected
+                .ForEach()
+                .ConnectNodes(20);
             ensureDirected(directed,undirected);
         }
         [Fact]
@@ -58,17 +60,21 @@ namespace GraphSharp.Tests
             int startNode3 = 10;
             var directed =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                    .CreateNodes(2000)
-                    .ForEach()
-                    .ConnectNodes(20)
-                    .MakeUndirected()
-                    .MakeDirectedBFS(startNode1,startNode2,startNode3);
+                    .CreateNodes(2000);
+            
+            directed
+                .ForEach()
+                .ConnectNodes(20)
+                .MakeUndirected()
+                .MakeDirectedBFS(startNode1,startNode2,startNode3);
             var undirected =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                    .CreateNodes(2000)
-                    .ForEach()
-                    .ConnectNodes(20)
-                    .MakeUndirected();
+                    .CreateNodes(2000);
+            
+            undirected
+                .ForEach()
+                .ConnectNodes(20)
+                .MakeUndirected();
             ensureDirected(directed,undirected);
             // var conList = directed.ToConnectionsList();
             var parentsCount = directed.CountParents();
@@ -82,13 +88,15 @@ namespace GraphSharp.Tests
             var seed = new Random().Next();
             var maybeUndirected =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                .CreateNodes(2000)
+                .CreateNodes(2000);
+            maybeUndirected
                 .ForEach()
                 .ConnectNodes(20);
 
             var undirected =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                .CreateNodes(2000)
+                .CreateNodes(2000);
+            undirected
                 .ForEach()
                 .ConnectNodes(20)
                 //one of them make 100% undirected
@@ -166,13 +174,16 @@ namespace GraphSharp.Tests
         [Fact]
         public void ClearWorkingGroup_Works()
         {
-            var nodes = _GraphStructure
+            _GraphStructure
                 .ForNodes(x=>x.Where(n=>n.Id%2==0))
-                .ConnectNodes(10)
-                .ClearWorkingGroup()
+                .ConnectNodes(10);
+            _GraphStructure
+                .ClearWorkingGroup();
+            _GraphStructure
                 .ForNodes(x=>x.Where(n=>n.Edges.Count==0))
-                .ConnectNodes(5)
-                .Nodes;
+                .ConnectNodes(5);
+            var nodes = _GraphStructure.Nodes;
+            
             foreach(var n in nodes.Where(n=>n.Id%2==0))
                 Assert.Equal(n.Edges.Count,10);
             foreach(var n in nodes.Where(n=>n.Id%2!=0))

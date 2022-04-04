@@ -19,17 +19,15 @@ namespace GraphSharp.Tests
     public class PropagatorTests
     {
         Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode>>[] _propagatorFactories;
-        IGraphStructure<TestNode> _nodes;
+        GraphStructure<TestNode, TestEdge> _nodes;
 
         public PropagatorTests()
         {
             _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode>>[2];
             _propagatorFactories[0] = visitor => new Propagator<TestNode,TestEdge>(visitor);
             _propagatorFactories[1] = visitor => new ParallelPropagator<TestNode,TestEdge>(visitor);
-            _nodes = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration())
-                .CreateNodes(1000)
-                .ForEach()
-                .ConnectNodes(10);
+            _nodes = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).CreateNodes(1000);
+            _nodes.ForEach().ConnectNodes(10);
         }
 
         [Fact]

@@ -16,12 +16,14 @@ namespace GraphSharp.GraphStructures
     /// <summary>
     /// Contains methods to modify relationships between nodes and edges for <see cref="IGraphStructure{}.WorkingGroup"/> which is subgraph of <see cref="IGraphStructure{}.Nodes"/>
     /// </summary>
-    public class GraphStructureOperation<TNode,TEdge> : GraphStructureBase<TNode,TEdge>
+    public class GraphStructureOperation<TNode,TEdge>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
-        public GraphStructureOperation(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure)
+        GraphStructure<TNode, TEdge> _structureBase;
+        public GraphStructureOperation(GraphStructure<TNode, TEdge> structureBase)
         {
+            _structureBase = structureBase;
         }
 
         /// <summary>
@@ -30,6 +32,9 @@ namespace GraphSharp.GraphStructures
         /// <param name="edgesCount">How much edges each node need</param>
         public GraphStructureOperation<TNode,TEdge> ConnectNodes(int edgesCount)
         {
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             edgesCount = edgesCount > Nodes.Count ? Nodes.Count : edgesCount;
 
             foreach (var node in WorkingGroup)
@@ -46,6 +51,9 @@ namespace GraphSharp.GraphStructures
         /// <param name="maxEdgesCount">Max count of edges for each node</param>
         public GraphStructureOperation<TNode,TEdge> ConnectRandomly(int minEdgesCount, int maxEdgesCount)
         {
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             minEdgesCount = minEdgesCount < 0 ? 0 : minEdgesCount;
             maxEdgesCount = maxEdgesCount > Nodes.Count ? Nodes.Count : maxEdgesCount;
 
@@ -71,6 +79,9 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         private void ConnectNodeToNodes(TNode node, int startIndex, int edgesCount)
         {
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             lock (node)
                 for (int i = 0; i < edgesCount; i++)
                 {
@@ -93,6 +104,9 @@ namespace GraphSharp.GraphStructures
         /// <param name="maxEdgesCount">maximum edges count</param>
         public GraphStructureOperation<TNode,TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount)
         {
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             var edgesCountMap = new ConcurrentDictionary<INode, int>();
             foreach (var parent in WorkingGroup)
                 edgesCountMap[parent] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
@@ -117,6 +131,9 @@ namespace GraphSharp.GraphStructures
         }
         IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, TNode parent)
         {
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             if (WorkingGroup.Count() == 0) return Enumerable.Empty<int>();
 
             var result = WorkingGroup.Select(x => x.Id).FindFirstNMinimalElements(
@@ -131,6 +148,9 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> MakeDirected()
         {
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             foreach (var parent in WorkingGroup)
             {
                 bool fine = false;
@@ -158,6 +178,9 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="nodeIndices"></param>
         public GraphStructureOperation<TNode,TEdge> MakeDirectedBFS(params int[] nodeIndices){
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             bool didSomething = true;
             void removeParents(TNode n1,Predicate<TNode> select){
                 TNode n2;
@@ -192,7 +215,7 @@ namespace GraphSharp.GraphStructures
                 (e)=>allowedNodes[e.Node.Id]>0 && visited[e.Node.Id]==0
             );
             var propagator = new ParallelPropagator<TNode,TEdge>(remover);
-            propagator.SetNodes(this);
+            propagator.SetNodes(_structureBase);
             propagator.SetPosition(nodeIndices.Count()==0 ? new[]{0} : nodeIndices);
             propagator.Propagate();
             while(didSomething){
@@ -207,6 +230,9 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> MakeUndirected()
         {
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             Parallel.ForEach(WorkingGroup, parent =>
              {
 
@@ -233,6 +259,9 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> RemoveEdges()
         {
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var WorkingGroup = _structureBase.WorkingGroup;
             foreach (var parent in WorkingGroup)
             {
                 parent.Edges.Clear();
@@ -245,13 +274,6 @@ namespace GraphSharp.GraphStructures
             }
             return this;
         }
-        /// <summary>
-        /// Clears current <see cref="IGraphStructure{}.WorkingGroup"/> 
-        /// </summary>
-        /// <returns><see cref="GraphStructure{,}"/> that can be used to reset <see cref="IGraphStructure{}.WorkingGroup"/> </returns>
-        public GraphStructure<TNode,TEdge> ClearWorkingGroup(){
-            this.WorkingGroup = Enumerable.Empty<TNode>();
-            return new(this);
-        }
+
     }
 }

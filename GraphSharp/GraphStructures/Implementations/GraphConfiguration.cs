@@ -6,7 +6,7 @@ using GraphSharp.Edges;
 using GraphSharp.GraphStructures.Interfaces;
 using GraphSharp.Nodes;
 
-namespace GraphSharp.GraphStructures.Implementations
+namespace GraphSharp.GraphStructures
 {
     public class GraphConfiguration<TNode, TEdge> : IGraphConfiguration<TNode, TEdge>
     where TNode : NodeBase<TEdge>
