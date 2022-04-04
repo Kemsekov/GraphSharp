@@ -21,9 +21,9 @@ namespace GraphSharp.Tests
         public GraphStructureTests()
         {
             this._nodes_count = 500;
-            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(id=>new TestNode(id),(p,n)=>new TestEdge(p,n)){
-                Distance = (n1, n2) => n1.Id - n2.Id
-            }.CreateNodes(_nodes_count);
+            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){
+                Rand = new Random()
+            }).CreateNodes(_nodes_count);
         }
         [Fact]
         public void ConnectToClosestWorks()
@@ -38,13 +38,13 @@ namespace GraphSharp.Tests
             //create two identical nodes list
             var seed = new Random().Next();
             var directed =
-                new GraphStructure<TestNode,TestEdge>(id=>new(id),(p,n)=>new(p,n),rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20)
                     .MakeDirected();
             var undirected =
-                new GraphStructure<TestNode,TestEdge>(id=>new(id),(p,n)=>new(p,n),rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20);
@@ -57,14 +57,14 @@ namespace GraphSharp.Tests
             int startNode2 = 600;
             int startNode3 = 10;
             var directed =
-                new GraphStructure<TestNode,TestEdge>(id=>new(id),(p,n)=>new(p,n),rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20)
                     .MakeUndirected()
                     .MakeDirectedBFS(startNode1,startNode2,startNode3);
             var undirected =
-                new GraphStructure<TestNode,TestEdge>(id=>new(id),(p,n)=>new(p,n),rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
                     .CreateNodes(2000)
                     .ForEach()
                     .ConnectNodes(20)
@@ -81,13 +81,13 @@ namespace GraphSharp.Tests
         {
             var seed = new Random().Next();
             var maybeUndirected =
-                new GraphStructure<TestNode,TestEdge>(id=>new(id),(p,n)=>new(p,n),rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
                 .CreateNodes(2000)
                 .ForEach()
                 .ConnectNodes(20);
 
             var undirected =
-                new GraphStructure<TestNode,TestEdge>(id=>new(id),(p,n)=>new(p,n),rand: new Random(seed))
+                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
                 .CreateNodes(2000)
                 .ForEach()
                 .ConnectNodes(20)

@@ -5,8 +5,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.GraphStructures.Interfaces;
 using GraphSharp.Nodes;
-using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Single;
 namespace GraphSharp.GraphStructures
 {
@@ -17,13 +17,7 @@ namespace GraphSharp.GraphStructures
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
-        /// <param name="createNode">Func used to create nodes</param>
-        /// <param name="createEdge">Func used to create edges. Parent of edge comes first: (parent,node)=> new SomeEdge(...)</param>
-        /// <param name="getWeight">Func used to get some float-based weight representation from edge</param>
-        /// <param name="distance">Func used to determine how to calculate distance between two nodes</param>
-        /// <param name="rand"><see cref="Random"/> instance that will be used to create nodes/edges</param>
-        /// <returns></returns>
-        public GraphStructure(Func<int, TNode> createNode, Func<TNode, TNode, TEdge> createEdge, Func<TEdge, float> getWeight = null, Func<TNode, TNode, float> distance = null, Random rand = null) : base(createNode, createEdge, getWeight, distance, rand)
+        public GraphStructure(IGraphConfiguration<TNode,TEdge> configuration) : base(configuration)
         {}
         public GraphStructure(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure) 
         {}
@@ -50,7 +44,7 @@ namespace GraphSharp.GraphStructures
             //create nodes
             for (int i = 0; i < count; i++)
             {
-                var node = CreateNode(i);
+                var node = Configuration.CreateNode(i);
                 nodes.Add(node);
             }
             return UseNodes(nodes);
@@ -92,21 +86,18 @@ namespace GraphSharp.GraphStructures
         /// Create nodes and edges from adjacency matrix
         /// </summary>
         /// <param name="adjacencyMatrix"></param>
-        /// <param name="applyWeight">Function that used to determine how to apply weights from adjacency matrix to created edges</param>
-        public GraphStructure<TNode,TEdge> FromAdjacencyMatrix(Matrix adjacencyMatrix,Action<TEdge,float> applyWeight = null){
+        public GraphStructure<TNode,TEdge> FromAdjacencyMatrix(Matrix adjacencyMatrix){
             if(adjacencyMatrix.RowCount!=adjacencyMatrix.ColumnCount)
                 throw new ArgumentException("adjacencyMatrix argument must be square matrix!",nameof(adjacencyMatrix));
-            
-            applyWeight ??= (edge,weight)=>{};
             int width = adjacencyMatrix.RowCount;
             CreateNodes(width);
 
             for(int i = 0;i<Nodes.Count;i++){
                 for(int b = 0;b<width;b++){
                     if(adjacencyMatrix[i,b]!=0){
-                        var edge = CreateEdge(Nodes[i],Nodes[b]);
+                        var edge = Configuration.CreateEdge(Nodes[i],Nodes[b]);
                         Nodes[i].Edges.Add(edge);
-                        applyWeight(edge,adjacencyMatrix[i,b]);
+                        Configuration.SetEdgeWeight(edge,adjacencyMatrix[i,b]);
                     }
                 }
             }
@@ -130,9 +121,9 @@ namespace GraphSharp.GraphStructures
                     }
                 }
                 if(n1.Value==1)
-                    n1.Node.Edges.Add(CreateEdge(n1.Node,n2.Node));
+                    n1.Node.Edges.Add(Configuration.CreateEdge(n1.Node,n2.Node));
                 if(n2.Value==1)
-                    n2.Node.Edges.Add(CreateEdge(n2.Node,n1.Node));
+                    n2.Node.Edges.Add(Configuration.CreateEdge(n2.Node,n1.Node));
             }
             return this;
         }
@@ -144,7 +135,7 @@ namespace GraphSharp.GraphStructures
             var nodesCount = Math.Max(connectionsList.Max(x=>x.node),connectionsList.Max(x=>x.parent));
             CreateNodes(nodesCount+1);
             foreach(var con in connectionsList){
-                Nodes[con.parent].Edges.Add(CreateEdge(Nodes[con.parent],Nodes[con.node]));
+                Nodes[con.parent].Edges.Add(Configuration.CreateEdge(Nodes[con.parent],Nodes[con.node]));
             }
             return this;
         }

@@ -19,10 +19,9 @@ namespace GraphSharp.Tests
         public GraphStructureConvertersTests()
         {
             _rand = new Random();
-            _GraphStructure = new(id => new TestNode(id), (parent, node) => new TestEdge(parent, node))
-            {
-                GetWeight = edge => edge.Weight
-            };
+            _GraphStructure = new(new TestGraphConfiguration(){
+                Rand = new Random()
+            });
         }
 
         [Fact]
@@ -55,10 +54,7 @@ namespace GraphSharp.Tests
                 return weight < 0.5 ? 0 : weight;
             });
 
-            _GraphStructure.FromAdjacencyMatrix(
-                adjacencyMatrix,
-                (edge, weight) => edge.Weight = weight
-            );
+            _GraphStructure.FromAdjacencyMatrix(adjacencyMatrix);
             for (int i = 0; i < size; i++)
             {
                 var node = _GraphStructure.Nodes[i];
@@ -84,7 +80,7 @@ namespace GraphSharp.Tests
         {
             int size = _rand.Next(20) + 5;
             var adjacencyMatrix = CreateSquareMatrix(size, (i, b) => _rand.Next(2));
-            var result = _GraphStructure.FromAdjacencyMatrix(adjacencyMatrix, (edge, weight) => edge.Weight = weight).ToAdjacencyMatrix();
+            var result = _GraphStructure.FromAdjacencyMatrix(adjacencyMatrix).ToAdjacencyMatrix();
             Assert.Equal(adjacencyMatrix, result);
         }
         [Fact]
@@ -136,9 +132,7 @@ namespace GraphSharp.Tests
             });
             var result =
                 _GraphStructure
-                .FromAdjacencyMatrix(
-                    adjacencyMatrix,
-                    (edge, weight) => edge.Weight = weight)
+                .FromAdjacencyMatrix(adjacencyMatrix)
                 .ToAdjacencyMatrix();
 
             Assert.Equal(adjacencyMatrix, result);

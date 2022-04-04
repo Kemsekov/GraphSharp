@@ -12,5 +12,6 @@ namespace GraphSharp.Tests.Models
         public TestNode(int id) : base(id)
         {
         }
+        public float Weight{get;set;}
     }
 }

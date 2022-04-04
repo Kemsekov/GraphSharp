@@ -22,8 +22,6 @@ namespace GraphSharp.GraphStructures
     {
         public GraphStructureOperation(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure)
         {
-            Nodes = graphStructure.Nodes;
-            WorkingGroup = graphStructure.WorkingGroup;
         }
 
         /// <summary>
@@ -36,7 +34,7 @@ namespace GraphSharp.GraphStructures
 
             foreach (var node in WorkingGroup)
             {
-                var start_index = Rand.Next(Nodes.Count);
+                var start_index = Configuration.Rand.Next(Nodes.Count);
                 ConnectNodeToNodes(node, start_index, edgesCount);
             }
             return this;
@@ -61,8 +59,8 @@ namespace GraphSharp.GraphStructures
 
             foreach (var node in WorkingGroup)
             {
-                int edgesCount = Rand.Next(minEdgesCount,maxEdgesCount);
-                var startIndex = Rand.Next(Nodes.Count);
+                int edgesCount = Configuration.Rand.Next(minEdgesCount,maxEdgesCount);
+                var startIndex = Configuration.Rand.Next(Nodes.Count);
                 ConnectNodeToNodes(node, startIndex, edgesCount);
             }
             return this;
@@ -83,7 +81,7 @@ namespace GraphSharp.GraphStructures
                         i--;
                         continue;
                     }
-                    node.Edges.Add(CreateEdge(node,edge));
+                    node.Edges.Add(Configuration.CreateEdge(node,edge));
 
                 }
         }
@@ -91,13 +89,13 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Randomly connects closest nodes in current <see cref="IGraphStructure{}.WorkingGroup"/> using <see cref="GraphStructureBase{,}.Distance"/>. Producing bidirectional graph. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
         /// </summary>
-        /// <param name="minEdgesCount">Approximately minimum edges count</param>
-        /// <param name="maxEdgesCount">Approximately maximum edges count</param>
+        /// <param name="minEdgesCount">minimum edges count</param>
+        /// <param name="maxEdgesCount">maximum edges count</param>
         public GraphStructureOperation<TNode,TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount)
         {
             var edgesCountMap = new ConcurrentDictionary<INode, int>();
             foreach (var parent in WorkingGroup)
-                edgesCountMap[parent] = Rand.Next(minEdgesCount, maxEdgesCount);
+                edgesCountMap[parent] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 
             var locker = new object();
             Parallel.ForEach(WorkingGroup, parent =>
@@ -111,8 +109,8 @@ namespace GraphSharp.GraphStructures
                         var node = Nodes[nodeId];
                         if (parent.Edges.Count() >= maxEdgesCount) return;
                         if (node.Edges.Count >= maxEdgesCount) continue;
-                        parent.Edges.Add(CreateEdge(parent,node));
-                        node.Edges.Add(CreateEdge(node,parent));
+                        parent.Edges.Add(Configuration.CreateEdge(parent,node));
+                        node.Edges.Add(Configuration.CreateEdge(node,parent));
                     }
             });
             return this;
@@ -123,7 +121,7 @@ namespace GraphSharp.GraphStructures
 
             var result = WorkingGroup.Select(x => x.Id).FindFirstNMinimalElements(
                 n: edgesCount,
-                comparison: (t1, t2) => Distance(parent, Nodes[t1]) > Distance(parent, Nodes[t2]) ? 1 : -1,
+                comparison: (t1, t2) => Configuration.Distance(parent, Nodes[t1]) > Configuration.Distance(parent, Nodes[t2]) ? 1 : -1,
                 skipElement: (nodeId) => Nodes[nodeId].Id == parent.Id || Nodes[nodeId].Edges.Count >= maxEdgesCount);
 
             return result;
@@ -221,7 +219,7 @@ namespace GraphSharp.GraphStructures
                         var toAdd = !edge.Node.Edges.Any(x => x.Node.Id == parent.Id);
                         if (toAdd)
                         {
-                            edge.Node.Edges.Add(CreateEdge(edge.Node,parent));
+                            edge.Node.Edges.Add(Configuration.CreateEdge(edge.Node,parent));
                         }
                      }
                  }

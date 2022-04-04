@@ -6,6 +6,7 @@ using GraphSharp.Visitors;
 using GraphSharp.GraphStructures;
 using GraphSharp.Nodes;
 using GraphSharp.Edges;
+using GraphSharp.GraphStructures.Implementations;
 
 Stopwatch MeasureTime(Action operation)
 {
@@ -20,12 +21,21 @@ const int nodes_count = 11000;
 const int edges_count = 20;
 const int steps_count = 2400;
 
+var configuration = new GraphConfiguration<EmptyNode,EmptyEdge>(
+    createNode: id => new EmptyNode(id),
+    createEdge: (p,c)=> new EmptyEdge(p,c),
+    distance: (n1,n2)=>0,
+    getNodeWeight: n=>0,
+    setNodeWeight: (n,v)=>{},
+    getEdgeWeight: e=>0,
+    setEdgeWeight: (e,v)=>{}
+);
 
 IGraphStructure<EmptyNode> nodes = default;
 
 var timer = MeasureTime(()=>{
     nodes =
-        new GraphStructure<EmptyNode,EmptyEdge>(id=>new(id),(p,n)=>new(p,n))
+        new GraphStructure<EmptyNode,EmptyEdge>(configuration)
         .CreateNodes(nodes_count)
         .ForEach()
         .ConnectNodes(edges_count);

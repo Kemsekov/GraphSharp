@@ -13,12 +13,7 @@ namespace GraphSharp.GraphStructures
     public interface IGraphStructure<TNode>
     where TNode : INode
     {
-        /// <summary>
-        /// A subset of <see cref="IGraphStructure{}.Nodes"/> that selected to be modified.<br/>
-        /// </summary>
-        /// <value></value>
         IEnumerable<TNode> WorkingGroup { get; }
         IList<TNode> Nodes { get; }
-
     }
 }
