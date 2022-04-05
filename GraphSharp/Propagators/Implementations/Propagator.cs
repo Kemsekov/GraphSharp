@@ -28,7 +28,7 @@ namespace GraphSharp.Propagators
             {
                 edge = edges[i];
                 if (!Visitor.Select(edge)) continue;
-                _visited.DangerousGetReferenceAt(edge.Node.Id)=1;
+                _visited.DangerousGetReferenceAt(edge.Child.Id)=1;
             }
         }
         protected override void PropagateNodes()

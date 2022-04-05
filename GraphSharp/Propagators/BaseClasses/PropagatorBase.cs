@@ -59,37 +59,6 @@ namespace GraphSharp.Propagators
             _toVisit = buf;
         }
         /// <summary>
-        /// create node with id = -1 and with edges that contain nodes with following indices
-        /// </summary>
-        /// <param name="indices"></param>
-        private Node CreateStartingNode(params int[] indices)
-        {
-            var startNode = new Node(-1);
-            foreach (var index in indices)
-            {
-                var child = new Edge(startNode, _nodes[index % _nodes.Count]);
-                startNode.Edges.Add(child);
-            }
-            return startNode;
-        }
-        /// <summary>
-        /// Will propagate once starting node created by <see cref="PropagatorBase{,}.CreateStartingNode"/>
-        /// </summary>
-        private void PropagateStartingNode(Node node){
-            var edges = node.Edges;
-            int count = edges.Count;
-            IEdge edge;
-            for(int i = 0;i<count;++i)
-            {
-                edge = edges[i];
-                var _node = edge.Node as TNode;
-                ref var visited = ref _visited.DangerousGetReferenceAt(_node.Id);
-                if (visited > 0) continue;
-                Visitor.Visit(_node);
-                ++visited;
-            }
-        }
-        /// <summary>
         /// Method that will do main logic. It will propagate nodes from current generation to next generation selecting and visiting them in the proccess.
         /// </summary>
         protected abstract void PropagateNodes();

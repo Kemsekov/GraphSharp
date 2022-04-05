@@ -52,8 +52,8 @@ namespace GraphSharp.GraphStructures
             
             Parallel.ForEach(Nodes,node=>{
                 foreach(var e in node.Edges){
-                    lock(e.Node)
-                        c[e.Node.Id]++;
+                    lock(e.Child)
+                        c[e.Child.Id]++;
                 }
             });
             return c;

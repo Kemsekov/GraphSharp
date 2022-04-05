@@ -8,7 +8,7 @@ namespace GraphSharp.Edges
 {
     public interface IEdge : IComparable<IEdge>
     {
-        INode Node{get;}
+        INode Child{get;}
         INode Parent{get;}
         int IComparable<IEdge>.CompareTo(IEdge other){
             return this.GetHashCode()-other.GetHashCode();

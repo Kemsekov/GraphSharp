@@ -161,7 +161,7 @@ namespace GraphSharp.GraphStructures
                     {
                         var edge = parent.Edges[i];
 
-                        var toRemove = edge.Node.Edges.Any(x => x.Node.Id == parent.Id);
+                        var toRemove = edge.Child.Edges.Any(x => x.Child.Id == parent.Id);
                         if (toRemove)
                         {
                             parent.Edges.Remove(edge);
@@ -186,11 +186,11 @@ namespace GraphSharp.GraphStructures
                 TNode n2;
                 TNode n3;
                 foreach(var e1 in n1.Edges){
-                    n2 = e1.Node;
+                    n2 = e1.Child;
                     int edgesCount = n2.Edges.Count;
                     for(int k = 0;k<edgesCount;k++){
                         var e2 = n2.Edges[k];
-                        n3 = e2.Node;
+                        n3 = e2.Child;
                         if(n3.Id==n1.Id && select(n3)){
                             edgesCount--;
                             n2.Edges.Remove(e2);
@@ -212,7 +212,7 @@ namespace GraphSharp.GraphStructures
                         visited[n.Id] = 1;
                     }
                 },
-                (e)=>allowedNodes[e.Node.Id]>0 && visited[e.Node.Id]==0
+                (e)=>allowedNodes[e.Child.Id]>0 && visited[e.Child.Id]==0
             );
             var propagator = new ParallelPropagator<TNode,TEdge>(remover);
             propagator.SetNodes(_structureBase);
@@ -240,12 +240,12 @@ namespace GraphSharp.GraphStructures
                  {
                      var edge = parent.Edges[i];
 
-                     lock (edge.Node)
+                     lock (edge.Child)
                      {
-                        var toAdd = !edge.Node.Edges.Any(x => x.Node.Id == parent.Id);
+                        var toAdd = !edge.Child.Edges.Any(x => x.Child.Id == parent.Id);
                         if (toAdd)
                         {
-                            edge.Node.Edges.Add(Configuration.CreateEdge(edge.Node,parent));
+                            edge.Child.Edges.Add(Configuration.CreateEdge(edge.Child,parent));
                         }
                      }
                  }
@@ -267,7 +267,7 @@ namespace GraphSharp.GraphStructures
                 parent.Edges.Clear();
                 foreach (var node in Nodes)
                 {
-                    var toRemove = node.Edges.FirstOrDefault(x => x.Node.Id == parent.Id);
+                    var toRemove = node.Edges.FirstOrDefault(x => x.Child.Id == parent.Id);
                     if (toRemove is not null)
                         node.Edges.Remove(toRemove);
                 }

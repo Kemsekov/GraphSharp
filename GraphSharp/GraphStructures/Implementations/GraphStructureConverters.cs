@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.Models;
 using GraphSharp.Nodes;
 using MathNet.Numerics.LinearAlgebra.Single;
 
 namespace GraphSharp.GraphStructures
 {
+    /// <summary>
+    /// Contains converters for graph structures
+    /// </summary>
+    /// <typeparam name="TNode"></typeparam>
+    /// <typeparam name="TEdge"></typeparam>
     public class GraphStructureConverters<TNode, TEdge>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
@@ -26,7 +32,7 @@ namespace GraphSharp.GraphStructures
             var result = new List<(int parent,int node)>();
             foreach(var n in _structureBase.Nodes){
                 foreach(var e in n.Edges){
-                    result.Add((e.Parent.Id,e.Node.Id));
+                    result.Add((e.Parent.Id,e.Child.Id));
                 }
             }
             return result;
@@ -49,7 +55,7 @@ namespace GraphSharp.GraphStructures
             {
                 foreach (var e in Nodes[i].Edges)
                 {
-                    adjacencyMatrix[i, e.Node.Id] = Configuration.GetEdgeWeight(e);
+                    adjacencyMatrix[i, e.Child.Id] = Configuration.GetEdgeWeight(e);
                 }
             }
             return adjacencyMatrix;
@@ -62,18 +68,22 @@ namespace GraphSharp.GraphStructures
         ///     nodeWeights - This is list of weights for nodes, where each weight with some index correspond to particular node with same index. Example nodeWeights[0] will contain weight for node with id 0, and so this nodeWeights.Count() is equal to <see cref="IGraphStructure{}.Nodes"/> count. <br/>
         ///     edges - This is list of edges, where parentId is index of parent node, childId is index of child node, and weight is weight of this edge that connects parent and child. <br/>
         /// </returns>
-        public (IEnumerable<float> nodeWeights,IEnumerable<(int parentId,int childId, float weight)> edges) ToWeightsAndNodesLists(){
+        public (IEnumerable<float> nodeWeights,IEnumerable<WeightedEdge> edges) ToWeightsAndNodesLists(){
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
             var nodeWeights = new List<float>(Nodes.Count);
             for(int i = 0;i<Nodes.Count;i++){
                 nodeWeights.Add(Configuration.GetNodeWeight(Nodes[i]));
             }
-            var edges = new List<(int parentId,int childId, float weight)>();
+            var edges = new List<WeightedEdge>();
             foreach(var n in Nodes){
                 foreach(var e in n.Edges){
                     var weight = Configuration.GetEdgeWeight(e);
-                    edges.Add((e.Parent.Id,e.Node.Id,weight));
+                    edges.Add(new(){
+                        ParentId = e.Parent.Id,
+                        ChildId = e.Child.Id,
+                        Weight = weight
+                    });
                 }
             }
             return (nodeWeights,edges);
@@ -153,7 +163,7 @@ namespace GraphSharp.GraphStructures
         /// <param name="nodeWeights">This is list of weights for nodes, where each weight with some index correspond to particular node with same index. Example nodeWeights[0] will contain weight for node with id 0, and so this method will create nodeWeights.Count() nodes to fill them all.</param>
         /// <param name="edges">This is list of edges, where parentId is index of parent node, childId is index of child node, and weight is weight of this edge that connects parent and child. </param>
         /// <returns></returns>
-        public GraphStructureConverters<TNode,TEdge> FromWeightsAndNodesLists(IEnumerable<float> nodeWeights,IEnumerable<(int parentId,int childId, float weight)> edges){
+        public GraphStructureConverters<TNode,TEdge> FromWeightsAndNodesLists(IEnumerable<float> nodeWeights,IEnumerable<WeightedEdge> edges){
             _structureBase.CreateNodes(nodeWeights.Count());
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
@@ -164,11 +174,11 @@ namespace GraphSharp.GraphStructures
             }
             
             foreach(var e in edges){
-                if(e.parentId>=Nodes.Count || e.childId>=Nodes.Count || e.parentId<0 || e.childId<0)
+                if(e.ParentId>=Nodes.Count || e.ChildId>=Nodes.Count || e.ParentId<0 || e.ChildId<0)
                     throw new ArgumentException("Edges list contain out of range node id. Any node id must be non-negative number < than count of nodeWeights",nameof(edges));
-                var toAdd = Configuration.CreateEdge(Nodes[e.parentId],Nodes[e.childId]);
-                Configuration.SetEdgeWeight(toAdd,e.weight);
-                Nodes[e.parentId].Edges.Add(toAdd);
+                var toAdd = Configuration.CreateEdge(Nodes[e.ParentId],Nodes[e.ChildId]);
+                Configuration.SetEdgeWeight(toAdd,e.Weight);
+                Nodes[e.ParentId].Edges.Add(toAdd);
             }
             return this;
         }

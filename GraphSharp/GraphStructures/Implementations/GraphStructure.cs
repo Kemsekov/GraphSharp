@@ -81,7 +81,9 @@ namespace GraphSharp.GraphStructures
             WorkingGroup = selector(Nodes);
             return new(this);
         }
-        
+        /// <summary>
+        /// Get converter for current graph structure
+        /// </summary>
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
         /// <summary>
         /// Clears current <see cref="IGraphStructure{}.WorkingGroup"/> 

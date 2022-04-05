@@ -110,7 +110,7 @@ namespace GraphSharp.Tests
             {
                 foreach (var child in parent.Edges)
                 {
-                    Assert.True(child.Node.Edges.Any(c => c.Node.Id == parent.Id));
+                    Assert.True(child.Child.Edges.Any(c => c.Child.Id == parent.Id));
                 }
             }
 
@@ -120,8 +120,8 @@ namespace GraphSharp.Tests
                 //ensure they are the facto different objects in memory
                 Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
 
-                var undirectedEdges = parents.First.Edges.Select(x => x.Node);
-                var maybeUndirectedEdges = parents.Second.Edges.Select(x => x.Node);
+                var undirectedEdges = parents.First.Edges.Select(x => x.Child);
+                var maybeUndirectedEdges = parents.Second.Edges.Select(x => x.Child);
 
                 var diff = maybeUndirectedEdges.Except(undirectedEdges, new NodeEqualityComparer());
                 Assert.Empty(diff);
@@ -130,7 +130,7 @@ namespace GraphSharp.Tests
 
                 foreach (var n in diff)
                 {
-                    Assert.True(maybeUndirected.Nodes[n.Id].Edges.Any(x => x.Node.Id == parents.First.Id));
+                    Assert.True(maybeUndirected.Nodes[n.Id].Edges.Any(x => x.Child.Id == parents.First.Id));
                 }
             }
         }
@@ -149,7 +149,7 @@ namespace GraphSharp.Tests
             ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, 100, 101);
             Parallel.ForEach(_GraphStructure.Nodes, node =>
              {
-                 var edges = node.Edges.Select(child => child.Node).ToList();
+                 var edges = node.Edges.Select(child => child.Child).ToList();
                  Assert.Equal(node.Edges.Count, children_count);
                  validateThereIsNoCopiesAndParentInEdges(edges);
              });
@@ -167,7 +167,7 @@ namespace GraphSharp.Tests
 
             Parallel.ForEach(_GraphStructure.Nodes, node =>
             {
-                var edges = node.Edges.Select(child => child.Node).ToList();
+                var edges = node.Edges.Select(child => child.Child).ToList();
                 validateThereIsNoCopiesAndParentInEdges(edges);
             });
         }
@@ -212,7 +212,7 @@ namespace GraphSharp.Tests
                 if(n.Id%2==0)
                     Assert.Empty(n.Edges);
                 foreach(var e in n.Edges){
-                    Assert.True(e.Node.Id%2!=0);
+                    Assert.True(e.Child.Id%2!=0);
                 }
             }
         }
@@ -227,7 +227,7 @@ namespace GraphSharp.Tests
 
             foreach(var n in _GraphStructure.Nodes){
                 foreach(var e in n.Edges){
-                    parentsCount[e.Node.Id]--;
+                    parentsCount[e.Child.Id]--;
                 }
             }
 
@@ -239,7 +239,7 @@ namespace GraphSharp.Tests
             foreach (var parent in nodes)
             {
                 Assert.Equal(parent.Edges.Distinct(), parent.Edges);
-                Assert.False(parent.Edges.Any(child => child.Node.Id == parent.Id), $"There is parent in children. Parent : {parent}");
+                Assert.False(parent.Edges.Any(child => child.Child.Id == parent.Id), $"There is parent in children. Parent : {parent}");
             }
         }
         public void ensureRightCountOfEdgesPerNode(IEnumerable<TestNode> nodes, int minEdges, int maxEdges)
@@ -260,7 +260,7 @@ namespace GraphSharp.Tests
             {
                 foreach (var child in parent.Edges)
                 {
-                    Assert.False(child.Node.Edges.Any(c => c.Node.Id == parent.Id));
+                    Assert.False(child.Child.Edges.Any(c => c.Child.Id == parent.Id));
                 }
             }
 
@@ -269,13 +269,13 @@ namespace GraphSharp.Tests
             {
                 //ensure they are the facto different objects in memory
                 Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
-                var directedEdges = parents.First.Edges.Select(x => x.Node);
-                var undirectedEdges = parents.Second.Edges.Select(x => x.Node);
+                var directedEdges = parents.First.Edges.Select(x => x.Child);
+                var undirectedEdges = parents.Second.Edges.Select(x => x.Child);
                 var diff = undirectedEdges.Except(directedEdges, new NodeEqualityComparer());
 
                 foreach (var n in diff.Select(x=>x as TestNode))
                 {
-                    Assert.True(n.Edges.Any(x => x.Node.Id == parents.First.Id));
+                    Assert.True(n.Edges.Any(x => x.Child.Id == parents.First.Id));
                 }
             }
         }

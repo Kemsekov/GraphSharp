@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.GraphStructures;
+using GraphSharp.Models;
 using GraphSharp.Nodes;
 using GraphSharp.Tests.Models;
 using MathNet.Numerics.LinearAlgebra.Single;
@@ -39,7 +40,7 @@ namespace GraphSharp.Tests
                 {
                     if (adjacencyMatrix[i, b] == 1)
                     {
-                        Assert.Contains(b, node.Edges.Select(x => x.Node.Id));
+                        Assert.Contains(b, node.Edges.Select(x => x.Child.Id));
                     }
                 }
             }
@@ -63,7 +64,7 @@ namespace GraphSharp.Tests
                 {
                     if (adjacencyMatrix[i, b] > 0)
                     {
-                        var edge = node.Edges.First(x => x.Node.Id == b);
+                        var edge = node.Edges.First(x => x.Child.Id == b);
                         Assert.Equal(edge.Weight, adjacencyMatrix[i, b]);
                     }
                 }
@@ -110,11 +111,11 @@ namespace GraphSharp.Tests
                 var source = n1.value>n2.value ? n1 : n2;
                 var to = n1.value<=n2.value ? n1 : n2;
 
-                var sourceNode = nodes[source.row].Edges.FirstOrDefault(x=>x.Node.Id==to.row);
+                var sourceNode = nodes[source.row].Edges.FirstOrDefault(x=>x.Child.Id==to.row);
                 Assert.NotNull(sourceNode);
                 nodes[source.row].Edges.Remove(sourceNode);
                 if(to.value==1){
-                    var toNode = nodes[to.row].Edges.FirstOrDefault(x=>x.Node.Id==source.row);
+                    var toNode = nodes[to.row].Edges.FirstOrDefault(x=>x.Child.Id==source.row);
                     Assert.NotNull(toNode);
                     nodes[to.row].Edges.Remove(toNode);
                 }
@@ -184,9 +185,9 @@ namespace GraphSharp.Tests
         public void FromWeightsAndNodesLists_Throws()
         {
             var nodes = new[]{1f,0f,2f,3f,5f};
-            var edges = new[]{(0,3,1f),(1,5,2f),(7,3,0f)};
+            var edges = new WeightedEdge[]{new(0,3,1f),new(1,5,2f),new(7,3,0f)};
             Assert.Throws<ArgumentException>(()=>_GraphStructure.Converter.FromWeightsAndNodesLists(nodes,edges));
-            edges = new[]{(0,3,1f),(-100,5,2f),(7,3,0f)};
+            edges = new WeightedEdge[]{new(0,3,1f),new(-100,5,2f),new(7,3,0f)};
             Assert.Throws<ArgumentException>(()=>_GraphStructure.Converter.FromWeightsAndNodesLists(nodes,edges));
         }
         [Fact]
