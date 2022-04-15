@@ -15,12 +15,12 @@ namespace GraphSharp.Visitors
     where TEdge : EdgeBase<TNode>
     {
         private Action<TNode> visit;
-        private Func<TEdge, bool> select;
+        private Predicate<TEdge> select;
         private Action endVisit;
         /// <param name="visit"><see cref="IVisitor{,}.Visit"/> function</param>
         /// <param name="select"><see cref="IVisitor{,}.Select"/> function</param>
         /// <param name="endVisit"><see cref="IVisitor.EndVisit"/> function</param>
-        public ActionVisitor(Action<TNode> visit ,Func<TEdge,bool> select, Action endVisit = null)
+        public ActionVisitor(Action<TNode> visit ,Predicate<TEdge> select, Action endVisit = null)
         {
             this.visit = visit;
             this.select = select;

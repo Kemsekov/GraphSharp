@@ -178,10 +178,49 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="nodeIndices"></param>
         public GraphStructureOperation<TNode,TEdge> CreateSources(params int[] nodeIndices){
-            if(nodeIndices.Count()==0) return this;
+            if(nodeIndices.Count()==0 || _structureBase.Nodes.Count==0) return this;
+            
             var Nodes = _structureBase.Nodes;
             var WorkingGroup = _structureBase.WorkingGroup;
+            var Configuration = _structureBase.Configuration;
+            //flag for each node: 1 - is allowed to visit. 2 - is visited.
+            var flags = new byte[Nodes.Count];
             
+            foreach(var n in WorkingGroup)
+                flags[n.Id]=1;
+            
+            foreach(var i in nodeIndices)
+                if(flags[i]==0)
+                    throw new ArgumentException("Node with index "+i+" is not in WorkingGroup");
+            
+            var didSomething = true;
+            
+            var visitor = new ActionVisitor<TNode,TEdge>(
+                visit: node=>{
+                    lock(flags)
+                        flags[node.Id] = 2;
+                    var edges = node.Edges;
+                    for(int i = 0;i<edges.Count;i++)
+                        if(flags[edges[i].Child.Id]==3)
+                            edges.Remove(edges[i--]);
+                    didSomething = true;
+                },
+                select: edge=>flags[edge.Child.Id]==1,
+                endVisit: ()=>{
+                    for(int i = 0;i<flags.Length;i++)
+                        if(flags[i]==2)
+                            flags[i] = 3;
+                }
+            );
+            
+            var propagator = new ParallelPropagator<TNode,TEdge>(visitor);
+            propagator.SetNodes(_structureBase);
+            propagator.SetPosition(nodeIndices);
+            while(didSomething)
+            {
+                didSomething = false;
+                propagator.Propagate();
+            }
             return this;
 
         }

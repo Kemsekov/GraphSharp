@@ -57,6 +57,7 @@ namespace GraphSharp.Tests
             var graph = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration());
             graph.Converter.FromConnectionsList(ManualTestData.TestConnectionsList.Select(x=>(x.parentId,x.children as IEnumerable<int>)));
             graph.ForEach().MakeUndirected();
+            var temp = graph.Converter.ToConnectionsList();
             graph.ForEach().CreateSources(1,14);
             var expected = ManualTestData.AfterMakeSourcesExpected;
             var actual = graph.Converter.ToConnectionsList();
