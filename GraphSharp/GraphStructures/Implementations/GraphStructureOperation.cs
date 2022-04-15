@@ -181,7 +181,7 @@ namespace GraphSharp.GraphStructures
             if(nodeIndices.Count()==0) return this;
             var Nodes = _structureBase.Nodes;
             var WorkingGroup = _structureBase.WorkingGroup;
-            //TODO: implement
+            
             return this;
 
         }
@@ -214,8 +214,28 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Disconnects all nodes from <see cref="IGraphStructure{}.WorkingGroup"/> from any other nodes.
-        /// Removes all edges from nodes from <see cref="IGraphStructure{}.WorkingGroup"/> including any edge that relates to any member of <see cref="IGraphStructure{}.WorkingGroup"/> even if it is not included in it.
+        /// Reverse every edge connection from <see cref="IGraphStructure{}.WorkingGroup"/> ==> like swap(edge.ParentId,edge.ChildId)
+        /// </summary>
+        public GraphStructureOperation<TNode,TEdge> ReverseEdges(){
+            var edges = new List<TEdge>();
+            foreach(var n in _structureBase.WorkingGroup){
+                foreach(var e in n.Edges){
+                    var parent = e.Parent;
+                    e.Parent = e.Child;
+                    e.Child = parent;
+                    edges.Add(e);
+                }
+            }
+            RemoveEdges();
+            foreach(var e in edges){
+                _structureBase.Nodes[e.Parent.Id].Edges.Add(e);
+            }
+            return this;
+        }
+        /// <summary>
+        /// Disconnects all nodes from <see cref="IGraphStructure{}.WorkingGroup"/> from each other.
+        /// It is not removing nodes from <see cref="IGraphStructure{}.Nodes"/>.
+        /// Making each node isolated.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> RemoveEdges()
         {

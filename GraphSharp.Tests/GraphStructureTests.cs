@@ -218,6 +218,20 @@ namespace GraphSharp.Tests
 
             Assert.All(parentsCount,x=>Assert.Equal(x.Value,0));
         }
+        [Fact]
+        public void ReverseEdges_Works(){
+            _GraphStructure.ForEach().ConnectRandomly(1,5);
+            var before_reverse = _GraphStructure.Converter.ToConnectionsList();
+            _GraphStructure.ForEach().ReverseEdges();
+            var after_reverse = _GraphStructure.Converter.ToConnectionsList();
+            _GraphStructure.ForEach().ReverseEdges();
+            var after_two_reverses = _GraphStructure.Converter.ToConnectionsList();
+            foreach(var e in before_reverse.Zip(after_two_reverses)){
+                Assert.Equal(e.First.parent,e.Second.parent);
+                Assert.Equal(e.First.children,e.Second.children);
+            }
+            Assert.NotEqual(before_reverse,after_reverse);
+        }
         public void validateThereIsNoCopiesAndParentInEdges(IEnumerable<TestNode> nodes)
         {
             Assert.NotEmpty(nodes);

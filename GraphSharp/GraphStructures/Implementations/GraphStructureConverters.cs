@@ -35,8 +35,10 @@ namespace GraphSharp.GraphStructures
                 foreach(var e in n.Edges){
                     children.Add(e.Child.Id);
                 }
-                if(children.Count!=0)
-                result.Add((n.Id,children));
+                if(children.Count!=0){
+                    children.Sort();
+                    result.Add((n.Id,children));
+                }
             }
             return result;
         }
