@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public static class ManualTestData
 {
     public static int[][] NodesConnections = new[]{
@@ -30,4 +32,45 @@ public static class ManualTestData
             new[]{1,2,3,4,7,8,9}
         }
     };
+    public static IEnumerable<(int parentId, int[] children)> TestConnectionsList = 
+        new[]{
+            (1,new[]{2,4,6,13}),
+            (2,new[]{3,6,7,12}),
+            (3,new[]{4,19}),
+            (5,new[]{9,15,20}),
+            (6,new[]{12,13,18}),
+            (7,new[]{9,12,15}),
+            (8,new[]{9,12,14,16}),
+            (9,new[]{10}),
+            (10,new[]{14,17,20}),
+            (11,new[]{12,16,18}),
+            (14,new[]{16}),
+            (15,new[]{19}),
+            (16,new[]{17})
+        };
+    /// <summary>
+    /// Values, that expected after calling method MakeSources(1,14) on graph builded on top of TestConnectionsList and made undirected
+    /// </summary>
+    public static IEnumerable<(int parentId, int[] children)> AfterMakeSourcesExpected = 
+        new[]{
+            (1, new[]{2,4,6,13}),
+            (2, new[]{3,6,7,12}),
+            (3, new[]{19}),
+            (4, new[]{3}),
+            (5, new[]{15}),
+            (6, new[]{2,12,13,18}),
+            (7, new[]{9,12,15}),
+            (8, new[]{9,12,16}),
+            (9, new[]{5,7}),
+            (10,new[]{9,17,20}),
+            (11,new[]{12,18}),
+            (12,new[]{7,11}),
+            (13,new[]{6}),
+            (14,new[]{8,10,16}),
+            (15,new[]{5,19}),
+            (16,new[]{8,11,17}),
+            (18,new[]{11}),
+            (19,new[]{15}),
+            (20,new[]{5}),
+        };
 }

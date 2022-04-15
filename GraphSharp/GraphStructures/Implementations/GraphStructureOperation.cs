@@ -173,55 +173,15 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Will run BFS on <see cref="IGraphStructure{}.WorkingGroup"/> from each of nodeIndices which will remove parents for each visited node except those that was visited already. 
-        /// Making source out of each node from nodeIndices and making sinks at intersections of running BFS.
+        /// Will run BFS on <see cref="IGraphStructure{}.WorkingGroup"/> from each of nodeIndices and remove parents for each visited node except those that was visited already. 
+        /// Making source out of each node from nodeIndices and making sinks or undirected edges at intersections of running BFS.
         /// </summary>
         /// <param name="nodeIndices"></param>
-        public GraphStructureOperation<TNode,TEdge> MakeDirectedBFS(params int[] nodeIndices){
+        public GraphStructureOperation<TNode,TEdge> CreateSources(params int[] nodeIndices){
+            if(nodeIndices.Count()==0) return this;
             var Nodes = _structureBase.Nodes;
-            var Configuration = _structureBase.Configuration;
             var WorkingGroup = _structureBase.WorkingGroup;
-            bool didSomething = true;
-            void removeParents(TNode n1,Predicate<TNode> select){
-                TNode n2;
-                TNode n3;
-                foreach(var e1 in n1.Edges){
-                    n2 = e1.Child;
-                    int edgesCount = n2.Edges.Count;
-                    for(int k = 0;k<edgesCount;k++){
-                        var e2 = n2.Edges[k];
-                        n3 = e2.Child;
-                        if(n3.Id==n1.Id && select(n3)){
-                            edgesCount--;
-                            n2.Edges.Remove(e2);
-                        }
-                    }
-                }
-            }
-            
-            var allowedNodes = new byte[Nodes.Count];
-            var visited = new byte[Nodes.Count];
-            foreach(var p in WorkingGroup)
-                allowedNodes[p.Id] = 1;
-            
-            var remover = new ActionVisitor<TNode,TEdge>(
-                (n)=>{
-                    lock(visited){
-                        didSomething = true;
-                        removeParents(n,toRemove=>visited[toRemove.Id]==0);
-                        visited[n.Id] = 1;
-                    }
-                },
-                (e)=>allowedNodes[e.Child.Id]>0 && visited[e.Child.Id]==0
-            );
-            var propagator = new ParallelPropagator<TNode,TEdge>(remover);
-            propagator.SetNodes(_structureBase);
-            propagator.SetPosition(nodeIndices.Count()==0 ? new[]{0} : nodeIndices);
-            propagator.Propagate();
-            while(didSomething){
-                didSomething = false;
-                propagator.Propagate();
-            }
+            //TODO: implement
             return this;
 
         }

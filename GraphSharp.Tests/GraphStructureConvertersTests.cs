@@ -178,28 +178,41 @@ namespace GraphSharp.Tests
             var expected = _GraphStructure.Converter.ToConnectionsList();
             var actual = _GraphStructure.Converter.FromConnectionsList(expected).ToConnectionsList();
             Assert.NotEmpty(actual);
-            Assert.Equal(expected.Count,actual.Count);
-            Assert.Equal(expected,actual);
+            Assert.Equal(expected.Count(),actual.Count());
+            foreach(var e in expected.Zip(actual)){
+                Assert.Equal(e.First.parent,e.Second.parent);
+                Assert.Equal(e.First.children,e.Second.children);
+            }
+
+            expected = ManualTestData.TestConnectionsList.Select(x=>(x.parentId,x.children as IEnumerable<int>));
+            _GraphStructure.Converter.FromConnectionsList(expected);
+            actual = _GraphStructure.Converter.ToConnectionsList();
+            Assert.NotEmpty(actual);
+            Assert.Equal(expected.Count(),actual.Count());
+            foreach(var e in expected.Zip(actual)){
+                Assert.Equal(e.First.parent,e.Second.parent);
+                Assert.Equal(e.First.children,e.Second.children);
+            }
         }
         [Fact]
-        public void FromWeightsAndNodesLists_Throws()
+        public void FromExtendedConnectionsList_Throws()
         {
             var nodes = new[]{1f,0f,2f,3f,5f};
             var edges = new WeightedEdge[]{new(0,3,1f),new(1,5,2f),new(7,3,0f)};
-            Assert.Throws<ArgumentException>(()=>_GraphStructure.Converter.FromWeightsAndNodesLists(nodes,edges));
+            Assert.Throws<ArgumentException>(()=>_GraphStructure.Converter.FromExtendedConnectionsList(nodes,edges));
             edges = new WeightedEdge[]{new(0,3,1f),new(-100,5,2f),new(7,3,0f)};
-            Assert.Throws<ArgumentException>(()=>_GraphStructure.Converter.FromWeightsAndNodesLists(nodes,edges));
+            Assert.Throws<ArgumentException>(()=>_GraphStructure.Converter.FromExtendedConnectionsList(nodes,edges));
         }
         [Fact]
-        public void FromWeightsAndNodesLists_Works(){
+        public void FromExtendedConnectionsList_Works(){
             _GraphStructure
                 .CreateNodes(500)
                 .ForEach()
                 .ConnectNodes(10);
             _GraphStructure.ClearWorkingGroup();
 
-            var expected = _GraphStructure.Converter.ToWeightsAndNodesLists();
-            var actual = _GraphStructure.Converter.FromWeightsAndNodesLists(expected.nodeWeights,expected.edges).ToWeightsAndNodesLists();
+            var expected = _GraphStructure.Converter.ToExtendedConnectionsList();
+            var actual = _GraphStructure.Converter.FromExtendedConnectionsList(expected.nodeWeights,expected.edges).ToExtendedConnectionsList();
             Assert.NotEmpty(expected.edges);
             Assert.NotEmpty(expected.nodeWeights);
             Assert.Equal(expected.nodeWeights,actual.nodeWeights);

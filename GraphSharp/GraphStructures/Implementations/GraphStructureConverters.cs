@@ -25,15 +25,18 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Convert each edge's parent and node values to tuple (int parent, int node)
+        /// Converts the graph structure to a special representation, which consists of a list of parents and a list of it's children. 
         /// </summary>
-        /// <returns>A list of tuples where first element is a parent of edge and second is node of edge</returns>
-        public IList<(int parent,int node)> ToConnectionsList(){
-            var result = new List<(int parent,int node)>();
+        /// <returns>A list of tuples where first element is a parent second list of edges this parent connects to</returns>
+        public IEnumerable<(int parent, IEnumerable<int> children)> ToConnectionsList(){
+            var result = new List<(int parent,IEnumerable<int> children)>();
             foreach(var n in _structureBase.Nodes){
+                var children = new List<int>();
                 foreach(var e in n.Edges){
-                    result.Add((e.Parent.Id,e.Child.Id));
+                    children.Add(e.Child.Id);
                 }
+                if(children.Count!=0)
+                result.Add((n.Id,children));
             }
             return result;
         }
@@ -68,7 +71,7 @@ namespace GraphSharp.GraphStructures
         ///     nodeWeights - This is list of weights for nodes, where each weight with some index correspond to particular node with same index. Example nodeWeights[0] will contain weight for node with id 0, and so this nodeWeights.Count() is equal to <see cref="IGraphStructure{}.Nodes"/> count. <br/>
         ///     edges - This is list of edges, where parentId is index of parent node, childId is index of child node, and weight is weight of this edge that connects parent and child. <br/>
         /// </returns>
-        public (IEnumerable<float> nodeWeights,IEnumerable<WeightedEdge> edges) ToWeightsAndNodesLists(){
+        public (IEnumerable<float> nodeWeights,IEnumerable<WeightedEdge> edges) ToExtendedConnectionsList(){
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
             var nodeWeights = new List<float>(Nodes.Count);
@@ -144,16 +147,23 @@ namespace GraphSharp.GraphStructures
         /// Clears all nodes and
         /// creates edges and nodes from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/> and <see cref="GraphStructureBase{,}.CreateNode"/>
         /// </summary>
-        public GraphStructureConverters<TNode,TEdge> FromConnectionsList(IEnumerable<(int parent,int node)> connectionsList){
+        public GraphStructureConverters<TNode,TEdge> FromConnectionsList(IEnumerable<(int parent,IEnumerable<int> children)> connectionsList){
             
-            var nodesCount = Math.Max(connectionsList.Max(x=>x.node),connectionsList.Max(x=>x.parent));
+            var nodesCount = connectionsList.Max(x=>x.parent);
+            foreach(var m in connectionsList){
+                foreach(var e in m.children)
+                    nodesCount = Math.Max(nodesCount,e);
+            }
             _structureBase.CreateNodes(nodesCount+1);
 
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
             
             foreach(var con in connectionsList){
-                Nodes[con.parent].Edges.Add(Configuration.CreateEdge(Nodes[con.parent],Nodes[con.node]));
+                foreach(var child in con.children){
+                    var edge = Configuration.CreateEdge(Nodes[con.parent],Nodes[child]);
+                    Nodes[con.parent].Edges.Add(edge);
+                }
             }
             return this;
         }
@@ -163,7 +173,7 @@ namespace GraphSharp.GraphStructures
         /// <param name="nodeWeights">This is list of weights for nodes, where each weight with some index correspond to particular node with same index. Example nodeWeights[0] will contain weight for node with id 0, and so this method will create nodeWeights.Count() nodes to fill them all.</param>
         /// <param name="edges">This is list of edges, where parentId is index of parent node, childId is index of child node, and weight is weight of this edge that connects parent and child. </param>
         /// <returns></returns>
-        public GraphStructureConverters<TNode,TEdge> FromWeightsAndNodesLists(IEnumerable<float> nodeWeights,IEnumerable<WeightedEdge> edges){
+        public GraphStructureConverters<TNode,TEdge> FromExtendedConnectionsList(IEnumerable<float> nodeWeights,IEnumerable<WeightedEdge> edges){
             _structureBase.CreateNodes(nodeWeights.Count());
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
@@ -49,5 +50,21 @@ namespace GraphSharp.GraphStructures.Interfaces
         /// </summary>
         /// <value></value>
         void SetNodeWeight(TNode node, float weight);
+        /// <summary>
+        /// Method that used to get color from particular <see cref="TNode"/>
+        /// </summary>
+        Color GetNodeColor(TNode node);
+        /// <summary>
+        /// Method that used to assign color to particular <see cref="TNode"/>
+        /// </summary>
+        void SetNodeColor(TNode node, Color color);
+        /// <summary>
+        /// Method that used to get color from particular <see cref="TEdge"/>
+        /// </summary>
+        Color GetEdgeColor(TEdge edge);
+        /// <summary>
+        /// Method that used to assign color to particular <see cref="TEdge"/>
+        /// </summary>
+        void SetEdgeColor(TEdge edge, Color color);
     }
 }

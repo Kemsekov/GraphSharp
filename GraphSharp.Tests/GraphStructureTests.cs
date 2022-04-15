@@ -53,34 +53,19 @@ namespace GraphSharp.Tests
             ensureDirected(directed,undirected);
         }
         [Fact]
-        public void MakeDirectedBFSWorks(){
-            var seed = new Random().Next();
-            int startNode1 = 20;
-            int startNode2 = 600;
-            int startNode3 = 10;
-            var directed =
-                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                    .CreateNodes(2000);
-            
-            directed
-                .ForEach()
-                .ConnectNodes(20)
-                .MakeUndirected()
-                .MakeDirectedBFS(startNode1,startNode2,startNode3);
-            var undirected =
-                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                    .CreateNodes(2000);
-            
-            undirected
-                .ForEach()
-                .ConnectNodes(20)
-                .MakeUndirected();
-            ensureDirected(directed,undirected);
-            // var conList = directed.ToConnectionsList();
-            var parentsCount = directed.CountParents();
-            Assert.Equal(0,parentsCount[startNode1]);
-            Assert.Equal(0,parentsCount[startNode2]);
-            Assert.Equal(0,parentsCount[startNode3]);
+        public void CreateSourcesWorks(){
+            var graph = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration());
+            graph.Converter.FromConnectionsList(ManualTestData.TestConnectionsList.Select(x=>(x.parentId,x.children as IEnumerable<int>)));
+            graph.ForEach().MakeUndirected();
+            graph.ForEach().CreateSources(1,14);
+            var expected = ManualTestData.AfterMakeSourcesExpected;
+            var actual = graph.Converter.ToConnectionsList();
+            Assert.NotEmpty(actual);
+            Assert.Equal(expected.Count(),actual.Count());
+            foreach(var e in expected){
+                var toCompare = actual.First(x=>x.parent==e.parentId);
+                Assert.Equal(e.children,toCompare.children);
+            }
         }
         [Fact]
         public void MakeUndirectedWorks()

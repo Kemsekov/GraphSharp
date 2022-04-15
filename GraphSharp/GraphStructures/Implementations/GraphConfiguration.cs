@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
@@ -20,6 +21,10 @@ namespace GraphSharp.GraphStructures
         public Func<TNode, float> GetNodeWeightImpl{get;set;}
         public Action<TEdge, float> SetEdgeWeightImpl{get;set;}
         public Action<TNode, float> SetNodeWeightImpl{get;set;}
+        public Func<TNode,Color> GetNodeColorImpl{get;set;}
+        public Action<TNode,Color> SetNodeColorImpl{get;set;}
+        public Func<TEdge, Color> GetEdgeColorImpl{get;set;}
+        public Action<TEdge, Color> SetEdgeColorImpl{get;set;}
         public GraphConfiguration(
             Func<int,TNode> createNode, 
             Func<TNode,TNode,TEdge> createEdge,
@@ -28,6 +33,10 @@ namespace GraphSharp.GraphStructures
             Action<TNode,float> setNodeWeight,
             Func<TEdge,float> getEdgeWeight,
             Action<TEdge,float> setEdgeWeight,
+            Func<TNode,Color> getNodeColor,
+            Action<TNode,Color> setNodeColor,
+            Func<TEdge, Color> getEdgeColor,
+            Action<TEdge, Color> setEdgeColor,
             Random rand = null
             )
         {
@@ -38,6 +47,10 @@ namespace GraphSharp.GraphStructures
             GetNodeWeightImpl = getNodeWeight;
             SetEdgeWeightImpl = setEdgeWeight;
             SetNodeWeightImpl = setNodeWeight;
+            GetNodeColorImpl = getNodeColor;
+            SetNodeColorImpl = setNodeColor;
+            GetEdgeColorImpl = getEdgeColor;
+            SetEdgeColorImpl = setEdgeColor;
             Rand = rand ?? new Random();
         }
         public TEdge CreateEdge(TNode parent, TNode child)
@@ -73,6 +86,26 @@ namespace GraphSharp.GraphStructures
         public void SetNodeWeight(TNode node, float weight)
         {
             SetNodeWeightImpl(node,weight);
+        }
+
+        public Color GetNodeColor(TNode node)
+        {
+            return GetNodeColorImpl(node);
+        }
+
+        public void SetNodeColor(TNode node, Color color)
+        {
+            SetNodeColorImpl(node,color);
+        }
+
+        public Color GetEdgeColor(TEdge edge)
+        {
+            return GetEdgeColorImpl(edge);
+        }
+
+        public void SetEdgeColor(TEdge edge, Color color)
+        {
+            SetEdgeColorImpl(edge,color);
         }
     }
 }

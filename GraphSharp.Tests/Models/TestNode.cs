@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
@@ -13,5 +14,7 @@ namespace GraphSharp.Tests.Models
         {
         }
         public float Weight{get;set;}
+        public Color Color;
+
     }
 }
