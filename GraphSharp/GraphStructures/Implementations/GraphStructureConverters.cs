@@ -64,32 +64,24 @@ namespace GraphSharp.GraphStructures
             return adjacencyMatrix;
         }
         /// <summary>
-        /// Converts <see cref="IGraphStructure{}.Nodes"/> to two enumerable where nodeWeights describes nodes and edges describes edges
+        /// Will collect all information about edges and nodes and convert it to a special representation.
         /// </summary>
-        /// <returns>
-        ///     Two lists : <br/>
-        ///     nodeWeights - This is list of weights for nodes, where each weight with some index correspond to particular node with same index. Example nodeWeights[0] will contain weight for node with id 0, and so this nodeWeights.Count() is equal to <see cref="IGraphStructure{}.Nodes"/> count. <br/>
-        ///     edges - This is list of edges, where parentId is index of parent node, childId is index of child node, and weight is weight of this edge that connects parent and child. <br/>
-        /// </returns>
-        public (IEnumerable<float> nodeWeights,IEnumerable<WeightedEdge> edges) ToExtendedConnectionsList(){
+        public (IEnumerable<NodeStruct> nodes,IEnumerable<EdgeStruct> edges) ToExtendedConnectionsList(){
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var nodeWeights = new List<float>(Nodes.Count);
+            var nodes = new List<NodeStruct>();
+            var edges = new List<EdgeStruct>();
             for(int i = 0;i<Nodes.Count;i++){
-                nodeWeights.Add(Configuration.GetNodeWeight(Nodes[i]));
-            }
-            var edges = new List<WeightedEdge>();
-            foreach(var n in Nodes){
-                foreach(var e in n.Edges){
-                    var weight = Configuration.GetEdgeWeight(e);
-                    edges.Add(new(){
-                        ParentId = e.Parent.Id,
-                        ChildId = e.Child.Id,
-                        Weight = weight
-                    });
+                var parent = Nodes[i];
+                var nodeStruct = new NodeStruct(parent.Id,Configuration.GetNodeWeight(parent),Configuration.GetNodeColor(parent));
+                var _edges = new List<EdgeStruct>();
+                foreach(var e in parent.Edges){
+                    _edges.Add(new EdgeStruct(parent.Id,e.Child.Id,Configuration.GetEdgeWeight(e),Configuration.GetEdgeColor(e)));
                 }
+                nodes.Add(nodeStruct);
+                edges.AddRange(_edges);
             }
-            return (nodeWeights,edges);
+            return (nodes,edges);
         }
         /// <summary>
         /// Create nodes and edges from adjacency matrix
@@ -173,22 +165,25 @@ namespace GraphSharp.GraphStructures
         /// <param name="nodeWeights">This is list of weights for nodes, where each weight with some index correspond to particular node with same index. Example nodeWeights[0] will contain weight for node with id 0, and so this method will create nodeWeights.Count() nodes to fill them all.</param>
         /// <param name="edges">This is list of edges, where parentId is index of parent node, childId is index of child node, and weight is weight of this edge that connects parent and child. </param>
         /// <returns></returns>
-        public GraphStructureConverters<TNode,TEdge> FromExtendedConnectionsList(IEnumerable<float> nodeWeights,IEnumerable<WeightedEdge> edges){
-            _structureBase.CreateNodes(nodeWeights.Count());
+        public GraphStructureConverters<TNode,TEdge> FromExtendedConnectionsList(IEnumerable<NodeStruct> nodes,IEnumerable<EdgeStruct> edges){
+            var nodesCount = nodes.Max(x=>x.Id);
+            foreach(var m in edges){
+                var temp = Math.Max(m.ParentId,m.ChildId);
+                nodesCount = Math.Max(nodesCount,temp);
+            }
+            _structureBase.CreateNodes(nodesCount+1);
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
             
-            int counter = 0;
-            foreach(var w in nodeWeights){
-                Configuration.SetNodeWeight(Nodes[counter++],w);
+            foreach(var n in nodes){
+                Configuration.SetNodeWeight(Nodes[n.Id],n.Weight);
+                Configuration.SetNodeColor(Nodes[n.Id],n.Color);
             }
-            
             foreach(var e in edges){
-                if(e.ParentId>=Nodes.Count || e.ChildId>=Nodes.Count || e.ParentId<0 || e.ChildId<0)
-                    throw new ArgumentException("Edges list contain out of range node id. Any node id must be non-negative number < than count of nodeWeights",nameof(edges));
-                var toAdd = Configuration.CreateEdge(Nodes[e.ParentId],Nodes[e.ChildId]);
-                Configuration.SetEdgeWeight(toAdd,e.Weight);
-                Nodes[e.ParentId].Edges.Add(toAdd);
+                var edge = Configuration.CreateEdge(Nodes[e.ParentId],Nodes[e.ChildId]);
+                Configuration.SetEdgeWeight(edge,e.Weight);
+                Configuration.SetEdgeColor(edge,e.Color);
+                Nodes[e.ParentId].Edges.Add(edge);
             }
             return this;
         }

@@ -195,15 +195,6 @@ namespace GraphSharp.Tests
             }
         }
         [Fact]
-        public void FromExtendedConnectionsList_Throws()
-        {
-            var nodes = new[]{1f,0f,2f,3f,5f};
-            var edges = new WeightedEdge[]{new(0,3,1f),new(1,5,2f),new(7,3,0f)};
-            Assert.Throws<ArgumentException>(()=>_GraphStructure.Converter.FromExtendedConnectionsList(nodes,edges));
-            edges = new WeightedEdge[]{new(0,3,1f),new(-100,5,2f),new(7,3,0f)};
-            Assert.Throws<ArgumentException>(()=>_GraphStructure.Converter.FromExtendedConnectionsList(nodes,edges));
-        }
-        [Fact]
         public void FromExtendedConnectionsList_Works(){
             _GraphStructure
                 .CreateNodes(500)
@@ -212,10 +203,10 @@ namespace GraphSharp.Tests
             _GraphStructure.ClearWorkingGroup();
 
             var expected = _GraphStructure.Converter.ToExtendedConnectionsList();
-            var actual = _GraphStructure.Converter.FromExtendedConnectionsList(expected.nodeWeights,expected.edges).ToExtendedConnectionsList();
+            var actual = _GraphStructure.Converter.FromExtendedConnectionsList(expected.nodes,expected.edges).ToExtendedConnectionsList();
             Assert.NotEmpty(expected.edges);
-            Assert.NotEmpty(expected.nodeWeights);
-            Assert.Equal(expected.nodeWeights,actual.nodeWeights);
+            Assert.NotEmpty(expected.nodes);
+            Assert.Equal(expected.nodes,actual.nodes);
             Assert.Equal(expected.edges,actual.edges);
         }
     }
