@@ -69,6 +69,24 @@ namespace GraphSharp.Tests
             }
         }
         [Fact]
+        public void RemoveUndirectedEdgesWorks(){
+            var graph = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration());
+            graph.CreateNodes(500);
+            graph.ForEach().ConnectRandomly(0,8);
+            var before_removal = graph.Converter.ToConnectionsList().ToList();
+            graph.ForEach().RemoveUndirectedEdges();
+            var after_removal = graph.Converter.ToConnectionsList().ToList();
+            for(int parentId = 0;parentId<500;parentId++){
+                var before = before_removal.FirstOrDefault(x=>x.parent==parentId);
+                var after = after_removal.FirstOrDefault(x=>x.parent==parentId);
+                if(before.children is null) continue;                
+                var diff = before.children.Except(after.children);
+                foreach(var nodeId in diff){
+                    Assert.Contains(parentId,graph.Nodes[nodeId].Edges.Select(x=>x.Child.Id));
+                }
+            }
+        }
+        [Fact]
         public void MakeUndirectedWorks()
         {
             var seed = new Random().Next();
