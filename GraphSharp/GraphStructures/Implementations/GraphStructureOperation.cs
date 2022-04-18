@@ -148,25 +148,12 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> MakeDirected()
         {
-            var Nodes = _structureBase.Nodes;
-            var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
-            foreach (var parent in WorkingGroup)
-            {
-                bool fine = false;
-                while (!fine)
-                {
-                    fine = true;
-                    for (int i = 0; i < parent.Edges.Count; i++)
-                    {
-                        var edge = parent.Edges[i];
-
-                        var toRemove = edge.Child.Edges.Any(x => x.Child.Id == parent.Id);
-                        if (toRemove)
-                        {
-                            parent.Edges.RemoveAt(i--);
-                            fine = false;
-                        }
+            foreach(var parent in _structureBase.WorkingGroup)
+            foreach(var e in parent.Edges){
+                var edges = e.Child.Edges;
+                for(int i = 0;i<edges.Count;i++){
+                    if(edges[i].Child.Id==parent.Id){
+                        edges.RemoveAt(i--);
                     }
                 }
             }
@@ -229,15 +216,20 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> RemoveUndirectedEdges(){
             foreach(var parent in _structureBase.WorkingGroup){
-                foreach(var e in parent.Edges){
-                    var edges = e.Child.Edges;
-                    for(int i = 0;i<edges.Count;i++){
-                        if(edges[i].Child.Id==parent.Id){
+                var edges = parent.Edges;
+                for(int i = 0;i<edges.Count;i++){
+                    var child = edges[i].Child;
+                    var grandEdges = child.Edges;
+                    TNode grandChild;
+                    for(int b = 0;b<grandEdges.Count;b++){
+                        grandChild = grandEdges[b].Child;
+                        if(grandChild.Id==parent.Id){
                             edges.RemoveAt(i--);
+                            grandEdges.RemoveAt(b--);
                         }
                     }
                 }
-            }            
+            }
             return this;
         }
         /// <summary>
@@ -284,7 +276,7 @@ namespace GraphSharp.GraphStructures
 
             foreach(var n in _structureBase.WorkingGroup)
                 n.Edges.Clear();
-                
+
             foreach(var e in edges){
                 _structureBase.Nodes[e.Parent.Id].Edges.Add(e);
             }

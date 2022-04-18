@@ -80,11 +80,31 @@ namespace GraphSharp.Tests
                 var before = before_removal.FirstOrDefault(x=>x.parent==parentId);
                 var after = after_removal.FirstOrDefault(x=>x.parent==parentId);
                 if(before.children is null) continue;                
-                var diff = before.children.Except(after.children);
+                var diff = before.children.Except(after.children ?? Enumerable.Empty<int>());
                 foreach(var nodeId in diff){
-                    Assert.Contains(parentId,graph.Nodes[nodeId].Edges.Select(x=>x.Child.Id));
+                    Assert.Contains(parentId,before_removal.First(x=>x.parent==nodeId).children);
                 }
             }
+            //and concrete example
+
+            graph.Converter.FromConnectionsList(
+                new[]{
+                    (0,new []{1,2,3,5}),
+                    (1,new []{0,2}),
+                    (2,new []{1,3,5}),
+                    (3,new []{1,2,4}),
+                    (4,new []{3,5}),
+                    (5,new []{0,4})
+                }
+            );
+            graph.ForEach().RemoveUndirectedEdges();
+            var expected = new[]{
+                (0,new[]{2,3}),
+                (2,new[]{5}),
+                (3,new[]{1})
+            };
+            var actual = graph.Converter.ToConnectionsList().Select(x=>(x.parent,x.children.ToArray()));
+            Assert.Equal(expected,actual);
         }
         [Fact]
         public void MakeUndirectedWorks()
