@@ -19,8 +19,10 @@ namespace GraphSharp.Propagators
     {
         public IVisitor<TNode,TEdge> Visitor { get; init; }
         protected IList<TNode> _nodes;
-        protected byte[] _visited;
-        protected byte[] _toVisit;
+        protected const byte None = 0;
+        protected const byte ToVisit = 1;
+        protected const byte Visited = 2;
+        protected byte[] _nodeFlags;
         public PropagatorBase(IVisitor<TNode,TEdge> visitor)
         {
             Visitor = visitor;
@@ -31,20 +33,18 @@ namespace GraphSharp.Propagators
         /// <param name="indices">indices of nodes that will be used.</param>
         public void SetPosition(params int[] nodeIndices)
         {
-            if(_toVisit is null || _visited is null)
+            if(_nodeFlags is null)
                 throw new ApplicationException("Call SetNodes before calling SetPosition!");
             int nodesCount = _nodes.Count;
-            Array.Clear(_visited, 0, _visited.Length);
-            Array.Clear(_toVisit, 0, _toVisit.Length);
+            Array.Clear(_nodeFlags, 0, _nodeFlags.Length);
             for(int i = 0;i<nodeIndices.Count();i++){
-                _visited[nodeIndices[i]%nodesCount] = 1;
+                _nodeFlags[nodeIndices[i]%nodesCount] = Visited;
             }
         }
         public void SetNodes(IGraphStructure<TNode> nodes)
         {
             _nodes = nodes.Nodes;
-            _visited = new byte[_nodes.Count];
-            _toVisit = new byte[_nodes.Count];
+            _nodeFlags = new byte[_nodes.Count];
         }
         public virtual void Propagate()
         {
@@ -53,10 +53,8 @@ namespace GraphSharp.Propagators
             PropagateNodes();
 
             //swap next generaton and current.
-            Array.Clear(_toVisit, 0, _toVisit.Length);
-            var buf = _visited;
-            _visited = _toVisit;
-            _toVisit = buf;
+            for(int i = 0;i<_nodeFlags.Length;i++)
+                _nodeFlags[i] = (_nodeFlags[i] & Visited) == Visited ? ToVisit : None;
         }
         /// <summary>
         /// Method that will do main logic. It will propagate nodes from current generation to next generation selecting and visiting them in the proccess.

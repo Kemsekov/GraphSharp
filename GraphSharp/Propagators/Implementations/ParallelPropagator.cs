@@ -31,19 +31,19 @@ namespace GraphSharp.Propagators
             {
                 edge = edges[i];
                 if (!Visitor.Select(edge)) continue;
-                _visited.DangerousGetReferenceAt(edge.Child.Id)=1;
+                _nodeFlags.DangerousGetReferenceAt(edge.Child.Id)|=Visited;
             }
         }
         protected override void PropagateNodes()
         {
-            Parallel.For(0, _toVisit.Length, nodeId =>
+            Parallel.For(0, _nodeFlags.Length, nodeId =>
             {
-                if (_toVisit[nodeId] > 0)
+                if ((_nodeFlags[nodeId] & ToVisit)==ToVisit)
                     PropagateNode(_nodes[nodeId]);
             });
-            Parallel.For(0, _toVisit.Length, nodeId =>
+            Parallel.For(0, _nodeFlags.Length, nodeId =>
             {
-                if(_visited[nodeId]>0)
+                if((_nodeFlags[nodeId] & Visited)==Visited)
                     Visitor.Visit(_nodes[nodeId]);
             });
             Visitor.EndVisit();

@@ -27,7 +27,11 @@ var configuration = new GraphConfiguration<EmptyNode,EmptyEdge>(
     getNodeWeight: n=>0,
     setNodeWeight: (n,v)=>{},
     getEdgeWeight: e=>0,
-    setEdgeWeight: (e,v)=>{}
+    setEdgeWeight: (e,v)=>{},
+    getNodeColor: n=>System.Drawing.Color.White,
+    setNodeColor: (n,c)=>{},
+    getEdgeColor: e=>System.Drawing.Color.White,
+    setEdgeColor: (e,n)=>{}
 );
 
 GraphStructure<EmptyNode,EmptyEdge> nodes = default;
