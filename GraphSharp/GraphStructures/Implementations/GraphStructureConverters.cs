@@ -141,7 +141,9 @@ namespace GraphSharp.GraphStructures
         /// Clears all nodes and
         /// creates edges and nodes from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/> and <see cref="GraphStructureBase{,}.CreateNode"/>
         /// </summary>
-        public GraphStructureConverters<TNode,TEdge> FromConnectionsList(IEnumerable<(int parent,IEnumerable<int> children)> connectionsList){
+        public GraphStructureConverters<TNode,TEdge> FromConnectionsList<TEnumerable>(IEnumerable<(int parent,TEnumerable children)> connectionsList)
+        where TEnumerable : IEnumerable<int>
+        {
             
             var nodesCount = connectionsList.Max(x=>x.parent);
             foreach(var m in connectionsList){

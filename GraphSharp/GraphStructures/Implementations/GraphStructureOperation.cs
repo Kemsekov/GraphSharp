@@ -148,25 +148,12 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> MakeDirected()
         {
-            var Nodes = _structureBase.Nodes;
-            var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
-            foreach (var parent in WorkingGroup)
-            {
-                bool fine = false;
-                while (!fine)
-                {
-                    fine = true;
-                    for (int i = 0; i < parent.Edges.Count; i++)
-                    {
-                        var edge = parent.Edges[i];
-
-                        var toRemove = edge.Child.Edges.Any(x => x.Child.Id == parent.Id);
-                        if (toRemove)
-                        {
-                            parent.Edges.Remove(edge);
-                            fine = false;
-                        }
+            foreach(var parent in _structureBase.WorkingGroup)
+            foreach(var e in parent.Edges){
+                var edges = e.Child.Edges;
+                for(int i = 0;i<edges.Count;i++){
+                    if(edges[i].Child.Id==parent.Id){
+                        edges.RemoveAt(i--);
                     }
                 }
             }
@@ -202,7 +189,7 @@ namespace GraphSharp.GraphStructures
                     var edges = node.Edges;
                     for(int i = 0;i<edges.Count;i++)
                         if(flags[edges[i].Child.Id]==3)
-                            edges.Remove(edges[i--]);
+                            edges.RemoveAt(i--);
                     didSomething = true;
                 },
                 select: edge=>flags[edge.Child.Id]==1,
@@ -223,6 +210,27 @@ namespace GraphSharp.GraphStructures
             }
             return this;
 
+        }
+        /// <summary>
+        /// Will remove edges that bidirectional or just undirected.
+        /// </summary>
+        public GraphStructureOperation<TNode,TEdge> RemoveUndirectedEdges(){
+            foreach(var parent in _structureBase.WorkingGroup){
+                var edges = parent.Edges;
+                for(int i = 0;i<edges.Count;i++){
+                    var child = edges[i].Child;
+                    var grandEdges = child.Edges;
+                    TNode grandChild;
+                    for(int b = 0;b<grandEdges.Count;b++){
+                        grandChild = grandEdges[b].Child;
+                        if(grandChild.Id==parent.Id){
+                            edges.RemoveAt(i--);
+                            grandEdges.RemoveAt(b--);
+                        }
+                    }
+                }
+            }
+            return this;
         }
         /// <summary>
         /// Makes every connection between two nodes from <see cref="IGraphStructure{}.WorkingGroup"/> bidirectional.
@@ -265,7 +273,10 @@ namespace GraphSharp.GraphStructures
                     edges.Add(e);
                 }
             }
-            RemoveEdges();
+
+            foreach(var n in _structureBase.WorkingGroup)
+                n.Edges.Clear();
+
             foreach(var e in edges){
                 _structureBase.Nodes[e.Parent.Id].Edges.Add(e);
             }
@@ -286,9 +297,12 @@ namespace GraphSharp.GraphStructures
                 parent.Edges.Clear();
                 foreach (var node in Nodes)
                 {
-                    var toRemove = node.Edges.FirstOrDefault(x => x.Child.Id == parent.Id);
-                    if (toRemove is not null)
-                        node.Edges.Remove(toRemove);
+                    var edges = node.Edges;
+                    for(int i = 0;i<edges.Count;i++){
+                        if(edges[i].Child.Id==parent.Id){
+                            node.Edges.RemoveAt(i--);
+                        }
+                    }
                 }
             }
             return this;
