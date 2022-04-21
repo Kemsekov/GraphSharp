@@ -186,12 +186,6 @@ namespace GraphSharp.Tests
 
             validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
             ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, minCountOfNodes, maxCountOfNodes);
-
-            Parallel.ForEach(_GraphStructure.Nodes, node =>
-            {
-                var edges = node.Edges.Select(child => child.Child).ToList();
-                validateThereIsNoCopiesAndParentInEdges(edges);
-            });
         }
         [Fact]
         public void ClearWorkingGroup_Works()
