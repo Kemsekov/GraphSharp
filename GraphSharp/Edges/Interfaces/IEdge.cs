@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using GraphSharp.Nodes;
-
 namespace GraphSharp.Edges
 {
     public interface IEdge : IComparable<IEdge>

@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
-
-namespace GraphSharp.GraphStructures.Interfaces
+namespace GraphSharp.GraphStructures
 {
     /// <summary>
     /// A set of methods and properties that used to describe manipulations on nodes and edges
@@ -20,7 +16,7 @@ namespace GraphSharp.GraphStructures.Interfaces
         /// <summary>
         /// <see cref="Random"/> that used to implement's any logic when it reqires random values
         /// </summary>
-        public Random Rand { get;set; }
+        public Random Rand {get;}
         /// <summary>
         /// Method that used to create instance of <see cref="TNode"/> from it's <see cref="INode.Id"/> as argument
         /// </summary>
@@ -66,5 +62,13 @@ namespace GraphSharp.GraphStructures.Interfaces
         /// Method that used to assign color to particular <see cref="TEdge"/>
         /// </summary>
         void SetEdgeColor(TEdge edge, Color color);
+        /// <summary>
+        /// Get node position
+        /// </summary>
+        System.Numerics.Vector2 GetNodePosition(TNode node);
+        /// <summary>
+        /// Set node position
+        /// </summary>
+        void SetNodePosition(TNode node, System.Numerics.Vector2 position);
     }
 }

@@ -8,9 +8,6 @@ using GraphSharp.Extensions;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearAlgebra.Single;
-
 namespace GraphSharp.GraphStructures
 {
     /// <summary>

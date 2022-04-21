@@ -20,9 +20,7 @@ namespace GraphSharp.Tests
         public GraphStructureConvertersTests()
         {
             _rand = new Random();
-            _GraphStructure = new(new TestGraphConfiguration(){
-                Rand = new Random()
-            });
+            _GraphStructure = new(new TestGraphConfiguration(new Random()));
         }
 
         [Fact]

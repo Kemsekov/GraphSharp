@@ -21,9 +21,7 @@ namespace GraphSharp.Tests
         public GraphStructureTests()
         {
             this._nodes_count = 500;
-            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){
-                Rand = new Random()
-            }).CreateNodes(_nodes_count);
+            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new Random())).CreateNodes(_nodes_count);
         }
         [Fact]
         public void ConnectToClosestWorks()
@@ -38,14 +36,14 @@ namespace GraphSharp.Tests
             //create two identical nodes list
             var seed = new Random().Next();
             var directed =
-                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
+                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new(seed)))
                     .CreateNodes(2000);
             directed
                 .ForEach()
                 .ConnectNodes(20)
                 .MakeDirected();
             var undirected =
-                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
+                new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new(seed)))
                     .CreateNodes(2000);
             undirected
                 .ForEach()

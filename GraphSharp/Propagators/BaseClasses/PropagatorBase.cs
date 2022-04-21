@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
