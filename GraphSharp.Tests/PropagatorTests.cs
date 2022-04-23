@@ -27,7 +27,7 @@ namespace GraphSharp.Tests
             _propagatorFactories[0] = visitor => new Propagator<TestNode,TestEdge>(visitor);
             _propagatorFactories[1] = visitor => new ParallelPropagator<TestNode,TestEdge>(visitor);
             _nodes = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).CreateNodes(1000);
-            _nodes.ForEach().ConnectNodes(10);
+            _nodes.Do.ConnectNodes(10);
         }
 
         [Fact]

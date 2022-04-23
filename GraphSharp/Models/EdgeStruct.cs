@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace GraphSharp.Models
 {
-
+    /// <summary>
+    /// Struct that unifies the edge data
+    /// </summary>
     public struct EdgeStruct
     {
         public int ParentId;

@@ -13,7 +13,6 @@ namespace GraphSharp.GraphStructures
     public interface IGraphStructure<TNode>
     where TNode : INode
     {
-        IEnumerable<TNode> WorkingGroup { get; }
         IList<TNode> Nodes { get; }
     }
 }

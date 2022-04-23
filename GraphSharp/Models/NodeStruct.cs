@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace GraphSharp.Models
 {
-
+    /// <summary>
+    /// Struct that unifies the node data
+    /// </summary>
     public struct NodeStruct
     {
         public int Id;

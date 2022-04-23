@@ -20,7 +20,7 @@ namespace GraphSharp.Nodes
             Id = id;
             Edges = new List<TEdge>();
         }
-        public int Id{get;init;}
+        public int Id{get;set;}
         public IList<TEdge> Edges{get;}
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Extensions;
+using GraphSharp.GraphStructures.Interfaces;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
@@ -14,7 +15,7 @@ using MathNet.Numerics.LinearAlgebra.Single;
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Contains methods to modify relationships between nodes and edges for <see cref="IGraphStructure{}.WorkingGroup"/> which is subgraph of <see cref="IGraphStructure{}.Nodes"/>
+    /// Contains methods to modify relationships between nodes and edges.
     /// </summary>
     public class GraphStructureOperation<TNode,TEdge>
     where TNode : NodeBase<TEdge>
@@ -27,17 +28,16 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Randomly create edgesCount edges for each node from <see cref="IGraphStructure{}.WorkingGroup"/>
+        /// Randomly create edgesCount edges for each node
         /// </summary>
         /// <param name="edgesCount">How much edges each node need</param>
         public GraphStructureOperation<TNode,TEdge> ConnectNodes(int edgesCount)
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
             edgesCount = edgesCount > Nodes.Count ? Nodes.Count : edgesCount;
 
-            foreach (var node in WorkingGroup)
+            foreach (var node in Nodes)
             {
                 var start_index = Configuration.Rand.Next(Nodes.Count);
                 ConnectNodeToNodes(node, start_index, edgesCount);
@@ -45,7 +45,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Randomly create some range of edges for each node from <see cref="IGraphStructure{}.WorkingGroup"/>, so each node have more or equal than minEdgesCount but than less maxEdgesCount edges.
+        /// Randomly create some range of edges for each node, so each node have more or equal than minEdgesCount but than less maxEdgesCount edges.
         /// </summary>
         /// <param name="minEdgesCount">Min count of edges for each node</param>
         /// <param name="maxEdgesCount">Max count of edges for each node</param>
@@ -53,7 +53,6 @@ namespace GraphSharp.GraphStructures
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
             minEdgesCount = minEdgesCount < 0 ? 0 : minEdgesCount;
             maxEdgesCount = maxEdgesCount > Nodes.Count ? Nodes.Count : maxEdgesCount;
 
@@ -65,7 +64,7 @@ namespace GraphSharp.GraphStructures
                 minEdgesCount = minEdgesCount ^ maxEdgesCount;
             }
 
-            foreach (var node in WorkingGroup)
+            foreach (var node in Nodes)
             {
                 int edgesCount = Configuration.Rand.Next(minEdgesCount,maxEdgesCount);
                 var startIndex = Configuration.Rand.Next(Nodes.Count);
@@ -81,7 +80,6 @@ namespace GraphSharp.GraphStructures
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
             lock (node)
                 for (int i = 0; i < edgesCount; i++)
                 {
@@ -98,7 +96,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Randomly connects closest nodes in current <see cref="IGraphStructure{}.WorkingGroup"/> using <see cref="GraphStructureBase{,}.Distance"/>. Producing bidirectional graph. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
+        /// Randomly connects closest nodes using <see cref="IGraphConfiguration{,}.Distance"/>. Producing bidirectional graph. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
         /// </summary>
         /// <param name="minEdgesCount">minimum edges count</param>
         /// <param name="maxEdgesCount">maximum edges count</param>
@@ -106,17 +104,17 @@ namespace GraphSharp.GraphStructures
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
             var edgesCountMap = new ConcurrentDictionary<INode, int>();
-            foreach (var parent in WorkingGroup)
+            foreach (var parent in Nodes)
                 edgesCountMap[parent] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 
             var locker = new object();
-            Parallel.ForEach(WorkingGroup, parent =>
+            var source = Nodes.Select(x=>x.Id);
+            Parallel.ForEach(Nodes, parent =>
             {
                 var edgesCount = edgesCountMap[parent];
                 if (parent.Edges.Count() >= edgesCount) return;
-                var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, parent);
+                var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, parent,source);
                 foreach (var nodeId in toAdd)
                     lock (locker)
                     {
@@ -129,14 +127,13 @@ namespace GraphSharp.GraphStructures
             });
             return this;
         }
-        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, TNode parent)
+        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, TNode parent,IEnumerable<int> source)
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
-            if (WorkingGroup.Count() == 0) return Enumerable.Empty<int>();
+            if (source.Count() == 0) return Enumerable.Empty<int>();
 
-            var result = WorkingGroup.Select(x => x.Id).FindFirstNMinimalElements(
+            var result = source.FindFirstNMinimalElements(
                 n: edgesCount,
                 comparison: (t1, t2) => Configuration.Distance(parent, Nodes[t1]) > Configuration.Distance(parent, Nodes[t2]) ? 1 : -1,
                 skipElement: (nodeId) => Nodes[nodeId].Id == parent.Id || Nodes[nodeId].Edges.Count >= maxEdgesCount);
@@ -144,11 +141,11 @@ namespace GraphSharp.GraphStructures
             return result;
         }
         /// <summary>
-        /// Makes every connection between two nodes from <see cref="IGraphStructure{}.WorkingGroup"/> onedirectional.
+        /// Randomly makes every connection between two nodes onedirectional.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> MakeDirected()
         {
-            foreach(var parent in _structureBase.WorkingGroup)
+            foreach(var parent in _structureBase.Nodes)
             foreach(var e in parent.Edges){
                 var edges = e.Child.Edges;
                 for(int i = 0;i<edges.Count;i++){
@@ -160,7 +157,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Will run BFS on <see cref="IGraphStructure{}.WorkingGroup"/> from each of nodeIndices and remove parents for each visited node except those that was visited already. 
+        /// Will run BFS from each of nodeIndices and remove parents for each visited node except those that was visited already. 
         /// Making source out of each node from nodeIndices and making sinks or undirected edges at intersections of running BFS.
         /// </summary>
         /// <param name="nodeIndices"></param>
@@ -168,35 +165,31 @@ namespace GraphSharp.GraphStructures
             if(nodeIndices.Count()==0 || _structureBase.Nodes.Count==0) return this;
             
             var Nodes = _structureBase.Nodes;
-            var WorkingGroup = _structureBase.WorkingGroup;
             var Configuration = _structureBase.Configuration;
-            //flag for each node: 1 - is allowed to visit. 2 - is visited.
+            //flag for each node:  1 - is visited.
+
             var flags = new byte[Nodes.Count];
             
-            foreach(var n in WorkingGroup)
-                flags[n.Id]=1;
-            
             foreach(var i in nodeIndices)
-                if(flags[i]==0)
-                    throw new ArgumentException("Node with index "+i+" is not in WorkingGroup");
+                if(i>Nodes.Count)
+                    throw new ArgumentException("nodeIndex is out of range");
             
             var didSomething = true;
             
             var visitor = new ActionVisitor<TNode,TEdge>(
                 visit: node=>{
-                    lock(flags)
-                        flags[node.Id] = 2;
+                    flags[node.Id] = 1;
                     var edges = node.Edges;
                     for(int i = 0;i<edges.Count;i++)
-                        if(flags[edges[i].Child.Id]==3)
+                        if(flags[edges[i].Child.Id]==2)
                             edges.RemoveAt(i--);
                     didSomething = true;
                 },
-                select: edge=>flags[edge.Child.Id]==1,
+                select: edge=>flags[edge.Child.Id]==0,
                 endVisit: ()=>{
                     for(int i = 0;i<flags.Length;i++)
-                        if(flags[i]==2)
-                            flags[i] = 3;
+                        if(flags[i]==1)
+                            flags[i] = 2;
                 }
             );
             
@@ -211,11 +204,12 @@ namespace GraphSharp.GraphStructures
             return this;
 
         }
+        
         /// <summary>
-        /// Will remove edges that bidirectional or just undirected.
+        /// Removes undirected edges.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> RemoveUndirectedEdges(){
-            foreach(var parent in _structureBase.WorkingGroup){
+            foreach(var parent in _structureBase.Nodes){
                 var edges = parent.Edges;
                 for(int i = 0;i<edges.Count;i++){
                     var child = edges[i].Child;
@@ -233,20 +227,18 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Makes every connection between two nodes from <see cref="IGraphStructure{}.WorkingGroup"/> bidirectional.
+        /// Makes every connection between two nodes bidirectional, producing undirected graph.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> MakeUndirected()
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
-            Parallel.ForEach(WorkingGroup, parent =>
+            Parallel.ForEach(Nodes, parent =>
              {
 
                  for (int i = 0; i < parent.Edges.Count; i++)
                  {
                      var edge = parent.Edges[i];
-
                      lock (edge.Child)
                      {
                         var toAdd = !edge.Child.Edges.Any(x => x.Child.Id == parent.Id);
@@ -261,11 +253,11 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Reverse every edge connection from <see cref="IGraphStructure{}.WorkingGroup"/> ==> like swap(edge.ParentId,edge.ChildId)
+        /// Reverse every edge connection ==> like swap(edge.Parent,edge.Child)
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> ReverseEdges(){
             var edges = new List<TEdge>();
-            foreach(var n in _structureBase.WorkingGroup){
+            foreach(var n in _structureBase.Nodes){
                 foreach(var e in n.Edges){
                     var parent = e.Parent;
                     e.Parent = e.Child;
@@ -274,34 +266,55 @@ namespace GraphSharp.GraphStructures
                 }
             }
 
-            foreach(var n in _structureBase.WorkingGroup)
+            foreach(var n in _structureBase.Nodes)
                 n.Edges.Clear();
 
-            foreach(var e in edges){
+            foreach(var e in edges)
                 _structureBase.Nodes[e.Parent.Id].Edges.Add(e);
-            }
+            
             return this;
         }
         /// <summary>
-        /// Disconnects all nodes from <see cref="IGraphStructure{}.WorkingGroup"/> from each other.
-        /// It is not removing nodes from <see cref="IGraphStructure{}.Nodes"/>.
-        /// Making each node isolated.
+        /// Removes all outcoming edges from each node that satisfies predicate.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> RemoveEdges()
+        public GraphStructureOperation<TNode,TEdge> RemoveEdges(Predicate<TEdge> toRemove)
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var WorkingGroup = _structureBase.WorkingGroup;
-            foreach (var parent in WorkingGroup)
+            foreach (var parent in Nodes){
+                var edges = parent.Edges;
+                for(int i = 0;i<edges.Count;i++){
+                    if(toRemove(edges[i])){
+                        edges.RemoveAt(i--);
+                    }
+                }
+            }
+            
+            return this;
+        }
+
+        /// <summary>
+        /// Isolates nodes. Removes all incoming and outcoming connections from each node that satisfies predicate.
+        /// </summary>
+        public GraphStructureOperation<TNode,TEdge> Isolate(Predicate<TNode> toIsolate)
+        {
+            var Nodes = _structureBase.Nodes;
+            var toIsolateNodes = Nodes.Count()<4096 ? stackalloc byte[4096] : new byte[Nodes.Count];
+            foreach(var n in Nodes){
+                if(toIsolate(n))
+                    toIsolateNodes[n.Id] = 1;
+            }
+
+            foreach (var parent in Nodes)
+                if (toIsolateNodes[parent.Id] == 1)
+                    parent.Edges.Clear();
+            
+            foreach (var parent in Nodes)
             {
-                parent.Edges.Clear();
-                foreach (var node in Nodes)
-                {
-                    var edges = node.Edges;
-                    for(int i = 0;i<edges.Count;i++){
-                        if(edges[i].Child.Id==parent.Id){
-                            node.Edges.RemoveAt(i--);
-                        }
+                var edges = parent.Edges;
+                for(int i = 0;i<edges.Count;i++){
+                    if(toIsolateNodes[edges[i].Child.Id] == 1){
+                        edges.RemoveAt(i--);
                     }
                 }
             }

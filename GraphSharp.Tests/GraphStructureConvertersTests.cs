@@ -174,7 +174,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void FromConnectionsList_Works(){
             _GraphStructure.CreateNodes(50)
-            .ForEach().ConnectRandomly(2,10);
+            .Do.ConnectRandomly(2,10);
             var expected = _GraphStructure.Converter.ToConnectionsList();
             var actual = _GraphStructure.Converter.FromConnectionsList(expected).ToConnectionsList();
             Assert.NotEmpty(actual);
@@ -198,9 +198,8 @@ namespace GraphSharp.Tests
         public void FromExtendedConnectionsList_Works(){
             _GraphStructure
                 .CreateNodes(500)
-                .ForEach()
+                .Do
                 .ConnectNodes(10);
-            _GraphStructure.ClearWorkingGroup();
 
             var expected = _GraphStructure.Converter.ToExtendedConnectionsList();
             var actual = _GraphStructure.Converter.FromExtendedConnectionsList(expected.nodes,expected.edges).ToExtendedConnectionsList();

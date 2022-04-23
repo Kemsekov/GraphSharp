@@ -22,17 +22,12 @@ namespace GraphSharp.GraphStructures
         /// Configuration for all needed operations with nodes and edges
         /// </summary>
         public IGraphConfiguration<TNode,TEdge> Configuration{get;protected set;}
-        /// <summary>
-        /// Subset of <see cref="IGraphStructure{,}.Nodes"/> that used to modify nodes.
-        /// </summary>
-        public IEnumerable<TNode> WorkingGroup { get; protected set; }
         public IList<TNode> Nodes { get; protected set; }
         /// <summary>
         /// Base copy constructor. Will make shallow copy of structureBase
         /// </summary>
         public GraphStructureBase(GraphStructureBase<TNode, TEdge> structureBase)
         {
-            WorkingGroup  = structureBase.WorkingGroup;
             Nodes         = structureBase.Nodes;
             Configuration = structureBase.Configuration;
         }

@@ -11,7 +11,7 @@ using MathNet.Numerics.LinearAlgebra.Single;
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Create nodes for graph structure / set working group
+    /// Create nodes for graph structure. Entry for any other logic of graph structure.
     /// </summary>
     public partial class GraphStructure<TNode,TEdge> : GraphStructureBase<TNode,TEdge> 
     where TNode : NodeBase<TEdge>
@@ -51,47 +51,22 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Will set <see cref="IGraphStructure{}.WorkingGroup"/> to <see cref="IGraphStructure{}.Nodes"/>
+        /// Returns operations class for nodes
         /// </summary>
-        /// <returns></returns>
-        public GraphStructureOperation<TNode,TEdge> ForEach()
-        {
-            WorkingGroup = Nodes;
-            return new(this);
-        }
-
-        /// <summary>
-        /// Will set <see cref="IGraphStructure{}.WorkingGroup"/> to some particular node from <see cref="IGraphStructure{}.Nodes"/> with id == nodeId
-        /// </summary>
-        /// <param name="nodeId">Node id</param>
-        /// <returns></returns>
-        public GraphStructureOperation<TNode,TEdge> ForOne(int nodeId)
-        {
-            WorkingGroup = Nodes.Where(x => x.Id == nodeId);
-            return new(this);
-        }
-
-        /// <summary>
-        /// Will set <see cref="IGraphStructure{}.WorkingGroup"/> to some subset of <see cref="IGraphStructure{}.Nodes"/>
-        /// </summary>
-        /// <param name="selector">Method that used to select subset of nodes from current <see cref="IGraphStructure{}.Nodes"/></param>
-        /// <returns></returns>
-        public GraphStructureOperation<TNode,TEdge> ForNodes(Func<IEnumerable<TNode>, IEnumerable<TNode>> selector)
-        {
-            WorkingGroup = selector(Nodes);
-            return new(this);
-        }
+        public GraphStructureOperation<TNode,TEdge> Do => new GraphStructureOperation<TNode, TEdge>(this);
         /// <summary>
         /// Get converter for current graph structure
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
+        
         /// <summary>
-        /// Clears current <see cref="IGraphStructure{}.WorkingGroup"/> 
+        /// Reindex nodes in graph structure.
         /// </summary>
-        /// <returns><see cref="GraphStructure{,}"/> that can be used to reset <see cref="IGraphStructure{}.WorkingGroup"/> </returns>
-        public GraphStructure<TNode,TEdge> ClearWorkingGroup(){
-            WorkingGroup = Enumerable.Empty<TNode>();
-            return new(this);
+        /// <returns></returns>
+        public GraphStructure<TNode,TEdge> ReindexNodes(){
+            for (int i = 0; i < Nodes.Count; i++)
+                Nodes[i].Id = i;
+            return this;
         }
     }
 }
