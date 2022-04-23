@@ -245,6 +245,20 @@ namespace GraphSharp.Tests
             }
             Assert.NotEqual(before_reverse,after_reverse);
         }
+        [Fact]
+        public void Clone_Works(){
+            _GraphStructure.Do.ConnectRandomly(1,5);
+            var clone = _GraphStructure.Clone();
+            Assert.Equal(_GraphStructure.Nodes,clone.Nodes);
+            Assert.Equal(_GraphStructure.EdgesCount(),clone.EdgesCount());
+            var t1 = _GraphStructure.Converter.ToConnectionsList();
+            var t2 = clone.Converter.ToConnectionsList();
+            Assert.Equal(t1,t2);
+            clone.Do.RemoveEdges(x=>x.Child.Id%2==0);
+            t1 = _GraphStructure.Converter.ToConnectionsList();
+            t2 = clone.Converter.ToConnectionsList();
+            Assert.NotEqual(t1,t2);
+        }
         public void validateThereIsNoCopiesAndParentInEdges(IEnumerable<TestNode> nodes)
         {
             foreach (var parent in nodes)

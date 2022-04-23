@@ -7,6 +7,9 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
+    /// <summary>
+    /// Implementation of the <see cref="IGraphConfiguration{,}"/> that uses various interfaces to hide configuration implementation.
+    /// </summary>
     public abstract class GraphConfiguration<TNode, TEdge> : IGraphConfiguration<TNode, TEdge>
     where TNode : NodeBase<TEdge>, IWeighted, IColored, IPositioned
     where TEdge : EdgeBase<TNode>, IWeighted, IColored

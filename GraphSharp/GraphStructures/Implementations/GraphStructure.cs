@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GraphSharp.Common;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
 namespace GraphSharp.GraphStructures
@@ -8,12 +9,15 @@ namespace GraphSharp.GraphStructures
     /// <summary>
     /// Create nodes for graph structure. Entry for any other logic of graph structure.
     /// </summary>
-    public partial class GraphStructure<TNode,TEdge> : GraphStructureBase<TNode,TEdge> 
+    public partial class GraphStructure<TNode,TEdge> : GraphStructureBase<TNode,TEdge>, GraphSharp.Common.ICloneable<GraphStructure<TNode,TEdge>>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
         public GraphStructure(IGraphConfiguration<TNode,TEdge> configuration) : base(configuration)
         {}
+        /// <summary>
+        /// Copy constructor. Will make shallow copy of graphStructure
+        /// </summary>
         public GraphStructure(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure) 
         {}
 
@@ -62,6 +66,18 @@ namespace GraphSharp.GraphStructures
             for (int i = 0; i < Nodes.Count; i++)
                 Nodes[i].Id = i;
             return this;
+        }
+
+        /// <summary>
+        /// Clones graph structure
+        /// </summary>
+        /// <returns></returns>
+        public GraphStructure<TNode,TEdge> Clone()
+        {
+            var graphInfo = this.Converter.ToExtendedConnectionsList();
+            var result = new GraphStructure<TNode,TEdge>(this);
+            result.Converter.FromExtendedConnectionsList(graphInfo.nodes,graphInfo.edges);
+            return result;
         }
     }
 }
