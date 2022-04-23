@@ -1,9 +1,4 @@
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using GraphSharp.Visitors;
-using System.Runtime.CompilerServices;
 using GraphSharp.Edges;
-
 namespace GraphSharp.Nodes
 {
     /// <summary>

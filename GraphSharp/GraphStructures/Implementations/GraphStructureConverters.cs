@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Models;
 using GraphSharp.Nodes;
@@ -75,7 +74,7 @@ namespace GraphSharp.GraphStructures
             var edges = new List<EdgeStruct>();
             for(int i = 0;i<Nodes.Count;i++){
                 var parent = Nodes[i];
-                var nodeStruct = new NodeStruct(parent.Id,Configuration.GetNodeWeight(parent),Configuration.GetNodeColor(parent));
+                var nodeStruct = new NodeStruct(parent.Id,Configuration.GetNodeWeight(parent),Configuration.GetNodeColor(parent),Configuration.GetNodePosition(parent));
                 var _edges = new List<EdgeStruct>();
                 foreach(var e in parent.Edges){
                     _edges.Add(new EdgeStruct(parent.Id,e.Child.Id,Configuration.GetEdgeWeight(e),Configuration.GetEdgeColor(e)));
@@ -144,7 +143,6 @@ namespace GraphSharp.GraphStructures
         public GraphStructureConverters<TNode,TEdge> FromConnectionsList<TEnumerable>(IEnumerable<(int parent,TEnumerable children)> connectionsList)
         where TEnumerable : IEnumerable<int>
         {
-            
             var nodesCount = connectionsList.Max(x=>x.parent);
             foreach(var m in connectionsList){
                 foreach(var e in m.children)
@@ -182,6 +180,7 @@ namespace GraphSharp.GraphStructures
             foreach(var n in nodes){
                 Configuration.SetNodeWeight(Nodes[n.Id],n.Weight);
                 Configuration.SetNodeColor(Nodes[n.Id],n.Color);
+                Configuration.SetNodePosition(Nodes[n.Id],n.Position);
             }
             foreach(var e in edges){
                 var edge = Configuration.CreateEdge(Nodes[e.ParentId],Nodes[e.ChildId]);

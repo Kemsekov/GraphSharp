@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-using GraphSharp;
-using GraphSharp.Propagators;
-using GraphSharp.Visitors;
 using GraphSharp.GraphStructures;
-using GraphSharp.Nodes;
-using GraphSharp.Edges;
 
 Stopwatch MeasureTime(Action operation)
 {
@@ -20,19 +15,7 @@ const int nodes_count = 11000;
 const int edges_count = 20;
 const int steps_count = 2400;
 
-var configuration = new GraphConfiguration<EmptyNode,EmptyEdge>(
-    createNode: id => new EmptyNode(id),
-    createEdge: (p,c)=> new EmptyEdge(p,c),
-    distance: (n1,n2)=>0,
-    getNodeWeight: n=>0,
-    setNodeWeight: (n,v)=>{},
-    getEdgeWeight: e=>0,
-    setEdgeWeight: (e,v)=>{},
-    getNodeColor: n=>System.Drawing.Color.White,
-    setNodeColor: (n,c)=>{},
-    getEdgeColor: e=>System.Drawing.Color.White,
-    setEdgeColor: (e,n)=>{}
-);
+var configuration = new EmptyGraphConfiguration();
 
 GraphStructure<EmptyNode,EmptyEdge> nodes = default;
 
