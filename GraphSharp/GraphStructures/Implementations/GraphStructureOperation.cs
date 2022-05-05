@@ -316,6 +316,37 @@ namespace GraphSharp.GraphStructures
             }
             return this;
         }
+        /// <summary>
+        /// Removes nodes that satisfies predicate.
+        /// </summary>
+        /// <param name="toRemove"></param>
+        /// <returns></returns>
+        public GraphStructureOperation<TNode,TEdge> RemoveNodes(Predicate<TNode> toRemove){
+            var nodes = _structureBase.Nodes;
+            for(int i = 0;i<nodes.Count;i++){
+                if(toRemove(nodes[i])){
+                    nodes.RemoveAt(i--);
+                }
+            }
+            _structureBase.ReindexNodes();
+            return this;
+        }
+        /// <summary>
+        /// Removes isolated nodes and reindex left nodes. See <see cref="GraphStructure{,}.ReindexNodes"/>
+        /// </summary>
+        public GraphStructureOperation<TNode,TEdge> RemoveIsolatedNodes(){
+            var Nodes = _structureBase.Nodes;
+            var Configuration = _structureBase.Configuration;
+            var parentsCount = _structureBase.CountParents();
+            for(int i = 0;i<Nodes.Count;i++){
+                var n = Nodes[i];
+                if(n.Edges.Count==0 && parentsCount[n.Id]==0){
+                    Nodes.RemoveAt(i--);
+                }
+            }
+            _structureBase.ReindexNodes();
+            return this;
+        }
 
     }
 }

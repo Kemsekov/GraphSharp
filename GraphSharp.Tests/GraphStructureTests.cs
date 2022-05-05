@@ -259,6 +259,33 @@ namespace GraphSharp.Tests
             t2 = clone.Converter.ToConnectionsList();
             Assert.NotEqual(t1,t2);
         }
+        [Fact]
+        public void ReindexNodes_Works(){
+            _GraphStructure.Nodes.RemoveAt(3);
+            _GraphStructure.Nodes.RemoveAt(5);
+            _GraphStructure.Nodes.RemoveAt(7);
+            _GraphStructure.Nodes.RemoveAt(19);
+            _GraphStructure.Nodes.RemoveAt(40);
+            _GraphStructure.Nodes.RemoveAt(66);
+            _GraphStructure.ReindexNodes();
+            for(int i = 0;i<_GraphStructure.Nodes.Count;i++){
+                Assert.Equal(_GraphStructure.Nodes[i].Id,i);
+            }
+        }
+        [Fact]
+        public void RemoveIsolatedNodes_Works(){
+            _GraphStructure.Do.ConnectRandomly(2,6);
+            var before = _GraphStructure.Clone();
+            before.Do.RemoveNodes(x=>x.Id%2==0);
+
+            _GraphStructure.Do.Isolate(x=>x.Id%2==0).RemoveIsolatedNodes();
+            var after = _GraphStructure;
+            
+            Assert.Equal(before.Nodes,after.Nodes);
+            foreach(var n in before.Nodes.Zip(after.Nodes)){
+                Assert.Equal(n.First.Id,n.Second.Id);
+            }
+        }
         public void validateThereIsNoCopiesAndParentInEdges(IEnumerable<TestNode> nodes)
         {
             foreach (var parent in nodes)

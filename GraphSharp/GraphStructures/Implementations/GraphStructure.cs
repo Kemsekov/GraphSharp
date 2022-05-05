@@ -79,5 +79,14 @@ namespace GraphSharp.GraphStructures
             result.Converter.FromExtendedConnectionsList(graphInfo.nodes,graphInfo.edges);
             return result;
         }
+        public GraphStructure<TNode,TEdge> Induce(Predicate<TNode> toInduce)
+        {
+            var result = new GraphStructure<TNode,TEdge>(Configuration);
+            result.Nodes = Nodes.Where(x=>toInduce(x)).ToList();
+            for(int i = 0;i<result.Nodes.Count;i++){
+                result.Nodes[i] = Configuration.CreateNode(i);
+            }
+            return result;
+        }
     }
 }
