@@ -31,7 +31,7 @@ namespace GraphSharp.GraphStructures
             var result = new List<(int parent,IEnumerable<int> children)>();
             foreach(var n in _structureBase.Nodes){
                 var children = new List<int>();
-                foreach(var e in n.Edges){
+                foreach(var e in _structureBase.Edges[n.Id]){
                     children.Add(e.Child.Id);
                 }
                 if(children.Count!=0){
@@ -42,25 +42,18 @@ namespace GraphSharp.GraphStructures
             return result;
         }
          /// <summary>
-        /// Converts current <see cref="IGraphStructure.Nodes"/> to adjacency matrix using <see cref="IGraphStructure.GetWeight"/> to determine matrix value per <see cref="IEdge"/>
+        /// Converts current <see cref="IGraphStructure.Nodes"/> to sparse adjacency matrix.
         /// </summary>
         public Matrix ToAdjacencyMatrix()
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
             Matrix adjacencyMatrix;
-            //if matrix size will take more than 64 mb of RAM then make it sparse
-            if (Nodes.Count > 4096)
-                adjacencyMatrix = SparseMatrix.Create(Nodes.Count, Nodes.Count, 0);
-            else
-                adjacencyMatrix = DenseMatrix.Create(Nodes.Count, Nodes.Count, 0);
-
-            for (int i = 0; i < Nodes.Count; i++)
+            int max_node_id = Nodes.Max(n => n.Id);
+            adjacencyMatrix = SparseMatrix.Create(max_node_id, max_node_id, 0);
+            foreach(var e in _structureBase.Edges)
             {
-                foreach (var e in Nodes[i].Edges)
-                {
-                    adjacencyMatrix[i, e.Child.Id] = Configuration.GetEdgeWeight(e);
-                }
+                adjacencyMatrix[e.Parent.Id, e.Child.Id] = Configuration.GetEdgeWeight(e);
             }
             return adjacencyMatrix;
         }
@@ -76,7 +69,7 @@ namespace GraphSharp.GraphStructures
                 var parent = Nodes[i];
                 var nodeStruct = new NodeStruct(parent.Id,Configuration.GetNodeWeight(parent),Configuration.GetNodeColor(parent),Configuration.GetNodePosition(parent));
                 var _edges = new List<EdgeStruct>();
-                foreach(var e in parent.Edges){
+                foreach(var e in _structureBase.Edges[parent.Id]){
                     _edges.Add(new EdgeStruct(parent.Id,e.Child.Id,Configuration.GetEdgeWeight(e),Configuration.GetEdgeColor(e)));
                 }
                 nodes.Add(nodeStruct);
@@ -101,7 +94,7 @@ namespace GraphSharp.GraphStructures
                 for(int b = 0;b<width;b++){
                     if(adjacencyMatrix[i,b]!=0){
                         var edge = Configuration.CreateEdge(Nodes[i],Nodes[b]);
-                        Nodes[i].Edges.Add(edge);
+                        _structureBase.Edges.Add(edge);
                         Configuration.SetEdgeWeight(edge,adjacencyMatrix[i,b]);
                     }
                 }
@@ -130,9 +123,9 @@ namespace GraphSharp.GraphStructures
                     }
                 }
                 if(n1.Value==1)
-                    n1.Node.Edges.Add(Configuration.CreateEdge(n1.Node,n2.Node));
+                    _structureBase.Edges.Add(Configuration.CreateEdge(n1.Node,n2.Node));
                 if(n2.Value==1)
-                    n2.Node.Edges.Add(Configuration.CreateEdge(n2.Node,n1.Node));
+                    _structureBase.Edges.Add(Configuration.CreateEdge(n2.Node,n1.Node));
             }
             return this;
         }
@@ -151,12 +144,13 @@ namespace GraphSharp.GraphStructures
             _structureBase.CreateNodes(nodesCount+1);
 
             var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
             
             foreach(var con in connectionsList){
                 foreach(var child in con.children){
                     var edge = Configuration.CreateEdge(Nodes[con.parent],Nodes[child]);
-                    Nodes[con.parent].Edges.Add(edge);
+                    Edges.Add(edge);
                 }
             }
             return this;
@@ -186,7 +180,7 @@ namespace GraphSharp.GraphStructures
                 var edge = Configuration.CreateEdge(Nodes[e.ParentId],Nodes[e.ChildId]);
                 Configuration.SetEdgeWeight(edge,e.Weight);
                 Configuration.SetEdgeColor(edge,e.Color);
-                Nodes[e.ParentId].Edges.Add(edge);
+                _structureBase.Edges.Add(edge);
             }
             return this;
         }

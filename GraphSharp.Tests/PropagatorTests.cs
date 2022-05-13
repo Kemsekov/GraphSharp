@@ -18,12 +18,12 @@ namespace GraphSharp.Tests
 {
     public class PropagatorTests
     {
-        Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode>>[] _propagatorFactories;
+        Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode,TestEdge>>[] _propagatorFactories;
         GraphStructure<TestNode, TestEdge> _nodes;
 
         public PropagatorTests()
         {
-            _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode>>[2];
+            _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode,TestEdge>>[2];
             _propagatorFactories[0] = visitor => new Propagator<TestNode,TestEdge>(visitor);
             _propagatorFactories[1] = visitor => new ParallelPropagator<TestNode,TestEdge>(visitor);
             _nodes = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).CreateNodes(1000);
@@ -133,7 +133,7 @@ namespace GraphSharp.Tests
                     e =>
                     {
                         lock (expected)
-                            foreach (var n in e.Child.Edges)
+                            foreach (var n in _nodes.Edges[e.Child.Id])
                                 expected.Add(n.Child);
                         return true;
                     });
@@ -171,7 +171,7 @@ namespace GraphSharp.Tests
                 .CreateNodes(10);
             foreach (var pair in ManualTestData.NodesConnections)
             {
-                nodes.Nodes[pair[0]].Edges.Add(new TestEdge(null,nodes.Nodes[pair[1]]));
+                nodes.Edges.Add(new TestEdge(null,nodes.Nodes[pair[1]]));
             }
             var actualValues = new List<int>();
             var visitor = new ActionVisitor<TestNode,TestEdge>(

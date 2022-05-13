@@ -13,6 +13,8 @@ namespace GraphSharp.GraphStructures
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
+        IEdgeSource<TEdge> CreateEdgeSource(int capacity);
+        INodeSource<TNode> CreateNodeSource(int capacity);
         /// <summary>
         /// <see cref="Random"/> that used to implement's any logic when it reqires random values
         /// </summary>

@@ -19,27 +19,25 @@ namespace GraphSharp.Propagators
 
         protected void PropagateNode(TNode node)
         {
-            var edges = node.Edges;
-            int count = edges.Count;
-            TEdge edge;
-            for (int i = 0; i < count; ++i)
-            {
-                edge = edges[i];
-                if (!Visitor.Select(edge)) continue;
-                _nodeFlags.DangerousGetReferenceAt(edge.Child.Id)|=Visited;
+            var edges = this._nodes.Edges[node.Id];
+            foreach(var e in edges){
+                if (!Visitor.Select(e)) continue;
+                if(_nodeFlags.TryGetValue(e.Child.Id, out var flag))
+                    _nodeFlags[e.Child.Id]|=Visited;
+                else
+                    _nodeFlags[e.Child.Id]=Visited;
             }
         }
         protected override void PropagateNodes()
         {
-            Parallel.For(0, _nodeFlags.Length, nodeId =>
-            {
-                if ((_nodeFlags[nodeId] & ToVisit)==ToVisit)
-                    PropagateNode(_nodes[nodeId]);
+            Parallel.ForEach(_nodeFlags,node=>{
+                if((node.Value & ToVisit)==ToVisit)
+                    PropagateNode(_nodes.Nodes[node.Key]);
             });
-            Parallel.For(0, _nodeFlags.Length, nodeId =>
-            {
-                if((_nodeFlags[nodeId] & Visited)==Visited)
-                    Visitor.Visit(_nodes[nodeId]);
+            
+            Parallel.ForEach(_nodeFlags,node=>{
+                if((node.Value & Visited)==Visited)
+                    Visitor.Visit(_nodes.Nodes[node.Key]);
             });
             Visitor.EndVisit();
         }

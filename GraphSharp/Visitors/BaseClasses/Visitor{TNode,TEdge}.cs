@@ -8,7 +8,7 @@ namespace GraphSharp.Visitors
     /// <summary>
     /// Base implementation of <see cref="IVisitor{,}"/> and proxy of <see cref="IPropagator{}"/> in one instance.
     /// </summary>
-    public abstract class Visitor<TNode, TEdge> : IVisitor<TNode, TEdge>, IPropagator<TNode>
+    public abstract class Visitor<TNode, TEdge> : IVisitor<TNode, TEdge>, IPropagator<TNode,TEdge>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
@@ -16,7 +16,7 @@ namespace GraphSharp.Visitors
         /// <see cref="IPropagator{}"/> implementation that used for this proxy class
         /// </summary>
         /// <value></value>
-        public abstract IPropagator<TNode> Propagator { get; }
+        public abstract IPropagator<TNode, TEdge> Propagator { get; }
         public abstract void EndVisit();
         public abstract bool Select(TEdge edge);
         public abstract void Visit(TNode node);
@@ -30,7 +30,7 @@ namespace GraphSharp.Visitors
             Propagator.SetPosition(nodeIndices);
         }
 
-        public void SetNodes(IGraphStructure<TNode> nodes){
+        public void SetNodes(IGraphStructure<TNode,TEdge> nodes){
             Propagator.SetNodes(nodes);
         }
     }

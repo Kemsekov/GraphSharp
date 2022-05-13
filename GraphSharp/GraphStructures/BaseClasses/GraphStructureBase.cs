@@ -10,7 +10,7 @@ namespace GraphSharp.GraphStructures
     /// <summary>
     /// Base class for graph structure.
     /// </summary>
-    public abstract class GraphStructureBase<TNode, TEdge> : IGraphStructure<TNode>
+    public abstract class GraphStructureBase<TNode, TEdge> : IGraphStructure<TNode,TEdge>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
@@ -19,7 +19,8 @@ namespace GraphSharp.GraphStructures
         /// Configuration for all needed operations with nodes and edges
         /// </summary>
         public IGraphConfiguration<TNode,TEdge> Configuration{get;protected set;}
-        public IList<TNode> Nodes { get; protected set; }
+        public INodeSource<TNode> Nodes { get; protected set; }
+        public IEdgeSource<TEdge> Edges { get; protected set; }
         /// <summary>
         /// Base copy constructor. Will make shallow copy of structureBase
         /// </summary>
@@ -32,6 +33,8 @@ namespace GraphSharp.GraphStructures
         public GraphStructureBase(IGraphConfiguration<TNode,TEdge> configuration)
         {
             Configuration = configuration;
+            Nodes = configuration.CreateNodeSource(0);
+            Edges = configuration.CreateEdgeSource(0);
         }
         /// <summary>
         /// Calculate parents count (degree) for each node
@@ -42,25 +45,13 @@ namespace GraphSharp.GraphStructures
             foreach(var n in Nodes)
                 c[n.Id]=0;
             
-            Parallel.ForEach(Nodes,node=>{
-                foreach(var e in node.Edges){
-                    lock(e.Child)
-                        c[e.Child.Id]++;
-                }
-            });
+            foreach(var e in Edges){
+                c[e.Child.Id]++;
+            }
+            
             return c;
         }
-        /// <returns>Total edges count</returns>
-        public int EdgesCount()
-        {
-            var result = 0;
-            foreach (var n in Nodes)
-            {
-                result += n.Edges.Count();
-            }
-            return result;
-        }
         public float MeanNodeEdgesCount()
-            => (float)(EdgesCount()) / (Nodes.Count==0 ? 1 : Nodes.Count);        
+            => (float)(Edges.Count) / (Nodes.Count==0 ? 1 : Nodes.Count);        
     }
 }

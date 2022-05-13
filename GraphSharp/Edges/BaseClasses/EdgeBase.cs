@@ -13,13 +13,7 @@ namespace GraphSharp.Edges
             Child = child;
             Parent = parent;
         }
-        /// <summary>
-        /// Node of current edge. Represent connection between parent and node.
-        /// </summary>
         public TNode Child{get;set;}
-        /// <summary>
-        /// Parent of current edge.
-        /// </summary>
         public TNode Parent{get;set;}
         INode IEdge.Child=>this.Child;
         INode IEdge.Parent=>this.Parent;

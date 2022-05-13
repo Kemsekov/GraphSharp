@@ -21,14 +21,23 @@ namespace GraphSharp.GraphStructures
         public GraphStructure(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure) 
         {}
 
+        public GraphStructure<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges){
+            Nodes = nodes;
+            Edges = edges;
+            return this;
+        }
+
         /// <summary>
         /// Replace current <see cref="IGraphStructure{}.Nodes"/> to nodes
         /// </summary>
         /// <param name="nodes">What need to be used as <see cref="IGraphStructure{}.Nodes"/></param>
         /// <returns></returns>
-        public GraphStructure<TNode,TEdge> UseNodes(IList<TNode> nodes)
+        public GraphStructure<TNode,TEdge> UseNodes(IEnumerable<TNode> nodes)
         {
-            Nodes = nodes;
+            Nodes = Configuration.CreateNodeSource(0);
+            Edges = Configuration.CreateEdgeSource(0);
+            foreach(var n in nodes)
+                Nodes.Add(n);
             return this;
         }
         /// <summary>
@@ -39,7 +48,6 @@ namespace GraphSharp.GraphStructures
         public GraphStructure<TNode,TEdge> CreateNodes(int count)
         {
             var nodes = new List<TNode>(count);
-
             //create nodes
             for (int i = 0; i < count; i++)
             {
@@ -57,16 +65,6 @@ namespace GraphSharp.GraphStructures
         /// Get converter for current graph structure
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
-        
-        /// <summary>
-        /// Reindex nodes in graph structure.
-        /// </summary>
-        /// <returns></returns>
-        public GraphStructure<TNode,TEdge> ReindexNodes(){
-            for (int i = 0; i < Nodes.Count; i++)
-                Nodes[i].Id = i;
-            return this;
-        }
 
         /// <summary>
         /// Clones graph structure
@@ -74,19 +72,22 @@ namespace GraphSharp.GraphStructures
         /// <returns></returns>
         public GraphStructure<TNode,TEdge> Clone()
         {
-            var graphInfo = this.Converter.ToExtendedConnectionsList();
-            var result = new GraphStructure<TNode,TEdge>(this);
-            result.Converter.FromExtendedConnectionsList(graphInfo.nodes,graphInfo.edges);
-            return result;
-        }
-        public GraphStructure<TNode,TEdge> Induce(Predicate<TNode> toInduce)
-        {
             var result = new GraphStructure<TNode,TEdge>(Configuration);
-            result.Nodes = Nodes.Where(x=>toInduce(x)).ToList();
-            for(int i = 0;i<result.Nodes.Count;i++){
-                result.Nodes[i] = Configuration.CreateNode(i);
+            var nodes = Nodes
+                .Select(x=>Configuration.CloneNode(x));
+            
+
+            foreach(var n in nodes){
+                result.Nodes.Add(n);
+            }
+            
+            var edges = Edges.Select(x=>Configuration.CloneEdge(x,result.Nodes));
+
+            foreach(var e in edges){
+                result.Edges.Add(e);
             }
             return result;
         }
+        
     }
 }

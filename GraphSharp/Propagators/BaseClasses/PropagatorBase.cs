@@ -6,25 +6,27 @@ using GraphSharp.Visitors;
 using System.Linq;
 using GraphSharp.GraphStructures;
 using Microsoft.Toolkit.HighPerformance;
+using System.Collections.Concurrent;
 
 namespace GraphSharp.Propagators
 {
     /// <summary>
     /// Base class for <see cref="IPropagator{}"/> that contains basic things for any specific implementation
     /// </summary>
-    public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode>
+    public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode,TEdge>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
         public IVisitor<TNode,TEdge> Visitor { get; init; }
-        protected IList<TNode> _nodes;
+        protected IGraphStructure<TNode,TEdge> _nodes;
         protected const byte None = 0;
         protected const byte ToVisit = 1;
         protected const byte Visited = 2;
-        protected byte[] _nodeFlags;
+        protected IDictionary<int,byte> _nodeFlags;
         public PropagatorBase(IVisitor<TNode,TEdge> visitor)
         {
             Visitor = visitor;
+            _nodeFlags = new ConcurrentDictionary<int, byte>();
         }
         /// <summary>
         /// Change current propagator visit position.
@@ -34,16 +36,13 @@ namespace GraphSharp.Propagators
         {
             if(_nodeFlags is null)
                 throw new ApplicationException("Call SetNodes before calling SetPosition!");
-            int nodesCount = _nodes.Count;
-            Array.Clear(_nodeFlags, 0, _nodeFlags.Length);
-            for(int i = 0;i<nodeIndices.Count();i++){
-                _nodeFlags[nodeIndices[i]%nodesCount] = Visited;
-            }
+            _nodeFlags.Clear();
+            foreach(var i in nodeIndices)
+                _nodeFlags[i] = ToVisit;
         }
-        public void SetNodes(IGraphStructure<TNode> nodes)
+        public void SetNodes(IGraphStructure<TNode,TEdge> nodes)
         {
-            _nodes = nodes.Nodes;
-            _nodeFlags = new byte[_nodes.Count];
+            _nodes = nodes;
         }
         public virtual void Propagate()
         {
@@ -52,8 +51,14 @@ namespace GraphSharp.Propagators
             PropagateNodes();
 
             //swap next generaton and current.
-            for(int i = 0;i<_nodeFlags.Length;i++)
-                _nodeFlags[i] = (_nodeFlags[i] & Visited) == Visited ? ToVisit : None;
+            foreach(var flag in _nodeFlags){
+                var newValue = (flag.Value & Visited) == Visited ? ToVisit : None;
+                if(newValue == None){
+                    _nodeFlags.Remove(flag.Key);
+                    continue;
+                }
+                _nodeFlags[flag.Key] = newValue;
+            }
         }
         /// <summary>
         /// Method that will do main logic. It will propagate nodes from current generation to next generation selecting and visiting them in the proccess.

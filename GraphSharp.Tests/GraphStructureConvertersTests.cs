@@ -38,7 +38,7 @@ namespace GraphSharp.Tests
                 {
                     if (adjacencyMatrix[i, b] == 1)
                     {
-                        Assert.Contains(b, node.Edges.Select(x => x.Child.Id));
+                        Assert.True(_GraphStructure.Edges.TryGetEdge(node.Id,b,out var _));
                     }
                 }
             }
@@ -62,7 +62,7 @@ namespace GraphSharp.Tests
                 {
                     if (adjacencyMatrix[i, b] > 0)
                     {
-                        var edge = node.Edges.First(x => x.Child.Id == b);
+                        var edge = _GraphStructure.Edges[node.Id,b];
                         Assert.Equal(edge.Weight, adjacencyMatrix[i, b]);
                     }
                 }
@@ -109,17 +109,19 @@ namespace GraphSharp.Tests
                 var source = n1.value>n2.value ? n1 : n2;
                 var to = n1.value<=n2.value ? n1 : n2;
 
-                var sourceNode = nodes[source.row].Edges.FirstOrDefault(x=>x.Child.Id==to.row);
+                var edges = _GraphStructure.Edges[source.row];
+                
+                var sourceNode = edges.FirstOrDefault(x=>x.Child.Id==to.row);
                 Assert.NotNull(sourceNode);
-                nodes[source.row].Edges.Remove(sourceNode);
+                _GraphStructure.Edges.Remove(sourceNode);
                 if(to.value==1){
-                    var toNode = nodes[to.row].Edges.FirstOrDefault(x=>x.Child.Id==source.row);
+                    var toNode = _GraphStructure.Edges[to.row].FirstOrDefault(x=>x.Child.Id==source.row);
                     Assert.NotNull(toNode);
-                    nodes[to.row].Edges.Remove(toNode);
+                    _GraphStructure.Edges.Remove(toNode);
                 }
             }
             foreach(var n in nodes)
-                Assert.Empty(n.Edges);
+                Assert.Empty(_GraphStructure.Edges[n.Id]);
         }
         [Fact]
         public void ToAdjacencyMatrix_CalculateWeightFromEdgeWorks()
