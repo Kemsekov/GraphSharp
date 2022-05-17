@@ -14,7 +14,13 @@ namespace GraphSharp.GraphStructures
         IDictionary<int,IList<TEdge>> Edges;
         public int Count => Edges.Count;
 
-        public IEnumerable<TEdge> this[int parentId] => Edges[parentId];
+        public IEnumerable<TEdge> this[int parentId]{
+            get{
+                if(Edges.TryGetValue(parentId,out var children))
+                    return children;
+                return Enumerable.Empty<TEdge>();
+            }
+        }
         public TEdge this[int parentId, int childId] => this[parentId].First(x=>x.Child.Id==childId);
 
         public DefaultEdgeSource(int capacity)
@@ -63,21 +69,11 @@ namespace GraphSharp.GraphStructures
             return this.GetEnumerator();
         }
 
-        public bool TryGetEdges(int parentId, out IEnumerable<TEdge> edges)
-        {
-            if(Edges.TryGetValue(parentId,out var list)){
-                edges = list;
-                return true;
-            }
-            edges = null;
-            return false;
-        }
-
         public bool TryGetEdge(int parentId, int childId, out TEdge edge)
         {
-            var result = Edges[parentId].FirstOrDefault(e => e.Child.Id==childId);
-            edge = result;
-            return result is null;
+            var result = this[parentId].FirstOrDefault(e => e.Child.Id==childId);
+            edge = result ?? default;
+            return result is not null;
         }
         public void Clear(){
             Edges.Clear();

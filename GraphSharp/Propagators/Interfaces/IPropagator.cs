@@ -9,6 +9,6 @@ namespace GraphSharp.Propagators
     {
         void Propagate();
         void SetPosition(params int[] nodeIndices);
-        void SetNodes(IGraphStructure<TNode,TEdge> nodes);
+        void SetGraph(IGraphStructure<TNode,TEdge> graph);
     }
 }

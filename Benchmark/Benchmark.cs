@@ -21,15 +21,15 @@ GraphStructure<EmptyNode,EmptyEdge> nodes = default;
 
 var timer = MeasureTime(()=>{
     nodes =new GraphStructure<EmptyNode,EmptyEdge>(configuration)
-        .CreateNodes(nodes_count);
-    nodes.ForEach().ConnectNodes(edges_count);
+        .Create(nodes_count);
+    nodes.Do.ConnectNodes(edges_count);
 });
 
 Console.ForegroundColor = ConsoleColor.Green;
 System.Console.WriteLine($"Time {timer.ElapsedMilliseconds} milliseconds to create nodes");
 
 var visitor = new EmptyVisitor();
-visitor.SetNodes(nodes);
+visitor.SetGraph(nodes);
 visitor.SetPosition(0);
 timer = MeasureTime(()=>{
     for (int i = 0; i < steps_count; i++)

@@ -9,7 +9,7 @@ using GraphSharp.Visitors;
 
 public class EmptyVisitor : Visitor<EmptyNode,EmptyEdge>
 {
-    public override IPropagator<EmptyNode> Propagator{get;}
+    public override IPropagator<EmptyNode,EmptyEdge> Propagator{get;}
     public EmptyVisitor()
     {
         Propagator = new ParallelPropagator<EmptyNode,EmptyEdge>(this);

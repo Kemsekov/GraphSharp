@@ -31,7 +31,7 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="count">Count of codes to create</param>
         /// <returns></returns>
-        public GraphStructure<TNode,TEdge> Create(int nodesCount,int edgesCount)
+        public GraphStructure<TNode,TEdge> Create(int nodesCount,int edgesCount = 0)
         {
             Nodes = Configuration.CreateNodeSource(nodesCount);
             Edges = Configuration.CreateEdgeSource(edgesCount);

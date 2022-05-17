@@ -30,8 +30,8 @@ namespace GraphSharp.Visitors
             Propagator.SetPosition(nodeIndices);
         }
 
-        public void SetNodes(IGraphStructure<TNode,TEdge> nodes){
-            Propagator.SetNodes(nodes);
+        public void SetGraph(IGraphStructure<TNode,TEdge> nodes){
+            Propagator.SetGraph(nodes);
         }
     }
 }

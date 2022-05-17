@@ -12,9 +12,19 @@ public class EmptyGraphConfiguration : IGraphConfiguration<EmptyNode, EmptyEdge>
         return new EmptyEdge(parent, child);
     }
 
+    public IEdgeSource<EmptyEdge> CreateEdgeSource(int capacity)
+    {
+        return new DefaultEdgeSource<EmptyEdge>(capacity);
+    }
+
     public EmptyNode CreateNode(int nodeId)
     {
         return new EmptyNode(nodeId);
+    }
+
+    public INodeSource<EmptyNode> CreateNodeSource(int capacity)
+    {
+        return new DefaultNodeSource<EmptyNode>(capacity);
     }
 
     public float Distance(EmptyNode n1, EmptyNode n2)

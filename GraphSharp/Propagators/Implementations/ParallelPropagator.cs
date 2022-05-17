@@ -16,28 +16,17 @@ namespace GraphSharp.Propagators
         public ParallelPropagator(IVisitor<TNode, TEdge> visitor) : base(visitor)
         {
         }
-
-        protected void PropagateNode(TNode node)
-        {
-            var edges = this._nodes.Edges[node.Id];
-            foreach(var e in edges){
-                if (!Visitor.Select(e)) continue;
-                if(_nodeFlags.TryGetValue(e.Child.Id, out var flag))
-                    _nodeFlags[e.Child.Id]|=Visited;
-                else
-                    _nodeFlags[e.Child.Id]=Visited;
-            }
-        }
         protected override void PropagateNodes()
         {
-            Parallel.ForEach(_nodeFlags,node=>{
-                if((node.Value & ToVisit)==ToVisit)
-                    PropagateNode(_nodes.Nodes[node.Key]);
+            Parallel.For(0, _nodeFlags.Length, nodeId =>
+            {
+                if ((_nodeFlags[nodeId] & ToVisit)==ToVisit)
+                    PropagateNode(nodeId);
             });
-            
-            Parallel.ForEach(_nodeFlags,node=>{
-                if((node.Value & Visited)==Visited)
-                    Visitor.Visit(_nodes.Nodes[node.Key]);
+            Parallel.For(0, _nodeFlags.Length, nodeId =>
+            {
+                if((_nodeFlags[nodeId] & Visited)==Visited)
+                    Visitor.Visit(_graph.Nodes[nodeId]);
             });
             Visitor.EndVisit();
         }

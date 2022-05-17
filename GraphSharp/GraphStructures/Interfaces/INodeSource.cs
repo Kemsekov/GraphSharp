@@ -11,6 +11,16 @@ namespace GraphSharp.GraphStructures
     where TNode : INode
     {
         int Count{ get; }
+        /// <summary>
+        /// Returns max id value of all nodes.
+        /// </summary>
+        /// <value></value>
+        int MaxNodeId {get;}
+        /// <summary>
+        /// Returns min id value of all nodes.
+        /// </summary>
+        /// <value></value>
+        int MinNodeId {get;}
         void Add(TNode node);
         bool Remove(TNode node);
         bool Remove(int nodeId);

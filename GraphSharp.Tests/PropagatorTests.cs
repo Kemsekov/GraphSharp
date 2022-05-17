@@ -19,19 +19,19 @@ namespace GraphSharp.Tests
     public class PropagatorTests
     {
         Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode,TestEdge>>[] _propagatorFactories;
-        GraphStructure<TestNode, TestEdge> _nodes;
+        GraphStructure<TestNode, TestEdge> _graph;
 
         public PropagatorTests()
         {
             _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode,TestEdge>>[2];
             _propagatorFactories[0] = visitor => new Propagator<TestNode,TestEdge>(visitor);
             _propagatorFactories[1] = visitor => new ParallelPropagator<TestNode,TestEdge>(visitor);
-            _nodes = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).CreateNodes(1000);
-            _nodes.Do.ConnectNodes(10);
+            _graph = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).Create(1000,0);
+            _graph.Do.ConnectNodes(10);
         }
 
         [Fact]
-        public void SetPosition_SetNodes_Works()
+        public void SetPosition_SetGraph_Works()
         {
             foreach (var factory in _propagatorFactories)
             {
@@ -45,16 +45,16 @@ namespace GraphSharp.Tests
                     (edge) => true,
                     () => visitedNodes.Sort());
                 var propagator = factory(visitor);
-                propagator.SetNodes(_nodes);
+                propagator.SetGraph(_graph);
                 propagator.SetPosition(1, 2);
                 propagator.Propagate();
 
-                Assert.Equal(visitedNodes, new[] { _nodes.Nodes[1], _nodes.Nodes[2] });
+                Assert.Equal(visitedNodes, new[] { _graph.Nodes[1], _graph.Nodes[2] });
                 visitedNodes.Clear();
                 propagator.SetPosition(5, 6);
 
                 propagator.Propagate();
-                Assert.Equal(visitedNodes, new[] { _nodes.Nodes[5], _nodes.Nodes[6] });
+                Assert.Equal(visitedNodes, new[] { _graph.Nodes[5], _graph.Nodes[6] });
                 visitedNodes.Clear();
             }
         }
@@ -69,7 +69,7 @@ namespace GraphSharp.Tests
                     n => visited.Add(n),
                     e => e.Child.Id % 2 == 0);
                 var propagator = factory(visitor);
-                propagator.SetNodes(_nodes);
+                propagator.SetGraph(_graph);
                 propagator.SetPosition(0, 1, 2, 3, 4, 5);
                 propagator.Propagate();
                 visited.Sort();
@@ -88,7 +88,7 @@ namespace GraphSharp.Tests
         {
             var visited = new List<INode>();
             var rand = new Random();
-            var randNodeId = () => rand.Next(_nodes.Nodes.Count());
+            var randNodeId = () => rand.Next(_graph.Nodes.Count());
             foreach (var factory in _propagatorFactories)
             {
 
@@ -103,7 +103,7 @@ namespace GraphSharp.Tests
                         return true;
                     });
                 var propagator = factory(visitor);
-                propagator.SetNodes(_nodes);
+                propagator.SetGraph(_graph);
                 propagator.SetPosition(randNodeId(), randNodeId(), randNodeId());
 
                 for (int i = 0; i < 10; i++)
@@ -120,7 +120,7 @@ namespace GraphSharp.Tests
             var visited = new List<INode>();
             var expected = new SortedSet<INode>(new NodesComparer());
             var rand = new Random();
-            var randNode = () => _nodes.Nodes[rand.Next(_nodes.Nodes.Count())];
+            var randNode = () => _graph.Nodes[rand.Next(_graph.Nodes.Count())];
             foreach (var factory in _propagatorFactories)
             {
 
@@ -133,12 +133,12 @@ namespace GraphSharp.Tests
                     e =>
                     {
                         lock (expected)
-                            foreach (var n in _nodes.Edges[e.Child.Id])
+                            foreach (var n in _graph.Edges[e.Child.Id])
                                 expected.Add(n.Child);
                         return true;
                     });
                 var propagator = factory(visitor);
-                propagator.SetNodes(_nodes);
+                propagator.SetGraph(_graph);
                 for (int i = 0; i < 5; i++)
                 {
                     expected.Add(randNode());
@@ -159,6 +159,7 @@ namespace GraphSharp.Tests
                             visitor.Select(new TestEdge(null,e as TestNode));
                     }
                     visited.Sort();
+                    Assert.Equal(buf.Count,visited.Count);
                     Assert.Equal(buf.Select(x => x.Id), visited.Select(x => x.Id));
                     visited.Clear();
                 }
@@ -167,12 +168,13 @@ namespace GraphSharp.Tests
         [Fact]
         public void Propagate_HaveRightNodesVisitOrderWithManualData()
         {
-            var nodes = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration())
-                .CreateNodes(10);
+            var graph = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration())
+                .Create(10,0);
             foreach (var pair in ManualTestData.NodesConnections)
             {
-                nodes.Edges.Add(new TestEdge(null,nodes.Nodes[pair[1]]));
+                graph.Edges.Add(new TestEdge(graph.Nodes[pair[0]],graph.Nodes[pair[1]]));
             }
+
             var actualValues = new List<int>();
             var visitor = new ActionVisitor<TestNode,TestEdge>(
                 x =>
@@ -186,7 +188,7 @@ namespace GraphSharp.Tests
                 foreach (var factory in _propagatorFactories)
                 {
                     var propagator = factory(visitor);
-                    propagator.SetNodes(nodes);
+                    propagator.SetGraph(graph);
                     propagator.SetPosition(expectedValues[0]);
 
                     for (int i = 0; i < expectedValues.Length; i++)
@@ -194,7 +196,7 @@ namespace GraphSharp.Tests
                         actualValues.Clear();
                         propagator.Propagate();
                         actualValues.Sort();
-                        Assert.Equal(actualValues, expectedValues[i]);
+                        Assert.Equal(expectedValues[i],actualValues);
                     }
                 }
         }

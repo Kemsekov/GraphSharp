@@ -14,6 +14,11 @@ namespace GraphSharp.GraphStructures
         IDictionary<int,TNode> Nodes;
         public TNode this[int nodeId] { get => Nodes[nodeId]; set => Nodes[nodeId] = value; }
         public int Count => Nodes.Count;
+
+        public int MaxNodeId{get;protected set;}
+
+        public int MinNodeId{get;protected set;}
+
         public DefaultNodeSource(int capacity)
         {
             Nodes = new ConcurrentDictionary<int,TNode>(Environment.ProcessorCount,capacity);
@@ -21,6 +26,7 @@ namespace GraphSharp.GraphStructures
         public void Add(TNode node)
         {
             Nodes.Add(node.Id,node);
+            UpdateMaxMinNodeId(node.Id);
         }
 
         public IEnumerator<TNode> GetEnumerator()
@@ -31,12 +37,16 @@ namespace GraphSharp.GraphStructures
 
         public bool Remove(TNode node)
         {
-            return Nodes.Remove(node.Id);
+            bool removed = Nodes.Remove(node.Id);
+            if(removed) UpdateMaxMinNodeId(node.Id);
+            return removed;
         }
 
         public bool Remove(int nodeId)
         {
-            return Nodes.Remove(nodeId);
+            bool removed = Nodes.Remove(nodeId);
+            if(removed) UpdateMaxMinNodeId(nodeId);
+            return removed;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -50,6 +60,11 @@ namespace GraphSharp.GraphStructures
         }
         public void Clear(){
             Nodes.Clear();
+        }
+
+        void UpdateMaxMinNodeId(int id){
+            MaxNodeId = Math.Max(MaxNodeId,id);
+            MinNodeId = Math.Min(MinNodeId,id);
         }
     }
 }

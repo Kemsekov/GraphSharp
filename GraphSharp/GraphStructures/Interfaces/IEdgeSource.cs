@@ -16,7 +16,6 @@ namespace GraphSharp.GraphStructures
         bool Remove(int parentId, int childId);
         IEnumerable<TEdge> this[int parentId] {get;}
         TEdge this[int parentId,int childId]{get;}
-        bool TryGetEdges(int parentId, out IEnumerable<TEdge> edges);
         bool TryGetEdge(int parentId, int childId, out TEdge edge);
         void Clear();
     }
