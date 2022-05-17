@@ -26,35 +26,22 @@ namespace GraphSharp.GraphStructures
             Edges = edges;
             return this;
         }
-
         /// <summary>
-        /// Replace current <see cref="IGraphStructure{}.Nodes"/> to nodes
-        /// </summary>
-        /// <param name="nodes">What need to be used as <see cref="IGraphStructure{}.Nodes"/></param>
-        /// <returns></returns>
-        public GraphStructure<TNode,TEdge> UseNodes(IEnumerable<TNode> nodes)
-        {
-            Nodes = Configuration.CreateNodeSource(0);
-            Edges = Configuration.CreateEdgeSource(0);
-            foreach(var n in nodes)
-                Nodes.Add(n);
-            return this;
-        }
-        /// <summary>
-        /// Create some count of nodes. This method will replace current <see cref="IGraphStructure{}.Nodes"/>.
+        /// Create some count of nodes. This method will replace current <see cref="IGraphStructure{,}.Nodes"/>.
         /// </summary>
         /// <param name="count">Count of codes to create</param>
         /// <returns></returns>
-        public GraphStructure<TNode,TEdge> CreateNodes(int count)
+        public GraphStructure<TNode,TEdge> Create(int nodesCount,int edgesCount)
         {
-            var nodes = new List<TNode>(count);
+            Nodes = Configuration.CreateNodeSource(nodesCount);
+            Edges = Configuration.CreateEdgeSource(edgesCount);
             //create nodes
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < nodesCount; i++)
             {
                 var node = Configuration.CreateNode(i);
-                nodes.Add(node);
+                Nodes.Add(node);
             }
-            return UseNodes(nodes);
+            return this;
         }
 
         /// <summary>
@@ -76,7 +63,6 @@ namespace GraphSharp.GraphStructures
             var nodes = Nodes
                 .Select(x=>Configuration.CloneNode(x));
             
-
             foreach(var n in nodes){
                 result.Nodes.Add(n);
             }
@@ -87,6 +73,12 @@ namespace GraphSharp.GraphStructures
                 result.Edges.Add(e);
             }
             return result;
+        }
+
+        public GraphStructure<TNode,TEdge> Clear(){
+            Nodes = Configuration.CreateNodeSource(0);
+            Edges = Configuration.CreateEdgeSource(0);
+            return this;
         }
         
     }

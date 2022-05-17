@@ -32,12 +32,13 @@ namespace GraphSharp.GraphStructures
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
+            var availableNodes = Nodes.Select(x=>x.Id).ToList();
             edgesCount = edgesCount > Nodes.Count ? Nodes.Count : edgesCount;
 
             foreach (var node in Nodes)
             {
-                var start_index = Configuration.Rand.Next(Nodes.Count);
-                ConnectNodeToNodes(node, start_index, edgesCount);
+                int startIndex = Configuration.Rand.Next(availableNodes.Count);
+                ConnectNodeToNodes(node,startIndex, edgesCount,availableNodes);
             }
             return this;
         }
@@ -61,33 +62,31 @@ namespace GraphSharp.GraphStructures
                 minEdgesCount = minEdgesCount ^ maxEdgesCount;
             }
 
+            var availableNodes = Nodes.Select(x=>x.Id).ToList();
+
             foreach (var node in Nodes)
             {
                 int edgesCount = Configuration.Rand.Next(minEdgesCount,maxEdgesCount);
                 var startIndex = Configuration.Rand.Next(Nodes.Count);
-                ConnectNodeToNodes(node, startIndex, edgesCount);
+                ConnectNodeToNodes(node, startIndex, edgesCount,availableNodes);
             }
             return this;
         }
         
         /// <summary>
-        /// Connect some node to edgesCount of other nodes
+        /// Create some count of random edges for given node.
         /// </summary>
-        private void ConnectNodeToNodes(TNode node, int startIndex, int edgesCount)
+        private void ConnectNodeToNodes(TNode node,int startIndex, int edgesCount, IList<int> source)
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
             lock (node)
                 for (int i = 0; i < edgesCount; i++)
                 {
-                    var edge = Nodes[(startIndex + i) % Nodes.Count];
-                    if (edge.Id == node.Id)
-                    {
-                        startIndex++;
-                        i--;
-                        continue;
-                    }
-                    _structureBase.Edges.Add(Configuration.CreateEdge(node,edge));
+                    int index = (startIndex+i)%source.Count;
+                    var childId = source[index];
+                    var child = Nodes[childId];
+                    _structureBase.Edges.Add(Configuration.CreateEdge(node,child));
                 }
         }
 

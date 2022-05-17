@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using GraphSharp.Edges;
-using GraphSharp.Models;
 using GraphSharp.Nodes;
 using MathNet.Numerics.LinearAlgebra.Single;
 
@@ -24,19 +23,16 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Converts the graph structure to a special representation, which consists of a list of parents and a list of it's children. 
+        /// Converts the graph structure edges to dictionary, where key is parent id and value is list of children ids.
         /// </summary>
-        /// <returns>A list of tuples where first element is a parent second list of edges this parent connects to</returns>
-        public IEnumerable<(int parent, IEnumerable<int> children)> ToConnectionsList(){
-            var result = new List<(int parent,IEnumerable<int> children)>();
-            foreach(var n in _structureBase.Nodes){
-                var children = new List<int>();
-                foreach(var e in _structureBase.Edges[n.Id]){
-                    children.Add(e.Child.Id);
+        public IDictionary<int, IEnumerable<int>> ToConnectionsList(){
+            var result = new Dictionary<int,IEnumerable<int>>();
+            foreach(var n in _structureBase.Edges){
+                if(result.TryGetValue(n.Parent.Id,out var children)){
+                    (children as IList<int>).Add(n.Child.Id);
                 }
-                if(children.Count!=0){
-                    children.Sort();
-                    result.Add((n.Id,children));
+                else{
+                    result[n.Parent.Id] = new List<int>{n.Child.Id};
                 }
             }
             return result;
@@ -58,26 +54,6 @@ namespace GraphSharp.GraphStructures
             return adjacencyMatrix;
         }
         /// <summary>
-        /// Will collect all information about edges and nodes and convert it to a special representation.
-        /// </summary>
-        public (IEnumerable<NodeStruct> nodes,IEnumerable<EdgeStruct> edges) ToExtendedConnectionsList(){
-            var Nodes = _structureBase.Nodes;
-            var Configuration = _structureBase.Configuration;
-            var nodes = new List<NodeStruct>();
-            var edges = new List<EdgeStruct>();
-            for(int i = 0;i<Nodes.Count;i++){
-                var parent = Nodes[i];
-                var nodeStruct = new NodeStruct(parent.Id,Configuration.GetNodeWeight(parent),Configuration.GetNodeColor(parent),Configuration.GetNodePosition(parent));
-                var _edges = new List<EdgeStruct>();
-                foreach(var e in _structureBase.Edges[parent.Id]){
-                    _edges.Add(new EdgeStruct(parent.Id,e.Child.Id,Configuration.GetEdgeWeight(e),Configuration.GetEdgeColor(e)));
-                }
-                nodes.Add(nodeStruct);
-                edges.AddRange(_edges);
-            }
-            return (nodes,edges);
-        }
-        /// <summary>
         /// Create nodes and edges from adjacency matrix
         /// </summary>
         /// <param name="adjacencyMatrix"></param>
@@ -85,33 +61,39 @@ namespace GraphSharp.GraphStructures
             if(adjacencyMatrix.RowCount!=adjacencyMatrix.ColumnCount)
                 throw new ArgumentException("adjacencyMatrix argument must be square matrix!",nameof(adjacencyMatrix));
             int width = adjacencyMatrix.RowCount;
-            _structureBase.CreateNodes(width);
-            
+            _structureBase.Clear();
             var Configuration = _structureBase.Configuration;
             var Nodes = _structureBase.Nodes;
-
-            for(int i = 0;i<Nodes.Count;i++){
-                for(int b = 0;b<width;b++){
-                    if(adjacencyMatrix[i,b]!=0){
-                        var edge = Configuration.CreateEdge(Nodes[i],Nodes[b]);
-                        _structureBase.Edges.Add(edge);
-                        Configuration.SetEdgeWeight(edge,adjacencyMatrix[i,b]);
-                    }
+            var Edges = _structureBase.Edges;
+            for(int i = 0;i<width;i++)
+            for(int b = 0;b<width;b++){
+                if(adjacencyMatrix[i,b]!=0){
+                    Nodes.Add(Configuration.CreateNode(i));
+                    break;
+                }
+            }
+            
+            for(int i = 0;i<width;i++)
+            for(int b = 0;b<width;b++){
+                if(adjacencyMatrix[i,b]!=0){
+                    var edge = Configuration.CreateEdge(Nodes[i],Nodes[b]);
+                    Configuration.SetEdgeWeight(edge,adjacencyMatrix[i,b]);
+                    Edges.Add(edge);
                 }
             }
             return this;
         }
+
         /// <summary>
         /// Create nodes and edges from from incidence matrix
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> FromIncidenceMatrix(Matrix incidenceMatrix){
             int nodesCount = incidenceMatrix.RowCount;
             var edgesCount = incidenceMatrix.ColumnCount;
-            _structureBase.CreateNodes(nodesCount);
 
-            var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            
+            _structureBase.Create(nodesCount,0);
+            var Nodes = _structureBase.Nodes;
             
             for(int i = 0;i<edgesCount;++i){
                 (TNode Node,float Value) n1 = (null,0),n2 = (null,0);
@@ -133,54 +115,20 @@ namespace GraphSharp.GraphStructures
         /// Clears all nodes and
         /// creates edges and nodes from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/> and <see cref="GraphStructureBase{,}.CreateNode"/>
         /// </summary>
-        public GraphStructureConverters<TNode,TEdge> FromConnectionsList<TEnumerable>(IEnumerable<(int parent,TEnumerable children)> connectionsList)
+        public GraphStructureConverters<TNode,TEdge> FromConnectionsList<TEnumerable>(IDictionary<int,TEnumerable> connectionsList)
         where TEnumerable : IEnumerable<int>
         {
-            var nodesCount = connectionsList.Max(x=>x.parent);
+            _structureBase.Clear();
+            var Configuration = _structureBase.Configuration;
             foreach(var m in connectionsList){
-                foreach(var e in m.children)
-                    nodesCount = Math.Max(nodesCount,e);
+                var parent = Configuration.CreateNode(m.Key);
+                _structureBase.Nodes.Add(parent);
             }
-            _structureBase.CreateNodes(nodesCount+1);
-
-            var Nodes = _structureBase.Nodes;
-            var Edges = _structureBase.Edges;
-            var Configuration = _structureBase.Configuration;
-            
-            foreach(var con in connectionsList){
-                foreach(var child in con.children){
-                    var edge = Configuration.CreateEdge(Nodes[con.parent],Nodes[child]);
-                    Edges.Add(edge);
+            foreach(var m in connectionsList){
+                foreach(var child in m.Value){
+                    var edge = Configuration.CreateEdge(_structureBase.Nodes[m.Key],_structureBase.Nodes[child]);
+                    _structureBase.Edges.Add(edge);
                 }
-            }
-            return this;
-        }
-        /// <summary>
-        /// Method similar to <see cref="GraphStructure{,}.FromConnectionsList"/>, but it takes a bit more information.
-        /// </summary>
-        /// <param name="nodeWeights">This is list of weights for nodes, where each weight with some index correspond to particular node with same index. Example nodeWeights[0] will contain weight for node with id 0, and so this method will create nodeWeights.Count() nodes to fill them all.</param>
-        /// <param name="edges">This is list of edges, where parentId is index of parent node, childId is index of child node, and weight is weight of this edge that connects parent and child. </param>
-        /// <returns></returns>
-        public GraphStructureConverters<TNode,TEdge> FromExtendedConnectionsList(IEnumerable<NodeStruct> nodes,IEnumerable<EdgeStruct> edges){
-            var nodesCount = nodes.Max(x=>x.Id);
-            foreach(var m in edges){
-                var temp = Math.Max(m.ParentId,m.ChildId);
-                nodesCount = Math.Max(nodesCount,temp);
-            }
-            _structureBase.CreateNodes(nodesCount+1);
-            var Nodes = _structureBase.Nodes;
-            var Configuration = _structureBase.Configuration;
-            
-            foreach(var n in nodes){
-                Configuration.SetNodeWeight(Nodes[n.Id],n.Weight);
-                Configuration.SetNodeColor(Nodes[n.Id],n.Color);
-                Configuration.SetNodePosition(Nodes[n.Id],n.Position);
-            }
-            foreach(var e in edges){
-                var edge = Configuration.CreateEdge(Nodes[e.ParentId],Nodes[e.ChildId]);
-                Configuration.SetEdgeWeight(edge,e.Weight);
-                Configuration.SetEdgeColor(edge,e.Color);
-                _structureBase.Edges.Add(edge);
             }
             return this;
         }
