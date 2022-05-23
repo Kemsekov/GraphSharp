@@ -13,8 +13,8 @@ namespace GraphSharp.Edges
             Child = child;
             Parent = parent;
         }
-        public TNode Child{get;set;}
-        public TNode Parent{get;set;}
+        public virtual TNode Child{get;set;}
+        public virtual TNode Parent{get;set;}
         INode IEdge.Child=>this.Child;
         INode IEdge.Parent=>this.Parent;
     }

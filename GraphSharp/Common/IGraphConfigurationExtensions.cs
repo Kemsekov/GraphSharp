@@ -25,16 +25,17 @@ namespace GraphSharp.Common
             return newEdge;
         }
         
-        public static TNode CloneNode<TNode, TEdge>(this IGraphConfiguration<TNode, TEdge> configuration, TNode node)
+        public static TNode CloneNode<TNode, TEdge>(this IGraphConfiguration<TNode, TEdge> configuration, TNode node, Func<TNode,int>? newIndex = null)
         where TNode : NodeBase<TEdge>
         where TEdge : EdgeBase<TNode>
         {
+            newIndex ??= (oldNode)=>oldNode.Id;
             var id = node.Id;
             var color = configuration.GetNodeColor(node);
             var weight = configuration.GetNodeWeight(node);
             var pos = configuration.GetNodePosition(node);
 
-            var newNode = configuration.CreateNode(id);
+            var newNode = configuration.CreateNode(newIndex(node));
             configuration.SetNodeWeight(node, weight);
             configuration.SetNodeColor(node, color);
             configuration.SetNodePosition(node, pos);

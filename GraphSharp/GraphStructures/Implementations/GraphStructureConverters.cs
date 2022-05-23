@@ -29,7 +29,8 @@ namespace GraphSharp.GraphStructures
             var result = new Dictionary<int,IEnumerable<int>>();
             foreach(var n in _structureBase.Edges){
                 if(result.TryGetValue(n.Parent.Id,out var children)){
-                    (children as IList<int>).Add(n.Child.Id);
+                    if(children is IList<int> list)
+                        list.Add(n.Child.Id);
                 }
                 else{
                     result[n.Parent.Id] = new List<int>{n.Child.Id};
@@ -93,11 +94,11 @@ namespace GraphSharp.GraphStructures
             var edgesCount = incidenceMatrix.ColumnCount;
 
             var Configuration = _structureBase.Configuration;
-            _structureBase.Create(nodesCount,0);
+            _structureBase.Create(nodesCount);
             var Nodes = _structureBase.Nodes;
             
             for(int i = 0;i<edgesCount;++i){
-                (TNode Node,float Value) n1 = (null,0),n2 = (null,0);
+                (TNode? Node,float Value) n1 = (null,0),n2 = (null,0);
                 for(int b = 0;b<nodesCount;++b){
                     var value = incidenceMatrix[b,i];
                     if(value!=0){
@@ -105,10 +106,12 @@ namespace GraphSharp.GraphStructures
                         n2 = (Nodes[b],value);
                     }
                 }
-                if(n1.Value==1)
-                    _structureBase.Edges.Add(Configuration.CreateEdge(n1.Node,n2.Node));
-                if(n2.Value==1)
-                    _structureBase.Edges.Add(Configuration.CreateEdge(n2.Node,n1.Node));
+                if(n1.Node is not null && n2.Node is not null){
+                    if(n1.Value==1)
+                        _structureBase.Edges.Add(Configuration.CreateEdge(n1.Node,n2.Node));
+                    if(n2.Value==1)
+                        _structureBase.Edges.Add(Configuration.CreateEdge(n2.Node,n1.Node));
+                }
             }
             return this;
         }

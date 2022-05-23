@@ -27,14 +27,15 @@ namespace GraphSharp.GraphStructures
         public GraphStructureBase(GraphStructureBase<TNode, TEdge> structureBase)
         {
             Nodes         = structureBase.Nodes;
+            Edges         = structureBase.Edges;
             Configuration = structureBase.Configuration;
         }
 
         public GraphStructureBase(IGraphConfiguration<TNode,TEdge> configuration)
         {
             Configuration = configuration;
-            Nodes = configuration.CreateNodeSource(0);
-            Edges = configuration.CreateEdgeSource(0);
+            Nodes = configuration.CreateNodeSource();
+            Edges = configuration.CreateEdgeSource();
         }
         /// <summary>
         /// Calculate parents count (degree) for each node
@@ -52,6 +53,20 @@ namespace GraphSharp.GraphStructures
             return c;
         }
         public float MeanNodeEdgesCount()
-            => (float)(Edges.Count) / (Nodes.Count==0 ? 1 : Nodes.Count);        
+            => (float)(Edges.Count) / (Nodes.Count==0 ? 1 : Nodes.Count);  
+        /// <summary>
+        /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception.
+        /// </summary>
+        public void CheckForIntegrity()
+        {
+            foreach(var e in Edges){
+                if (!Nodes.TryGetNode(e.Parent.Id,out var _)){
+                    throw new System.InvalidOperationException($"{e.Parent.Id} found among Edges but not found among Nodes");
+                }
+                if (!Nodes.TryGetNode(e.Child.Id,out var _)){
+                    throw new System.InvalidOperationException($"{e.Child.Id} found among Edges but not found among Nodes");
+                }
+            }
+        }      
     }
 }

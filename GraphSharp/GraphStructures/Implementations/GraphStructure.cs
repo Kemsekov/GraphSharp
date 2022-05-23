@@ -31,10 +31,10 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="count">Count of codes to create</param>
         /// <returns></returns>
-        public GraphStructure<TNode,TEdge> Create(int nodesCount,int edgesCount = 0)
+        public GraphStructure<TNode,TEdge> Create(int nodesCount)
         {
-            Nodes = Configuration.CreateNodeSource(nodesCount);
-            Edges = Configuration.CreateEdgeSource(edgesCount);
+            Nodes = Configuration.CreateNodeSource();
+            Edges = Configuration.CreateEdgeSource();
             //create nodes
             for (int i = 0; i < nodesCount; i++)
             {
@@ -52,6 +52,21 @@ namespace GraphSharp.GraphStructures
         /// Get converter for current graph structure
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
+
+        /// <summary>
+        /// Reindexes all nodes and edges
+        /// </summary>
+        public GraphStructure<TNode,TEdge> Reindex(){
+            // TODO: add tests
+            var reindexed = ReindexNodes();
+            
+            foreach(var e in Edges){
+                var childReindexed = reindexed.TryGetValue(e.Child.Id,out var newChildId);
+                var parentReindexed = reindexed.TryGetValue(e.Parent.Id,out var newParentId);
+                
+            }
+            return this;
+        }
 
         /// <summary>
         /// Clones graph structure
@@ -76,10 +91,36 @@ namespace GraphSharp.GraphStructures
         }
 
         public GraphStructure<TNode,TEdge> Clear(){
-            Nodes = Configuration.CreateNodeSource(0);
-            Edges = Configuration.CreateEdgeSource(0);
+            Nodes = Configuration.CreateNodeSource();
+            Edges = Configuration.CreateEdgeSource();
             return this;
         }
-        
+        /// <summary>
+        /// Reindex nodes only and return dict where Key is old node id and Value is new node id
+        /// </summary>
+        /// <returns></returns>
+        protected IDictionary<int,int> ReindexNodes(){
+            var idMap = new Dictionary<int,int>();
+            var nodeIdsMap = new byte[Nodes.MaxNodeId];
+            foreach(var n in Nodes){
+                nodeIdsMap[n.Id] = 1;
+            }
+
+            for(int i = 0;i<nodeIdsMap.Length;i++){
+                if(nodeIdsMap[i]==0)
+                for(int b = nodeIdsMap.Length-1;b>i;b--){
+                    if(nodeIdsMap[b]==1){
+                        var toMove = Nodes[b];
+                        var moved = Configuration.CloneNode(toMove,x=>i);
+                        Nodes.Remove(toMove.Id);
+                        Nodes.Add(moved);
+                        nodeIdsMap[b] = 0;
+                        nodeIdsMap[i] = 1;
+                        idMap[b] = i;
+                    }
+                }
+            }
+            return idMap;
+        }
     }
 }

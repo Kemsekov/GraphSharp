@@ -8,6 +8,7 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
+    // TODO: write tests for it
     public class DefaultNodeSource<TNode> : INodeSource<TNode>
     where TNode : INode
     {
@@ -54,17 +55,19 @@ namespace GraphSharp.GraphStructures
             return this.GetEnumerator();
         }
 
-        public bool TryGetNode(int nodeId, out TNode node)
+        public bool TryGetNode(int nodeId, out TNode? node)
         {
             return Nodes.TryGetValue(nodeId,out node);
         }
         public void Clear(){
             Nodes.Clear();
+            MaxNodeId = -1;
+            MinNodeId = -1;
         }
-
         void UpdateMaxMinNodeId(int id){
             MaxNodeId = Math.Max(MaxNodeId,id);
             MinNodeId = Math.Min(MinNodeId,id);
         }
+
     }
 }

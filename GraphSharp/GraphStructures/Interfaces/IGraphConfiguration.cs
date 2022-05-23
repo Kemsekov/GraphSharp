@@ -13,12 +13,12 @@ namespace GraphSharp.GraphStructures
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
-        IEdgeSource<TEdge> CreateEdgeSource(int capacity);
-        INodeSource<TNode> CreateNodeSource(int capacity);
         /// <summary>
         /// <see cref="Random"/> that used to implement's any logic when it reqires random values
         /// </summary>
         public Random Rand {get;}
+        IEdgeSource<TEdge> CreateEdgeSource();
+        INodeSource<TNode> CreateNodeSource();
         /// <summary>
         /// Method that used to create instance of <see cref="TNode"/> from it's <see cref="INode.Id"/> as argument
         /// </summary>

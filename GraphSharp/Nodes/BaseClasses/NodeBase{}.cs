@@ -13,6 +13,6 @@ namespace GraphSharp.Nodes
         {
             Id = id;
         }
-        public int Id{get;init;}
+        public int Id{get;}
     }
 }

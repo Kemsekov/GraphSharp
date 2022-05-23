@@ -25,7 +25,7 @@ namespace GraphSharp.GraphStructures
         bool Remove(TNode node);
         bool Remove(int nodeId);
         TNode this[int nodeId] {get;set;}
-        bool TryGetNode(int nodeId, out TNode node);
+        bool TryGetNode(int nodeId, out TNode? node);
         void Clear();
     }
 }

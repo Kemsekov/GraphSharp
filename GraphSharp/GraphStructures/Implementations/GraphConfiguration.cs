@@ -66,14 +66,14 @@ namespace GraphSharp.GraphStructures
             node.Weight = weight;
         }
 
-        public IEdgeSource<TEdge> CreateEdgeSource(int capacity)
+        public IEdgeSource<TEdge> CreateEdgeSource()
         {
-            return new DefaultEdgeSource<TEdge>(capacity);
+            return new DefaultEdgeSource<TNode,TEdge>();
         }
 
-        public INodeSource<TNode> CreateNodeSource(int capacity)
+        public INodeSource<TNode> CreateNodeSource()
         {
-            return new DefaultNodeSource<TNode>(capacity);
+            return new DefaultNodeSource<TNode>(0);
         }
     }
 }

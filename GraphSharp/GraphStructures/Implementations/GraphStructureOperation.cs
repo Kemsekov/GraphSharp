@@ -230,7 +230,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Makes every connection between two nodes bidirectional, producing undirected graph.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> MakeUndirected(Action<TEdge> onCreatedEdge = null)
+        public GraphStructureOperation<TNode,TEdge> MakeUndirected(Action<TEdge>? onCreatedEdge = null)
         {
             onCreatedEdge ??= (edge)=>{};
             var Nodes = _structureBase.Nodes;
@@ -309,9 +309,11 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Removes nodes that satisfies predicate (don't remove any edges)
+        /// Isolate and removes nodes that satisfies predicate
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> RemoveNodes(Predicate<TNode> toRemove){
+            // TODO: переделай тесты для этого метода
+            Isolate(toRemove);
             var Nodes = _structureBase.Nodes;
             var nodesToRemove = Nodes.Where(x=>toRemove(x)).Select(x=>x.Id).ToArray();
 

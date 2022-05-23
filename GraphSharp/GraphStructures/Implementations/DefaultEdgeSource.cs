@@ -5,11 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
-    public class DefaultEdgeSource<TEdge> : IEdgeSource<TEdge>
-    where TEdge : IEdge
+    // TODO: write tests for it
+    public class DefaultEdgeSource<TNode,TEdge> : IEdgeSource<TEdge>
+    where TEdge : EdgeBase<TNode>
+    where TNode : NodeBase<TEdge>
     {
         IDictionary<int,IList<TEdge>> Edges;
         public int Count => Edges.Count;
@@ -23,9 +26,9 @@ namespace GraphSharp.GraphStructures
         }
         public TEdge this[int parentId, int childId] => this[parentId].First(x=>x.Child.Id==childId);
 
-        public DefaultEdgeSource(int capacity)
+        public DefaultEdgeSource()
         {
-            Edges = new ConcurrentDictionary<int,IList<TEdge>>(Environment.ProcessorCount,capacity);
+            Edges = new ConcurrentDictionary<int,IList<TEdge>>(Environment.ProcessorCount,Environment.ProcessorCount*4);
         }
         public void Add(TEdge edge)
         {
@@ -69,12 +72,12 @@ namespace GraphSharp.GraphStructures
             return this.GetEnumerator();
         }
 
-        public bool TryGetEdge(int parentId, int childId, out TEdge edge)
+        public bool TryGetEdge(int parentId, int childId, out TEdge? edge)
         {
-            var result = this[parentId].FirstOrDefault(e => e.Child.Id==childId);
-            edge = result ?? default;
-            return result is not null;
+            edge = this[parentId].FirstOrDefault(e => e.Child.Id==childId);
+            return edge is not null;
         }
+
         public void Clear(){
             Edges.Clear();
         }
