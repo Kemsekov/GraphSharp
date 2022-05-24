@@ -12,12 +12,12 @@ namespace GraphSharp.Propagators
     /// <summary>
     /// Base class for <see cref="IPropagator{}"/> that contains basic things for any specific implementation
     /// </summary>
-    public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode>
+    public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode,TEdge>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
         public IVisitor<TNode,TEdge> Visitor { get; init; }
-        protected IList<TNode> _nodes;
+        protected IGraphStructure<TNode,TEdge> _graph;
         protected const byte None = 0;
         protected const byte ToVisit = 1;
         protected const byte Visited = 2;
@@ -34,16 +34,16 @@ namespace GraphSharp.Propagators
         {
             if(_nodeFlags is null)
                 throw new ApplicationException("Call SetNodes before calling SetPosition!");
-            int nodesCount = _nodes.Count;
+            int nodesCount = _graph.Nodes.MaxNodeId+1;
             Array.Clear(_nodeFlags, 0, _nodeFlags.Length);
             for(int i = 0;i<nodeIndices.Count();i++){
                 _nodeFlags[nodeIndices[i]%nodesCount] = Visited;
             }
         }
-        public void SetNodes(IGraphStructure<TNode> nodes)
+        public void SetGraph(IGraphStructure<TNode,TEdge> graph)
         {
-            _nodes = nodes.Nodes;
-            _nodeFlags = new byte[_nodes.Count];
+            _graph = graph;
+            _nodeFlags = new byte[_graph.Nodes.MaxNodeId+1];
         }
         public virtual void Propagate()
         {
@@ -59,6 +59,16 @@ namespace GraphSharp.Propagators
         /// Method that will do main logic. It will propagate nodes from current generation to next generation selecting and visiting them in the proccess.
         /// </summary>
         protected abstract void PropagateNodes();
+
+        protected void PropagateNode(int nodeId)
+        {
+            var edges = _graph.Edges[nodeId];
+            foreach(var edge in edges)
+            {
+                if (!Visitor.Select(edge)) continue;
+                _nodeFlags.DangerousGetReferenceAt(edge.Target.Id)|=Visited;
+            }
+        }
 
     }
 }

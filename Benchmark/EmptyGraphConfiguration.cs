@@ -7,9 +7,14 @@ public class EmptyGraphConfiguration : IGraphConfiguration<EmptyNode, EmptyEdge>
 {
     public Random Rand{get;} = new();
 
-    public EmptyEdge CreateEdge(EmptyNode parent, EmptyNode child)
+    public EmptyEdge CreateEdge(EmptyNode source, EmptyNode target)
     {
-        return new EmptyEdge(parent, child);
+        return new EmptyEdge(source, target);
+    }
+
+    public IEdgeSource<EmptyEdge> CreateEdgeSource()
+    {
+        return new DefaultEdgeSource<EmptyNode,EmptyEdge>();
     }
 
     public EmptyNode CreateNode(int nodeId)
@@ -17,6 +22,10 @@ public class EmptyGraphConfiguration : IGraphConfiguration<EmptyNode, EmptyEdge>
         return new EmptyNode(nodeId);
     }
 
+    public INodeSource<EmptyNode> CreateNodeSource()
+    {
+        return new DefaultNodeSource<EmptyNode>(0);
+    }
     public float Distance(EmptyNode n1, EmptyNode n2)
     {
         throw new NotImplementedException();

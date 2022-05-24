@@ -8,20 +8,14 @@ namespace GraphSharp.Edges
     public abstract class EdgeBase<TNode> : IEdge
     where TNode : INode
     {
-        public EdgeBase(TNode parent, TNode child)
+        public EdgeBase(TNode source, TNode target)
         {
-            Child = child;
-            Parent = parent;
+            Source = source;
+            Target = target;
         }
-        /// <summary>
-        /// Node of current edge. Represent connection between parent and node.
-        /// </summary>
-        public TNode Child{get;set;}
-        /// <summary>
-        /// Parent of current edge.
-        /// </summary>
-        public TNode Parent{get;set;}
-        INode IEdge.Child=>this.Child;
-        INode IEdge.Parent=>this.Parent;
+        public virtual TNode Source{get;set;}
+        public virtual TNode Target{get;set;}
+        INode IEdge.Source=>this.Source;
+        INode IEdge.Target=>this.Target;
     }
 }

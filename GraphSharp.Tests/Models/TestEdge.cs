@@ -13,7 +13,7 @@ namespace GraphSharp.Tests.Models
     {
         public float Weight{get;set;}
         public Color Color{get;set;}
-        public TestEdge(TestNode parent,TestNode child) : base(parent,child)
+        public TestEdge(TestNode source,TestNode target) : base(source,target)
         {
         }
     }

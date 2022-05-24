@@ -17,6 +17,8 @@ namespace GraphSharp.GraphStructures
         /// <see cref="Random"/> that used to implement's any logic when it reqires random values
         /// </summary>
         public Random Rand {get;}
+        IEdgeSource<TEdge> CreateEdgeSource();
+        INodeSource<TNode> CreateNodeSource();
         /// <summary>
         /// Method that used to create instance of <see cref="TNode"/> from it's <see cref="INode.Id"/> as argument
         /// </summary>
@@ -24,7 +26,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>
         /// </summary>
-        TEdge CreateEdge(TNode parent, TNode child);
+        TEdge CreateEdge(TNode source, TNode target);
         /// <summary>
         /// Method that used to determite how to calculate distance between two <see cref="TNode"/>
         /// </summary>

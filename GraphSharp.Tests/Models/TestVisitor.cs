@@ -16,7 +16,7 @@ namespace GraphSharp.Tests.Models
             this.Propagator = new ParallelPropagator<TestNode,TestEdge>(this);
         }
 
-        public override IPropagator<TestNode> Propagator{get;}
+        public override IPropagator<TestNode,TestEdge> Propagator{get;}
 
         public override void EndVisit()
         {

@@ -21,72 +21,67 @@ namespace GraphSharp.GraphStructures
         public GraphStructure(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure) 
         {}
 
-        /// <summary>
-        /// Replace current <see cref="IGraphStructure{}.Nodes"/> to nodes
-        /// </summary>
-        /// <param name="nodes">What need to be used as <see cref="IGraphStructure{}.Nodes"/></param>
-        /// <returns></returns>
-        public GraphStructure<TNode,TEdge> UseNodes(IList<TNode> nodes)
-        {
+        public GraphStructure<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges){
             Nodes = nodes;
+            Edges = edges;
             return this;
         }
         /// <summary>
-        /// Create some count of nodes. This method will replace current <see cref="IGraphStructure{}.Nodes"/>.
+        /// Create some count of nodes. This method will replace current <see cref="IGraphStructure{,}.Nodes"/>.
         /// </summary>
         /// <param name="count">Count of codes to create</param>
         /// <returns></returns>
-        public GraphStructure<TNode,TEdge> CreateNodes(int count)
+        public GraphStructure<TNode,TEdge> Create(int nodesCount)
         {
-            var nodes = new List<TNode>(count);
-
+            Nodes = Configuration.CreateNodeSource();
+            Edges = Configuration.CreateEdgeSource();
             //create nodes
-            for (int i = 0; i < count; i++)
+            for (int i = 0; i < nodesCount; i++)
             {
                 var node = Configuration.CreateNode(i);
-                nodes.Add(node);
+                Nodes.Add(node);
             }
-            return UseNodes(nodes);
+            return this;
         }
 
         /// <summary>
-        /// Returns operations class for nodes
+        /// Returns operations class for this graph structure. This class can be used to add/remove nodes and edges.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> Do => new GraphStructureOperation<TNode, TEdge>(this);
         /// <summary>
         /// Get converter for current graph structure
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
-        
-        /// <summary>
-        /// Reindex nodes in graph structure.
-        /// </summary>
-        /// <returns></returns>
-        public GraphStructure<TNode,TEdge> ReindexNodes(){
-            for (int i = 0; i < Nodes.Count; i++)
-                Nodes[i].Id = i;
-            return this;
-        }
-
         /// <summary>
         /// Clones graph structure
         /// </summary>
         /// <returns></returns>
         public GraphStructure<TNode,TEdge> Clone()
         {
-            var graphInfo = this.Converter.ToExtendedConnectionsList();
-            var result = new GraphStructure<TNode,TEdge>(this);
-            result.Converter.FromExtendedConnectionsList(graphInfo.nodes,graphInfo.edges);
-            return result;
-        }
-        public GraphStructure<TNode,TEdge> Induce(Predicate<TNode> toInduce)
-        {
             var result = new GraphStructure<TNode,TEdge>(Configuration);
-            result.Nodes = Nodes.Where(x=>toInduce(x)).ToList();
-            for(int i = 0;i<result.Nodes.Count;i++){
-                result.Nodes[i] = Configuration.CreateNode(i);
+            var nodes = Nodes
+                .Select(x=>Configuration.CloneNode(x));
+            
+            foreach(var n in nodes){
+                result.Nodes.Add(n);
+            }
+            
+            var edges = Edges.Select(x=>Configuration.CloneEdge(x,result.Nodes));
+
+            foreach(var e in edges){
+                result.Edges.Add(e);
             }
             return result;
         }
+        /// <summary>
+        /// Replace current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
+        /// </summary>
+        /// <returns></returns>
+        public GraphStructure<TNode,TEdge> Clear(){
+            Nodes = Configuration.CreateNodeSource();
+            Edges = Configuration.CreateEdgeSource();
+            return this;
+        }
+
     }
 }

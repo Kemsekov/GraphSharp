@@ -21,14 +21,71 @@ namespace GraphSharp.Tests
         public GraphStructureTests()
         {
             this._nodes_count = 500;
-            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new Random())).CreateNodes(_nodes_count);
+            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new Random())).Create(_nodes_count);
+        }
+        [Fact]
+        public void Reindex_Works(){
+            _GraphStructure.Create(1000);
+            _GraphStructure.Do.RemoveNodes(x=>x.Id%3==0);
+            foreach(var n in _GraphStructure.Nodes){
+                Assert.True(n.Id%3!=0);
+            }
+            var nodesCount = _GraphStructure.Nodes.Count;
+            var edgesCount = _GraphStructure.Edges.Count;
+            _GraphStructure.Do.Reindex();
+            Assert.Equal(nodesCount,_GraphStructure.Nodes.Count);
+            Assert.Equal(nodesCount-1,_GraphStructure.Nodes.MaxNodeId);
+            Assert.Equal(edgesCount,_GraphStructure.Edges.Count);
+            Assert.Equal(0,_GraphStructure.Nodes.MinNodeId);
+
+            int counter = 0;
+            foreach(var n in _GraphStructure.Nodes){
+                Assert.Equal(counter++,n.Id);
+            }
+            _GraphStructure.CheckForIntegrity();
+        }
+        [Fact]
+        public void RemoveNodes_Works(){
+            _GraphStructure.Create(1000);
+            var nodes_before_removal = _GraphStructure.Nodes.Select(x=>x.Id).ToArray();
+            var edges_before_removal = _GraphStructure.Edges.Select(x=>(x.Source.Id,x.Target.Id)).ToArray();
+            
+            _GraphStructure.Do.RemoveNodes(x=>x.Id%3==0);
+            var nodes_after_removal = _GraphStructure.Nodes.Select(x=>x.Id).ToArray();
+            var edges_after_removal = _GraphStructure.Edges.Select(x=>(x.Source.Id,x.Target.Id)).ToArray();
+
+            foreach(var node in _GraphStructure.Nodes){
+                Assert.True(node.Id%3!=0);
+            }
+
+            foreach(var edge in _GraphStructure.Edges){
+                Assert.True(edge.Source.Id%3!=0);
+                Assert.True(edge.Target.Id%3!=0);
+            }
+
+            foreach(var id in nodes_before_removal.Except(nodes_after_removal)){
+                Assert.True(id%3==0);
+            }
+            
+            foreach(var edge in edges_before_removal.Except(edges_after_removal)){
+                Assert.True(edge.Item1%3==0 || edge.Item2%3==0);
+            }
+
+
+        }
+        [Fact]
+        public void Create_RightCountOfNodes(){
+            _GraphStructure.Create(100);
+            Assert.Equal(_GraphStructure.Nodes.Count,100);
+            Assert.Equal(_GraphStructure.Nodes.MaxNodeId,99);
+            Assert.Equal(_GraphStructure.Nodes.MinNodeId,0);
         }
         [Fact]
         public void ConnectToClosestWorks()
         {
             _GraphStructure.Do
             .ConnectToClosest(1,6);
-            validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
+            validateThereIsNoCopiesAndsourceInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
         }
         [Fact]
         public void MakeDirectedWorks()
@@ -37,14 +94,15 @@ namespace GraphSharp.Tests
             var seed = new Random().Next();
             var directed =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new(seed)))
-                    .CreateNodes(2000);
+                    .Create(2000);
             directed
                 .Do
                 .ConnectNodes(20)
                 .MakeDirected();
+            
             var undirected =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new(seed)))
-                    .CreateNodes(2000);
+                    .Create(2000);
             undirected
                 .Do
                 .ConnectNodes(20);
@@ -53,46 +111,51 @@ namespace GraphSharp.Tests
         [Fact]
         public void CreateSourcesWorks(){
             var graph = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration());
-            graph.Converter.FromConnectionsList(ManualTestData.TestConnectionsList.Select(x=>(x.parentId,x.children as IEnumerable<int>)));
+            graph.Converter.FromConnectionsList(ManualTestData.TestConnectionsList);
+            Assert.Equal(graph.Converter.ToConnectionsList(),ManualTestData.TestConnectionsList);
             graph.Do.MakeUndirected();
-            var temp = graph.Converter.ToConnectionsList();
+
             graph.Do.CreateSources(1,14);
             var expected = ManualTestData.AfterMakeSourcesExpected;
             var actual = graph.Converter.ToConnectionsList();
             Assert.NotEmpty(actual);
             Assert.Equal(expected.Count(),actual.Count());
             foreach(var e in expected){
-                var toCompare = actual.First(x=>x.parent==e.parentId);
-                Assert.Equal(e.children,toCompare.children);
+                var toCompare = actual.First(x=>x.Key==e.sourceId);
+                var exp = e.targetren.ToList();
+                var act = toCompare.Value.ToList();
+                exp.Sort();
+                act.Sort();
+                Assert.Equal(exp,act);
             }
         }
         [Fact]
         public void RemoveUndirectedEdgesWorks(){
             var graph = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration());
-            graph.CreateNodes(500);
+            graph.Create(500);
             graph.Do.ConnectRandomly(0,8);
             var before_removal = graph.Converter.ToConnectionsList().ToList();
             graph.Do.RemoveUndirectedEdges();
             var after_removal = graph.Converter.ToConnectionsList().ToList();
-            for(int parentId = 0;parentId<500;parentId++){
-                var before = before_removal.FirstOrDefault(x=>x.parent==parentId);
-                var after = after_removal.FirstOrDefault(x=>x.parent==parentId);
-                if(before.children is null) continue;                
-                var diff = before.children.Except(after.children ?? Enumerable.Empty<int>());
+            for(int sourceId = 0;sourceId<500;sourceId++){
+                var before = before_removal.FirstOrDefault(x=>x.Key==sourceId);
+                var after = after_removal.FirstOrDefault(x=>x.Key==sourceId);
+                if(before.Value is null) continue;                
+                var diff = before.Value.Except(after.Value ?? Enumerable.Empty<int>());
                 foreach(var nodeId in diff){
-                    Assert.Contains(parentId,before_removal.First(x=>x.parent==nodeId).children);
+                    Assert.Contains(sourceId,before_removal.First(x=>x.Key==nodeId).Value);
                 }
             }
             //and concrete example
 
             graph.Converter.FromConnectionsList(
-                new[]{
-                    (0,new []{1,2,3,5}),
-                    (1,new []{0,2}),
-                    (2,new []{1,3,5}),
-                    (3,new []{1,2,4}),
-                    (4,new []{3,5}),
-                    (5,new []{0,4})
+                new Dictionary<int,int[]>{
+                    {0,new []{1,2,3,5}},
+                    {1,new []{0,2}},
+                    {2,new []{1,3,5}},
+                    {3,new []{1,2,4}},
+                    {4,new []{3,5}},
+                    {5,new []{0,4}}
                 }
             );
             graph.Do.RemoveUndirectedEdges();
@@ -101,7 +164,7 @@ namespace GraphSharp.Tests
                 (2,new[]{5}),
                 (3,new[]{1})
             };
-            var actual = graph.Converter.ToConnectionsList().Select(x=>(x.parent,x.children.ToArray()));
+            var actual = graph.Converter.ToConnectionsList().Select(x=>(x.Key,x.Value.ToArray()));
             Assert.Equal(expected,actual);
         }
         [Fact]
@@ -110,40 +173,40 @@ namespace GraphSharp.Tests
             var seed = new Random().Next();
             var maybeUndirected =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                .CreateNodes(2000);
+                .Create(2000);
             maybeUndirected
                 .Do
                 .ConnectNodes(20);
 
             var undirected =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(){Rand = new(seed)})
-                .CreateNodes(2000);
+                .Create(2000);
             undirected
                 .Do
                 .ConnectNodes(20)
                 //one of them make 100% undirected
                 .MakeUndirected();
-
+            undirected.CheckForIntegrity();
             //ensure they are the same
             Assert.Equal(maybeUndirected.Nodes, undirected.Nodes);
 
-            //make sure each child have connection to parent
-            foreach (var parent in undirected.Nodes)
+            //make sure each target have connection to source
+            foreach (var source in undirected.Nodes)
             {
-                foreach (var child in parent.Edges)
+                foreach (var target in undirected.Edges[source.Id])
                 {
-                    Assert.True(child.Child.Edges.Any(c => c.Child.Id == parent.Id));
+                    Assert.True(undirected.Edges[target.Target.Id].Any(c => c.Target.Id == source.Id));
                 }
             }
 
             //make sure we did not add anything redundant
-            foreach (var parents in undirected.Nodes.Zip(maybeUndirected.Nodes))
+            foreach (var sources in undirected.Nodes.Zip(maybeUndirected.Nodes))
             {
                 //ensure they are the facto different objects in memory
-                Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
+                Assert.False(sources.First.GetHashCode() == sources.Second.GetHashCode());
 
-                var undirectedEdges = parents.First.Edges.Select(x => x.Child);
-                var maybeUndirectedEdges = parents.Second.Edges.Select(x => x.Child);
+                var undirectedEdges = undirected.Edges[sources.First.Id].Select(x => x.Target);
+                var maybeUndirectedEdges = maybeUndirected.Edges[sources.Second.Id].Select(x => x.Target);
 
                 var diff = maybeUndirectedEdges.Except(undirectedEdges, new NodeEqualityComparer());
                 Assert.Empty(diff);
@@ -152,9 +215,10 @@ namespace GraphSharp.Tests
 
                 foreach (var n in diff)
                 {
-                    Assert.True(maybeUndirected.Nodes[n.Id].Edges.Any(x => x.Child.Id == parents.First.Id));
+                    Assert.True(maybeUndirected.Edges[n.Id].Any(x => x.Target.Id == sources.First.Id));
                 }
             }
+            validateThereIsNoCopiesAndsourceInEdges(undirected.Nodes,undirected.Edges);
         }
         [Fact]
         public void EnsureNodesCount()
@@ -164,41 +228,27 @@ namespace GraphSharp.Tests
         [Fact]
         public void ConnectNodesWorks()
         {
-            int children_count = 100;
+            int targetren_count = 100;
             _GraphStructure.Do
-            .ConnectNodes(children_count);
-            validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
+            .ConnectNodes(targetren_count);
+            validateThereIsNoCopiesAndsourceInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
             ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, 100, 101);
-            Parallel.ForEach(_GraphStructure.Nodes, node =>
-             {
-                 var edges = node.Edges.Select(child => child.Child).ToList();
-                 Assert.Equal(node.Edges.Count, children_count);
-                 validateThereIsNoCopiesAndParentInEdges(edges);
-             });
         }
         [Fact]
         public void ConnectRandomlyWorks()
         {
             int minCountOfNodes = Random.Shared.Next(5);
-            int maxCountOfNodes = Random.Shared.Next(5)+20;
+            int maxCountOfNodes = Random.Shared.Next(5)+100;
             _GraphStructure.Do
             .ConnectRandomly(minCountOfNodes, maxCountOfNodes);
 
-            validateThereIsNoCopiesAndParentInEdges(_GraphStructure.Nodes);
+            validateThereIsNoCopiesAndsourceInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
             ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, minCountOfNodes, maxCountOfNodes);
         }
         [Fact]
-        public void TotalEdgesCount_Works(){
-            int count = 0;
-            _GraphStructure.Do.ConnectRandomly(0,5);
-            foreach(var n in _GraphStructure.Nodes)
-                count+=n.Edges.Count;
-            Assert.Equal(count,_GraphStructure.EdgesCount());
-        } 
-        [Fact]
         public void MeanNodeEdgesCount_Works(){
             _GraphStructure.Do.ConnectRandomly(0,5);
-            float expected = (float)(_GraphStructure.EdgesCount())/_GraphStructure.Nodes.Count();
+            float expected = (float)(_GraphStructure.Edges.Count)/_GraphStructure.Nodes.Count;
             float actual = _GraphStructure.MeanNodeEdgesCount();
             Assert.Equal(expected, actual);
         }
@@ -208,28 +258,26 @@ namespace GraphSharp.Tests
             _GraphStructure.Do.Isolate(x=>x.Id%2==0);
             foreach(var n in _GraphStructure.Nodes){
                 if(n.Id%2==0)
-                    Assert.Empty(n.Edges);
-                foreach(var e in n.Edges){
-                    Assert.True(e.Child.Id%2!=0);
+                    Assert.Empty(_GraphStructure.Edges[n.Id]);
+                foreach(var e in _GraphStructure.Edges[n.Id]){
+                    Assert.True(e.Target.Id%2!=0);
                 }
             }
         }
         [Fact]
-        public void CountParents_Works(){
+        public void Countsources_Works(){
             _GraphStructure.Do.RemoveEdges(x=>true);
-            var parentsCount = _GraphStructure.CountParents();
-            Assert.All(parentsCount,x=>Assert.Equal(x.Value,0));
+            var sourcesCount = _GraphStructure.Countsources();
+            Assert.All(sourcesCount,x=>Assert.Equal(x.Value,0));
 
             _GraphStructure.Do.ConnectRandomly(2,5);
-            parentsCount = _GraphStructure.CountParents();
+            sourcesCount = _GraphStructure.Countsources();
 
-            foreach(var n in _GraphStructure.Nodes){
-                foreach(var e in n.Edges){
-                    parentsCount[e.Child.Id]--;
-                }
+            foreach(var e in _GraphStructure.Edges){
+                sourcesCount[e.Target.Id]--;
             }
 
-            Assert.All(parentsCount,x=>Assert.Equal(x.Value,0));
+            Assert.All(sourcesCount,x=>Assert.Equal(x.Value,0));
         }
         [Fact]
         public void ReverseEdges_Works(){
@@ -240,8 +288,12 @@ namespace GraphSharp.Tests
             _GraphStructure.Do.ReverseEdges();
             var after_two_reverses = _GraphStructure.Converter.ToConnectionsList();
             foreach(var e in before_reverse.Zip(after_two_reverses)){
-                Assert.Equal(e.First.parent,e.Second.parent);
-                Assert.Equal(e.First.children,e.Second.children);
+                Assert.Equal(e.First.Key,e.Second.Key);
+                var expected = e.First.Value.ToList();
+                var actual = e.Second.Value.ToList();
+                expected.Sort();
+                actual.Sort();
+                Assert.Equal(expected,actual);
             }
             Assert.NotEqual(before_reverse,after_reverse);
         }
@@ -250,27 +302,14 @@ namespace GraphSharp.Tests
             _GraphStructure.Do.ConnectRandomly(1,5);
             var clone = _GraphStructure.Clone();
             Assert.Equal(_GraphStructure.Nodes,clone.Nodes);
-            Assert.Equal(_GraphStructure.EdgesCount(),clone.EdgesCount());
+            Assert.Equal(_GraphStructure.Edges.Count,clone.Edges.Count);
             var t1 = _GraphStructure.Converter.ToConnectionsList();
             var t2 = clone.Converter.ToConnectionsList();
             Assert.Equal(t1,t2);
-            clone.Do.RemoveEdges(x=>x.Child.Id%2==0);
+            clone.Do.RemoveEdges(x=>x.Target.Id%2==0);
             t1 = _GraphStructure.Converter.ToConnectionsList();
             t2 = clone.Converter.ToConnectionsList();
             Assert.NotEqual(t1,t2);
-        }
-        [Fact]
-        public void ReindexNodes_Works(){
-            _GraphStructure.Nodes.RemoveAt(3);
-            _GraphStructure.Nodes.RemoveAt(5);
-            _GraphStructure.Nodes.RemoveAt(7);
-            _GraphStructure.Nodes.RemoveAt(19);
-            _GraphStructure.Nodes.RemoveAt(40);
-            _GraphStructure.Nodes.RemoveAt(66);
-            _GraphStructure.ReindexNodes();
-            for(int i = 0;i<_GraphStructure.Nodes.Count;i++){
-                Assert.Equal(_GraphStructure.Nodes[i].Id,i);
-            }
         }
         [Fact]
         public void RemoveIsolatedNodes_Works(){
@@ -281,17 +320,45 @@ namespace GraphSharp.Tests
             _GraphStructure.Do.Isolate(x=>x.Id%2==0).RemoveIsolatedNodes();
             var after = _GraphStructure;
             
-            Assert.Equal(before.Nodes,after.Nodes);
+            Assert.Equal(before.Nodes.Select(x=>x.Id),after.Nodes.Select(x=>x.Id));
             foreach(var n in before.Nodes.Zip(after.Nodes)){
                 Assert.Equal(n.First.Id,n.Second.Id);
             }
         }
-        public void validateThereIsNoCopiesAndParentInEdges(IEnumerable<TestNode> nodes)
+        [Fact]
+        public void Clear_Works(){
+            _GraphStructure.Do.ConnectRandomly(2,6);
+            var nodes = _GraphStructure.Nodes;
+            var edges = _GraphStructure.Edges;
+            _GraphStructure.Clear();
+            Assert.Empty(_GraphStructure.Nodes);
+            Assert.Empty(_GraphStructure.Edges);            
+            Assert.NotEmpty(nodes);
+            Assert.NotEmpty(edges);
+        }
+        [Fact]
+        public void SetSources_Works(){
+            var nodes = new DefaultNodeSource<TestNode>(0);
+            var edges = new DefaultEdgeSource<TestNode,TestEdge>();
+
+            nodes.Add(new TestNode(0));
+            nodes.Add(new TestNode(1));
+            edges.Add(new TestEdge(nodes.First(),nodes.Last()));
+
+            _GraphStructure.SetSources(nodes,edges);
+            Assert.Equal(nodes.GetHashCode(),_GraphStructure.Nodes.GetHashCode());
+            Assert.Equal(edges.GetHashCode(),_GraphStructure.Edges.GetHashCode());
+            Assert.Equal(nodes.Select(x=>x),_GraphStructure.Nodes.Select(x=>x));
+            Assert.Equal(edges.Select(x=>x),_GraphStructure.Edges.Select(x=>x));
+
+        }
+        public void validateThereIsNoCopiesAndsourceInEdges(INodeSource<TestNode> nodes,IEdgeSource<TestEdge> edges)
         {
-            foreach (var parent in nodes)
+            foreach (var source in nodes)
             {
-                Assert.Equal(parent.Edges.Distinct(), parent.Edges);
-                Assert.False(parent.Edges.Any(child => child.Child.Id == parent.Id), $"There is parent in children. Parent : {parent}");
+                var sourceEdges = edges[source.Id];
+                Assert.Equal(sourceEdges.Distinct(), edges[source.Id]);
+                Assert.False(sourceEdges.Any(target => target.Target.Id == source.Id), $"There is source in targetren. source : {source.Id}");
             }
         }
         public void ensureRightCountOfEdgesPerNode(IEnumerable<TestNode> nodes, int minEdges, int maxEdges)
@@ -299,36 +366,46 @@ namespace GraphSharp.Tests
             Assert.NotEmpty(nodes);
             foreach (var node in nodes)
             {
-                var edgesCount = node.Edges.Count();
+                var edges = _GraphStructure.Edges[node.Id];
+                var edgesCount = edges.Count();
                 Assert.True(edgesCount >= minEdges && edgesCount < maxEdges,$"{edgesCount} >= {minEdges} && {edgesCount} < {maxEdges}");
             }
         }
-        public void ensureDirected(IGraphStructure<TestNode> directed,IGraphStructure<TestNode> undirected){
+        public void ensureDirected(IGraphStructure<TestNode,TestEdge> directed,IGraphStructure<TestNode,TestEdge> undirected){
 
             Assert.Equal(directed.Nodes, undirected.Nodes);
 
-            //make sure each child have no connection to parent
-            foreach (var parent in directed.Nodes)
+            //make sure each target have no connection to source
+            foreach (var edge in directed.Edges)
             {
-                foreach (var child in parent.Edges)
-                {
-                    Assert.False(child.Child.Edges.Any(c => c.Child.Id == parent.Id));
-                }
+                Assert.False(directed.Edges[edge.Target.Id].Any(c => c.Target.Id == edge.Source.Id));
             }
 
             //make sure we did not remove anything that is not connected to node
-            foreach (var parents in directed.Nodes.Zip(undirected.Nodes))
+            foreach (var sources in directed.Nodes.Zip(undirected.Nodes))
             {
                 //ensure they are the facto different objects in memory
-                Assert.False(parents.First.GetHashCode() == parents.Second.GetHashCode());
-                var directedEdges = parents.First.Edges.Select(x => x.Child);
-                var undirectedEdges = parents.Second.Edges.Select(x => x.Child);
+                Assert.False(sources.First.GetHashCode() == sources.Second.GetHashCode());
+                var directedEdges = directed.Edges[sources.First.Id].Select(x => x.Target);
+                var undirectedEdges = undirected.Edges[sources.Second.Id].Select(x => x.Target);
                 var diff = undirectedEdges.Except(directedEdges, new NodeEqualityComparer());
 
                 foreach (var n in diff.Select(x=>x as TestNode))
                 {
-                    Assert.True(n.Edges.Any(x => x.Child.Id == parents.First.Id));
+                    Assert.True(directed.Edges[n.Id].Any(x => x.Target.Id == sources.First.Id) || undirected.Edges[n.Id].Any(x => x.Target.Id == sources.First.Id));
                 }
+            }
+        }
+        /// <summary>
+        /// Checks that set of edges is closed on set of nodes
+        /// </summary>
+        public static void CheckForIntegrity<TNode,TEdge>(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges)
+        where TNode : INode
+        where TEdge : IEdge
+        {
+            foreach(var e in edges){
+                Assert.True(nodes.TryGetNode(e.Source.Id,out var _));
+                Assert.True(nodes.TryGetNode(e.Target.Id,out var _));
             }
         }
 

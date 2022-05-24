@@ -12,9 +12,7 @@ namespace GraphSharp.Nodes
         public NodeBase(int id)
         {
             Id = id;
-            Edges = new List<TEdge>();
         }
-        public int Id{get;set;}
-        public IList<TEdge> Edges{get;}
+        public int Id{get;}
     }
 }

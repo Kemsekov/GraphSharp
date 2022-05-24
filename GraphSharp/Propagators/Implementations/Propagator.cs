@@ -18,30 +18,17 @@ namespace GraphSharp.Propagators
         public Propagator(IVisitor<TNode, TEdge> visitor) : base(visitor)
         {
         }
-
-        protected void PropagateNode(TNode node)
-        {
-            var edges = node.Edges;
-            int count = edges.Count;
-            TEdge edge;
-            for (int i = 0; i < count; ++i)
-            {
-                edge = edges[i];
-                if (!Visitor.Select(edge)) continue;
-                _nodeFlags.DangerousGetReferenceAt(edge.Child.Id)|=Visited;
-            }
-        }
         protected override void PropagateNodes()
         {
             for (int nodeId = 0; nodeId < _nodeFlags.Length; ++nodeId)
             {
                 if ((_nodeFlags[nodeId] & ToVisit)==ToVisit)
-                    PropagateNode(_nodes[nodeId]);
+                    PropagateNode(nodeId);
             };
             for (int nodeId = 0; nodeId < _nodeFlags.Length; ++nodeId)
             {
                 if((_nodeFlags[nodeId] & Visited)==Visited)
-                    Visitor.Visit(_nodes[nodeId]);
+                    Visitor.Visit(_graph.Nodes[nodeId]);
             };
             Visitor.EndVisit();
         }

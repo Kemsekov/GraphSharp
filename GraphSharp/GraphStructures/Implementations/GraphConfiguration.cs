@@ -19,7 +19,7 @@ namespace GraphSharp.GraphStructures
         {
             Rand = rand;
         }
-        public abstract TEdge CreateEdge(TNode parent, TNode child);
+        public abstract TEdge CreateEdge(TNode source, TNode target);
         public abstract TNode CreateNode(int nodeId);
         public float Distance(TNode n1, TNode n2)
         {
@@ -64,6 +64,16 @@ namespace GraphSharp.GraphStructures
         public void SetNodeWeight(TNode node, float weight)
         {
             node.Weight = weight;
+        }
+
+        public IEdgeSource<TEdge> CreateEdgeSource()
+        {
+            return new DefaultEdgeSource<TNode,TEdge>();
+        }
+
+        public INodeSource<TNode> CreateNodeSource()
+        {
+            return new DefaultNodeSource<TNode>(0);
         }
     }
 }
