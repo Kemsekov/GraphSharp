@@ -175,7 +175,7 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FromConnectionsList_Works(){
-            _GraphStructure.Create(100,0)
+            _GraphStructure.Create(100)
             .Do.ConnectRandomly(5,20);
             var expected = _GraphStructure.Converter.ToConnectionsList();
             var actual = _GraphStructure.Converter.FromConnectionsList(expected).ToConnectionsList();

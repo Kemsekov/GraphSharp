@@ -343,6 +343,66 @@ namespace GraphSharp.GraphStructures
 
             return this;
         }
+                /// <summary>
+        /// Reindexes all nodes and edges
+        /// </summary>
+        public GraphStructureOperation<TNode,TEdge> Reindex(){
+            // TODO: add tests
+            var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
+            var reindexed = ReindexNodes();
+            var edgesToMove = new List<(TEdge edge, int newParentId, int newChildId)>();
+            foreach(var edge in Edges){
+                var childReindexed = reindexed.TryGetValue(edge.Child.Id,out var newChildId);
+                var parentReindexed = reindexed.TryGetValue(edge.Parent.Id,out var newParentId);
+                if(childReindexed || parentReindexed)
+                    edgesToMove.Add((
+                        edge,
+                        parentReindexed ? newParentId : edge.Parent.Id,
+                        childReindexed ? newChildId : edge.Child.Id
+                    ));
+            }
 
+            foreach(var toMove in edgesToMove){
+                var edge = toMove.edge;
+                Edges.Remove(edge.Parent.Id,edge.Child.Id);
+                edge.Parent = Nodes[toMove.newParentId];
+                edge.Child = Nodes[toMove.newChildId];
+                Edges.Add(edge);
+            }
+
+            return this;
+        }
+        /// <summary>
+        /// Reindex nodes only and return dict where Key is old node id and Value is new node id
+        /// </summary>
+        /// <returns></returns>
+        protected IDictionary<int,int> ReindexNodes(){
+            var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
+            var Configuration = _structureBase.Configuration;
+            var idMap = new Dictionary<int,int>();
+            var nodeIdsMap = new byte[Nodes.MaxNodeId+1];
+            foreach(var n in Nodes){
+                nodeIdsMap[n.Id] = 1;
+            }
+
+            for(int i = 0;i<nodeIdsMap.Length;i++){
+                if(nodeIdsMap[i]==0)
+                for(int b = nodeIdsMap.Length-1;b>i;b--){
+                    if(nodeIdsMap[b]==1){
+                        var toMove = Nodes[b];
+                        var moved = Configuration.CloneNode(toMove,x=>i);
+                        Nodes.Remove(toMove.Id);
+                        Nodes.Add(moved);
+                        nodeIdsMap[b] = 0;
+                        nodeIdsMap[i] = 1;
+                        idMap[b] = i;
+                        break;
+                    }
+                }
+            }
+            return idMap;
+        }
     }
 }

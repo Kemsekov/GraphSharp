@@ -15,11 +15,8 @@ namespace GraphSharp.GraphStructures
         IDictionary<int,TNode> Nodes;
         public TNode this[int nodeId] { get => Nodes[nodeId]; set => Nodes[nodeId] = value; }
         public int Count => Nodes.Count;
-
         public int MaxNodeId{get;protected set;}
-
         public int MinNodeId{get;protected set;}
-
         public DefaultNodeSource(int capacity)
         {
             Nodes = new ConcurrentDictionary<int,TNode>(Environment.ProcessorCount,capacity);
@@ -27,7 +24,10 @@ namespace GraphSharp.GraphStructures
         public void Add(TNode node)
         {
             Nodes.Add(node.Id,node);
-            UpdateMaxMinNodeId(node.Id);
+            if(node.Id>MaxNodeId)
+                MaxNodeId = node.Id;
+            if(node.Id<MinNodeId || MinNodeId==-1)
+                MinNodeId = node.Id;
         }
 
         public IEnumerator<TNode> GetEnumerator()
@@ -38,16 +38,16 @@ namespace GraphSharp.GraphStructures
 
         public bool Remove(TNode node)
         {
-            bool removed = Nodes.Remove(node.Id);
-            if(removed) UpdateMaxMinNodeId(node.Id);
-            return removed;
+            return Remove(node.Id);
         }
 
         public bool Remove(int nodeId)
         {
-            bool removed = Nodes.Remove(nodeId);
-            if(removed) UpdateMaxMinNodeId(nodeId);
-            return removed;
+            if(Nodes.Remove(nodeId)){
+                UpdateMaxMinNodeIdAfterRemovedNode(nodeId);
+                return true;
+            }
+            return false;
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -64,9 +64,19 @@ namespace GraphSharp.GraphStructures
             MaxNodeId = -1;
             MinNodeId = -1;
         }
-        void UpdateMaxMinNodeId(int id){
-            MaxNodeId = Math.Max(MaxNodeId,id);
-            MinNodeId = Math.Min(MinNodeId,id);
+        void UpdateMaxMinNodeIdAfterRemovedNode(int removedNodeId){
+            if(Nodes.Count==0){
+                MinNodeId = -1;
+                MaxNodeId = -1;
+                return;
+            }
+            
+            //Dictionary is sorted by key when key is integer by default
+            //Update max node id or min node id only if removed node is one of them
+            if(removedNodeId==MinNodeId)
+                MinNodeId = Nodes.First().Key;
+            if(removedNodeId==MaxNodeId)
+                MaxNodeId = Nodes.Last().Key;
         }
 
     }

@@ -55,10 +55,20 @@ namespace GraphSharp.GraphStructures
         public float MeanNodeEdgesCount()
             => (float)(Edges.Count) / (Nodes.Count==0 ? 1 : Nodes.Count);  
         /// <summary>
-        /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception.
+        /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception. If there is duplicate node throws an exception. If there is duplicate edge throws an exception.
         /// </summary>
         public void CheckForIntegrity()
         {
+            var actual = Nodes.Select(x=>x.Id);
+            var expected = actual.Distinct();
+            if(actual.Count()!=expected.Count())
+                throw new System.ApplicationException("Nodes contains duplicates");
+
+            var actualEdges = Edges.Select(x=>(x.Parent.Id,x.Child.Id));
+            var expectedEdges = actualEdges.Distinct();
+            if(actualEdges.Count()!=expectedEdges.Count())
+                throw new System.ApplicationException("Edges contains duplicates");
+
             foreach(var e in Edges){
                 if (!Nodes.TryGetNode(e.Parent.Id,out var _)){
                     throw new System.InvalidOperationException($"{e.Parent.Id} found among Edges but not found among Nodes");

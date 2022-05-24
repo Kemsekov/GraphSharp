@@ -26,7 +26,7 @@ namespace GraphSharp.Tests
             _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode,TestEdge>>[2];
             _propagatorFactories[0] = visitor => new Propagator<TestNode,TestEdge>(visitor);
             _propagatorFactories[1] = visitor => new ParallelPropagator<TestNode,TestEdge>(visitor);
-            _graph = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).Create(1000,0);
+            _graph = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).Create(1000);
             _graph.Do.ConnectNodes(10);
         }
 
@@ -169,7 +169,7 @@ namespace GraphSharp.Tests
         public void Propagate_HaveRightNodesVisitOrderWithManualData()
         {
             var graph = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration())
-                .Create(10,0);
+                .Create(10);
             foreach (var pair in ManualTestData.NodesConnections)
             {
                 graph.Edges.Add(new TestEdge(graph.Nodes[pair[0]],graph.Nodes[pair[1]]));

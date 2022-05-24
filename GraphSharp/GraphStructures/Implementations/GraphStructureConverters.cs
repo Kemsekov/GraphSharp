@@ -27,14 +27,11 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         public IDictionary<int, IEnumerable<int>> ToConnectionsList(){
             var result = new Dictionary<int,IEnumerable<int>>();
-            foreach(var n in _structureBase.Edges){
-                if(result.TryGetValue(n.Parent.Id,out var children)){
-                    if(children is IList<int> list)
-                        list.Add(n.Child.Id);
-                }
-                else{
-                    result[n.Parent.Id] = new List<int>{n.Child.Id};
-                }
+
+            foreach(var n in _structureBase.Nodes){
+                var edges = _structureBase.Edges[n.Id];
+                if(edges.Count()==0) continue;
+                result.Add(n.Id, edges.Select(e=>e.Child.Id).ToList());
             }
             return result;
         }
@@ -128,6 +125,7 @@ namespace GraphSharp.GraphStructures
                 var parent = Configuration.CreateNode(m.Key);
                 _structureBase.Nodes.Add(parent);
             }
+
             foreach(var m in connectionsList)
                 foreach(var childId in m.Value){
                     if(!_structureBase.Nodes.TryGetNode(childId,out var _)){

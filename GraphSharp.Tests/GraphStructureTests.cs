@@ -21,7 +21,38 @@ namespace GraphSharp.Tests
         public GraphStructureTests()
         {
             this._nodes_count = 500;
-            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new Random())).Create(_nodes_count,0);
+            this._GraphStructure = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new Random())).Create(_nodes_count);
+        }
+        [Fact]
+        public void Reindex_Works(){
+            _GraphStructure.Create(1000);
+            _GraphStructure.Do.RemoveNodes(x=>x.Id%3==0);
+            foreach(var n in _GraphStructure.Nodes){
+                Assert.True(n.Id%3!=0);
+            }
+            var nodesCount = _GraphStructure.Nodes.Count;
+            _GraphStructure.Do.Reindex();
+            Assert.Equal(nodesCount,_GraphStructure.Nodes.Count);
+            Assert.Equal(nodesCount-1,_GraphStructure.Nodes.MaxNodeId);
+            Assert.Equal(0,_GraphStructure.Nodes.MinNodeId);
+
+            int counter = 0;
+            foreach(var n in _GraphStructure.Nodes){
+                Assert.Equal(counter++,n.Id);
+            }
+            _GraphStructure.CheckForIntegrity();
+        }
+        [Fact]
+        public void RemoveNodes_Works(){
+            // TODO: implement test
+            throw new NotImplementedException();
+        }
+        [Fact]
+        public void Create_RightCountOfNodes(){
+            _GraphStructure.Create(100);
+            Assert.Equal(_GraphStructure.Nodes.Count,100);
+            Assert.Equal(_GraphStructure.Nodes.MaxNodeId,99);
+            Assert.Equal(_GraphStructure.Nodes.MinNodeId,0);
         }
         [Fact]
         public void ConnectToClosestWorks()
@@ -37,7 +68,7 @@ namespace GraphSharp.Tests
             var seed = new Random().Next();
             var directed =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new(seed)))
-                    .Create(2000,0);
+                    .Create(2000);
             directed
                 .Do
                 .ConnectNodes(20)
@@ -45,7 +76,7 @@ namespace GraphSharp.Tests
             
             var undirected =
                 new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new(seed)))
-                    .Create(2000,0);
+                    .Create(2000);
             undirected
                 .Do
                 .ConnectNodes(20);
@@ -75,7 +106,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void RemoveUndirectedEdgesWorks(){
             var graph = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration());
-            graph.Create(500,0);
+            graph.Create(500);
             graph.Do.ConnectRandomly(0,8);
             var before_removal = graph.Converter.ToConnectionsList().ToList();
             graph.Do.RemoveUndirectedEdges();
