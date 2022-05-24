@@ -44,8 +44,32 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void RemoveNodes_Works(){
-            // TODO: implement test
-            throw new NotImplementedException();
+            _GraphStructure.Create(1000);
+            var nodes_before_removal = _GraphStructure.Nodes.Select(x=>x.Id).ToArray();
+            var edges_before_removal = _GraphStructure.Edges.Select(x=>(x.Parent.Id,x.Child.Id)).ToArray();
+            
+            _GraphStructure.Do.RemoveNodes(x=>x.Id%3==0);
+            var nodes_after_removal = _GraphStructure.Nodes.Select(x=>x.Id).ToArray();
+            var edges_after_removal = _GraphStructure.Edges.Select(x=>(x.Parent.Id,x.Child.Id)).ToArray();
+
+            foreach(var node in _GraphStructure.Nodes){
+                Assert.True(node.Id%3!=0);
+            }
+
+            foreach(var edge in _GraphStructure.Edges){
+                Assert.True(edge.Parent.Id%3!=0);
+                Assert.True(edge.Child.Id%3!=0);
+            }
+
+            foreach(var id in nodes_before_removal.Except(nodes_after_removal)){
+                Assert.True(id%3==0);
+            }
+            
+            foreach(var edge in edges_before_removal.Except(edges_after_removal)){
+                Assert.True(edge.Item1%3==0 || edge.Item2%3==0);
+            }
+
+
         }
         [Fact]
         public void Create_RightCountOfNodes(){
@@ -160,7 +184,7 @@ namespace GraphSharp.Tests
                 .ConnectNodes(20)
                 //one of them make 100% undirected
                 .MakeUndirected();
-
+            undirected.CheckForIntegrity();
             //ensure they are the same
             Assert.Equal(maybeUndirected.Nodes, undirected.Nodes);
 
@@ -294,7 +318,7 @@ namespace GraphSharp.Tests
             _GraphStructure.Do.Isolate(x=>x.Id%2==0).RemoveIsolatedNodes();
             var after = _GraphStructure;
             
-            Assert.Equal(before.Nodes,after.Nodes);
+            Assert.Equal(before.Nodes.Select(x=>x.Id),after.Nodes.Select(x=>x.Id));
             foreach(var n in before.Nodes.Zip(after.Nodes)){
                 Assert.Equal(n.First.Id,n.Second.Id);
             }

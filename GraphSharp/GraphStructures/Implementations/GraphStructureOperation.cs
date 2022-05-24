@@ -312,7 +312,6 @@ namespace GraphSharp.GraphStructures
         /// Isolate and removes nodes that satisfies predicate
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> RemoveNodes(Predicate<TNode> toRemove){
-            // TODO: переделай тесты для этого метода
             Isolate(toRemove);
             var Nodes = _structureBase.Nodes;
             var nodesToRemove = Nodes.Where(x=>toRemove(x)).Select(x=>x.Id).ToArray();
@@ -347,7 +346,6 @@ namespace GraphSharp.GraphStructures
         /// Reindexes all nodes and edges
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> Reindex(){
-            // TODO: add tests
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var reindexed = ReindexNodes();
