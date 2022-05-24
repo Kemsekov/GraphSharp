@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.Exceptions;
 using GraphSharp.GraphStructures;
 using GraphSharp.Nodes;
 using GraphSharp.Tests.Models;
@@ -74,7 +75,7 @@ namespace GraphSharp.Tests
         public void FromAdjacencyMatrix_ThrowsIfMatrixNotSquare()
         {
             var adjacencyMatrix = DenseMatrix.Create(5, 6, 0);
-            Assert.Throws<ArgumentException>(() => _GraphStructure.Converter.FromAdjacencyMatrix(adjacencyMatrix));
+            Assert.Throws<GraphConverterException>(() => _GraphStructure.Converter.FromAdjacencyMatrix(adjacencyMatrix));
         }
         [Fact]
         public void ToAdjacencyMatrix_Works()

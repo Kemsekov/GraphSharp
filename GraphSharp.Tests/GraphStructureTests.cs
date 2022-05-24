@@ -312,6 +312,29 @@ namespace GraphSharp.Tests
             Assert.NotEqual(t1,t2);
         }
         [Fact]
+        public void Induce_Works(){
+            _GraphStructure.Do.ConnectRandomly(1,5);
+            var induced = _GraphStructure.Induce(x=>x.Id%3==0);
+            induced.CheckForIntegrity();
+            
+            foreach(var n in induced.Nodes){
+                Assert.True(n.Id%3==0);
+            }
+            foreach(var e in induced.Edges){
+                Assert.True(e.Source.Id%3==0 || e.Target.Id%3==0);
+            }
+            
+            var node_diff = _GraphStructure.Nodes.Select(x=>x.Id).Except(induced.Nodes.Select(x=>x.Id));
+            foreach(var id in node_diff){
+                Assert.True(id%3!=0);
+            }
+
+            var edge_diff = _GraphStructure.Edges.Select(x=>(x.Source.Id,x.Target.Id)).Except(induced.Edges.Select(x=>(x.Source.Id,x.Target.Id)));
+            foreach(var e in edge_diff){
+                Assert.True(e.Item1%3!=0 || e.Item2%3!=0);
+            }
+        }
+        [Fact]
         public void RemoveIsolatedNodes_Works(){
             _GraphStructure.Do.ConnectRandomly(2,6);
             var before = _GraphStructure.Clone();

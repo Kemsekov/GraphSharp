@@ -15,6 +15,7 @@ namespace GraphSharp.GraphStructures
     {
         public GraphStructure(IGraphConfiguration<TNode,TEdge> configuration) : base(configuration)
         {}
+        
         /// <summary>
         /// Copy constructor. Will make shallow copy of graphStructure
         /// </summary>
@@ -26,6 +27,7 @@ namespace GraphSharp.GraphStructures
             Edges = edges;
             return this;
         }
+        
         /// <summary>
         /// Create some count of nodes. This method will replace current <see cref="IGraphStructure{,}.Nodes"/>.
         /// </summary>
@@ -48,10 +50,35 @@ namespace GraphSharp.GraphStructures
         /// Returns operations class for this graph structure. This class can be used to add/remove nodes and edges.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> Do => new GraphStructureOperation<TNode, TEdge>(this);
+        
         /// <summary>
         /// Get converter for current graph structure
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
+        
+        /// <summary>
+        /// Create new induced graph from this graph structure.
+        /// </summary>
+        public GraphStructure<TNode,TEdge> Induce(Predicate<TNode> toInduce){
+            var result = new GraphStructure<TNode,TEdge>(Configuration);
+            var nodes = Nodes
+                .Where(x=>toInduce(x))
+                .Select(x=>Configuration.CloneNode(x));
+            
+            foreach(var n in nodes){
+                result.Nodes.Add(n);
+            }
+            
+            var edges = Edges
+                .Where(x=>toInduce(x.Source) && toInduce(x.Target))
+                .Select(x=>Configuration.CloneEdge(x,result.Nodes));
+
+            foreach(var e in edges){
+                result.Edges.Add(e);
+            }
+            return result;
+        }
+        
         /// <summary>
         /// Clones graph structure
         /// </summary>
@@ -73,6 +100,7 @@ namespace GraphSharp.GraphStructures
             }
             return result;
         }
+        
         /// <summary>
         /// Replace current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
         /// </summary>

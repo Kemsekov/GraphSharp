@@ -54,6 +54,7 @@ namespace GraphSharp.GraphStructures
         }
         public float MeanNodeEdgesCount()
             => (float)(Edges.Count) / (Nodes.Count==0 ? 1 : Nodes.Count);  
+        
         /// <summary>
         /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception. If there is duplicate node throws an exception. If there is duplicate edge throws an exception.
         /// </summary>
