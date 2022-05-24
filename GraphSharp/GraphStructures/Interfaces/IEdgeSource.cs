@@ -13,10 +13,10 @@ namespace GraphSharp.GraphStructures
         int Count{ get; }
         void Add(TEdge edge);
         bool Remove(TEdge edge);
-        bool Remove(int parentId, int childId);
-        IEnumerable<TEdge> this[int parentId] {get;}
-        TEdge this[int parentId,int childId]{get;}
-        bool TryGetEdge(int parentId, int childId, out TEdge? edge);
+        bool Remove(int sourceId, int targetId);
+        IEnumerable<TEdge> this[int sourceId] {get;}
+        TEdge this[int sourceId,int targetId]{get;}
+        bool TryGetEdge(int sourceId, int targetId, out TEdge? edge);
         void Clear();
     }
 }

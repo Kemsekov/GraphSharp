@@ -23,7 +23,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Converts the graph structure edges to dictionary, where key is parent id and value is list of children ids.
+        /// Converts the graph structure edges to dictionary, where key is source id and value is list of targetren ids.
         /// </summary>
         public IDictionary<int, IEnumerable<int>> ToConnectionsList(){
             var result = new Dictionary<int,IEnumerable<int>>();
@@ -31,7 +31,7 @@ namespace GraphSharp.GraphStructures
             foreach(var n in _structureBase.Nodes){
                 var edges = _structureBase.Edges[n.Id];
                 if(edges.Count()==0) continue;
-                result.Add(n.Id, edges.Select(e=>e.Child.Id).ToList());
+                result.Add(n.Id, edges.Select(e=>e.Target.Id).ToList());
             }
             return result;
         }
@@ -47,7 +47,7 @@ namespace GraphSharp.GraphStructures
             adjacencyMatrix = SparseMatrix.Create(size, size, 0);
             foreach(var e in _structureBase.Edges)
             {
-                adjacencyMatrix[e.Parent.Id, e.Child.Id] = Configuration.GetEdgeWeight(e);
+                adjacencyMatrix[e.Source.Id, e.Target.Id] = Configuration.GetEdgeWeight(e);
             }
             return adjacencyMatrix;
         }
@@ -122,21 +122,21 @@ namespace GraphSharp.GraphStructures
             _structureBase.Clear();
             var Configuration = _structureBase.Configuration;
             foreach(var m in connectionsList){
-                var parent = Configuration.CreateNode(m.Key);
-                _structureBase.Nodes.Add(parent);
+                var source = Configuration.CreateNode(m.Key);
+                _structureBase.Nodes.Add(source);
             }
 
             foreach(var m in connectionsList)
-                foreach(var childId in m.Value){
-                    if(!_structureBase.Nodes.TryGetNode(childId,out var _)){
-                        var child = Configuration.CreateNode(childId);
-                        _structureBase.Nodes.Add(child);
+                foreach(var targetId in m.Value){
+                    if(!_structureBase.Nodes.TryGetNode(targetId,out var _)){
+                        var target = Configuration.CreateNode(targetId);
+                        _structureBase.Nodes.Add(target);
                     }
                 }
 
             foreach(var m in connectionsList){
-                foreach(var child in m.Value){
-                    var edge = Configuration.CreateEdge(_structureBase.Nodes[m.Key],_structureBase.Nodes[child]);
+                foreach(var target in m.Value){
+                    var edge = Configuration.CreateEdge(_structureBase.Nodes[m.Key],_structureBase.Nodes[target]);
                     _structureBase.Edges.Add(edge);
                 }
             }

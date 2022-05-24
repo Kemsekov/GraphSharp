@@ -67,7 +67,7 @@ namespace GraphSharp.Tests
                 visited.Clear();
                 var visitor = new ActionVisitor<TestNode,TestEdge>(
                     n => visited.Add(n),
-                    e => e.Child.Id % 2 == 0);
+                    e => e.Target.Id % 2 == 0);
                 var propagator = factory(visitor);
                 propagator.SetGraph(_graph);
                 propagator.SetPosition(0, 1, 2, 3, 4, 5);
@@ -133,8 +133,8 @@ namespace GraphSharp.Tests
                     e =>
                     {
                         lock (expected)
-                            foreach (var n in _graph.Edges[e.Child.Id])
-                                expected.Add(n.Child);
+                            foreach (var n in _graph.Edges[e.Target.Id])
+                                expected.Add(n.Target);
                         return true;
                     });
                 var propagator = factory(visitor);

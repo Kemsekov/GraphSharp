@@ -19,7 +19,7 @@ namespace GraphSharp.GraphStructures
         {
             Rand = rand;
         }
-        public abstract TEdge CreateEdge(TNode parent, TNode child);
+        public abstract TEdge CreateEdge(TNode source, TNode target);
         public abstract TNode CreateNode(int nodeId);
         public float Distance(TNode n1, TNode n2)
         {

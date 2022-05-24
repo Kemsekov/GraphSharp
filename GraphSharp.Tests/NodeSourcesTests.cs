@@ -13,7 +13,6 @@ namespace GraphSharp.Tests
         IEnumerable<INodeSource<TestNode>> NodeSources;
         IEnumerable<IEdgeSource<TestEdge>> EdgeSources;
 
-
         public NodeSourcesTests()
         {
             NodeSources = new List<INodeSource<TestNode>>()
@@ -120,6 +119,18 @@ namespace GraphSharp.Tests
                 foreach(var n in nodeSource){
                     Assert.True(false);
                 }
+            }
+        }
+        [Fact]
+        public void RandomAccess_Works(){
+            foreach(var nodeSource in NodeSources){
+                Fill(nodeSource,1000);
+
+                Assert.Equal(nodeSource[500].Id,500);
+                Assert.Equal(nodeSource[999].Id,999);
+                Assert.Equal(nodeSource[0].Id,0);
+                Assert.Throws<KeyNotFoundException>(()=>nodeSource[-1]);
+                Assert.Throws<KeyNotFoundException>(()=>nodeSource[12345]);
             }
         }
     }

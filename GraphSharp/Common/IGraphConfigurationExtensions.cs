@@ -8,18 +8,18 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Common
 {
-    public static class IGraphconfigurationExtensions
+    public static class IGraphConfigurationExtensions
     {
         public static TEdge CloneEdge<TNode, TEdge>(this IGraphConfiguration<TNode, TEdge> configuration, TEdge edge, INodeSource<TNode> nodeSource)
         where TNode : NodeBase<TEdge>
         where TEdge : EdgeBase<TNode>
         {
-            var parent = nodeSource[edge.Parent.Id];
-            var child = nodeSource[edge.Child.Id];
+            var source = nodeSource[edge.Source.Id];
+            var target = nodeSource[edge.Target.Id];
             var weight = configuration.GetEdgeWeight(edge);
             var color = configuration.GetEdgeColor(edge);
 
-            var newEdge = configuration.CreateEdge(parent, child);
+            var newEdge = configuration.CreateEdge(source, target);
             configuration.SetEdgeWeight(newEdge, weight);
             configuration.SetEdgeColor(newEdge, color);
             return newEdge;

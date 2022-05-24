@@ -10,9 +10,9 @@ namespace GraphSharp.Tests.Models
         {
             Rand ??= new Random();
         }
-        public override TestEdge CreateEdge(TestNode parent, TestNode child)
+        public override TestEdge CreateEdge(TestNode source, TestNode target)
         {
-            return new TestEdge(parent,child);
+            return new TestEdge(source,target);
         }
         public override TestNode CreateNode(int nodeId)
         {

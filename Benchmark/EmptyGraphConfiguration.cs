@@ -7,9 +7,9 @@ public class EmptyGraphConfiguration : IGraphConfiguration<EmptyNode, EmptyEdge>
 {
     public Random Rand{get;} = new();
 
-    public EmptyEdge CreateEdge(EmptyNode parent, EmptyNode child)
+    public EmptyEdge CreateEdge(EmptyNode source, EmptyNode target)
     {
-        return new EmptyEdge(parent, child);
+        return new EmptyEdge(source, target);
     }
 
     public IEdgeSource<EmptyEdge> CreateEdgeSource(int capacity)

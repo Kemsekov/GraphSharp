@@ -66,7 +66,7 @@ namespace GraphSharp.Propagators
             foreach(var edge in edges)
             {
                 if (!Visitor.Select(edge)) continue;
-                _nodeFlags.DangerousGetReferenceAt(edge.Child.Id)|=Visited;
+                _nodeFlags.DangerousGetReferenceAt(edge.Target.Id)|=Visited;
             }
         }
 

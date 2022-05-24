@@ -113,11 +113,11 @@ namespace GraphSharp.Tests
 
                 var edges = _GraphStructure.Edges[source.row];
                 
-                var sourceNode = edges.FirstOrDefault(x=>x.Child.Id==to.row);
+                var sourceNode = edges.FirstOrDefault(x=>x.Target.Id==to.row);
                 Assert.NotNull(sourceNode);
                 _GraphStructure.Edges.Remove(sourceNode);
                 if(to.value==1){
-                    var toNode = _GraphStructure.Edges[to.row].FirstOrDefault(x=>x.Child.Id==source.row);
+                    var toNode = _GraphStructure.Edges[to.row].FirstOrDefault(x=>x.Target.Id==source.row);
                     Assert.NotNull(toNode);
                     _GraphStructure.Edges.Remove(toNode);
                 }

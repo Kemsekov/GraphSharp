@@ -7,7 +7,7 @@ using GraphSharp.Nodes;
 
 public class EmptyEdge : EdgeBase<EmptyNode>
 {
-    public EmptyEdge(EmptyNode parent, EmptyNode node) : base(parent,node)
+    public EmptyEdge(EmptyNode source, EmptyNode node) : base(source,node)
     {
     }
 

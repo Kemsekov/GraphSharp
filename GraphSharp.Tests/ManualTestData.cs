@@ -51,7 +51,7 @@ public static class ManualTestData
     /// <summary>
     /// Values, that expected after calling method MakeSources(1,14) on graph builded on top of TestConnectionsList and made undirected
     /// </summary>
-    public static IEnumerable<(int parentId, int[] children)> AfterMakeSourcesExpected = 
+    public static IEnumerable<(int sourceId, int[] targetren)> AfterMakeSourcesExpected = 
         new[]{
             (1, new[]{2,4,6,13}),
             (2, new[]{3,6,7,12}),

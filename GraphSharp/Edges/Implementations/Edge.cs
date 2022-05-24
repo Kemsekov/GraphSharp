@@ -7,12 +7,12 @@ namespace GraphSharp.Edges
     /// </summary>
     public class Edge : EdgeBase<INode>
     {
-        public Edge(INode parent, INode child) : base(parent, child)
+        public Edge(INode source, INode target) : base(source, target)
         {
         }
         public override string ToString()
         {
-            return $"Edge of node {Child.Id}";
+            return $"Edge of node {Target.Id}";
         }
     }
 }

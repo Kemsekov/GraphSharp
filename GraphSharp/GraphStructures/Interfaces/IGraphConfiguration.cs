@@ -26,7 +26,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>
         /// </summary>
-        TEdge CreateEdge(TNode parent, TNode child);
+        TEdge CreateEdge(TNode source, TNode target);
         /// <summary>
         /// Method that used to determite how to calculate distance between two <see cref="TNode"/>
         /// </summary>

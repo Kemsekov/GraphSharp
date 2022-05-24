@@ -14,31 +14,31 @@ namespace GraphSharp.GraphStructures
     where TNode : NodeBase<TEdge>
     {
         IDictionary<int,IList<TEdge>> Edges;
-        public int Count => Edges.Count;
-
-        public IEnumerable<TEdge> this[int parentId]{
-            get{
-                if(Edges.TryGetValue(parentId,out var children))
-                    return children;
-                return Enumerable.Empty<TEdge>();
-            }
-        }
-        public TEdge this[int parentId, int childId] => this[parentId].First(x=>x.Child.Id==childId);
-
+        public int Count{get;protected set;}
         public DefaultEdgeSource()
         {
             Edges = new ConcurrentDictionary<int,IList<TEdge>>(Environment.ProcessorCount,Environment.ProcessorCount*4);
         }
+
+        public IEnumerable<TEdge> this[int sourceId]{
+            get{
+                if(Edges.TryGetValue(sourceId,out var targetren))
+                    return targetren;
+                return Enumerable.Empty<TEdge>();
+            }
+        }
+        public TEdge this[int sourceId, int targetId] => this[sourceId].FirstOrDefault(x=>x.Target.Id==targetId) ?? throw new KeyNotFoundException();
         public void Add(TEdge edge)
         {
-            if(Edges.TryGetValue(edge.Parent.Id,out var holder)){
+            if(Edges.TryGetValue(edge.Source.Id,out var holder)){
                 holder.Add(edge);
             }
             else{
                 var toAdd = new List<TEdge>();
                 toAdd.Add(edge);
-                Edges.Add(edge.Parent.Id,toAdd);
+                Edges.Add(edge.Source.Id,toAdd);
             }
+            Count++;
         }
 
         public IEnumerator<TEdge> GetEnumerator()
@@ -50,15 +50,16 @@ namespace GraphSharp.GraphStructures
 
         public bool Remove(TEdge edge)
         {
-            return Edges[edge.Parent.Id].Remove(edge);
+            return Remove(edge.Source.Id,edge.Target.Id);
         }
 
-        public bool Remove(int parentId, int childId)
+        public bool Remove(int sourceId, int targetId)
         {
-            if(Edges.TryGetValue(parentId,out var list)){
+            if(Edges.TryGetValue(sourceId,out var list)){
                 for(int i = 0;i<list.Count;i++){
-                    if(list[i].Child.Id==childId){
+                    if(list[i].Target.Id==targetId){
                         list.RemoveAt(i);
+                        Count--;
                         return true;
                     }
                 }
@@ -71,14 +72,15 @@ namespace GraphSharp.GraphStructures
             return this.GetEnumerator();
         }
 
-        public bool TryGetEdge(int parentId, int childId, out TEdge? edge)
+        public bool TryGetEdge(int sourceId, int targetId, out TEdge? edge)
         {
-            edge = this[parentId].FirstOrDefault(e => e.Child.Id==childId);
+            edge = this[sourceId].FirstOrDefault(e => e.Target.Id==targetId);
             return edge is not null;
         }
 
         public void Clear(){
             Edges.Clear();
+            Count = 0;
         }
     }
 }

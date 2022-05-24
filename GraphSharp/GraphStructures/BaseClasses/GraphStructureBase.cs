@@ -38,16 +38,16 @@ namespace GraphSharp.GraphStructures
             Edges = configuration.CreateEdgeSource();
         }
         /// <summary>
-        /// Calculate parents count (degree) for each node
+        /// Calculate sources count (degree) for each node
         /// </summary>
-        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is parents count</returns>
-        public IDictionary<int,int> CountParents(){
+        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is sources count</returns>
+        public IDictionary<int,int> Countsources(){
             ConcurrentDictionary<int,int> c = new();
             foreach(var n in Nodes)
                 c[n.Id]=0;
             
             foreach(var e in Edges){
-                c[e.Child.Id]++;
+                c[e.Target.Id]++;
             }
             
             return c;
@@ -64,17 +64,17 @@ namespace GraphSharp.GraphStructures
             if(actual.Count()!=expected.Count())
                 throw new System.ApplicationException("Nodes contains duplicates");
 
-            var actualEdges = Edges.Select(x=>(x.Parent.Id,x.Child.Id));
+            var actualEdges = Edges.Select(x=>(x.Source.Id,x.Target.Id));
             var expectedEdges = actualEdges.Distinct();
             if(actualEdges.Count()!=expectedEdges.Count())
                 throw new System.ApplicationException("Edges contains duplicates");
 
             foreach(var e in Edges){
-                if (!Nodes.TryGetNode(e.Parent.Id,out var _)){
-                    throw new System.InvalidOperationException($"{e.Parent.Id} found among Edges but not found among Nodes");
+                if (!Nodes.TryGetNode(e.Source.Id,out var _)){
+                    throw new System.InvalidOperationException($"{e.Source.Id} found among Edges but not found among Nodes");
                 }
-                if (!Nodes.TryGetNode(e.Child.Id,out var _)){
-                    throw new System.InvalidOperationException($"{e.Child.Id} found among Edges but not found among Nodes");
+                if (!Nodes.TryGetNode(e.Target.Id,out var _)){
+                    throw new System.InvalidOperationException($"{e.Target.Id} found among Edges but not found among Nodes");
                 }
             }
         }      
