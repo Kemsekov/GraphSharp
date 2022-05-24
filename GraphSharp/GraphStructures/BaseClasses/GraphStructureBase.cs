@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.Exceptions;
 using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
@@ -62,19 +62,19 @@ namespace GraphSharp.GraphStructures
             var actual = Nodes.Select(x=>x.Id);
             var expected = actual.Distinct();
             if(actual.Count()!=expected.Count())
-                throw new System.ApplicationException("Nodes contains duplicates");
+                throw new GraphDataIntegrityException("Nodes contains duplicates");
 
             var actualEdges = Edges.Select(x=>(x.Source.Id,x.Target.Id));
             var expectedEdges = actualEdges.Distinct();
             if(actualEdges.Count()!=expectedEdges.Count())
-                throw new System.ApplicationException("Edges contains duplicates");
+                throw new GraphDataIntegrityException("Edges contains duplicates");
 
             foreach(var e in Edges){
                 if (!Nodes.TryGetNode(e.Source.Id,out var _)){
-                    throw new System.InvalidOperationException($"{e.Source.Id} found among Edges but not found among Nodes");
+                    throw new GraphDataIntegrityException($"{e.Source.Id} found among Edges but not found among Nodes");
                 }
                 if (!Nodes.TryGetNode(e.Target.Id,out var _)){
-                    throw new System.InvalidOperationException($"{e.Target.Id} found among Edges but not found among Nodes");
+                    throw new GraphDataIntegrityException($"{e.Target.Id} found among Edges but not found among Nodes");
                 }
             }
         }      

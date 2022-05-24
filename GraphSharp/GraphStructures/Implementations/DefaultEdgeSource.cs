@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
+using GraphSharp.Exceptions;
 using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
@@ -27,7 +28,9 @@ namespace GraphSharp.GraphStructures
                 return Enumerable.Empty<TEdge>();
             }
         }
-        public TEdge this[int sourceId, int targetId] => this[sourceId].FirstOrDefault(x=>x.Target.Id==targetId) ?? throw new KeyNotFoundException();
+        public TEdge this[int sourceId, int targetId] 
+            => this[sourceId].FirstOrDefault(x=>x.Target.Id==targetId) ??
+                throw new EdgeNotFoundException($"Edge {sourceId} -> {targetId} not found.");
         public void Add(TEdge edge)
         {
             if(Edges.TryGetValue(edge.Source.Id,out var holder)){

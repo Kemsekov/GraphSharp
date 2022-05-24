@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using GraphSharp.Edges;
+using GraphSharp.Exceptions;
 using GraphSharp.Nodes;
 using MathNet.Numerics.LinearAlgebra.Single;
 
@@ -57,7 +58,7 @@ namespace GraphSharp.GraphStructures
         /// <param name="adjacencyMatrix"></param>
         public GraphStructureConverters<TNode,TEdge> FromAdjacencyMatrix(Matrix adjacencyMatrix){
             if(adjacencyMatrix.RowCount!=adjacencyMatrix.ColumnCount)
-                throw new ArgumentException("adjacencyMatrix argument must be square matrix!",nameof(adjacencyMatrix));
+                throw new GraphConverterException("adjacencyMatrix argument must be square matrix!");
             int width = adjacencyMatrix.RowCount;
             _structureBase.Clear();
             var Configuration = _structureBase.Configuration;
