@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GraphSharp.Exceptions;
 using GraphSharp.GraphStructures;
 using GraphSharp.Tests.Models;
 using Xunit;
@@ -84,7 +85,7 @@ namespace GraphSharp.Tests
                 }
                 Assert.Empty(edgeSource[-100]);
                 Assert.Empty(edgeSource[12300]);
-                Assert.Throws<KeyNotFoundException>(()=>edgeSource[1234,1235]);
+                Assert.Throws<EdgeNotFoundException>(()=>edgeSource[1234,1235]);
             }
         }
         [Fact]
