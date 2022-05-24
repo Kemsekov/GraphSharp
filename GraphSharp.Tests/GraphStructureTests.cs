@@ -31,9 +31,11 @@ namespace GraphSharp.Tests
                 Assert.True(n.Id%3!=0);
             }
             var nodesCount = _GraphStructure.Nodes.Count;
+            var edgesCount = _GraphStructure.Edges.Count;
             _GraphStructure.Do.Reindex();
             Assert.Equal(nodesCount,_GraphStructure.Nodes.Count);
             Assert.Equal(nodesCount-1,_GraphStructure.Nodes.MaxNodeId);
+            Assert.Equal(edgesCount,_GraphStructure.Edges.Count);
             Assert.Equal(0,_GraphStructure.Nodes.MinNodeId);
 
             int counter = 0;
@@ -322,6 +324,33 @@ namespace GraphSharp.Tests
             foreach(var n in before.Nodes.Zip(after.Nodes)){
                 Assert.Equal(n.First.Id,n.Second.Id);
             }
+        }
+        [Fact]
+        public void Clear_Works(){
+            _GraphStructure.Do.ConnectRandomly(2,6);
+            var nodes = _GraphStructure.Nodes;
+            var edges = _GraphStructure.Edges;
+            _GraphStructure.Clear();
+            Assert.Empty(_GraphStructure.Nodes);
+            Assert.Empty(_GraphStructure.Edges);            
+            Assert.NotEmpty(nodes);
+            Assert.NotEmpty(edges);
+        }
+        [Fact]
+        public void SetSources_Works(){
+            var nodes = new DefaultNodeSource<TestNode>(0);
+            var edges = new DefaultEdgeSource<TestNode,TestEdge>();
+
+            nodes.Add(new TestNode(0));
+            nodes.Add(new TestNode(1));
+            edges.Add(new TestEdge(nodes.First(),nodes.Last()));
+
+            _GraphStructure.SetSources(nodes,edges);
+            Assert.Equal(nodes.GetHashCode(),_GraphStructure.Nodes.GetHashCode());
+            Assert.Equal(edges.GetHashCode(),_GraphStructure.Edges.GetHashCode());
+            Assert.Equal(nodes.GetEnumerator(),_GraphStructure.Nodes.GetEnumerator());
+            Assert.Equal(edges.GetEnumerator(),_GraphStructure.Edges.GetEnumerator());
+
         }
         public void validateThereIsNoCopiesAndParentInEdges(INodeSource<TestNode> nodes,IEdgeSource<TestEdge> edges)
         {

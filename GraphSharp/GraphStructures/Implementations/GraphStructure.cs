@@ -45,16 +45,13 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Returns operations class for nodes
+        /// Returns operations class for this graph structure. This class can be used to add/remove nodes and edges.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> Do => new GraphStructureOperation<TNode, TEdge>(this);
         /// <summary>
         /// Get converter for current graph structure
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
-
-
-
         /// <summary>
         /// Clones graph structure
         /// </summary>
@@ -76,7 +73,10 @@ namespace GraphSharp.GraphStructures
             }
             return result;
         }
-
+        /// <summary>
+        /// Replace current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
+        /// </summary>
+        /// <returns></returns>
         public GraphStructure<TNode,TEdge> Clear(){
             Nodes = Configuration.CreateNodeSource();
             Edges = Configuration.CreateEdgeSource();

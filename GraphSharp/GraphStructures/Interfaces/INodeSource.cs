@@ -12,12 +12,12 @@ namespace GraphSharp.GraphStructures
     {
         int Count{ get; }
         /// <summary>
-        /// Returns max id value of all nodes.
+        /// Returns max id value of all nodes. If there is no nodes, returns -1.
         /// </summary>
         /// <value></value>
         int MaxNodeId {get;}
         /// <summary>
-        /// Returns min id value of all nodes.
+        /// Returns min id value of all nodes. If there is no nodes, returns -1.
         /// </summary>
         /// <value></value>
         int MinNodeId {get;}

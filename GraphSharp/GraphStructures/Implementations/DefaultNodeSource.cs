@@ -8,7 +8,6 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
-    // TODO: write tests for it
     public class DefaultNodeSource<TNode> : INodeSource<TNode>
     where TNode : INode
     {
@@ -19,6 +18,8 @@ namespace GraphSharp.GraphStructures
         public int MinNodeId{get;protected set;}
         public DefaultNodeSource(int capacity)
         {
+            MaxNodeId = -1;
+            MinNodeId = -1;
             Nodes = new ConcurrentDictionary<int,TNode>(Environment.ProcessorCount,capacity);
         }
         public void Add(TNode node)

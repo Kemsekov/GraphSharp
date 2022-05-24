@@ -9,7 +9,6 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
-    // TODO: write tests for it
     public class DefaultEdgeSource<TNode,TEdge> : IEdgeSource<TEdge>
     where TEdge : EdgeBase<TNode>
     where TNode : NodeBase<TEdge>
