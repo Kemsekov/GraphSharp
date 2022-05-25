@@ -12,5 +12,6 @@ namespace GraphSharp.GraphStructures
     {
         INodeSource<TNode> Nodes { get; }
         IEdgeSource<TEdge> Edges { get; }
+        IGraphConfiguration<TNode,TEdge> Configuration{get;}
     }
 }

@@ -10,8 +10,8 @@ namespace GraphSharp.GraphStructures
     /// <typeparam name="TNode"></typeparam>
     /// <typeparam name="TEdge"></typeparam>
     public interface IGraphConfiguration<TNode, TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge
     {
         /// <summary>
         /// <see cref="Random"/> that used to implement's any logic when it reqires random values
