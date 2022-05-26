@@ -24,6 +24,14 @@ namespace GraphSharp.GraphDrawer
             Configuration = configuration;
             Drawer = drawer;
         }
+        public void DrawPath(IEnumerable<TNode> path,Color color,float lineThickness){
+            path.Aggregate((n1,n2)=>{
+                var tmp_edge = Configuration.CreateEdge(n1,n2);
+                Configuration.SetEdgeColor(tmp_edge,color);
+                DrawEdge(tmp_edge,lineThickness);
+                return n2;
+            });
+        }
         public void DrawNodeIds(IEnumerable<TNode> nodes, Color color, float fontSize){
             foreach(var n in nodes){
                 DrawNodeId(n,color,fontSize);
