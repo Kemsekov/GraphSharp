@@ -11,7 +11,7 @@ using GraphSharp.Nodes;
 namespace GraphSharp.GraphDrawer
 {
     /// <summary>
-    /// Basic drawing operations for nodes and edges,
+    /// Basic drawing operations for nodes and edges. Assuming that nodes positions is normalized to [0,1]x[0,1].
     /// </summary>
     public class GraphDrawer<TNode,TEdge>
     where TNode : NodeBase<TEdge>
