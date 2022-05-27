@@ -42,10 +42,20 @@ namespace GraphSharp.GraphDrawer
             foreach(var edge in edges)
                 DrawEdge(edge,lineThickness);
         }
+        public void DrawEdgesParallel(IEnumerable<TEdge> edges,float lineThickness)
+        {
+            Parallel.ForEach(edges,edge=>
+                DrawEdge(edge,lineThickness));
+        }
         public void DrawNodes(IEnumerable<TNode> nodes, float nodeSize)
         {
             foreach(var node in nodes)
                 DrawNode(node,nodeSize);
+        }
+        public void DrawNodesParallel(IEnumerable<TNode> nodes, float nodeSize)
+        {
+            Parallel.ForEach(nodes,node=>
+                DrawNode(node,nodeSize));
         }
         public void Clear(Color color)
         {

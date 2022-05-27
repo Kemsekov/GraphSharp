@@ -104,42 +104,42 @@ namespace GraphSharp.GraphStructures
         public GraphStructureOperation<TNode,TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount)
         {
             var Nodes = _structureBase.Nodes;
-            var Configuration = _structureBase.Configuration;
             var Edges = _structureBase.Edges;
+            var Configuration = _structureBase.Configuration;
             var edgesCountMap = new ConcurrentDictionary<INode, int>();
             foreach (var node in Nodes)
                 edgesCountMap[node] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 
             var locker = new object();
-            var sourceIds = Nodes.Select(x=>x.Id);
-            Parallel.ForEach(Nodes, source =>
+            var source = Nodes.Select(x=>x.Id);
+            Parallel.ForEach(Nodes, node =>
             {
-                var edgesCount = edgesCountMap[source];
-                var sourceEdges = Edges[source.Id];
-                var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, source, sourceIds);
+                var edgesCount = edgesCountMap[node];
+                if (Edges[node.Id].Count() >= edgesCount) return;
+                var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, node, source);
                 foreach (var nodeId in toAdd)
                     lock (locker)
                     {
-                        var node = Nodes[nodeId];
-                        if (Edges[source.Id].Count() >= maxEdgesCount) return;
-                        if (Edges[node.Id].Count() >= maxEdgesCount) continue;
-                        Edges.Add(Configuration.CreateEdge(source,node));
-                        Edges.Add(Configuration.CreateEdge(node,source));
+                        var nodeToAdd = Nodes[nodeId];
+                        if (Edges[node.Id].Count() >= maxEdgesCount) return;
+                        if (Edges[nodeToAdd.Id].Count() >= maxEdgesCount) continue;
+                        Edges.Add(Configuration.CreateEdge(node,nodeToAdd));
+                        Edges.Add(Configuration.CreateEdge(nodeToAdd,node));
                     }
             });
             return this;
         }
-        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, TNode source, IEnumerable<int> idSource)
+        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, TNode parent,IEnumerable<int> source)
         {
             var Nodes = _structureBase.Nodes;
-            var Configuration = _structureBase.Configuration;
             var Edges = _structureBase.Edges;
-            if (idSource.Count() == 0) return Enumerable.Empty<int>();
+            var Configuration = _structureBase.Configuration;
+            if (source.Count() == 0) return Enumerable.Empty<int>();
 
-            var result = idSource.FindFirstNMinimalElements(
+            var result = source.FindFirstNMinimalElements(
                 n: edgesCount,
-                comparison: (t1, t2) => Configuration.Distance(source, Nodes[t1]) > Configuration.Distance(source, Nodes[t2]) ? 1 : -1,
-                skipElement: (nodeId) => Nodes[nodeId].Id == source.Id || Edges[nodeId].Count() >= maxEdgesCount);
+                comparison: (t1, t2) => Configuration.Distance(parent, Nodes[t1]) > Configuration.Distance(parent, Nodes[t2]) ? 1 : -1,
+                skipElement: (nodeId) => nodeId == parent.Id || Edges[nodeId].Count() >= maxEdgesCount);
 
             return result;
         }
