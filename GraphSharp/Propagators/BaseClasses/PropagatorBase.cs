@@ -18,9 +18,18 @@ namespace GraphSharp.Propagators
     {
         public IVisitor<TNode,TEdge> Visitor { get; init; }
         protected IGraphStructure<TNode,TEdge> _graph;
-        protected const byte None = 0;
-        protected const byte ToVisit = 1;
-        protected const byte Visited = 2;
+        /// <summary>
+        /// Default state for node
+        /// </summary>
+        public const byte None = 0;
+        /// <summary>
+        /// In this state node is in check for visit in next iteration
+        /// </summary>
+        public const byte ToVisit = 1;
+        /// <summary>
+        /// In this state node is visited for current iteration
+        /// </summary>
+        public const byte Visited = 2;
         protected byte[] _nodeFlags;
         public PropagatorBase(IVisitor<TNode,TEdge> visitor, IGraphStructure<TNode,TEdge> graph)
         {
@@ -30,6 +39,7 @@ namespace GraphSharp.Propagators
         }
         /// <summary>
         /// Change current propagator visit position.
+        /// Clears all node states for current propagator
         /// </summary>
         /// <param name="indices">indices of nodes that will be used.</param>
         public void SetPosition(params int[] nodeIndices)
@@ -37,23 +47,62 @@ namespace GraphSharp.Propagators
             int nodesCount = _graph.Nodes.MaxNodeId+1;
             Array.Clear(_nodeFlags, 0, _nodeFlags.Length);
             for(int i = 0;i<nodeIndices.Count();i++){
-                _nodeFlags[nodeIndices[i]%nodesCount] = Visited;
+                _nodeFlags[nodeIndices[i]%nodesCount] |= Visited;
             }
         }
+        /// <summary>
+        /// Sets new graph.
+        /// Clears all node states for current propagator
+        /// </summary>
+        /// <param name="graph"></param>
         public void SetGraph(IGraphStructure<TNode,TEdge> graph)
         {
             _graph = graph;
             _nodeFlags = new byte[_graph.Nodes.MaxNodeId+1];
         }
+        /// <summary>
+        /// Checks if node is in some state for current propagator. 
+        /// Warning: there is only 8 states for node possible at the same time.
+        /// </summary>
+        /// <param name="nodeId">Id of node to check</param>
+        /// <param name="state">Integer power of 2 value</param>
+        public bool IsNodeInState(int nodeId, byte state)
+        {
+            return (_nodeFlags[nodeId] & state) == state;
+        }
+        /// <summary>
+        /// Sets node state for current propagator.
+        /// Warning: there is only 8 states for node possible at the same time.
+        /// </summary>
+        /// <param name="nodeId">Id of node to set state</param>
+        /// <param name="state">Integer power of 2 value</param>
+        public void SetNodeState(int nodeId, byte state)
+        {
+            _nodeFlags[nodeId] |= state;
+        }
+        /// <summary>
+        /// Clears node state for current propagator.
+        /// Warning: there is only 8 states for node possible at the same time.
+        /// </summary>
+        /// <param name="nodeId">Id of node to remove state</param>
+        /// <param name="state">Integer power of 2 value</param>
+        public void RemoveNodeState(int nodeId, byte state)
+        {
+            _nodeFlags[nodeId] &= (byte)~state;
+        }
         public virtual void Propagate()
         {
-            // clear all states of visited for current nodes for next generation
-
             PropagateNodes();
 
-            //swap next generaton and current.
             for(int i = 0;i<_nodeFlags.Length;i++)
-                _nodeFlags[i] = (_nodeFlags[i] & Visited) == Visited ? ToVisit : None;
+            {
+                if(IsNodeInState(i,Visited)){
+                    RemoveNodeState(i,Visited);
+                    SetNodeState(i,ToVisit);
+                }
+                else
+                    RemoveNodeState(i,ToVisit);
+            }
         }
         /// <summary>
         /// Method that will do main logic. It will propagate nodes from current generation to next generation selecting and visiting them in the proccess.

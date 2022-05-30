@@ -18,7 +18,7 @@ namespace GraphSharp.Tests
 {
     public class PropagatorTests
     {
-        Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode,TestEdge>>[] _propagatorFactories;
+        Func<IVisitor<TestNode,TestEdge>, PropagatorBase<TestNode,TestEdge>>[] _propagatorFactories;
         GraphStructure<TestNode, TestEdge> _graph;
 
         public PropagatorTests()
@@ -26,9 +26,39 @@ namespace GraphSharp.Tests
             _graph = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).Create(1000);
             _graph.Do.ConnectNodes(10);
 
-            _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, IPropagator<TestNode,TestEdge>>[2];
+            _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, PropagatorBase<TestNode,TestEdge>>[2];
             _propagatorFactories[0] = visitor => new Propagator<TestNode,TestEdge>(visitor,_graph);
             _propagatorFactories[1] = visitor => new ParallelPropagator<TestNode,TestEdge>(visitor,_graph);
+        }
+
+        [Fact]
+        public void RetainsStatesBetweenIterations(){
+            var states = new Dictionary<int,byte>();
+
+            void checkStates(PropagatorBase<TestNode,TestEdge> propagator){
+                foreach(var state in states){
+                    Assert.True(propagator.IsNodeInState(state.Key,state.Value));
+                }
+            }
+
+            foreach(var n in _graph.Nodes){
+                states[n.Id]=(byte)Math.Pow(2,(Random.Shared.Next(6)+2));
+            }
+            foreach (var factory in _propagatorFactories)
+            {
+                var visitor = new ActionVisitor<TestNode,TestEdge>(
+                    n => {},
+                    e => true);
+                var propagator = factory(visitor);
+                propagator.SetPosition(0, 1, 2, 3, 4, 5);
+                foreach(var state in states){
+                    propagator.SetNodeState(state.Key,state.Value);
+                }
+                checkStates(propagator);
+                for(int i = 0;i<50;i++)
+                    propagator.Propagate();
+                checkStates(propagator);
+            }
         }
 
         [Fact]
