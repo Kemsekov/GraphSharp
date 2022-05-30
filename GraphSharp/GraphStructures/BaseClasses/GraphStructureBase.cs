@@ -78,6 +78,16 @@ namespace GraphSharp.GraphStructures
                     throw new GraphDataIntegrityException($"{e.Target.Id} found among Edges but not found among Nodes");
                 }
             }
+        }
+        public void EnsureRightColoring()
+        {
+            foreach(var n in Nodes){
+                var color = Configuration.GetNodeColor(n);
+                var edges = Edges[n.Id];
+                if(edges.Any(x=>Configuration.GetNodeColor(x.Target)==color)){
+                    throw new WrongGraphColoringException($"Wrong graph coloring! Node {n.Id} with color {color} have edge with the same color!");               
+                }
+            }
         }      
     }
 }
