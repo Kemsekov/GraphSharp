@@ -14,7 +14,7 @@ namespace GraphSharp.GraphStructures
     /// <summary>
     /// Contains methods to modify relationships between nodes and edges.
     /// </summary>
-    public class GraphStructureOperation<TNode,TEdge>
+    public class GraphStructureOperation<TNode, TEdge>
     where TNode : NodeBase<TEdge>
     where TEdge : EdgeBase<TNode>
     {
@@ -28,17 +28,17 @@ namespace GraphSharp.GraphStructures
         /// Randomly create edgesCount edges for each node
         /// </summary>
         /// <param name="edgesCount">How much edges each node need</param>
-        public GraphStructureOperation<TNode,TEdge> ConnectNodes(int edgesCount)
+        public GraphStructureOperation<TNode, TEdge> ConnectNodes(int edgesCount)
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
-            var availableNodes = Nodes.Select(x=>x.Id).ToList();
+            var availableNodes = Nodes.Select(x => x.Id).ToList();
             edgesCount = edgesCount > Nodes.Count ? Nodes.Count : edgesCount;
 
             foreach (var node in Nodes)
             {
                 int startIndex = Configuration.Rand.Next(availableNodes.Count);
-                ConnectNodeToNodes(node,startIndex, edgesCount,availableNodes);
+                ConnectNodeToNodes(node, startIndex, edgesCount, availableNodes);
             }
             return this;
         }
@@ -47,7 +47,7 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="minEdgesCount">Min count of edges for each node</param>
         /// <param name="maxEdgesCount">Max count of edges for each node</param>
-        public GraphStructureOperation<TNode,TEdge> ConnectRandomly(int minEdgesCount, int maxEdgesCount)
+        public GraphStructureOperation<TNode, TEdge> ConnectRandomly(int minEdgesCount, int maxEdgesCount)
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
@@ -62,37 +62,37 @@ namespace GraphSharp.GraphStructures
                 minEdgesCount = minEdgesCount ^ maxEdgesCount;
             }
 
-            var availableNodes = Nodes.Select(x=>x.Id).ToList();
+            var availableNodes = Nodes.Select(x => x.Id).ToList();
 
             foreach (var node in Nodes)
             {
-                int edgesCount = Configuration.Rand.Next(minEdgesCount,maxEdgesCount);
+                int edgesCount = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
                 var startIndex = Configuration.Rand.Next(Nodes.Count);
-                ConnectNodeToNodes(node, startIndex, edgesCount,availableNodes);
+                ConnectNodeToNodes(node, startIndex, edgesCount, availableNodes);
             }
             return this;
         }
-        
         /// <summary>
         /// Create some count of random edges for given node.
         /// </summary>
-        private void ConnectNodeToNodes(TNode node,int startIndex, int edgesCount, IList<int> source)
+        private void ConnectNodeToNodes(TNode node, int startIndex, int edgesCount, IList<int> source)
         {
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
             lock (node)
                 for (int i = 0; i < edgesCount; i++)
                 {
-                    int index = (startIndex+i)%source.Count;
+                    int index = (startIndex + i) % source.Count;
                     var targetId = source[index];
-                    if(node.Id==targetId){
+                    if (node.Id == targetId)
+                    {
                         startIndex++;
                         i--;
                         continue;
                     }
                     var target = Nodes[targetId];
-                    
-                    _structureBase.Edges.Add(Configuration.CreateEdge(node,target));
+
+                    _structureBase.Edges.Add(Configuration.CreateEdge(node, target));
                 }
         }
 
@@ -101,7 +101,7 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="minEdgesCount">minimum edges count</param>
         /// <param name="maxEdgesCount">maximum edges count</param>
-        public GraphStructureOperation<TNode,TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount)
+        public GraphStructureOperation<TNode, TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount)
         {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
@@ -111,7 +111,7 @@ namespace GraphSharp.GraphStructures
                 edgesCountMap[node] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 
             var locker = new object();
-            var source = Nodes.Select(x=>x.Id);
+            var source = Nodes.Select(x => x.Id);
             Parallel.ForEach(Nodes, node =>
             {
                 var edgesCount = edgesCountMap[node];
@@ -123,13 +123,13 @@ namespace GraphSharp.GraphStructures
                         var nodeToAdd = Nodes[nodeId];
                         if (Edges[node.Id].Count() >= maxEdgesCount) return;
                         if (Edges[nodeToAdd.Id].Count() >= maxEdgesCount) continue;
-                        Edges.Add(Configuration.CreateEdge(node,nodeToAdd));
-                        Edges.Add(Configuration.CreateEdge(nodeToAdd,node));
+                        Edges.Add(Configuration.CreateEdge(node, nodeToAdd));
+                        Edges.Add(Configuration.CreateEdge(nodeToAdd, node));
                     }
             });
             return this;
         }
-        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int edgesCount, TNode parent,IEnumerable<int> source)
+        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int count, TNode parent, IEnumerable<int> source)
         {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
@@ -137,20 +137,55 @@ namespace GraphSharp.GraphStructures
             if (source.Count() == 0) return Enumerable.Empty<int>();
 
             var result = source.FindFirstNMinimalElements(
-                n: edgesCount,
+                n: count,
                 comparison: (t1, t2) => Configuration.Distance(parent, Nodes[t1]) > Configuration.Distance(parent, Nodes[t2]) ? 1 : -1,
                 skipElement: (nodeId) => nodeId == parent.Id || Edges[nodeId].Count() >= maxEdgesCount);
 
             return result;
         }
+
         /// <summary>
-        /// Randomly makes every connection between two nodes onedirectional.
+        /// Connects closest to each other nodes to create minimal possible tree. Removes all current edges.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> MakeDirected()
+        /// <returns></returns>
+        public GraphStructureOperation<TNode, TEdge> MakeTree(int degree)
+        {
+            var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
+            var Configuration = _structureBase.Configuration;
+            UnionFind unionFind = new(Nodes.MaxNodeId);
+            Edges.Clear();
+            var source = Nodes.Select(x => x.Id).ToArray();
+            foreach (var n in Nodes)
+            {
+                unionFind.MakeSet(n.Id);
+                var closest = source.FindFirstNMinimalElements(
+                    n: degree,
+                    comparison: (t1, t2) => Configuration.Distance(n, Nodes[t1]) > Configuration.Distance(n, Nodes[t2]) ? 1 : -1,
+                    skipElement: (nodeId) => nodeId == n.Id || Edges[nodeId].Count() >= degree || unionFind.FindSet(nodeId) == unionFind.FindSet(n.Id));
+
+                foreach (var nodeId in closest)
+                {
+                    if (unionFind.FindSet(nodeId) == unionFind.FindSet(n.Id)) continue;
+                    var edge1 = Configuration.CreateEdge(n, Nodes[nodeId]);
+                    var edge2 = Configuration.CreateEdge(Nodes[nodeId], n);
+                    Edges.Add(edge1);
+                    Edges.Add(edge2);
+                    unionFind.UnionSet(nodeId, n.Id);
+                }
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Randomly makes every connection between two nodes directed.
+        /// </summary>
+        public GraphStructureOperation<TNode, TEdge> MakeDirected()
         {
             var Edges = _structureBase.Edges;
-            foreach(var edge in Edges){
-                Edges.Remove(edge.Target.Id,edge.Source.Id);
+            foreach (var edge in Edges)
+            {
+                Edges.Remove(edge.Target.Id, edge.Source.Id);
             }
             return this;
         }
@@ -159,50 +194,54 @@ namespace GraphSharp.GraphStructures
         /// Making source out of each node from nodeIndices and making sinks or undirected edges at intersections of running BFS.
         /// </summary>
         /// <param name="nodeIndices"></param>
-        public GraphStructureOperation<TNode,TEdge> CreateSources(params int[] nodeIndices){
-            if(nodeIndices.Count()==0 || _structureBase.Nodes.Count==0) return this;
-            
+        public GraphStructureOperation<TNode, TEdge> CreateSources(params int[] nodeIndices)
+        {
+            if (nodeIndices.Count() == 0 || _structureBase.Nodes.Count == 0) return this;
+
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
             //flag for each node:  1 - is visited.
 
-            var flags = new byte[Nodes.MaxNodeId+1];
-            
-            foreach(var i in nodeIndices)
-                if(i>flags.Length)
+            var flags = new byte[Nodes.MaxNodeId + 1];
+
+            foreach (var i in nodeIndices)
+                if (i > flags.Length)
                     throw new ArgumentException("nodeIndex is out of range");
-            
+
             var didSomething = true;
-            
-            var visitor = new ActionVisitor<TNode,TEdge>(
-                visit: node=>{
+
+            var visitor = new ActionVisitor<TNode, TEdge>(
+                visit: node =>
+                {
                     flags[node.Id] = 1;
 
                     var edges = Edges[node.Id];
                     var toRemove = new List<TEdge>();
-                    foreach(var edge in edges){
-                        if(flags[edge.Target.Id]==2)
+                    foreach (var edge in edges)
+                    {
+                        if (flags[edge.Target.Id] == 2)
                             toRemove.Add(edge);
                     }
 
-                    foreach(var edge in toRemove)
+                    foreach (var edge in toRemove)
                         Edges.Remove(edge);
 
                     didSomething = true;
                 },
-                select: edge=>flags[edge.Target.Id]==0,
-                endVisit: ()=>{
-                    for(int i = 0;i<flags.Length;i++)
-                        if(flags[i]==1)
+                select: edge => flags[edge.Target.Id] == 0,
+                endVisit: () =>
+                {
+                    for (int i = 0; i < flags.Length; i++)
+                        if (flags[i] == 1)
                             flags[i] = 2;
                 }
             );
-            
-            var propagator = new ParallelPropagator<TNode,TEdge>(visitor,_structureBase);
+
+            var propagator = new ParallelPropagator<TNode, TEdge>(visitor, _structureBase);
             propagator.SetGraph(_structureBase);
             propagator.SetPosition(nodeIndices);
-            while(didSomething)
+            while (didSomething)
             {
                 didSomething = false;
                 propagator.Propagate();
@@ -210,17 +249,21 @@ namespace GraphSharp.GraphStructures
             return this;
 
         }
-        
+
         /// <summary>
         /// Removes undirected edges.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> RemoveUndirectedEdges(){
+        public GraphStructureOperation<TNode, TEdge> RemoveUndirectedEdges()
+        {
             var Edges = _structureBase.Edges;
             var Nodes = _structureBase.Nodes;
-            foreach(var n in Nodes){
+            foreach (var n in Nodes)
+            {
                 var edges = Edges[n.Id].ToArray();
-                foreach(var edge in edges){
-                    if(Edges.Remove(edge.Target.Id,edge.Source.Id)){
+                foreach (var edge in edges)
+                {
+                    if (Edges.Remove(edge.Target.Id, edge.Source.Id))
+                    {
                         Edges.Remove(edge);
                     }
                 }
@@ -230,41 +273,43 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Makes every connection between two nodes bidirectional, producing undirected graph.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> MakeUndirected(Action<TEdge>? onCreatedEdge = null)
+        public GraphStructureOperation<TNode, TEdge> MakeUndirected(Action<TEdge>? onCreatedEdge = null)
         {
-            onCreatedEdge ??= (edge)=>{};
+            onCreatedEdge ??= (edge) => { };
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            foreach(var source in Nodes)
-             {
-                 var edges = Edges[source.Id];
-                 foreach(var edge in edges)
-                 {
-                    if(Edges.TryGetEdge(edge.Target.Id, edge.Source.Id, out var _)) continue;
-                    var newEdge = Configuration.CreateEdge(edge.Target,edge.Source);
+            foreach (var source in Nodes)
+            {
+                var edges = Edges[source.Id];
+                foreach (var edge in edges)
+                {
+                    if (Edges.TryGetEdge(edge.Target.Id, edge.Source.Id, out var _)) continue;
+                    var newEdge = Configuration.CreateEdge(edge.Target, edge.Source);
                     onCreatedEdge(newEdge);
                     Edges.Add(newEdge);
-                 }
-             };
+                }
+            };
             return this;
         }
 
         /// <summary>
         /// Reverse every edge connection ==> like swap(edge.Source,edge.Target)
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> ReverseEdges(){
+        public GraphStructureOperation<TNode, TEdge> ReverseEdges()
+        {
             var Configuration = _structureBase.Configuration;
             var Edges = _structureBase.Edges;
-            
-            var toSwap = 
-                Edges.Where(x=>!Edges.TryGetEdge(x.Target.Id,x.Source.Id, out var _))
-                .Select(x=>(x.Source.Id,x.Target.Id))
+
+            var toSwap =
+                Edges.Where(x => !Edges.TryGetEdge(x.Target.Id, x.Source.Id, out var _))
+                .Select(x => (x.Source.Id, x.Target.Id))
                 .ToArray();
 
-            foreach(var e in toSwap){
-                var edge = Edges[e.Item1,e.Item2];
-                Edges.Remove(e.Item1,e.Item2);
+            foreach (var e in toSwap)
+            {
+                var edge = Edges[e.Item1, e.Item2];
+                Edges.Remove(e.Item1, e.Item2);
                 var tmp = edge.Source;
                 edge.Source = edge.Target;
                 edge.Target = tmp;
@@ -276,18 +321,18 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Removes all outcoming edges from each node that satisfies predicate.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> RemoveEdges(Predicate<TEdge> toRemove)
+        public GraphStructureOperation<TNode, TEdge> RemoveEdges(Predicate<TEdge> toRemove)
         {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            var edgesToRemove = 
-                Edges.Where(x=>toRemove(x))
-                .Select(x=>(x.Source.Id,x.Target.Id))
+            var edgesToRemove =
+                Edges.Where(x => toRemove(x))
+                .Select(x => (x.Source.Id, x.Target.Id))
                 .ToArray();
-            
-            foreach(var e in edgesToRemove)
-                Edges.Remove(e.Item1,e.Item2);
+
+            foreach (var e in edgesToRemove)
+                Edges.Remove(e.Item1, e.Item2);
 
             return this;
         }
@@ -295,65 +340,72 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Isolates nodes. Removes all incoming and outcoming connections from each node that satisfies predicate.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> Isolate(Predicate<TNode> toIsolate)
+        public GraphStructureOperation<TNode, TEdge> Isolate(Predicate<TNode> toIsolate)
         {
             var Edges = _structureBase.Edges;
-            var toRemove = 
-                Edges.Where(x=>toIsolate(x.Source) || toIsolate(x.Target))
-                .Select(x=>(x.Source.Id,x.Target.Id))
+            var toRemove =
+                Edges.Where(x => toIsolate(x.Source) || toIsolate(x.Target))
+                .Select(x => (x.Source.Id, x.Target.Id))
                 .ToArray();
 
-            foreach(var e in toRemove){
-                Edges.Remove(e.Item1,e.Item2);
+            foreach (var e in toRemove)
+            {
+                Edges.Remove(e.Item1, e.Item2);
             }
             return this;
         }
         /// <summary>
         /// Isolate and removes nodes that satisfies predicate
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> RemoveNodes(Predicate<TNode> toRemove){
+        public GraphStructureOperation<TNode, TEdge> RemoveNodes(Predicate<TNode> toRemove)
+        {
             Isolate(toRemove);
             var Nodes = _structureBase.Nodes;
-            var nodesToRemove = Nodes.Where(x=>toRemove(x)).Select(x=>x.Id).ToArray();
+            var nodesToRemove = Nodes.Where(x => toRemove(x)).Select(x => x.Id).ToArray();
 
-            foreach(var n in nodesToRemove){
+            foreach (var n in nodesToRemove)
+            {
                 Nodes.Remove(n);
             }
-            
+
             return this;
         }
         /// <summary>
         /// Removes isolated nodes
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> RemoveIsolatedNodes(){
+        public GraphStructureOperation<TNode, TEdge> RemoveIsolatedNodes()
+        {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
             var sourcesCount = _structureBase.Countsources();
-            var toRemove = 
+            var toRemove =
                 Nodes
-                .Where(x=>sourcesCount[x.Id]==0 && Edges[x.Id].Count()==0)
-                .Select(x=>x.Id)
+                .Where(x => sourcesCount[x.Id] == 0 && Edges[x.Id].Count() == 0)
+                .Select(x => x.Id)
                 .ToArray();
-            
-            foreach(var n in toRemove){
+
+            foreach (var n in toRemove)
+            {
                 Nodes.Remove(n);
             }
 
             return this;
         }
-                /// <summary>
+        /// <summary>
         /// Reindexes all nodes and edges
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> Reindex(){
+        public GraphStructureOperation<TNode, TEdge> Reindex()
+        {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var reindexed = ReindexNodes();
             var edgesToMove = new List<(TEdge edge, int newsourceId, int newTargetId)>();
-            foreach(var edge in Edges){
-                var targetReindexed = reindexed.TryGetValue(edge.Target.Id,out var newTargetId);
-                var sourceReindexed = reindexed.TryGetValue(edge.Source.Id,out var newsourceId);
-                if(targetReindexed || sourceReindexed)
+            foreach (var edge in Edges)
+            {
+                var targetReindexed = reindexed.TryGetValue(edge.Target.Id, out var newTargetId);
+                var sourceReindexed = reindexed.TryGetValue(edge.Source.Id, out var newsourceId);
+                if (targetReindexed || sourceReindexed)
                     edgesToMove.Add((
                         edge,
                         sourceReindexed ? newsourceId : edge.Source.Id,
@@ -361,9 +413,10 @@ namespace GraphSharp.GraphStructures
                     ));
             }
 
-            foreach(var toMove in edgesToMove){
+            foreach (var toMove in edgesToMove)
+            {
                 var edge = toMove.edge;
-                Edges.Remove(edge.Source.Id,edge.Target.Id);
+                Edges.Remove(edge.Source.Id, edge.Target.Id);
                 edge.Source = Nodes[toMove.newsourceId];
                 edge.Target = Nodes[toMove.newTargetId];
                 Edges.Add(edge);
@@ -375,30 +428,35 @@ namespace GraphSharp.GraphStructures
         /// Reindex nodes only and return dict where Key is old node id and Value is new node id
         /// </summary>
         /// <returns></returns>
-        protected IDictionary<int,int> ReindexNodes(){
+        protected IDictionary<int, int> ReindexNodes()
+        {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            var idMap = new Dictionary<int,int>();
-            var nodeIdsMap = new byte[Nodes.MaxNodeId+1];
-            foreach(var n in Nodes){
+            var idMap = new Dictionary<int, int>();
+            var nodeIdsMap = new byte[Nodes.MaxNodeId + 1];
+            foreach (var n in Nodes)
+            {
                 nodeIdsMap[n.Id] = 1;
             }
 
-            for(int i = 0;i<nodeIdsMap.Length;i++){
-                if(nodeIdsMap[i]==0)
-                for(int b = nodeIdsMap.Length-1;b>i;b--){
-                    if(nodeIdsMap[b]==1){
-                        var toMove = Nodes[b];
-                        var moved = Configuration.CloneNode(toMove,x=>i);
-                        Nodes.Remove(toMove.Id);
-                        Nodes.Add(moved);
-                        nodeIdsMap[b] = 0;
-                        nodeIdsMap[i] = 1;
-                        idMap[b] = i;
-                        break;
+            for (int i = 0; i < nodeIdsMap.Length; i++)
+            {
+                if (nodeIdsMap[i] == 0)
+                    for (int b = nodeIdsMap.Length - 1; b > i; b--)
+                    {
+                        if (nodeIdsMap[b] == 1)
+                        {
+                            var toMove = Nodes[b];
+                            var moved = Configuration.CloneNode(toMove, x => i);
+                            Nodes.Remove(toMove.Id);
+                            Nodes.Add(moved);
+                            nodeIdsMap[b] = 0;
+                            nodeIdsMap[i] = 1;
+                            idMap[b] = i;
+                            break;
+                        }
                     }
-                }
             }
             return idMap;
         }
