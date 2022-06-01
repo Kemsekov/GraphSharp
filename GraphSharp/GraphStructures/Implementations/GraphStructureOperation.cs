@@ -153,7 +153,7 @@ namespace GraphSharp.GraphStructures
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            UnionFind unionFind = new(Nodes.MaxNodeId);
+            UnionFind unionFind = new(Nodes.MaxNodeId+1);
             Edges.Clear();
             var source = Nodes.Select(x => x.Id).ToArray();
             foreach (var n in Nodes)
