@@ -147,7 +147,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Converts current edges to form a tree depending on their weights using Kruskal algorithm
         /// </summary>
-        public GraphStructureOperation<TNode, TEdge> MakeTree(){
+        public GraphStructureOperation<TNode, TEdge> MakeSpanningTree(){
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
             var edges = Edges.OrderBy(x=>Configuration.GetEdgeWeight(x)).Select(x=>(x.Source.Id,x.Target.Id)).ToArray();
