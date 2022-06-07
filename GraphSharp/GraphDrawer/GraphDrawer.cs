@@ -37,6 +37,15 @@ namespace GraphSharp.GraphDrawer
                 DrawNodeId(n,color,fontSize);
             }
         }
+        public void DrawDirections(IEnumerable<TEdge> edges,float lineThickness, float directionLength, Color color){
+            foreach(var e in edges)
+                DrawDirection(e,lineThickness,directionLength,color);
+        }
+        public void DrawDirectionsParallel(IEnumerable<TEdge> edges,float lineThickness, float directionLength, Color color){
+            Parallel.ForEach(edges,e=>
+                DrawDirection(e,lineThickness,directionLength,color)
+            );
+        }
         public void DrawEdges(IEnumerable<TEdge> edges,float lineThickness)
         {
             foreach(var edge in edges)
@@ -91,21 +100,24 @@ namespace GraphSharp.GraphDrawer
             var sourcePos = Configuration.GetNodePosition(edge.Source);
             var targetPos = Configuration.GetNodePosition(edge.Target);
             
+            var distance = Vector2.Distance(sourcePos,targetPos);
+
             var width = Drawer.Size.X;
             var height = Drawer.Size.Y;
-            var point1 = new Vector2((float)sourcePos.X * width, (float)sourcePos.Y * height);
-            var point2 = new Vector2((float)targetPos.X * width, (float)targetPos.Y * height);
 
-            var dirVector = point1-point2;
-            var length = dirVector.Length();
-            dirVector/=length;
-            dirVector.X*=width;
-            dirVector.Y*=height;
-            var point3=point2+dirVector*(directionLength);
-            if((point2-point3).Length()<length)
+            var dirVector = targetPos-sourcePos;
+            dirVector/=dirVector.Length();
+
+        
+            dirVector=targetPos-dirVector*(directionLength);
+            var point1 = new Vector2(dirVector.X*width,dirVector.Y*height);
+            var point2 = new Vector2(targetPos.X*width,targetPos.Y*height);
+            if((dirVector-targetPos).Length()<distance/2)
                 Drawer.DrawLine(point1, point2, color, lineThickness);
-            else
-                Drawer.DrawLine(point1, point2+(point1-point2)/2, color, lineThickness);
+            else{
+                var sourcePoint = new Vector2((sourcePos.X+targetPos.X)/2*width,(sourcePos.Y+targetPos.Y)/2*height);
+                Drawer.DrawLine(sourcePoint, point2, color, lineThickness);
+            }
         }
     }
 }
