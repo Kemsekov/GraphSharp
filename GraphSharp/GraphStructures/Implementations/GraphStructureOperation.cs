@@ -145,36 +145,37 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Connects closest to each other nodes to create minimal possible tree. Removes all current edges.
+        /// Converts current edges to form a tree depending on their weights using Kruskal algorithm
         /// </summary>
-        /// <returns></returns>
-        public GraphStructureOperation<TNode, TEdge> MakeTree(int degree)
-        {
+        public GraphStructureOperation<TNode, TEdge> MakeTree(){
+            var Edges = _structureBase.Edges;
+            var Configuration = _structureBase.Configuration;
+            var edges = Edges.OrderBy(x=>Configuration.GetEdgeWeight(x)).Select(x=>(x.Source.Id,x.Target.Id)).ToArray();
+            KruskalAlgorithm(edges);
+            return this;
+        }
+        /// <summary>
+        /// Apply Kruskal algorithm on set of pairs of nodes sorted by distance between them. Creates undirected tree.
+        /// </summary>
+        /// <param name="edges">Sorted by distance pairs of nodes</param>
+        void KruskalAlgorithm(IEnumerable<(int n1, int n2)> edges){
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
             UnionFind unionFind = new(Nodes.MaxNodeId+1);
-            Edges.Clear();
-            var source = Nodes.Select(x => x.Id).ToArray();
-            foreach (var n in Nodes)
-            {
+            foreach(var n in Nodes)
                 unionFind.MakeSet(n.Id);
-                var closest = source.FindFirstNMinimalElements(
-                    n: degree,
-                    comparison: (t1, t2) => Configuration.Distance(n, Nodes[t1]) > Configuration.Distance(n, Nodes[t2]) ? 1 : -1,
-                    skipElement: (nodeId) => nodeId == n.Id || Edges[nodeId].Count() >= degree || unionFind.FindSet(nodeId) == unionFind.FindSet(n.Id));
-
-                foreach (var nodeId in closest)
-                {
-                    if (unionFind.FindSet(nodeId) == unionFind.FindSet(n.Id)) continue;
-                    var edge1 = Configuration.CreateEdge(n, Nodes[nodeId]);
-                    var edge2 = Configuration.CreateEdge(Nodes[nodeId], n);
-                    Edges.Add(edge1);
-                    Edges.Add(edge2);
-                    unionFind.UnionSet(nodeId, n.Id);
-                }
+            
+            Edges.Clear();
+            foreach(var pair in edges){
+                if(unionFind.FindSet(pair.n1)==unionFind.FindSet(pair.n2))
+                    continue;
+                var edge1 = Configuration.CreateEdge(Nodes[pair.n1],Nodes[pair.n2]);
+                var edge2 = Configuration.CreateEdge(Nodes[pair.n2],Nodes[pair.n1]);
+                Edges.Add(edge1);
+                Edges.Add(edge2);
+                unionFind.UnionSet(pair.n1,pair.n2);
             }
-            return this;
         }
 
         /// <summary>

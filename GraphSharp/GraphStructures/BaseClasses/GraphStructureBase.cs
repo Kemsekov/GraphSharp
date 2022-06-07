@@ -79,6 +79,9 @@ namespace GraphSharp.GraphStructures
                 }
             }
         }
+        /// <summary>
+        /// Checks if graph colored in a right way. Throws an exception if there is a case when some node is not colored in a right way.
+        /// </summary>
         public void EnsureRightColoring()
         {
             foreach(var n in Nodes){
