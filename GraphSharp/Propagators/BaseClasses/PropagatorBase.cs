@@ -10,7 +10,10 @@ using Microsoft.Toolkit.HighPerformance;
 namespace GraphSharp.Propagators
 {
     /// <summary>
-    /// Base class for <see cref="IPropagator{}"/> that contains basic things for any specific implementation
+    /// Base class for <see cref="IPropagator{}"/> that contains basic things for any specific implementation.
+    /// By default this implementation assign a state to each node as byte as power of 2. 
+    /// There is 3 states that already used: None = 0, ToVisit = 1, Visited = 2.
+    /// So there is only 6 states left for your disposal: 4 8 16 32 64 128.
     /// </summary>
     public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode,TEdge>
     where TNode : NodeBase<TEdge>
@@ -62,7 +65,6 @@ namespace GraphSharp.Propagators
         }
         /// <summary>
         /// Checks if node is in some state for current propagator. 
-        /// Warning: there is only 8 states for node possible at the same time.
         /// </summary>
         /// <param name="nodeId">Id of node to check</param>
         /// <param name="state">Integer power of 2 value</param>
@@ -72,7 +74,6 @@ namespace GraphSharp.Propagators
         }
         /// <summary>
         /// Sets node state for current propagator.
-        /// Warning: there is only 8 states for node possible at the same time.
         /// </summary>
         /// <param name="nodeId">Id of node to set state</param>
         /// <param name="state">Integer power of 2 value</param>
@@ -82,7 +83,6 @@ namespace GraphSharp.Propagators
         }
         /// <summary>
         /// Clears node state for current propagator.
-        /// Warning: there is only 8 states for node possible at the same time.
         /// </summary>
         /// <param name="nodeId">Id of node to remove state</param>
         /// <param name="state">Integer power of 2 value</param>
