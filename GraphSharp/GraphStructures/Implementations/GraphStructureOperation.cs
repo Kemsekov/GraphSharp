@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DelaunatorSharp;
 using GraphSharp.Common;
 using GraphSharp.Edges;
 using GraphSharp.Extensions;
@@ -142,6 +143,33 @@ namespace GraphSharp.GraphStructures
                 skipElement: (nodeId) => nodeId == parent.Id || Edges[nodeId].Count() >= maxEdgesCount);
 
             return result;
+        }
+        /// <summary>
+        /// Removes all edges from graph then
+        /// preforms delaunay triangulation. See https://en.wikipedia.org/wiki/Delaunay_triangulation <br/>
+        /// </summary>
+        public GraphStructureOperation<TNode, TEdge> DelaunayTriangulation(){
+            var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
+            var Configuration = _structureBase.Configuration;
+            
+            Edges.Clear();
+
+            var points = Nodes.ToDictionary(
+                x=>{
+                    var pos = Configuration.GetNodePosition(x);
+                    var point = new Point(pos.X,pos.Y);
+                    return point as IPoint;
+                }
+            );
+            var d = new Delaunator(points.Keys.ToArray());
+            foreach(var e in d.GetEdges()){
+                var p1 = points[e.P];
+                var p2 = points[e.Q];
+                var edge = Configuration.CreateEdge(p1,p2);
+                Edges.Add(edge);
+            }
+            return this;
         }
 
         /// <summary>

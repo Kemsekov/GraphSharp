@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Version>1.0.6</Version>
     <PackageId>Kemsekov.GraphSharp</PackageId>
@@ -13,5 +13,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2"/>
     <PackageReference Include="MathNet.Numerics" Version="5.0.0"/>
+    <PackageReference Include="Delaunator" Version="1.0.9"/>
   </ItemGroup>
 </Project>
