@@ -4,7 +4,12 @@ GraphSharp is a tool to manipulate on the set of connected nodes, or graph.
 It allow you to create such algorithms as dijkstra algorithm or finding hamiltonian path or coloring problem
 For samples see https://github.com/Kemsekov/GraphSharp.Samples
 
+Dijkstra algorithm
 ![example](https://user-images.githubusercontent.com/57869319/149961444-a0afc184-7119-4a8c-99de-4d15f587559f.jpg)
-![example](https://user-images.githubusercontent.com/57869319/151210385-1e5b8172-a20c-4435-b2ca-5a56b0ee0cd9.jpg)
+Graph coloring
 ![example](https://user-images.githubusercontent.com/57869319/161608380-1e82a976-16bc-4fca-a249-c5aa0efdb948.jpg)
+Delaunay triangulation
+![example](https://user-images.githubusercontent.com/57869319/174455462-f0a7b769-33b8-47b9-b6a6-2936c02f4cbb.jpg)
+Minimal spanning tree
+![example](https://user-images.githubusercontent.com/57869319/174455464-e4b8723b-0158-4a9c-ace1-a9e7dc423913.jpg)
 
