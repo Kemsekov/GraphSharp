@@ -12,4 +12,5 @@ Delaunay triangulation
 ![example](https://user-images.githubusercontent.com/57869319/174455462-f0a7b769-33b8-47b9-b6a6-2936c02f4cbb.jpg)
 Minimal spanning tree
 ![example](https://user-images.githubusercontent.com/57869319/174455464-e4b8723b-0158-4a9c-ace1-a9e7dc423913.jpg)
-
+Topological sort
+![example](https://user-images.githubusercontent.com/57869319/174638380-b39624b7-8c99-4544-a69b-f99f589d72b4.jpg)
