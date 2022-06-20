@@ -265,13 +265,13 @@ namespace GraphSharp.Tests
             }
         }
         [Fact]
-        public void CountSources_Works(){
+        public void CountIncomingEdges_Works(){
             _GraphStructure.Do.RemoveEdges(x=>true);
-            var sourcesCount = _GraphStructure.CountSources();
+            var sourcesCount = _GraphStructure.CountIncomingEdges();
             Assert.All(sourcesCount,x=>Assert.Equal(x.Value,0));
 
             _GraphStructure.Do.ConnectRandomly(2,5);
-            sourcesCount = _GraphStructure.CountSources();
+            sourcesCount = _GraphStructure.CountIncomingEdges();
 
             foreach(var e in _GraphStructure.Edges){
                 sourcesCount[e.Target.Id]--;

@@ -407,7 +407,7 @@ namespace GraphSharp.GraphStructures
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            var sourcesCount = _structureBase.CountSources();
+            var sourcesCount = _structureBase.CountIncomingEdges();
             var toRemove =
                 Nodes
                 .Where(x => sourcesCount[x.Id] == 0 && Edges[x.Id].Count() == 0)

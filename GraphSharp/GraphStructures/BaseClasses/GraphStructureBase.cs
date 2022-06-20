@@ -38,11 +38,11 @@ namespace GraphSharp.GraphStructures
             Edges = configuration.CreateEdgeSource();
         }
         /// <summary>
-        /// Calculate sources count (degree) for each node
+        /// Calculate count of incoming edges for node.
         /// </summary>
-        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is sources count</returns>
-        public IDictionary<int,int> CountSources(){
-            ConcurrentDictionary<int,int> c = new();
+        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is count of edges that have this node as target</returns>
+        public IDictionary<int,int> CountIncomingEdges(){
+            Dictionary<int,int> c = new();
             foreach(var n in Nodes)
                 c[n.Id]=0;
             
