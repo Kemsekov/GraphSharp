@@ -41,7 +41,7 @@ namespace GraphSharp.GraphStructures
         /// Calculate sources count (degree) for each node
         /// </summary>
         /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is sources count</returns>
-        public IDictionary<int,int> Countsources(){
+        public IDictionary<int,int> CountSources(){
             ConcurrentDictionary<int,int> c = new();
             foreach(var n in Nodes)
                 c[n.Id]=0;
