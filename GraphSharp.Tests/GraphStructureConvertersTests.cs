@@ -24,6 +24,27 @@ namespace GraphSharp.Tests
         }
 
         [Fact]
+        public void FromTreeBinaryCode_Works(){
+            // n0 — n1 
+            // |
+            // n2 — n3
+            // |
+            // n4
+            var code = new byte[]{1,0,1,1,0,1,0};
+
+            _GraphStructure.Converter.FromTreeBinaryCode(code);
+            Assert.Equal(_GraphStructure.Nodes.Count-1,code.Sum(x=>x));
+            Assert.Equal(_GraphStructure.Edges.Count,code.Sum(x=>x));
+            
+            Assert.True(
+                _GraphStructure.Edges.TryGetEdge(0,1,out _) &&
+                _GraphStructure.Edges.TryGetEdge(0,2,out _) &&
+                _GraphStructure.Edges.TryGetEdge(2,3,out _) &&
+                _GraphStructure.Edges.TryGetEdge(2,4,out _)
+                );
+        }
+
+        [Fact]
         public void FromAdjacencyMatrix_Works()
         {
             int size = _rand.Next(100) + 5;

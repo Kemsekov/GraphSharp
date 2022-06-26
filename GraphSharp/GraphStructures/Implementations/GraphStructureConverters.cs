@@ -52,6 +52,48 @@ namespace GraphSharp.GraphStructures
             }
             return adjacencyMatrix;
         }
+
+        /// <summary>
+        /// Builds a graph from binary code tree. 1(or anything > 0) - is new branch, 0 - is one step back.<br/>
+        /// Example [1,0,1,1,0,1]<br/>
+        /// n0 — n1<br/>
+        /// |<br/>
+        /// n2 — n3<br/>
+        /// |<br/>
+        /// n4
+        /// </summary>
+        /// <param name="binaryCode"></param>
+        /// <returns></returns>
+        public GraphStructureConverters<TNode,TEdge> FromTreeBinaryCode(byte[] binaryCode){
+            if(binaryCode.Length==0) return this;
+            _structureBase.Clear();
+            var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
+            var Configuration = _structureBase.Configuration;
+            
+            Nodes.Add(Configuration.CreateNode(0));
+            var backtracking = new List<TNode>(){Nodes.First()};
+            int counter = 1;
+            for(int i = 0;i<binaryCode.Length;i++){
+                var b = binaryCode[i];
+                if(b>0){
+                    var node = Configuration.CreateNode(counter++);
+                    var previous = backtracking.LastOrDefault();
+                    if(previous is not null){
+                        var edge = Configuration.CreateEdge(previous,node);
+                        Edges.Add(edge);
+                    }
+                    backtracking.Add(node);
+                    Nodes.Add(node);
+                }
+                if(b==0){
+                    if(backtracking.Count>0)
+                        backtracking.RemoveAt(backtracking.Count-1);
+                }
+            }
+            return this;
+        }
+
         /// <summary>
         /// Create nodes and edges from adjacency matrix
         /// </summary>
@@ -59,8 +101,8 @@ namespace GraphSharp.GraphStructures
         public GraphStructureConverters<TNode,TEdge> FromAdjacencyMatrix(Matrix adjacencyMatrix){
             if(adjacencyMatrix.RowCount!=adjacencyMatrix.ColumnCount)
                 throw new GraphConverterException("adjacencyMatrix argument must be square matrix!");
-            int width = adjacencyMatrix.RowCount;
             _structureBase.Clear();
+            int width = adjacencyMatrix.RowCount;
             var Configuration = _structureBase.Configuration;
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
@@ -88,9 +130,9 @@ namespace GraphSharp.GraphStructures
         /// Create nodes and edges from from incidence matrix
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> FromIncidenceMatrix(Matrix incidenceMatrix){
+            _structureBase.Clear();
             int nodesCount = incidenceMatrix.RowCount;
             var edgesCount = incidenceMatrix.ColumnCount;
-
             var Configuration = _structureBase.Configuration;
             _structureBase.Create(nodesCount);
             var Nodes = _structureBase.Nodes;
