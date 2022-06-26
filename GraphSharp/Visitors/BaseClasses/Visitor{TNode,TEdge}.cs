@@ -9,8 +9,8 @@ namespace GraphSharp.Visitors
     /// Base implementation of <see cref="IVisitor{,}"/> and proxy of <see cref="IPropagator{}"/> in one instance.
     /// </summary>
     public abstract class Visitor<TNode, TEdge> : IVisitor<TNode, TEdge>, IPropagator<TNode,TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         /// <summary>
         /// <see cref="IPropagator{}"/> implementation that used for this proxy class
@@ -32,6 +32,21 @@ namespace GraphSharp.Visitors
 
         public void SetGraph(IGraphStructure<TNode,TEdge> nodes){
             Propagator.SetGraph(nodes);
+        }
+
+        public bool IsNodeInState(int nodeId, byte state)
+        {
+            return Propagator.IsNodeInState(nodeId, state);
+        }
+
+        public void SetNodeState(int nodeId, byte state)
+        {
+            Propagator.SetNodeState(nodeId, state);
+        }
+
+        public void RemoveNodeState(int nodeId, byte state)
+        {
+            Propagator.RemoveNodeState(nodeId, state);
         }
     }
 }

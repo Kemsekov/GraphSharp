@@ -16,15 +16,26 @@ namespace GraphSharp.GraphStructures
     /// Contains methods to modify relationships between nodes and edges.
     /// </summary>
     public class GraphStructureOperation<TNode, TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : Edges.IEdge<TNode>
     {
         GraphStructure<TNode, TEdge> _structureBase;
         public GraphStructureOperation(GraphStructure<TNode, TEdge> structureBase)
         {
             _structureBase = structureBase;
         }
-
+        /// <summary>
+        /// Works only on undirected graphs.
+        /// </summary>
+        /// <returns>Articulation points of a graph</returns>
+        public IEnumerable<TNode> GetArticulationPoints(){
+            var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
+            if(Nodes.Count==0 || Edges.Count==0)
+                return Enumerable.Empty<TNode>();
+            
+            return Enumerable.Empty<TNode>();
+        }
         /// <summary>
         /// Randomly create edgesCount edges for each node
         /// </summary>
@@ -157,7 +168,7 @@ namespace GraphSharp.GraphStructures
 
             var points = Nodes.ToDictionary(
                 x=>{
-                    var pos = Configuration.GetNodePosition(x);
+                    var pos = x.Position;
                     var point = new Point(pos.X,pos.Y);
                     return point as IPoint;
                 }
@@ -178,7 +189,7 @@ namespace GraphSharp.GraphStructures
         public GraphStructureOperation<TNode, TEdge> MakeSpanningTree(){
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            var edges = Edges.OrderBy(x=>Configuration.GetEdgeWeight(x)).Select(x=>(x.Source.Id,x.Target.Id)).ToArray();
+            var edges = Edges.OrderBy(x=>x.Weight).Select(x=>(x.Source.Id,x.Target.Id)).ToArray();
             KruskalAlgorithm(edges);
             return this;
         }

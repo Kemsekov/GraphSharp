@@ -16,8 +16,8 @@ namespace GraphSharp.Propagators
     /// So there is only 6 states left for your disposal: 4 8 16 32 64 128.
     /// </summary>
     public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode,TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         public IVisitor<TNode,TEdge> Visitor { get; init; }
         protected IGraphStructure<TNode,TEdge> _graph;

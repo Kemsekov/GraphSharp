@@ -10,9 +10,9 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
-    public class DefaultEdgeSource<TNode,TEdge> : IEdgeSource<TEdge>
-    where TEdge : EdgeBase<TNode>
-    where TNode : NodeBase<TEdge>
+    public class DefaultEdgeSource<TNode,TEdge> : IEdgeSource<TNode,TEdge>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         IDictionary<int,IList<TEdge>> Edges;
         public int Count{get;protected set;}

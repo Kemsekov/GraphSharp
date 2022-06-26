@@ -7,8 +7,8 @@ namespace GraphSharp.Visitors
     /// <see cref="IVisitor{,}"/> implementation that uses lambda functions.
     /// </summary>
     public class ActionVisitor<TNode, TEdge> : IVisitor<TNode, TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         private Action<TNode> visit;
         private Predicate<TEdge> select;

@@ -10,8 +10,8 @@ namespace GraphSharp.GraphStructures
     /// Create nodes for graph structure. Entry for any other logic of graph structure.
     /// </summary>
     public partial class GraphStructure<TNode,TEdge> : GraphStructureBase<TNode,TEdge>, GraphSharp.Common.ICloneable<GraphStructure<TNode,TEdge>>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         public GraphStructure(IGraphConfiguration<TNode,TEdge> configuration) : base(configuration)
         {}
@@ -22,7 +22,7 @@ namespace GraphSharp.GraphStructures
         public GraphStructure(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure) 
         {}
 
-        public GraphStructure<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges){
+        public GraphStructure<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TNode,TEdge> edges){
             Nodes = nodes;
             Edges = edges;
             return this;

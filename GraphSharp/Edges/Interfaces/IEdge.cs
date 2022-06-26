@@ -1,12 +1,13 @@
 using System;
+using GraphSharp.Common;
 using GraphSharp.Nodes;
 namespace GraphSharp.Edges
 {
-    public interface IEdge : IComparable<IEdge>
+    public interface IEdge<TNode> : IComparable<IEdge<TNode>>, IColored, IWeighted
     {
-        INode Source{get;}
-        INode Target{get;}
-        int IComparable<IEdge>.CompareTo(IEdge? other){
+        TNode Source{get;set;}
+        TNode Target{get;set;}
+        int IComparable<IEdge<TNode>>.CompareTo(IEdge<TNode>? other){
             if(other==null)
                 return 1;
             return this.GetHashCode()-other.GetHashCode();

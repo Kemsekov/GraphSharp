@@ -1,7 +1,9 @@
 using System;
+using GraphSharp.Common;
+
 namespace GraphSharp.Nodes
 {
-    public interface INode : IComparable<INode>
+    public interface INode : IComparable<INode>, IColored, IWeighted, IPositioned
     {
         /// <summary>
         /// Unique identifier for node

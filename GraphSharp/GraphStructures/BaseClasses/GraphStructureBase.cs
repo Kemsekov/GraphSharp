@@ -11,8 +11,8 @@ namespace GraphSharp.GraphStructures
     /// Base class for graph structure.
     /// </summary>
     public abstract class GraphStructureBase<TNode, TEdge> : IGraphStructure<TNode,TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
 
         /// <summary>
@@ -20,7 +20,7 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         public IGraphConfiguration<TNode,TEdge> Configuration{get;protected set;}
         public INodeSource<TNode> Nodes { get; protected set; }
-        public IEdgeSource<TEdge> Edges { get; protected set; }
+        public IEdgeSource<TNode,TEdge> Edges { get; protected set; }
         /// <summary>
         /// Base copy constructor. Will make shallow copy of structureBase
         /// </summary>
@@ -103,9 +103,9 @@ namespace GraphSharp.GraphStructures
         public void EnsureRightColoring()
         {
             foreach(var n in Nodes){
-                var color = Configuration.GetNodeColor(n);
+                var color = n.Color;
                 var edges = Edges[n.Id];
-                if(edges.Any(x=>Configuration.GetNodeColor(x.Target)==color)){
+                if(edges.Any(x=>x.Target.Color==color)){
                     throw new WrongGraphColoringException($"Wrong graph coloring! Node {n.Id} with color {color} have edge with the same color!");               
                 }
             }

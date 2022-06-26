@@ -395,7 +395,7 @@ namespace GraphSharp.Tests
             Assert.Equal(edges.Select(x=>x),_GraphStructure.Edges.Select(x=>x));
 
         }
-        public void validateThereIsNoCopiesAndsourceInEdges(INodeSource<TestNode> nodes,IEdgeSource<TestEdge> edges)
+        public void validateThereIsNoCopiesAndsourceInEdges(INodeSource<TestNode> nodes,IEdgeSource<TestNode,TestEdge> edges)
         {
             foreach (var source in nodes)
             {
@@ -442,9 +442,9 @@ namespace GraphSharp.Tests
         /// <summary>
         /// Checks that set of edges is closed on set of nodes
         /// </summary>
-        public static void CheckForIntegrity<TNode,TEdge>(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges)
+        public static void CheckForIntegrity<TNode,TEdge>(INodeSource<TNode> nodes, IEdgeSource<TNode,TEdge> edges)
         where TNode : INode
-        where TEdge : IEdge
+        where TEdge : IEdge<TNode>
         {
             foreach(var e in edges){
                 Assert.True(nodes.TryGetNode(e.Source.Id,out var _));

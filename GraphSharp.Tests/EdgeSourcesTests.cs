@@ -12,13 +12,13 @@ namespace GraphSharp.Tests
     public class EdgeSourcesTests
     {
         INodeSource<TestNode> Nodes;
-        IEnumerable<IEdgeSource<TestEdge>> EdgeSources;
+        IEnumerable<IEdgeSource<TestNode,TestEdge>> EdgeSources;
 
         public EdgeSourcesTests()
         {
             Nodes = new DefaultNodeSource<TestNode>(0);
             Fill(Nodes,1000);
-            EdgeSources = new List<IEdgeSource<TestEdge>>()
+            EdgeSources = new List<IEdgeSource<TestNode,TestEdge>>()
             {
                 new DefaultEdgeSource<TestNode,TestEdge>()
             };
@@ -31,7 +31,7 @@ namespace GraphSharp.Tests
             }
         }
 
-        void FillEdges(INodeSource<TestNode> nodes, IEdgeSource<TestEdge> edges, int edgesCount){
+        void FillEdges(INodeSource<TestNode> nodes, IEdgeSource<TestNode,TestEdge> edges, int edgesCount){
             int nodesCount = nodes.Count;
             for(int i=0;i<edgesCount;i++){
                 var source = nodes[Random.Shared.Next(nodesCount)];

@@ -8,10 +8,10 @@ namespace GraphSharp.GraphStructures
     /// </summary>
     public interface IGraphStructure<TNode,TEdge>
     where TNode : INode
-    where TEdge : IEdge
+    where TEdge : IEdge<TNode>
     {
         INodeSource<TNode> Nodes { get; }
-        IEdgeSource<TEdge> Edges { get; }
+        IEdgeSource<TNode,TEdge> Edges { get; }
         IGraphConfiguration<TNode,TEdge> Configuration{get;}
     }
 }

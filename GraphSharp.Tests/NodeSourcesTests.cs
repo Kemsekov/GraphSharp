@@ -11,7 +11,7 @@ namespace GraphSharp.Tests
     public class NodeSourcesTests
     {
         IEnumerable<INodeSource<TestNode>> NodeSources;
-        IEnumerable<IEdgeSource<TestEdge>> EdgeSources;
+        IEnumerable<IEdgeSource<TestNode,TestEdge>> EdgeSources;
 
         public NodeSourcesTests()
         {
@@ -19,7 +19,7 @@ namespace GraphSharp.Tests
             {
                 new DefaultNodeSource<TestNode>(0)
             };
-            EdgeSources = new List<IEdgeSource<TestEdge>>()
+            EdgeSources = new List<IEdgeSource<TestNode,TestEdge>>()
             {
                 new DefaultEdgeSource<TestNode,TestEdge>()
             };

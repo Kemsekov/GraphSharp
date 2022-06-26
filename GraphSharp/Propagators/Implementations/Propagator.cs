@@ -13,8 +13,8 @@ namespace GraphSharp.Propagators
     /// Single threaded <see cref="PropagatorBase{,}"/> implementation
     /// </summary>
     public class Propagator<TNode,TEdge> : PropagatorBase<TNode,TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         public Propagator(IVisitor<TNode, TEdge> visitor, IGraphStructure<TNode,TEdge> graph) : base(visitor,graph)
         {

@@ -7,8 +7,8 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
-    public interface IEdgeSource<TEdge> : IEnumerable<TEdge>
-    where TEdge : IEdge
+    public interface IEdgeSource<TNode,TEdge> : IEnumerable<TEdge>
+    where TEdge : IEdge<TNode>
     {
         int Count{ get; }
         void Add(TEdge edge);

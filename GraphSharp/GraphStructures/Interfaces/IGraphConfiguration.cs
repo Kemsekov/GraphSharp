@@ -11,13 +11,13 @@ namespace GraphSharp.GraphStructures
     /// <typeparam name="TEdge"></typeparam>
     public interface IGraphConfiguration<TNode, TEdge>
     where TNode : INode
-    where TEdge : IEdge
+    where TEdge : IEdge<TNode>
     {
         /// <summary>
         /// <see cref="Random"/> that used to implement's any logic when it reqires random values
         /// </summary>
         public Random Rand {get;}
-        IEdgeSource<TEdge> CreateEdgeSource();
+        IEdgeSource<TNode,TEdge> CreateEdgeSource();
         INodeSource<TNode> CreateNodeSource();
         /// <summary>
         /// Method that used to create instance of <see cref="TNode"/> from it's <see cref="INode.Id"/> as argument
@@ -27,50 +27,9 @@ namespace GraphSharp.GraphStructures
         /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>
         /// </summary>
         TEdge CreateEdge(TNode source, TNode target);
-        /// <summary>
-        /// Method that used to determite how to calculate distance between two <see cref="TNode"/>
-        /// </summary>
         float Distance(TNode n1, TNode n2);
         /// <summary>
         /// Method that used to get weight from particular <see cref="TEdge"/>
         /// </summary>
-        float GetEdgeWeight(TEdge edge);
-        /// <summary>
-        /// Method that used to assign weight to particular <see cref="TEdge"/>
-        /// </summary>
-        void SetEdgeWeight(TEdge edge, float weight);
-        /// <summary>
-        /// Method that used to get weight from particular <see cref="TNode"/>
-        /// </summary>
-        float GetNodeWeight(TNode node);
-        /// <summary>
-        /// Method that used to assign weight to particular <see cref="TNode"/>
-        /// </summary>
-        /// <value></value>
-        void SetNodeWeight(TNode node, float weight);
-        /// <summary>
-        /// Method that used to get color from particular <see cref="TNode"/>
-        /// </summary>
-        Color GetNodeColor(TNode node);
-        /// <summary>
-        /// Method that used to assign color to particular <see cref="TNode"/>
-        /// </summary>
-        void SetNodeColor(TNode node, Color color);
-        /// <summary>
-        /// Method that used to get color from particular <see cref="TEdge"/>
-        /// </summary>
-        Color GetEdgeColor(TEdge edge);
-        /// <summary>
-        /// Method that used to assign color to particular <see cref="TEdge"/>
-        /// </summary>
-        void SetEdgeColor(TEdge edge, Color color);
-        /// <summary>
-        /// Get node position
-        /// </summary>
-        System.Numerics.Vector2 GetNodePosition(TNode node);
-        /// <summary>
-        /// Set node position
-        /// </summary>
-        void SetNodePosition(TNode node, System.Numerics.Vector2 position);
     }
 }

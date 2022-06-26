@@ -14,8 +14,8 @@ namespace GraphSharp.GraphDrawer
     /// Basic drawing operations for nodes and edges. Assuming that nodes positions is normalized to [0,1]x[0,1].
     /// </summary>
     public class GraphDrawer<TNode,TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         public IGraphConfiguration<TNode,TEdge> Configuration { get; }
         public IShapeDrawer Drawer { get; }
@@ -27,7 +27,7 @@ namespace GraphSharp.GraphDrawer
         public void DrawPath(IEnumerable<TNode> path,Color color,float lineThickness){
             path.Aggregate((n1,n2)=>{
                 var tmp_edge = Configuration.CreateEdge(n1,n2);
-                Configuration.SetEdgeColor(tmp_edge,color);
+                tmp_edge.Color = color;
                 DrawEdge(tmp_edge,lineThickness);
                 return n2;
             });
@@ -72,7 +72,7 @@ namespace GraphSharp.GraphDrawer
         }
         public void DrawNodeId(TNode node, Color color, float fontSize)
         {
-            var pos = Configuration.GetNodePosition(node);
+            var pos = node.Position;
             var width = Drawer.Size.X;
             var height = Drawer.Size.Y;
             var point = new Vector2((float)(pos.X-fontSize/2) * width, (float)(pos.Y-fontSize/2) * height);
@@ -80,16 +80,16 @@ namespace GraphSharp.GraphDrawer
         }
         public void DrawNode(TNode node, float nodeSize)
         {
-            var pos = Configuration.GetNodePosition(node);
-            var color = Configuration.GetNodeColor(node);
+            var pos = node.Position;
+            var color = node.Color;
             var point = new Vector2((float)pos.X * Drawer.Size.X, (float)pos.Y * Drawer.Size.Y);
             Drawer.FillEllipse(point, nodeSize, nodeSize, color);
         }
         public void DrawEdge(TEdge edge, float lineThickness)
         {
-            var sourcePos = Configuration.GetNodePosition(edge.Source);
-            var targetPos = Configuration.GetNodePosition(edge.Target);
-            var color = Configuration.GetEdgeColor(edge);
+            var sourcePos = edge.Source.Position;
+            var targetPos = edge.Target.Position;
+            var color = edge.Color;
             var width = Drawer.Size.X;
             var height = Drawer.Size.Y;
             var point1 = new Vector2((float)sourcePos.X * width, (float)sourcePos.Y * height);
@@ -97,8 +97,8 @@ namespace GraphSharp.GraphDrawer
             Drawer.DrawLine(point1, point2, color, lineThickness);
         }
         public void DrawDirection(TEdge edge,float lineThickness,float directionLength, Color color){
-            var sourcePos = Configuration.GetNodePosition(edge.Source);
-            var targetPos = Configuration.GetNodePosition(edge.Target);
+            var sourcePos = edge.Source.Position;
+            var targetPos = edge.Target.Position;
             
             var distance = Vector2.Distance(sourcePos,targetPos);
 

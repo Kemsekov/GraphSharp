@@ -14,8 +14,8 @@ namespace GraphSharp.GraphStructures
     /// <typeparam name="TNode"></typeparam>
     /// <typeparam name="TEdge"></typeparam>
     public class GraphStructureConverters<TNode, TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         GraphStructure<TNode, TEdge> _structureBase;
         public GraphStructureConverters(GraphStructure<TNode, TEdge> structureBase)
@@ -48,7 +48,7 @@ namespace GraphSharp.GraphStructures
             adjacencyMatrix = SparseMatrix.Create(size, size, 0);
             foreach(var e in _structureBase.Edges)
             {
-                adjacencyMatrix[e.Source.Id, e.Target.Id] = Configuration.GetEdgeWeight(e);
+                adjacencyMatrix[e.Source.Id, e.Target.Id] = e.Weight;
             }
             return adjacencyMatrix;
         }
@@ -119,13 +119,12 @@ namespace GraphSharp.GraphStructures
             for(int b = 0;b<width;b++){
                 if(adjacencyMatrix[i,b]!=0){
                     var edge = Configuration.CreateEdge(Nodes[i],Nodes[b]);
-                    Configuration.SetEdgeWeight(edge,adjacencyMatrix[i,b]);
+                    edge.Weight=adjacencyMatrix[i,b];
                     Edges.Add(edge);
                 }
             }
             return this;
         }
-
         /// <summary>
         /// Create nodes and edges from from incidence matrix
         /// </summary>
@@ -136,21 +135,21 @@ namespace GraphSharp.GraphStructures
             var Configuration = _structureBase.Configuration;
             _structureBase.Create(nodesCount);
             var Nodes = _structureBase.Nodes;
-            
+
             for(int i = 0;i<edgesCount;++i){
-                (TNode? Node,float Value) n1 = (null,0),n2 = (null,0);
+                (int nodeId,float Value) n1 = (-1,0),n2 = (-1,0);
                 for(int b = 0;b<nodesCount;++b){
                     var value = incidenceMatrix[b,i];
                     if(value!=0){
                         n1 = n2;
-                        n2 = (Nodes[b],value);
+                        n2 = (b,value);
                     }
                 }
-                if(n1.Node is not null && n2.Node is not null){
+                if(n1.nodeId!=-1 && n2.nodeId != -1){
                     if(n1.Value==1)
-                        _structureBase.Edges.Add(Configuration.CreateEdge(n1.Node,n2.Node));
+                        _structureBase.Edges.Add(Configuration.CreateEdge(Nodes[n1.nodeId],Nodes[n2.nodeId]));
                     if(n2.Value==1)
-                        _structureBase.Edges.Add(Configuration.CreateEdge(n2.Node,n1.Node));
+                        _structureBase.Edges.Add(Configuration.CreateEdge(Nodes[n2.nodeId],Nodes[n1.nodeId]));
                 }
             }
             return this;

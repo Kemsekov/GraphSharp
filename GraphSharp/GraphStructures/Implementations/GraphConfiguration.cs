@@ -11,8 +11,8 @@ namespace GraphSharp.GraphStructures
     /// Implementation of the <see cref="IGraphConfiguration{,}"/> that uses various interfaces to hide configuration implementation.
     /// </summary>
     public abstract class GraphConfiguration<TNode, TEdge> : IGraphConfiguration<TNode, TEdge>
-    where TNode : NodeBase<TEdge>, IWeighted, IColored, IPositioned
-    where TEdge : EdgeBase<TNode>, IWeighted, IColored
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         public Random Rand { get;set; }
         public GraphConfiguration(Random rand)
@@ -25,48 +25,7 @@ namespace GraphSharp.GraphStructures
         {
             return (n1.Position-n2.Position).Length();
         }
-        public Color GetEdgeColor(TEdge edge)
-        {
-            return edge.Color;
-        }
-        public float GetEdgeWeight(TEdge edge)
-        {
-            return edge.Weight;
-        }
-        public Color GetNodeColor(TNode node)
-        {
-            return node.Color;
-        }
-        public Vector2 GetNodePosition(TNode node)
-        {
-            return node.Position;
-        }
-        public float GetNodeWeight(TNode node)
-        {
-            return node.Weight;
-        }
-        public void SetEdgeColor(TEdge edge, Color color)
-        {
-            edge.Color = color;
-        }
-        public void SetEdgeWeight(TEdge edge, float weight)
-        {
-            edge.Weight = weight;
-        }
-        public void SetNodeColor(TNode node, Color color)
-        {
-            node.Color = color;
-        }
-        public void SetNodePosition(TNode node, Vector2 position)
-        {
-            node.Position = position;
-        }
-        public void SetNodeWeight(TNode node, float weight)
-        {
-            node.Weight = weight;
-        }
-
-        public IEdgeSource<TEdge> CreateEdgeSource()
+        public IEdgeSource<TNode,TEdge> CreateEdgeSource()
         {
             return new DefaultEdgeSource<TNode,TEdge>();
         }

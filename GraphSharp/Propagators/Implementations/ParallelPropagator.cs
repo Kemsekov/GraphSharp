@@ -11,8 +11,8 @@ namespace GraphSharp.Propagators
     /// Concurrent <see cref="PropagatorBase{,}"/> implementation
     /// </summary>
     public class ParallelPropagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
-    where TNode : NodeBase<TEdge>
-    where TEdge : EdgeBase<TNode>
+    where TNode : INode
+    where TEdge : IEdge<TNode>
     {
         public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IGraphStructure<TNode,TEdge> graph) : base(visitor,graph)
         {
