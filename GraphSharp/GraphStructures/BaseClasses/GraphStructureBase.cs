@@ -55,6 +55,24 @@ namespace GraphSharp.GraphStructures
         public float MeanNodeEdgesCount()
             => (float)(Edges.Count) / (Nodes.Count==0 ? 1 : Nodes.Count);  
         
+        /// <returns>True if graph is directed, else false</returns>
+        public bool IsDirected(){
+            foreach(var e in Edges){
+                if(Edges.TryGetEdge(e.Target.Id,e.Source.Id,out _)){
+                    return false;
+                }
+            }
+            return true;
+        }
+        /// <returns>True if graph is undirected, else false</returns>
+        public bool IsUndirected(){
+            foreach(var e in Edges){
+                if(!Edges.TryGetEdge(e.Target.Id,e.Source.Id,out _))
+                    return false;
+            }
+            return true;
+        }
+
         /// <summary>
         /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception. If there is duplicate node throws an exception. If there is duplicate edge throws an exception.
         /// </summary>

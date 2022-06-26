@@ -88,6 +88,26 @@ namespace GraphSharp.Tests
             validateThereIsNoCopiesAndsourceInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
         }
         [Fact]
+        public void IsDirected_Works(){
+            var seed = new Random().Next();
+            var directed = _GraphStructure.Create(1000);
+            directed
+                .Do
+                .ConnectNodes(20)
+                .MakeDirected();
+            Assert.True(directed.IsDirected());
+        }
+        [Fact]
+        public void IsUndirected_Works(){
+            var seed = new Random().Next();
+            var directed = _GraphStructure.Create(1000);
+            directed
+                .Do
+                .ConnectNodes(20)
+                .MakeUndirected();
+            Assert.True(directed.IsUndirected());
+        }
+        [Fact]
         public void MakeDirectedWorks()
         {
             //create two identical nodes list
