@@ -24,7 +24,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Converts the graph structure edges to dictionary, where key is source id and value is list of targetren ids.
+        /// Converts the graph structure edges to dictionary, where key is source id and value is list of targets ids.
         /// </summary>
         public IDictionary<int, IEnumerable<int>> ToConnectionsList(){
             var result = new Dictionary<int,IEnumerable<int>>();

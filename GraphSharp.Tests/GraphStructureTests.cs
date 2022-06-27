@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp;
@@ -378,6 +379,24 @@ namespace GraphSharp.Tests
             Assert.Empty(_GraphStructure.Edges);            
             Assert.NotEmpty(nodes);
             Assert.NotEmpty(edges);
+        }
+        [Fact]
+        public void ColorNodes_Works(){
+            var usedColors = _GraphStructure.Do.ConnectRandomly(1,5).ColorNodes();
+            _GraphStructure.EnsureRightColoring();
+            Assert.Equal(usedColors.Sum(x=>x.Value),_GraphStructure.Nodes.Count);
+        }
+        [Fact]
+        public void ColorNodes_WithParams_Works(){
+            var colors = new[]{Color.AntiqueWhite,Color.Beige,Color.Blue};
+            var usedColors = _GraphStructure.Do
+                .ConnectRandomly(2,10)
+                .ColorNodes(
+                    colors,
+                    x=>x.OrderBy(m=>_GraphStructure.Edges[m.Id].Count()));
+            _GraphStructure.EnsureRightColoring();
+            Assert.Equal(usedColors.Sum(x=>x.Value),_GraphStructure.Nodes.Count);
+            Assert.Subset(usedColors.Select(x=>x.Key).ToHashSet(),colors.ToHashSet());
         }
         [Fact]
         public void SetSources_Works(){
