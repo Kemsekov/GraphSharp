@@ -25,6 +25,14 @@ namespace GraphSharp.Tests
             this._GraphStructure = new GraphStructure<TestNode,TestEdge>(new TestGraphConfiguration(new Random())).Create(_nodes_count);
         }
         [Fact]
+        public void MinimalSpanningTree_Works(){
+            throw new NotImplementedException("Test not implemented");
+        }
+        [Fact]
+        public void GetArticulationPoints_Works(){
+            throw new NotImplementedException("Test not implemented");
+        }
+        [Fact]
         public void Reindex_Works(){
             _GraphStructure.Create(1000);
             _GraphStructure.Do.RemoveNodes(x=>x.Id%3==0);
