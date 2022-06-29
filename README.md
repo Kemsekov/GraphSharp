@@ -14,3 +14,5 @@ Minimal spanning tree
 ![example](https://user-images.githubusercontent.com/57869319/174455464-e4b8723b-0158-4a9c-ace1-a9e7dc423913.jpg)
 Topological sort
 ![example](https://user-images.githubusercontent.com/57869319/174638380-b39624b7-8c99-4544-a69b-f99f589d72b4.jpg)
+Find articulation points
+![example](https://user-images.githubusercontent.com/57869319/176494620-2cb92342-aa2d-432f-bfc6-ca503017464d.jpg)
