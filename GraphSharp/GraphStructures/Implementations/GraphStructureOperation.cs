@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using DelaunatorSharp;
 using GraphSharp.Common;
-using GraphSharp.Edges;
 using GraphSharp.Extensions;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
@@ -26,7 +25,7 @@ namespace GraphSharp.GraphStructures
             _structureBase = structureBase;
         }
         /// <summary>
-        /// Works only on undirected graphs.
+        /// Algorithm to find articulation points. Works on any type of graph.
         /// Thanks to https://www.geeksforgeeks.org/articulation-points-or-cut-vertices-in-a-graph/
         /// </summary>
         /// <returns>Articulation points of a graph</returns>

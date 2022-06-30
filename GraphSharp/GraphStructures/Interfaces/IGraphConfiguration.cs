@@ -27,9 +27,11 @@ namespace GraphSharp.GraphStructures
         /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>
         /// </summary>
         TEdge CreateEdge(TNode source, TNode target);
-        float Distance(TNode n1, TNode n2);
         /// <summary>
-        /// Method that used to get weight from particular <see cref="TEdge"/>
+        /// Method that used to calculate distances between nodes.
+        /// By default uses their position distances.
         /// </summary>
+        /// <returns>Distance between two nodes as a float value</returns>
+        float Distance(TNode n1, TNode n2) => (n1.Position-n2.Position).Length();
     }
 }

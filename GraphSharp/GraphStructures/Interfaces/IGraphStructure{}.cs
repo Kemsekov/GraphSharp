@@ -4,7 +4,7 @@ using GraphSharp.Nodes;
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Graph structure holder.
+    /// Graph structure holder interface.
     /// </summary>
     public interface IGraphStructure<TNode,TEdge>
     where TNode : INode

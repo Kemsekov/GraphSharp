@@ -6,14 +6,14 @@ using GraphSharp.Propagators;
 namespace GraphSharp.Visitors
 {
     /// <summary>
-    /// Base implementation of <see cref="IVisitor{,}"/> and proxy of <see cref="IPropagator{}"/> in one instance.
+    /// Base implementation of <see cref="IVisitor{,}"/> and proxy of <see cref="IPropagator{,}"/> in one instance.
     /// </summary>
     public abstract class Visitor<TNode, TEdge> : IVisitor<TNode, TEdge>, IPropagator<TNode,TEdge>
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
         /// <summary>
-        /// <see cref="IPropagator{}"/> implementation that used for this proxy class
+        /// <see cref="IPropagator{,}"/> implementation that used for this proxy class
         /// </summary>
         /// <value></value>
         public abstract IPropagator<TNode, TEdge> Propagator { get; }

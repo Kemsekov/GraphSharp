@@ -10,10 +10,12 @@ using Microsoft.Toolkit.HighPerformance;
 namespace GraphSharp.Propagators
 {
     /// <summary>
-    /// Base class for <see cref="IPropagator{}"/> that contains basic things for any specific implementation.
-    /// By default this implementation assign a state to each node as byte as power of 2. 
-    /// There is 3 states that already used: None = 0, ToVisit = 1, Visited = 2.
-    /// So there is only 6 states left for your disposal: 4 8 16 32 64 128.
+    /// Base implementation class for <see cref="IPropagator{,}"/>.<br/>
+    /// By default this implementation assign a state to each node as byte with value of power of 2. 
+    /// There is 3 states that already used: None = 0, ToVisit = 1, Visited = 2.<br/>
+    /// So there is only 6 states left for your disposal: 4 8 16 32 64 128.<br/>
+    /// WARNING: if you using to assign or to check states(bytes) which values is not power of 2 <br/>
+    /// then you may get unexpected behavior.
     /// </summary>
     public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode,TEdge>
     where TNode : INode
@@ -42,7 +44,7 @@ namespace GraphSharp.Propagators
         }
         /// <summary>
         /// Change current propagator visit position.
-        /// Clears all node states for current propagator
+        /// Clears all node states for current propagator.
         /// </summary>
         /// <param name="indices">indices of nodes that will be used.</param>
         public void SetPosition(params int[] nodeIndices)
@@ -55,7 +57,7 @@ namespace GraphSharp.Propagators
         }
         /// <summary>
         /// Sets new graph.
-        /// Clears all node states for current propagator
+        /// Clears all node states for current propagator,
         /// </summary>
         /// <param name="graph"></param>
         public void SetGraph(IGraphStructure<TNode,TEdge> graph)
@@ -67,7 +69,7 @@ namespace GraphSharp.Propagators
         /// Checks if node is in some state for current propagator. 
         /// </summary>
         /// <param name="nodeId">Id of node to check</param>
-        /// <param name="state">Integer power of 2 value</param>
+        /// <param name="state">Byte power of 2 value that represents state</param>
         public bool IsNodeInState(int nodeId, byte state)
         {
             return (_nodeFlags[nodeId] & state) == state;
@@ -76,7 +78,7 @@ namespace GraphSharp.Propagators
         /// Sets node state for current propagator.
         /// </summary>
         /// <param name="nodeId">Id of node to set state</param>
-        /// <param name="state">Integer power of 2 value</param>
+        /// <param name="state">Byte power of 2 value that represents state</param>
         public void SetNodeState(int nodeId, byte state)
         {
             _nodeFlags[nodeId] |= state;
@@ -85,12 +87,19 @@ namespace GraphSharp.Propagators
         /// Clears node state for current propagator.
         /// </summary>
         /// <param name="nodeId">Id of node to remove state</param>
-        /// <param name="state">Integer power of 2 value</param>
+        /// <param name="state">Byte power of 2 value that represents state</param>
         public void RemoveNodeState(int nodeId, byte state)
         {
             _nodeFlags[nodeId] &= (byte)~state;
         }
-        public virtual void Propagate()
+        /// <summary>
+        /// Propagate nodes. In general it is just modifiable BFS.<br/>
+        /// 1) Find nodes that have state <see cref="PropagatorBase{,}.ToVisit"/>. <br/>
+        /// 2) Apply <see cref="IVisitor{,}.Select"/> on each of edges of this nodes. If edge is selected then it's target node state marked as <see cref="PropagatorBase{,}.Visited"/>. <br/>
+        /// 3) Apply <see cref="IVisitor{,}.Visit"/> on each of nodes that have <see cref="PropagatorBase{,}.Visited"/> state. <br/>
+        /// 4) For each node that have state <see cref="PropagatorBase{,}.Visited"/> remove that state and add state <see cref="PropagatorBase{,}.ToVisit"/>, so we can proceed next iteration.
+        /// </summary>
+        public void Propagate()
         {
             PropagateNodes();
 
@@ -105,10 +114,9 @@ namespace GraphSharp.Propagators
             }
         }
         /// <summary>
-        /// Method that will do main logic. It will propagate nodes from current generation to next generation selecting and visiting them in the proccess.
+        /// This method implements how to call <see cref="PropagatorBase{,}.PropagateNode"/> on nodes.
         /// </summary>
         protected abstract void PropagateNodes();
-
         protected void PropagateNode(int nodeId)
         {
             var edges = _graph.Edges[nodeId];
