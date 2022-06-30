@@ -63,7 +63,6 @@ namespace GraphSharp.GraphStructures
         /// n4
         /// </summary>
         /// <param name="binaryCode"></param>
-        /// <returns></returns>
         public GraphStructureConverters<TNode,TEdge> FromTreeBinaryCode(byte[] binaryCode){
             if(binaryCode.Length==0) return this;
             _structureBase.Clear();
@@ -95,7 +94,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Create nodes and edges from adjacency matrix
+        /// Create graph from adjacency matrix
         /// </summary>
         /// <param name="adjacencyMatrix"></param>
         public GraphStructureConverters<TNode,TEdge> FromAdjacencyMatrix(Matrix adjacencyMatrix){
@@ -126,7 +125,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Create nodes and edges from from incidence matrix
+        /// Create graph from from incidence matrix
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> FromIncidenceMatrix(Matrix incidenceMatrix){
             _structureBase.Clear();
@@ -155,9 +154,9 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Clears all nodes and
-        /// creates edges and nodes from connections list using <see cref="GraphStructureBase{,}.CreateEdge"/> and <see cref="GraphStructureBase{,}.CreateNode"/>
+        /// Clears graph and recreates it from connections list
         /// </summary>
+        /// <param name="connectionsList">List of connections where key is source id and value is list of targets ids(children). </param>
         public GraphStructureConverters<TNode,TEdge> FromConnectionsList<TEnumerable>(IDictionary<int,TEnumerable> connectionsList)
         where TEnumerable : IEnumerable<int>
         {

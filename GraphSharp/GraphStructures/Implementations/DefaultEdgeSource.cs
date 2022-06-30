@@ -10,6 +10,9 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
+    /// <summary>
+    /// Default implementation of <see cref="IEdgeSource{,}"/>
+    /// </summary>
     public class DefaultEdgeSource<TNode,TEdge> : IEdgeSource<TNode,TEdge>
     where TNode : INode
     where TEdge : IEdge<TNode>

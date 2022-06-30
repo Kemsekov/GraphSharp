@@ -8,6 +8,9 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.GraphStructures
 {
+    /// <summary>
+    /// Default implementation of <see cref="INodeSource{}"/>
+    /// </summary>
     public class DefaultNodeSource<TNode> : INodeSource<TNode>
     where TNode : INode
     {

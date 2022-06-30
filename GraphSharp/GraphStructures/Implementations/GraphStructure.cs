@@ -29,9 +29,9 @@ namespace GraphSharp.GraphStructures
         }
         
         /// <summary>
-        /// Create some count of nodes. This method will replace current <see cref="IGraphStructure{,}.Nodes"/>.
+        /// Create some count of nodes. This method will replace current <see cref="IGraphStructure{,}.Nodes"/> and <see cref="IGraphStructure{,}.Edges"/> with new ones.
         /// </summary>
-        /// <param name="count">Count of codes to create</param>
+        /// <param name="count">Count of nodes to create</param>
         /// <returns></returns>
         public GraphStructure<TNode,TEdge> Create(int nodesCount)
         {
@@ -47,18 +47,20 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Returns operations class for this graph structure. This class can be used to add/remove nodes and edges.
+        /// Returns operations class for this graph structure. This class contains methods to perform different algorithms on current graph structure.
         /// </summary>
         public GraphStructureOperation<TNode,TEdge> Do => new GraphStructureOperation<TNode, TEdge>(this);
         
         /// <summary>
-        /// Get converter for current graph structure
+        /// Get converters for current graph structure. This class allows you to convert current graph structure to different representations or rebuild current one from other representations as well.
         /// </summary>
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
         
         /// <summary>
-        /// Create new induced graph from this graph structure.
+        /// Create new induced subgraph from this graph structure.
         /// </summary>
+        /// <param name="toInduce">Select nodes to induce</param>
+        /// <returns>A new induced graph that is subgraph of current graph. Perform cloning operations so result is independent from original graph.</returns>
         public GraphStructure<TNode,TEdge> Induce(Predicate<TNode> toInduce){
             var result = new GraphStructure<TNode,TEdge>(Configuration);
             var nodes = Nodes
@@ -82,7 +84,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Clones graph structure
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Copy of current graph structure</returns>
         public GraphStructure<TNode,TEdge> Clone()
         {
             var result = new GraphStructure<TNode,TEdge>(Configuration);

@@ -6,17 +6,11 @@ namespace GraphSharp.Tests.Models
 {
     public class TestGraphConfiguration : GraphConfiguration<TestNode, TestEdge>
     {
-        public TestGraphConfiguration(Random rand = null) : base(rand)
-        {
-            Rand ??= new Random();
-        }
-        public override TestEdge CreateEdge(TestNode source, TestNode target)
-        {
-            return new TestEdge(source,target);
-        }
-        public override TestNode CreateNode(int nodeId)
-        {
-            return new TestNode(nodeId);
-        }
+        public TestGraphConfiguration(Random rand = null) : 
+            base(
+                rand ?? new Random(),
+                (n1,n2)=>new TestEdge(n1,n2),
+                id=> new TestNode(id))
+        {}
     }
 }

@@ -8,19 +8,24 @@ using GraphSharp.Nodes;
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Implementation of the <see cref="IGraphConfiguration{,}"/> that uses various interfaces to hide configuration implementation.
+    /// Default <see cref="IGraphConfiguration{,}"/> implementation that uses default configuration.
     /// </summary>
-    public abstract class GraphConfiguration<TNode, TEdge> : IGraphConfiguration<TNode, TEdge>
+    public class GraphConfiguration<TNode, TEdge> : IGraphConfiguration<TNode, TEdge>
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
+        private Func<TNode, TNode, TEdge> createEdge;
+        private Func<int, TNode> createNode;
+
         public Random Rand { get;set; }
-        public GraphConfiguration(Random rand)
+        public GraphConfiguration(Random rand,Func<TNode,TNode,TEdge> createEdge, Func<int,TNode> createNode)
         {
+            this.createEdge = createEdge;
+            this.createNode = createNode;
             Rand = rand;
         }
-        public abstract TEdge CreateEdge(TNode source, TNode target);
-        public abstract TNode CreateNode(int nodeId);
+        public TEdge CreateEdge(TNode source, TNode target) => createEdge(source,target);
+        public TNode CreateNode(int nodeId) => createNode(nodeId);
         public float Distance(TNode n1, TNode n2)
         {
             return (n1.Position-n2.Position).Length();

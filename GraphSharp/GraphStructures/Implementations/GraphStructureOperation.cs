@@ -428,7 +428,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Removes all outcoming edges from each node that satisfies predicate.
+        /// Removes all edges that satisfies predicate.
         /// </summary>
         public GraphStructureOperation<TNode, TEdge> RemoveEdges(Predicate<TEdge> toRemove)
         {
@@ -447,7 +447,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Isolates nodes. Removes all incoming and outcoming connections from each node that satisfies predicate.
+        /// Isolates nodes. Removes all incoming and outcoming edges from each node that satisfies predicate.
         /// </summary>
         public GraphStructureOperation<TNode, TEdge> Isolate(Predicate<TNode> toIsolate)
         {
@@ -509,15 +509,15 @@ namespace GraphSharp.GraphStructures
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var reindexed = ReindexNodes();
-            var edgesToMove = new List<(TEdge edge, int newsourceId, int newTargetId)>();
+            var edgesToMove = new List<(TEdge edge, int newSourceId, int newTargetId)>();
             foreach (var edge in Edges)
             {
                 var targetReindexed = reindexed.TryGetValue(edge.Target.Id, out var newTargetId);
-                var sourceReindexed = reindexed.TryGetValue(edge.Source.Id, out var newsourceId);
+                var sourceReindexed = reindexed.TryGetValue(edge.Source.Id, out var newSourceId);
                 if (targetReindexed || sourceReindexed)
                     edgesToMove.Add((
                         edge,
-                        sourceReindexed ? newsourceId : edge.Source.Id,
+                        sourceReindexed ? newSourceId : edge.Source.Id,
                         targetReindexed ? newTargetId : edge.Target.Id
                     ));
             }
@@ -526,7 +526,7 @@ namespace GraphSharp.GraphStructures
             {
                 var edge = toMove.edge;
                 Edges.Remove(edge.Source.Id, edge.Target.Id);
-                edge.Source = Nodes[toMove.newsourceId];
+                edge.Source = Nodes[toMove.newSourceId];
                 edge.Target = Nodes[toMove.newTargetId];
                 Edges.Add(edge);
             }
