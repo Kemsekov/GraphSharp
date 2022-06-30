@@ -10,10 +10,12 @@ using GraphSharp.Extensions;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
+using GraphSharp.Visitors.Implementations;
+
 namespace GraphSharp.GraphStructures
 {
     /// <summary>
-    /// Contains methods to modify relationships between nodes and edges.
+    /// Contains algorithms to modify relationships between nodes and edges.
     /// </summary>
     public class GraphStructureOperation<TNode, TEdge>
     where TNode : INode
@@ -25,6 +27,24 @@ namespace GraphSharp.GraphStructures
             _structureBase = structureBase;
         }
         /// <summary>
+        /// Calculate count of incoming edges for each node. In undirected graph will just give you degrees of nodes.
+        /// </summary>
+        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is incoming to this node edges count</returns>
+        public IDictionary<int, int> CountIncomingEdges()
+        {
+            ConcurrentDictionary<int, int> c = new();
+            foreach (var n in _structureBase.Nodes)
+                c[n.Id] = 0;
+
+            foreach (var e in _structureBase.Edges)
+            {
+                c[e.Target.Id]++;
+            }
+
+            return c;
+        }
+
+        /// <summary>
         /// Algorithm to find articulation points. Works on any type of graph.
         /// Thanks to https://www.geeksforgeeks.org/articulation-points-or-cut-vertices-in-a-graph/
         /// </summary>
@@ -35,32 +55,34 @@ namespace GraphSharp.GraphStructures
             var Edges = _structureBase.Edges;
             if (Nodes.Count == 0 || Edges.Count == 0)
                 return Enumerable.Empty<TNode>();
-            var disc = new int[Nodes.Count+1];
-            var low = new int[Nodes.Count+1];
-            var flags = new byte[Nodes.Count+1];
+            var disc = new int[Nodes.Count + 1];
+            var low = new int[Nodes.Count + 1];
+            var flags = new byte[Nodes.Count + 1];
             int time = 0, parent = -1;
             const byte visitedFlag = 1;
             const byte isApFlag = 2;
             // Adding this loop so that the
             // code works even if we are given
             // disconnected graph
-            foreach(var u in Nodes)
-                if ((flags[u.Id] & visitedFlag)!=visitedFlag)
+            foreach (var u in Nodes)
+                if ((flags[u.Id] & visitedFlag) != visitedFlag)
                     ArticulationPointsFinder(
-                        Edges, 
-                        u.Id, flags, 
-                        disc, low,ref 
+                        Edges,
+                        u.Id, flags,
+                        disc, low, ref
                         time, parent);
-                        
+
             var result = new List<TNode>();
-            for(int i = 0;i<flags.Length;i++){
-                if((flags[i] & isApFlag)==isApFlag){
+            for (int i = 0; i < flags.Length; i++)
+            {
+                if ((flags[i] & isApFlag) == isApFlag)
+                {
                     result.Add(Nodes[i]);
                 }
             }
             return result;
         }
-        void ArticulationPointsFinder(IEdgeSource<TNode,TEdge> adj, int u, byte[] flags, int[] disc, int[] low, ref int time, int parent)
+        void ArticulationPointsFinder(IEdgeSource<TNode, TEdge> adj, int u, byte[] flags, int[] disc, int[] low, ref int time, int parent)
         {
             const byte visitedFlag = 1;
             const byte isApFlag = 2;
@@ -74,14 +96,14 @@ namespace GraphSharp.GraphStructures
             disc[u] = low[u] = ++time;
 
             // Go through all vertices adjacent to this
-            foreach (var v in adj[u].Select(x=>x.Target.Id))
+            foreach (var v in adj[u].Select(x => x.Target.Id))
             {
                 // If v is not visited yet, then make it a child of u
                 // in DFS tree and recur for it
-                if ((flags[v] & visitedFlag)!=visitedFlag)
+                if ((flags[v] & visitedFlag) != visitedFlag)
                 {
                     children++;
-                    ArticulationPointsFinder(adj, v, flags, disc, low,ref time, u);
+                    ArticulationPointsFinder(adj, v, flags, disc, low, ref time, u);
 
                     // Check if the subtree rooted with v has
                     // a connection to one of the ancestors of u
@@ -175,7 +197,13 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Randomly connects closest nodes using <see cref="IGraphConfiguration{,}.Distance"/>. Producing bidirectional graph. <br/> minEdgesCount and maxEdgesCount not gonna give 100% right results. This params are just approximation of how much edges per node is gonna be created.
+        /// Randomly connects closest nodes using <see cref="IGraphConfiguration{,}.Distance"/>. Producing undirected graph. <br/> 
+        /// minEdgesCount and maxEdgesCount not gonna give 100% right results. 
+        /// This params are just approximation of how much edges per node is gonna be created.<br/>
+        /// How it works:<br/>
+        /// 1) For given node look for closest nodes that can be connected (to not exceed maxEdgesCount)<br/>
+        /// 2) Connect these nodes by edge.<br/>
+        /// I find this type of edges generation is pleasant to eye and often use it.
         /// </summary>
         /// <param name="minEdgesCount">minimum edges count</param>
         /// <param name="maxEdgesCount">maximum edges count</param>
@@ -294,15 +322,20 @@ namespace GraphSharp.GraphStructures
         public GraphStructureOperation<TNode, TEdge> MakeDirected()
         {
             var Edges = _structureBase.Edges;
-            foreach (var edge in Edges)
+            var Nodes = _structureBase.Nodes;
+            foreach (var n in Nodes)
             {
-                Edges.Remove(edge.Target.Id, edge.Source.Id);
+                foreach (var e in Edges[n.Id].ToArray())
+                {
+                    Edges.Remove(e.Target.Id, e.Source.Id);
+                }
             }
             return this;
         }
         /// <summary>
-        /// Will run BFS from each of nodeIndices and remove sources for each visited node except those that was visited already. 
-        /// Making source out of each node from nodeIndices and making sinks or undirected edges at intersections of running BFS.
+        /// Will create sources on nodes with id equal to nodeIndices. <br/>
+        /// In other words after this method used any possible path in a graph
+        /// will land on one of the nodes you specified. <br/>
         /// </summary>
         /// <param name="nodeIndices"></param>
         public GraphStructureOperation<TNode, TEdge> CreateSources(params int[] nodeIndices)
@@ -311,51 +344,16 @@ namespace GraphSharp.GraphStructures
 
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
-            var Configuration = _structureBase.Configuration;
-            //flag for each node:  1 - is visited.
-
-            var flags = new byte[Nodes.MaxNodeId + 1];
-
             foreach (var i in nodeIndices)
-                if (i > flags.Length)
+                if (i > Nodes.MaxNodeId)
                     throw new ArgumentException("nodeIndex is out of range");
+            var sourceCreator = new SourceCreator<TNode,TEdge>(_structureBase);
 
-            var didSomething = true;
-
-            var visitor = new ActionVisitor<TNode, TEdge>(
-                visit: node =>
-                {
-                    flags[node.Id] = 1;
-
-                    var edges = Edges[node.Id];
-                    var toRemove = new List<TEdge>();
-                    foreach (var edge in edges)
-                    {
-                        if (flags[edge.Target.Id] == 2)
-                            toRemove.Add(edge);
-                    }
-
-                    foreach (var edge in toRemove)
-                        Edges.Remove(edge);
-
-                    didSomething = true;
-                },
-                select: edge => flags[edge.Target.Id] == 0,
-                endVisit: () =>
-                {
-                    for (int i = 0; i < flags.Length; i++)
-                        if (flags[i] == 1)
-                            flags[i] = 2;
-                }
-            );
-
-            var propagator = new ParallelPropagator<TNode, TEdge>(visitor, _structureBase);
-            propagator.SetGraph(_structureBase);
-            propagator.SetPosition(nodeIndices);
-            while (didSomething)
+            sourceCreator.SetPosition(nodeIndices);
+            while (sourceCreator.DidSomething)
             {
-                didSomething = false;
-                propagator.Propagate();
+                sourceCreator.DidSomething = false;
+                sourceCreator.Propagate();
             }
             return this;
 
@@ -489,7 +487,7 @@ namespace GraphSharp.GraphStructures
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            var sourcesCount = _structureBase.CountIncomingEdges();
+            var sourcesCount = CountIncomingEdges();
             var toRemove =
                 Nodes
                 .Where(x => sourcesCount[x.Id] == 0 && Edges[x.Id].Count() == 0)

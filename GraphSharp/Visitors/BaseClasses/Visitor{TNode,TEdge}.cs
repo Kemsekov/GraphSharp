@@ -48,5 +48,15 @@ namespace GraphSharp.Visitors
         {
             Propagator.RemoveNodeState(nodeId, state);
         }
+
+        public byte GetNodeStates(int nodeId)
+        {
+            return Propagator.GetNodeStates(nodeId);
+        }
+
+        public void ClearNodeStates(int nodeId)
+        {
+            Propagator.ClearNodeStates(nodeId);
+        }
     }
 }

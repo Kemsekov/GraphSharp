@@ -24,7 +24,7 @@ namespace GraphSharp.Propagators
         public IVisitor<TNode,TEdge> Visitor { get; init; }
         protected IGraphStructure<TNode,TEdge> _graph;
         /// <summary>
-        /// Default state for node
+        /// Default state for node. Every node is a None state by definition.
         /// </summary>
         public const byte None = 0;
         /// <summary>
@@ -127,5 +127,14 @@ namespace GraphSharp.Propagators
             }
         }
 
+        public byte GetNodeStates(int nodeId)
+        {
+            return _nodeFlags[nodeId];
+        }
+
+        public void ClearNodeStates(int nodeId)
+        {
+            _nodeFlags[nodeId] = None;
+        }
     }
 }

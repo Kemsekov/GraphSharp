@@ -37,21 +37,6 @@ namespace GraphSharp.GraphStructures
             Nodes = configuration.CreateNodeSource();
             Edges = configuration.CreateEdgeSource();
         }
-        /// <summary>
-        /// Calculate count of incoming edges for node.
-        /// </summary>
-        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is count of edges that have this node as target</returns>
-        public IDictionary<int,int> CountIncomingEdges(){
-            Dictionary<int,int> c = new();
-            foreach(var n in Nodes)
-                c[n.Id]=0;
-            
-            foreach(var e in Edges){
-                c[e.Target.Id]++;
-            }
-            
-            return c;
-        }
         public float MeanNodeEdgesCount()
             => (float)(Edges.Count) / (Nodes.Count==0 ? 1 : Nodes.Count);  
         

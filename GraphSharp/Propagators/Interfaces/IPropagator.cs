@@ -13,5 +13,7 @@ namespace GraphSharp.Propagators
         public bool IsNodeInState(int nodeId, byte state);
         public void SetNodeState(int nodeId, byte state);
         public void RemoveNodeState(int nodeId, byte state);
+        public byte GetNodeStates(int nodeId);
+        public void ClearNodeStates(int nodeId);
     }
 }
