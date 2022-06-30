@@ -14,8 +14,8 @@ namespace GraphSharp.GraphStructures
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
-        private Func<TNode, TNode, TEdge> createEdge;
-        private Func<int, TNode> createNode;
+        Func<TNode, TNode, TEdge> createEdge;
+        Func<int, TNode> createNode;
 
         public Random Rand { get;set; }
         public GraphConfiguration(Random rand,Func<TNode,TNode,TEdge> createEdge, Func<int,TNode> createNode)

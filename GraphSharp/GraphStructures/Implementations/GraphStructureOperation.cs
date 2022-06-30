@@ -8,9 +8,7 @@ using DelaunatorSharp;
 using GraphSharp.Common;
 using GraphSharp.Extensions;
 using GraphSharp.Nodes;
-using GraphSharp.Propagators;
 using GraphSharp.Visitors;
-using GraphSharp.Visitors.Implementations;
 
 namespace GraphSharp.GraphStructures
 {
@@ -42,6 +40,24 @@ namespace GraphSharp.GraphStructures
             }
 
             return c;
+        }
+        /// <summary>
+        /// Finds a shortest path from given node to all other nodes using Dijkstra's Algorithm
+        /// </summary>
+        /// <param name="nodeId"></param>
+        /// <returns>DijkstrasAlgorithm instance that can be used to get path to any other node and length of this path</returns>
+        public DijkstrasAlgorithm<TNode, TEdge> FindShortestPaths(int nodeId)
+        {
+            var startNode = _structureBase.Nodes[nodeId];
+            var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(startNode, _structureBase);
+            int steps = 0;
+            while (pathFinder.DidSomething)
+            {
+                steps++;
+                pathFinder.DidSomething = false;
+                pathFinder.Propagate();
+            }
+            return pathFinder;
         }
 
         /// <summary>
@@ -347,7 +363,7 @@ namespace GraphSharp.GraphStructures
             foreach (var i in nodeIndices)
                 if (i > Nodes.MaxNodeId)
                     throw new ArgumentException("nodeIndex is out of range");
-            var sourceCreator = new SourceCreator<TNode,TEdge>(_structureBase);
+            var sourceCreator = new SourceCreator<TNode, TEdge>(_structureBase);
 
             sourceCreator.SetPosition(nodeIndices);
             while (sourceCreator.DidSomething)
