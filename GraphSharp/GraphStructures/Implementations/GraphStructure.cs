@@ -57,30 +57,26 @@ namespace GraphSharp.GraphStructures
         public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
         
         /// <summary>
-        /// Create new induced subgraph from this graph structure.
+        /// Get induced subgraph from this graph structure.
         /// </summary>
         /// <param name="toInduce">Select nodes to induce</param>
-        /// <returns>A new induced graph that is subgraph of current graph. Perform cloning operations so result is independent from original graph.</returns>
+        /// <returns>Induced subgraph of current graph</returns>
         public GraphStructure<TNode,TEdge> Induce(Predicate<TNode> toInduce){
             var result = new GraphStructure<TNode,TEdge>(Configuration);
-            var nodes = Nodes
-                .Where(x=>toInduce(x))
-                .Select(x=>Configuration.CloneNode(x));
+            var nodes = Nodes.Where(x=>toInduce(x));
             
             foreach(var n in nodes){
                 result.Nodes.Add(n);
             }
             
-            var edges = Edges
-                .Where(x=>toInduce(x.Source) && toInduce(x.Target))
-                .Select(x=>Configuration.CloneEdge(x,result.Nodes));
+            var edges = Edges.Where(x=>toInduce(x.Source) && toInduce(x.Target));
 
             foreach(var e in edges){
                 result.Edges.Add(e);
             }
             return result;
         }
-        
+
         /// <summary>
         /// Clones graph structure
         /// </summary>

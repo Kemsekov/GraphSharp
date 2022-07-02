@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using GraphSharp.Edges;
 using GraphSharp.Exceptions;
 using GraphSharp.Nodes;
@@ -57,7 +58,6 @@ namespace GraphSharp.GraphStructures
             }
             return true;
         }
-
         /// <summary>
         /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception. If there is duplicate node throws an exception. If there is duplicate edge throws an exception.
         /// </summary>
@@ -68,11 +68,20 @@ namespace GraphSharp.GraphStructures
             if(actual.Count()!=expected.Count())
                 throw new GraphDataIntegrityException("Nodes contains duplicates");
 
-            var actualEdges = Edges.Select(x=>(x.Source.Id,x.Target.Id));
-            var expectedEdges = actualEdges.Distinct();
-            if(actualEdges.Count()!=expectedEdges.Count())
-                throw new GraphDataIntegrityException("Edges contains duplicates");
-
+            foreach(var n in Nodes){
+                var edges = Edges[n.Id];
+                var actualEdges = edges.Select(x=>(x.Source.Id,x.Target.Id));
+                var expectedEdges = actualEdges.Distinct();
+                if(actualEdges.Count()!=expectedEdges.Count()){
+                    StringBuilder b = new();
+                    foreach(var a in actualEdges)
+                        b.Append(a.ToString()+'\n');
+                    b.Append("---------\n");
+                    foreach(var e in expectedEdges)
+                        b.Append(e.ToString()+'\n');
+                    throw new GraphDataIntegrityException($"Edges contains duplicates : {actualEdges.Count()} != {expectedEdges.Count()} \n{b.ToString()}");
+                }
+            }
             foreach(var e in Edges){
                 if (!Nodes.TryGetNode(e.Source.Id,out var _)){
                     throw new GraphDataIntegrityException($"{e.Source.Id} found among Edges but not found among Nodes");

@@ -11,7 +11,7 @@ namespace GraphSharp.Extensions
         /// <summary>
         /// Search for first N min elements in enumeration using <see cref="Comparison{}"/>
         /// </summary>
-        /// <param name="n">Count if elements to search</param>
+        /// <param name="n">Count of elements to search</param>
         /// <param name="src">Source of elements</param>
         /// <param name="comparison">Method to compare two elements</param>
         /// <param name="skipElement">Method to skip some elements</param>

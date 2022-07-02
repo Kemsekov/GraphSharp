@@ -26,11 +26,19 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void MinimalSpanningTree_Works(){
-            throw new NotImplementedException("Test not implemented");
+            throw new NotImplementedException("Test is not implemented");
         }
         [Fact]
         public void GetArticulationPoints_Works(){
-            throw new NotImplementedException("Test not implemented");
+            throw new NotImplementedException("Test is not implemented");
+        }
+        [Fact]
+        public void FindShortestPaths_Works(){
+            throw new NotImplementedException("Test is not implemented");
+        }
+        [Fact]
+        public void GetComponents_Works(){
+            throw new NotImplementedException("Test is not implemented");
         }
         [Fact]
         public void Reindex_Works(){
@@ -79,7 +87,7 @@ namespace GraphSharp.Tests
             foreach(var edge in edges_before_removal.Except(edges_after_removal)){
                 Assert.True(edge.Item1%3==0 || edge.Item2%3==0);
             }
-
+            _GraphStructure.CheckForIntegrity();
 
         }
         [Fact]
@@ -88,13 +96,17 @@ namespace GraphSharp.Tests
             Assert.Equal(_GraphStructure.Nodes.Count,100);
             Assert.Equal(_GraphStructure.Nodes.MaxNodeId,99);
             Assert.Equal(_GraphStructure.Nodes.MinNodeId,0);
+            _GraphStructure.CheckForIntegrity();
         }
         [Fact]
         public void ConnectToClosestWorks()
         {
-            _GraphStructure.Do
-            .ConnectToClosest(1,6);
-            validateThereIsNoCopiesAndsourceInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
+            for(int i = 0;i<10;i++){
+                _GraphStructure.Do
+                .ConnectToClosest(1,10);
+                validateThereIsNoCopiesAndSourcesInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
+                _GraphStructure.CheckForIntegrity();
+            }
         }
         [Fact]
         public void IsDirected_Works(){
@@ -136,6 +148,7 @@ namespace GraphSharp.Tests
                 .Do
                 .ConnectNodes(20);
             ensureDirected(directed,undirected);
+            directed.CheckForIntegrity();
         }
         [Fact]
         public void CreateSourcesWorks(){
@@ -157,6 +170,7 @@ namespace GraphSharp.Tests
                 act.Sort();
                 Assert.Equal(exp,act);
             }
+            graph.CheckForIntegrity();
         }
         [Fact]
         public void RemoveUndirectedEdgesWorks(){
@@ -165,6 +179,7 @@ namespace GraphSharp.Tests
             graph.Do.ConnectRandomly(0,8);
             var before_removal = graph.Converter.ToConnectionsList().ToList();
             graph.Do.RemoveUndirectedEdges();
+            graph.CheckForIntegrity();
             var after_removal = graph.Converter.ToConnectionsList().ToList();
             for(int sourceId = 0;sourceId<500;sourceId++){
                 var before = before_removal.FirstOrDefault(x=>x.Key==sourceId);
@@ -247,7 +262,7 @@ namespace GraphSharp.Tests
                     Assert.True(maybeUndirected.Edges[n.Id].Any(x => x.Target.Id == sources.First.Id));
                 }
             }
-            validateThereIsNoCopiesAndsourceInEdges(undirected.Nodes,undirected.Edges);
+            validateThereIsNoCopiesAndSourcesInEdges(undirected.Nodes,undirected.Edges);
         }
         [Fact]
         public void EnsureNodesCount()
@@ -260,8 +275,9 @@ namespace GraphSharp.Tests
             int targetren_count = 100;
             _GraphStructure.Do
             .ConnectNodes(targetren_count);
-            validateThereIsNoCopiesAndsourceInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
+            validateThereIsNoCopiesAndSourcesInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
             ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, 100, 101);
+            _GraphStructure.CheckForIntegrity();
         }
         [Fact]
         public void ConnectRandomlyWorks()
@@ -271,8 +287,9 @@ namespace GraphSharp.Tests
             _GraphStructure.Do
             .ConnectRandomly(minCountOfNodes, maxCountOfNodes);
 
-            validateThereIsNoCopiesAndsourceInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
+            validateThereIsNoCopiesAndSourcesInEdges(_GraphStructure.Nodes,_GraphStructure.Edges);
             ensureRightCountOfEdgesPerNode(_GraphStructure.Nodes, minCountOfNodes, maxCountOfNodes);
+            _GraphStructure.CheckForIntegrity();
         }
         [Fact]
         public void MeanNodeEdgesCount_Works(){
@@ -292,6 +309,7 @@ namespace GraphSharp.Tests
                     Assert.True(e.Target.Id%2!=0);
                 }
             }
+            _GraphStructure.CheckForIntegrity();
         }
         [Fact]
         public void CountIncomingEdges_Works(){
@@ -325,6 +343,7 @@ namespace GraphSharp.Tests
                 Assert.Equal(expected,actual);
             }
             Assert.NotEqual(before_reverse,after_reverse);
+            _GraphStructure.CheckForIntegrity();
         }
         [Fact]
         public void Clone_Works(){
@@ -340,6 +359,7 @@ namespace GraphSharp.Tests
             t2 = clone.Converter.ToConnectionsList();
             Assert.NotEqual(t1,t2);
         }
+
         [Fact]
         public void Induce_Works(){
             _GraphStructure.Do.ConnectRandomly(1,5);
@@ -371,7 +391,7 @@ namespace GraphSharp.Tests
 
             _GraphStructure.Do.Isolate(x=>x.Id%2==0).RemoveIsolatedNodes();
             var after = _GraphStructure;
-            
+            _GraphStructure.CheckForIntegrity();
             Assert.Equal(before.Nodes.Select(x=>x.Id),after.Nodes.Select(x=>x.Id));
             foreach(var n in before.Nodes.Zip(after.Nodes)){
                 Assert.Equal(n.First.Id,n.Second.Id);
@@ -420,9 +440,8 @@ namespace GraphSharp.Tests
             Assert.Equal(edges.GetHashCode(),_GraphStructure.Edges.GetHashCode());
             Assert.Equal(nodes.Select(x=>x),_GraphStructure.Nodes.Select(x=>x));
             Assert.Equal(edges.Select(x=>x),_GraphStructure.Edges.Select(x=>x));
-
         }
-        public void validateThereIsNoCopiesAndsourceInEdges(INodeSource<TestNode> nodes,IEdgeSource<TestNode,TestEdge> edges)
+        public void validateThereIsNoCopiesAndSourcesInEdges(INodeSource<TestNode> nodes,IEdgeSource<TestNode,TestEdge> edges)
         {
             foreach (var source in nodes)
             {
@@ -466,18 +485,5 @@ namespace GraphSharp.Tests
                 }
             }
         }
-        /// <summary>
-        /// Checks that set of edges is closed on set of nodes
-        /// </summary>
-        public static void CheckForIntegrity<TNode,TEdge>(INodeSource<TNode> nodes, IEdgeSource<TNode,TEdge> edges)
-        where TNode : INode
-        where TEdge : IEdge<TNode>
-        {
-            foreach(var e in edges){
-                Assert.True(nodes.TryGetNode(e.Source.Id,out var _));
-                Assert.True(nodes.TryGetNode(e.Target.Id,out var _));
-            }
-        }
-
     }
 }

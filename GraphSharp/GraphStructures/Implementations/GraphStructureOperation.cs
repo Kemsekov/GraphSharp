@@ -25,6 +25,23 @@ namespace GraphSharp.GraphStructures
             _structureBase = structureBase;
         }
         /// <summary>
+        /// Finds all unconnected components of a graph
+        /// </summary>
+        /// <returns>Induced subgraphs from current graph where each of them represents different component</returns>
+        public IEnumerable<GraphStructure<TNode,TEdge>> GetComponents(){
+            var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
+            UnionFind u = new(Nodes.MaxNodeId+1);
+            foreach(var n in Nodes)
+                u.MakeSet(n.Id);
+            foreach(var e in Edges)
+                u.UnionSet(e.Source.Id,e.Target.Id);
+
+            var totalSets = Nodes.Select(x=>u.FindSet(x.Id)).Distinct();
+            var result = totalSets.Select(setId=>Nodes.Where(n=>u.FindSet(n.Id)==setId).ToDictionary(x=>x.Id));
+            return result.Select(x=>_structureBase.Induce(y=>x.ContainsKey(y.Id)));
+        }
+        /// <summary>
         /// Calculate count of incoming edges for each node. In undirected graph will just give you degrees of nodes.
         /// </summary>
         /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is incoming to this node edges count</returns>
@@ -227,43 +244,29 @@ namespace GraphSharp.GraphStructures
         {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
+            Edges.Clear();
             var Configuration = _structureBase.Configuration;
-            var edgesCountMap = new ConcurrentDictionary<INode, int>();
+            var edgesCountMap = new int[Nodes.MaxNodeId+1];
             foreach (var node in Nodes)
-                edgesCountMap[node] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
+                edgesCountMap[node.Id] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 
             var locker = new object();
-            var source = Nodes.Select(x => x.Id);
-            Parallel.ForEach(Nodes, node =>
+            Parallel.ForEach(Nodes,source=>
             {
-                var edgesCount = edgesCountMap[node];
-                if (Edges[node.Id].Count() >= edgesCount) return;
-                var toAdd = ChooseClosestNodes(maxEdgesCount, maxEdgesCount, node, source);
-                foreach (var nodeId in toAdd)
+                ref var edgesCount = ref edgesCountMap[source.Id];
+                var targets = Nodes.OrderBy(x=>Configuration.Distance(source,x));
+                foreach (var target in targets.DistinctBy(x=>x.Id)){
+                    if(target.Id==source.Id) continue;
                     lock (locker)
                     {
-                        var nodeToAdd = Nodes[nodeId];
-                        if (Edges[node.Id].Count() >= maxEdgesCount) return;
-                        if (Edges[nodeToAdd.Id].Count() >= maxEdgesCount) continue;
-                        Edges.Add(Configuration.CreateEdge(node, nodeToAdd));
-                        Edges.Add(Configuration.CreateEdge(nodeToAdd, node));
+                        if (edgesCount<=0) break;
+                        Edges.Add(Configuration.CreateEdge(source, target));
+                        edgesCount--;
+                        edgesCountMap[target.Id]--;
                     }
+                }
             });
             return this;
-        }
-        IEnumerable<int> ChooseClosestNodes(int maxEdgesCount, int count, TNode parent, IEnumerable<int> source)
-        {
-            var Nodes = _structureBase.Nodes;
-            var Edges = _structureBase.Edges;
-            var Configuration = _structureBase.Configuration;
-            if (source.Count() == 0) return Enumerable.Empty<int>();
-
-            var result = source.FindFirstNMinimalElements(
-                n: count,
-                comparison: (t1, t2) => Configuration.Distance(parent, Nodes[t1]) > Configuration.Distance(parent, Nodes[t2]) ? 1 : -1,
-                skipElement: (nodeId) => nodeId == parent.Id || Edges[nodeId].Count() >= maxEdgesCount);
-
-            return result;
         }
         /// <summary>
         /// Removes all edges from graph then
