@@ -16,3 +16,5 @@ Topological sort
 ![example](https://user-images.githubusercontent.com/57869319/174638380-b39624b7-8c99-4544-a69b-f99f589d72b4.jpg)
 Find articulation points
 ![example](https://user-images.githubusercontent.com/57869319/176494620-2cb92342-aa2d-432f-bfc6-ca503017464d.jpg)
+Get components of a graph
+![example](https://user-images.githubusercontent.com/57869319/176998046-e1ba18c7-9f11-4b9d-bd2f-54537d5d4a0a.jpg)
