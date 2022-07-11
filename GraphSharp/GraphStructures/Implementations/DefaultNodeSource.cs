@@ -27,7 +27,7 @@ namespace GraphSharp.GraphStructures
         }
         public void Add(TNode node)
         {
-            Nodes.Add(node.Id,node);
+            Nodes[node.Id] = node;
             if(node.Id>MaxNodeId)
                 MaxNodeId = node.Id;
             if(node.Id<MinNodeId || MinNodeId==-1)

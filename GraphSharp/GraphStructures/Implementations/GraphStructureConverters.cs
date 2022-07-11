@@ -183,5 +183,26 @@ namespace GraphSharp.GraphStructures
             }
             return this;
         }
+        /// <summary>
+        /// Clears graph and recreates it with connections list
+        /// </summary>
+        /// <param name="connectionsList">List of value pairs where source is edge source and target is edge target.</param>
+        /// <returns></returns>
+        public GraphStructureConverters<TNode,TEdge> FromConnectionsList(IEnumerable<(int source,int target)> connectionsList){
+            _structureBase.Clear();
+            foreach(var c in connectionsList){
+                if(!_structureBase.Nodes.TryGetNode(c.source,out var _)){
+                    _structureBase.Nodes[c.source] = _structureBase.Configuration.CreateNode(c.source);
+                }
+                if(!_structureBase.Nodes.TryGetNode(c.target,out var _)){
+                    _structureBase.Nodes[c.target] = _structureBase.Configuration.CreateNode(c.target);
+                }
+                var n1 = _structureBase.Nodes[c.source];
+                var n2 = _structureBase.Nodes[c.target];
+                var edge = _structureBase.Configuration.CreateEdge(n1,n2);
+                _structureBase.Edges.Add(edge);
+            }
+            return this;
+        }
     }
 }

@@ -9,18 +9,32 @@ namespace GraphSharp.GraphStructures
     /// <summary>
     /// Create nodes for graph structure. Entry for any other logic of graph structure.
     /// </summary>
-    public partial class GraphStructure<TNode,TEdge> : GraphStructureBase<TNode,TEdge>, GraphSharp.Common.ICloneable<GraphStructure<TNode,TEdge>>
+    public partial class GraphStructure<TNode,TEdge> : IGraphStructure<TNode,TEdge>, GraphSharp.Common.ICloneable<GraphStructure<TNode,TEdge>>
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
-        public GraphStructure(IGraphConfiguration<TNode,TEdge> configuration) : base(configuration)
-        {}
+        /// <summary>
+        /// Configuration for all needed operations with nodes and edges
+        /// </summary>
+        public IGraphConfiguration<TNode,TEdge> Configuration{get;protected set;}
+        public INodeSource<TNode> Nodes { get; protected set; }
+        public IEdgeSource<TNode,TEdge> Edges { get; protected set; }
+        public GraphStructure(IGraphConfiguration<TNode,TEdge> configuration)
+        {
+            Configuration = configuration;
+            Nodes = configuration.CreateNodeSource();
+            Edges = configuration.CreateEdgeSource();
+        }
         
         /// <summary>
         /// Copy constructor. Will make shallow copy of graphStructure
         /// </summary>
-        public GraphStructure(GraphStructureBase<TNode, TEdge> graphStructure) : base(graphStructure) 
-        {}
+        public GraphStructure(IGraphStructure<TNode, TEdge> graphStructure)
+        {
+            Nodes         = graphStructure.Nodes;
+            Edges         = graphStructure.Edges;
+            Configuration = graphStructure.Configuration;
+        }
 
         public GraphStructure<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TNode,TEdge> edges){
             Nodes = nodes;
@@ -61,15 +75,15 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="toInduce">Select nodes to induce</param>
         /// <returns>Induced subgraph of current graph</returns>
-        public GraphStructure<TNode,TEdge> Induce(Predicate<TNode> toInduce){
+        public GraphStructure<TNode,TEdge> Induce(params int[] nodes){
             var result = new GraphStructure<TNode,TEdge>(Configuration);
-            var nodes = Nodes.Where(x=>toInduce(x));
-            
+            var toInduce = new byte[Nodes.MaxNodeId+1];
             foreach(var n in nodes){
-                result.Nodes.Add(n);
+                toInduce[n] = 1;
+                result.Nodes.Add(Nodes[n]);
             }
             
-            var edges = Edges.Where(x=>toInduce(x.Source) && toInduce(x.Target));
+            var edges = Edges.Where(x=>toInduce[x.Source.Id]==1 && toInduce[x.Target.Id]==1);
 
             foreach(var e in edges){
                 result.Edges.Add(e);

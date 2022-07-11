@@ -23,6 +23,7 @@ namespace GraphSharp.Tests
                 new DefaultEdgeSource<TestNode,TestEdge>()
             };
         }
+
         void Fill(INodeSource<TestNode> Nodes, int nodesCount){
             for (int i = 0; i < nodesCount; i++)
             {
@@ -38,6 +39,31 @@ namespace GraphSharp.Tests
                 var target = nodes[Random.Shared.Next(nodesCount)];
                 var edge = new TestEdge(source,target);
                 edges.Add(edge);
+            }
+        }
+
+        void CheckSources(IEdgeSource<TestNode,TestEdge> edgeSource, int nodesCount){
+            foreach(var e in edgeSource){
+                var sources = edgeSource.GetSourcesId(e.Target.Id);
+                foreach(var s in sources)
+                    Assert.True(edgeSource.TryGetEdge(s,e.Target.Id,out var _));
+            }
+        }
+
+        [Fact]
+        public void GetSourcesId(){
+            foreach(var edgeSource in EdgeSources){
+                FillEdges(Nodes,edgeSource,1000);
+                CheckSources(edgeSource,1000);
+                for(int i = 0;i<100;i++){
+                    var source = Random.Shared.Next(1000);
+                    var target = Random.Shared.Next(1000);
+                    try{
+                        edgeSource.Remove(source,target);
+                    }
+                    catch(Exception){}
+                    CheckSources(edgeSource,1000);
+                }
             }
         }
 

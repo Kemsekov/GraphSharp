@@ -6,8 +6,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using DelaunatorSharp;
 using GraphSharp.Common;
+using GraphSharp.Exceptions;
 using GraphSharp.Extensions;
 using GraphSharp.Nodes;
+using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
 namespace GraphSharp.GraphStructures
@@ -25,21 +27,64 @@ namespace GraphSharp.GraphStructures
             _structureBase = structureBase;
         }
         /// <summary>
-        /// Finds all unconnected components of a graph
+        /// Finds fundamental cycles basis.
+        /// See https://en.wikipedia.org/wiki/Cycle_basis#Fundamental_cycles
         /// </summary>
-        /// <returns>Induced subgraphs from current graph where each of them represents different component</returns>
-        public IEnumerable<GraphStructure<TNode,TEdge>> GetComponents(){
+        /// <param name="nodeId">Node id</param>
+        /// <returns>A list of paths that forms a fundamental cycles basis</returns>
+        public IEnumerable<IList<TNode>> FindCyclesBasis()
+        {
+            var Edges = _structureBase.Edges;
+            var Nodes = _structureBase.Nodes;
+            var treeGraph = new GraphStructure<TNode, TEdge>(_structureBase.Configuration);
+            treeGraph.SetSources(Nodes, _structureBase.Configuration.CreateEdgeSource());
+            {
+                var tree = FindSpanningTree();
+                foreach (var e in tree)
+                {
+                    treeGraph.Edges.Add(e);
+                    if (Edges.TryGetEdge(e.Target.Id, e.Source.Id, out var undirected))
+                    {
+                        if (undirected is not null)
+                            treeGraph.Edges.Add(undirected);
+                    }
+                }
+            }
+
+            var outsideEdges = Edges.Except(treeGraph.Edges);
+            var result = new List<IList<TNode>>();
+            foreach (var e in outsideEdges)
+            {
+                var path = treeGraph.Do.FindAnyPath(e.Target.Id,e.Source.Id);
+                if (path.Count != 0)
+                {
+                    result.Add(path.Prepend(e.Source).ToList());
+                }
+            }
+            return result;
+        }
+        /// <summary>
+        /// Finds all unconnected components of a graph
+        /// <example>
+        /// <code>
+        /// if(setFinder.FindSet(nodeId1)==setFinder.FindSet(nodeId2)) => nodes in the same component
+        /// </code>
+        /// </example>
+        /// </summary>
+        /// <returns>Induced subgraphs from current graph where each of them represents different component and <see cref="UnionFind"/> that can be used to determine whatever two points in the same components or not.<br/></returns>
+        public (IEnumerable<GraphStructure<TNode, TEdge>> components,UnionFind setFinder) FindComponents()
+        {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
-            UnionFind u = new(Nodes.MaxNodeId+1);
-            foreach(var n in Nodes)
+            UnionFind u = new(Nodes.MaxNodeId + 1);
+            foreach (var n in Nodes)
                 u.MakeSet(n.Id);
-            foreach(var e in Edges)
-                u.UnionSet(e.Source.Id,e.Target.Id);
+            foreach (var e in Edges)
+                u.UnionSet(e.Source.Id, e.Target.Id);
 
-            var totalSets = Nodes.Select(x=>u.FindSet(x.Id)).Distinct();
-            var result = totalSets.Select(setId=>Nodes.Where(n=>u.FindSet(n.Id)==setId).ToDictionary(x=>x.Id));
-            return result.Select(x=>_structureBase.Induce(y=>x.ContainsKey(y.Id)));
+            var totalSets = Nodes.Select(x => u.FindSet(x.Id)).Distinct();
+            var result = totalSets.Select(setId => Nodes.Where(n => u.FindSet(n.Id) == setId));
+            return (result.Select(x => _structureBase.Induce(x.Select(x=>x.Id).ToArray())),u);
         }
         /// <summary>
         /// Calculate count of incoming edges for each node. In undirected graph will just give you degrees of nodes.
@@ -59,22 +104,55 @@ namespace GraphSharp.GraphStructures
             return c;
         }
         /// <summary>
-        /// Finds a shortest path from given node to all other nodes using Dijkstra's Algorithm
+        /// Finds a shortest path from given node to all other nodes using Dijkstra's Algorithm and edge weights.
         /// </summary>
         /// <param name="nodeId"></param>
+        /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
         /// <returns>DijkstrasAlgorithm instance that can be used to get path to any other node and length of this path</returns>
-        public DijkstrasAlgorithm<TNode, TEdge> FindShortestPaths(int nodeId)
+        public DijkstrasAlgorithm<TNode, TEdge> FindShortestPaths(int nodeId, Func<TEdge, float>? getWeight = null)
         {
-            var startNode = _structureBase.Nodes[nodeId];
-            var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(startNode, _structureBase);
-            int steps = 0;
+            var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(nodeId, _structureBase, getWeight);
+            var propagator = new ParallelPropagator<TNode, TEdge>(pathFinder, _structureBase);
+            propagator.SetPosition(nodeId);
             while (pathFinder.DidSomething)
             {
-                steps++;
                 pathFinder.DidSomething = false;
-                pathFinder.Propagate();
+                propagator.Propagate();
             }
             return pathFinder;
+        }
+
+        /// <summary>
+        /// Finds any first found path between any two nodes. Much faster than <see cref="GraphStructureOperation{,}.FindShortestPaths"/>
+        /// </summary>
+        /// <returns>Path between two nodes. Empty list if path is not found.</returns>
+        public IList<TNode> FindAnyPath(int startNodeId, int endNodeId)
+        {
+            var anyPathFinder = new AnyPathFinder<TNode, TEdge>(startNodeId, endNodeId, _structureBase);
+            var propagator = new Propagator<TNode, TEdge>(anyPathFinder, _structureBase);
+            propagator.SetPosition(startNodeId);
+            while (anyPathFinder.DidSomething && !anyPathFinder.Done)
+            {
+                anyPathFinder.DidSomething = false;
+                propagator.Propagate();
+            }
+            var path = anyPathFinder.GetPath();
+            return path;
+        }
+        /// <summary>
+        /// Concurrently finds any first found path between any two nodes. Much faster than <see cref="GraphStructureOperation{,}.FindShortestPaths"/>
+        /// </summary>
+        /// <returns>Path between two nodes. Empty list if path is not found.</returns>
+        public IList<TNode> FindAnyPathParallel(int startNodeId, int endNodeId)
+        {
+            var anyPathFinder = new AnyPathFinder<TNode, TEdge>(startNodeId, endNodeId, _structureBase);
+            var propagator = new ParallelPropagator<TNode, TEdge>(anyPathFinder, _structureBase);
+            while (anyPathFinder.DidSomething && !anyPathFinder.Done)
+            {
+                anyPathFinder.DidSomething = false;
+                propagator.Propagate();
+            }
+            return anyPathFinder.GetPath();
         }
 
         /// <summary>
@@ -82,15 +160,15 @@ namespace GraphSharp.GraphStructures
         /// Thanks to https://www.geeksforgeeks.org/articulation-points-or-cut-vertices-in-a-graph/
         /// </summary>
         /// <returns>Articulation points of a graph</returns>
-        public IEnumerable<TNode> GetArticulationPoints()
+        public IEnumerable<TNode> FindArticulationPoints()
         {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             if (Nodes.Count == 0 || Edges.Count == 0)
                 return Enumerable.Empty<TNode>();
-            var disc = new int[Nodes.Count + 1];
-            var low = new int[Nodes.Count + 1];
-            var flags = new byte[Nodes.Count + 1];
+            var disc = new int[Nodes.MaxNodeId + 1];
+            var low = new int[Nodes.MaxNodeId + 1];
+            var flags = new byte[Nodes.MaxNodeId + 1];
             int time = 0, parent = -1;
             const byte visitedFlag = 1;
             const byte isApFlag = 2;
@@ -246,20 +324,21 @@ namespace GraphSharp.GraphStructures
             var Edges = _structureBase.Edges;
             Edges.Clear();
             var Configuration = _structureBase.Configuration;
-            var edgesCountMap = new int[Nodes.MaxNodeId+1];
+            var edgesCountMap = new int[Nodes.MaxNodeId + 1];
             foreach (var node in Nodes)
                 edgesCountMap[node.Id] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 
             var locker = new object();
-            Parallel.ForEach(Nodes,source=>
+            Parallel.ForEach(Nodes, source =>
             {
                 ref var edgesCount = ref edgesCountMap[source.Id];
-                var targets = Nodes.OrderBy(x=>Configuration.Distance(source,x));
-                foreach (var target in targets.DistinctBy(x=>x.Id)){
-                    if(target.Id==source.Id) continue;
+                var targets = Nodes.OrderBy(x => Configuration.Distance(source, x));
+                foreach (var target in targets.DistinctBy(x => x.Id))
+                {
+                    if (target.Id == source.Id) continue;
                     lock (locker)
                     {
-                        if (edgesCount<=0) break;
+                        if (edgesCount <= 0) break;
                         Edges.Add(Configuration.CreateEdge(source, target));
                         edgesCount--;
                         edgesCountMap[target.Id]--;
@@ -300,23 +379,25 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Converts current edges to form a tree depending on their weights using Kruskal algorithm
+        /// Finds a spanning tree using Kruskal algorithm
         /// </summary>
+        /// <param name="getWeight">When null spanning tree is computed by sorting edges by weights. If you need to change this behavior specify this delegate, so edges will be sorted in different order.</param>
         /// <returns>List of edges that form a minimal spanning tree</returns>
-        public IList<TEdge> MakeSpanningTree()
+        public IList<TEdge> FindSpanningTree(Func<TEdge, float>? getWeight = null)
         {
+            getWeight ??= e => e.Weight;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            var edges = Edges.OrderBy(x => x.Weight).Select(x => (x.Source.Id, x.Target.Id));
+            var edges = Edges.OrderBy(x => getWeight(x));
             var result = new List<TEdge>();
             KruskalAlgorithm(edges, result);
             return result;
         }
         /// <summary>
-        /// Apply Kruskal algorithm on set of pairs of nodes sorted by distance between them. Creates undirected tree.
+        /// Apply Kruskal algorithm on set edges.
         /// </summary>
-        /// <param name="edges">Sorted by distance pairs of nodes</param>
-        void KruskalAlgorithm(IEnumerable<(int n1, int n2)> edges, IList<TEdge> outputEdges)
+        /// <param name="edges">Spanning tree edges</param>
+        void KruskalAlgorithm(IEnumerable<TEdge> edges, IList<TEdge> outputEdges)
         {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
@@ -324,14 +405,15 @@ namespace GraphSharp.GraphStructures
             UnionFind unionFind = new(Nodes.MaxNodeId + 1);
             foreach (var n in Nodes)
                 unionFind.MakeSet(n.Id);
-
-            foreach (var pair in edges)
+            int sourceId = 0, targetId = 0;
+            foreach (var edge in edges)
             {
-                if (unionFind.FindSet(pair.n1) == unionFind.FindSet(pair.n2))
+                sourceId = edge.Source.Id;
+                targetId = edge.Target.Id;
+                if (unionFind.FindSet(sourceId) == unionFind.FindSet(targetId))
                     continue;
-                var edge = Edges[pair.n1, pair.n2];
                 outputEdges.Add(edge);
-                unionFind.UnionSet(pair.n1, pair.n2);
+                unionFind.UnionSet(sourceId, targetId);
             }
         }
 
@@ -357,7 +439,7 @@ namespace GraphSharp.GraphStructures
         /// will land on one of the nodes you specified. <br/>
         /// </summary>
         /// <param name="nodeIndices"></param>
-        public GraphStructureOperation<TNode, TEdge> CreateSources(params int[] nodeIndices)
+        public GraphStructureOperation<TNode, TEdge> MakeSources(params int[] nodeIndices)
         {
             if (nodeIndices.Count() == 0 || _structureBase.Nodes.Count == 0) return this;
 
@@ -376,6 +458,36 @@ namespace GraphSharp.GraphStructures
             }
             return this;
 
+        }
+
+        /// <summary>
+        /// Contract edge. Target node will be merged with source node so only source node will remain.
+        /// </summary>
+        public GraphStructureOperation<TNode, TEdge> ContractEdge(int sourceId, int targetId)
+        {
+            var Edges = _structureBase.Edges;
+            var Nodes = _structureBase.Nodes;
+            if (!Edges.Remove(sourceId, targetId)) throw new EdgeNotFoundException($"Edge {sourceId} -> {targetId} not found");
+            var source = Nodes[sourceId];
+            var targetEdges = Edges[targetId].ToArray();
+            foreach (var e in targetEdges)
+            {
+                Edges.Remove(e);
+                if(e.Target.Id==sourceId) continue;
+                e.Source = source;
+                Edges.Add(e);
+            }
+            var toMove = Edges.GetSourcesId(targetId).ToArray();
+            foreach (var e in toMove)
+            {
+                var edge = Edges[e,targetId];
+                Edges.Remove(edge);
+                if(e==sourceId) continue;
+                edge.Target = source;
+                Edges.Add(edge);
+            }
+            Nodes.Remove(targetId);
+            return this;
         }
 
         /// <summary>
@@ -468,11 +580,15 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Isolates nodes. Removes all incoming and outcoming edges from each node that satisfies predicate.
         /// </summary>
-        public GraphStructureOperation<TNode, TEdge> Isolate(Predicate<TNode> toIsolate)
+        public GraphStructureOperation<TNode, TEdge> Isolate(params int[] nodes)
         {
             var Edges = _structureBase.Edges;
+            var Nodes = _structureBase.Nodes;
+            var toIsolate = new byte[Nodes.MaxNodeId+1];
+            foreach(var n in nodes)
+                toIsolate[n] = 1;
             var toRemove =
-                Edges.Where(x => toIsolate(x.Source) || toIsolate(x.Target))
+                Edges.Where(x => toIsolate[x.Source.Id]==1 || toIsolate[x.Target.Id]==1)
                 .Select(x => (x.Source.Id, x.Target.Id))
                 .ToArray();
 
@@ -485,13 +601,12 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Isolate and removes nodes that satisfies predicate
         /// </summary>
-        public GraphStructureOperation<TNode, TEdge> RemoveNodes(Predicate<TNode> toRemove)
+        public GraphStructureOperation<TNode, TEdge> RemoveNodes(params int[] nodes)
         {
-            Isolate(toRemove);
+            Isolate(nodes);
             var Nodes = _structureBase.Nodes;
-            var nodesToRemove = Nodes.Where(x => toRemove(x)).Select(x => x.Id).ToArray();
 
-            foreach (var n in nodesToRemove)
+            foreach (var n in nodes)
             {
                 Nodes.Remove(n);
             }

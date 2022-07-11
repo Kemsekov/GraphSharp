@@ -196,7 +196,7 @@ namespace GraphSharp.Tests
             return DenseMatrix.OfArray(result);
         }
         [Fact]
-        public void FromConnectionsList_Works(){
+        public void FromConnectionsList1_Works(){
             _GraphStructure.Create(100)
             .Do.ConnectRandomly(5,20);
             var expected = _GraphStructure.Converter.ToConnectionsList();
@@ -217,6 +217,16 @@ namespace GraphSharp.Tests
                 Assert.Equal(e.First.Key,e.Second.Key);
                 Assert.Equal(e.First.Value,e.Second.Value);
             }
+        }
+        [Fact]
+        public void FromConnectionsList2_Works(){
+            _GraphStructure.Create(500)
+            .Do.ConnectRandomly(5,20);
+            var expected = _GraphStructure.Edges.Select(x=>(x.Source.Id,x.Target.Id));
+            var newGraph = _GraphStructure.Clone();
+            newGraph.Converter.FromConnectionsList(expected);
+            var actual = newGraph.Edges.Select(x=>(x.Source.Id,x.Target.Id));
+            Assert.Equal(expected,actual);
         }
     }
 }

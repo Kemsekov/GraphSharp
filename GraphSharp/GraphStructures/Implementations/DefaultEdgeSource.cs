@@ -18,10 +18,16 @@ namespace GraphSharp.GraphStructures
     where TEdge : IEdge<TNode>
     {
         IDictionary<int,IList<TEdge>> Edges;
+        /// <summary>
+        /// Sources[targetId] = List of sources
+        /// </summary>
+        IDictionary<int,IList<int>> Sources;
         public int Count{get;protected set;}
         public DefaultEdgeSource()
         {
+            var m = new List<int>();
             Edges = new ConcurrentDictionary<int,IList<TEdge>>(Environment.ProcessorCount,Environment.ProcessorCount*4);
+            Sources = new ConcurrentDictionary<int,IList<int>>(Environment.ProcessorCount,Environment.ProcessorCount*4);
         }
 
         public IEnumerable<TEdge> this[int sourceId]{
@@ -36,14 +42,16 @@ namespace GraphSharp.GraphStructures
                 throw new EdgeNotFoundException($"Edge {sourceId} -> {targetId} not found.");
         public void Add(TEdge edge)
         {
-            if(Edges.TryGetValue(edge.Source.Id,out var holder)){
+            if(Edges.TryGetValue(edge.Source.Id,out var holder))
                 holder.Add(edge);
-            }
-            else{
-                var toAdd = new List<TEdge>();
-                toAdd.Add(edge);
-                Edges.Add(edge.Source.Id,toAdd);
-            }
+            else
+                Edges[edge.Source.Id] = new List<TEdge>(){edge};
+            
+            if(Sources.TryGetValue(edge.Target.Id,out var sources))
+                sources.Add(edge.Source.Id);
+            else
+                Sources[edge.Target.Id] = new List<int>(){edge.Source.Id};
+            
             Count++;
         }
 
@@ -66,6 +74,7 @@ namespace GraphSharp.GraphStructures
                     if(list[i].Target.Id==targetId){
                         list.RemoveAt(i);
                         Count--;
+                        Sources[targetId].Remove(sourceId);
                         return true;
                     }
                 }
@@ -86,7 +95,10 @@ namespace GraphSharp.GraphStructures
 
         public void Clear(){
             Edges.Clear();
+            Sources.Clear();
             Count = 0;
         }
+
+        public IEnumerable<int> GetSourcesId(int targetId)=>Sources[targetId];
     }
 }
