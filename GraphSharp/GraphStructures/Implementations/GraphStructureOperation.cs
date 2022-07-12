@@ -27,6 +27,18 @@ namespace GraphSharp.GraphStructures
             _structureBase = structureBase;
         }
         /// <summary>
+        /// Do topological sort on the graph. Changes X coordinates of nodes so any following nodes are ancestors of previous once and have bigger X coordinate
+        /// </summary>
+        public void TopologicalSort()
+        {
+            var alg = new TopologicalSorter<TNode, TEdge>(_structureBase);
+            while (!alg.Done)
+            {
+                alg.Propagate();
+            }
+            alg.DoTopologicalSort();
+        }
+        /// <summary>
         /// Finds fundamental cycles basis.
         /// See https://en.wikipedia.org/wiki/Cycle_basis#Fundamental_cycles
         /// </summary>
@@ -55,7 +67,7 @@ namespace GraphSharp.GraphStructures
             var result = new List<IList<TNode>>();
             foreach (var e in outsideEdges)
             {
-                var path = treeGraph.Do.FindAnyPath(e.Target.Id,e.Source.Id);
+                var path = treeGraph.Do.FindAnyPath(e.Target.Id, e.Source.Id);
                 if (path.Count != 0)
                 {
                     result.Add(path.Prepend(e.Source).ToList());
@@ -72,7 +84,7 @@ namespace GraphSharp.GraphStructures
         /// </example>
         /// </summary>
         /// <returns>List of lists of nodes where each of them represents different component and <see cref="UnionFind"/> that can be used to determine whatever two points in the same components or not.<br/></returns>
-        public (IEnumerable<IEnumerable<TNode>> components,UnionFind setFinder) FindComponents()
+        public (IEnumerable<IEnumerable<TNode>> components, UnionFind setFinder) FindComponents()
         {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
@@ -84,7 +96,7 @@ namespace GraphSharp.GraphStructures
 
             var totalSets = Nodes.Select(x => u.FindSet(x.Id)).Distinct();
             var result = totalSets.Select(setId => Nodes.Where(n => u.FindSet(n.Id) == setId));
-            return (result.ToArray(),u);
+            return (result.ToArray(), u);
         }
         /// <summary>
         /// Finds a shortest path from given node to all other nodes using Dijkstra's Algorithm and edge weights.
@@ -477,16 +489,16 @@ namespace GraphSharp.GraphStructures
             foreach (var e in targetEdges)
             {
                 Edges.Remove(e);
-                if(e.Target.Id==sourceId) continue;
+                if (e.Target.Id == sourceId) continue;
                 e.Source = source;
                 Edges.Add(e);
             }
             var toMove = Edges.GetSourcesId(targetId).ToArray();
             foreach (var e in toMove)
             {
-                var edge = Edges[e,targetId];
+                var edge = Edges[e, targetId];
                 Edges.Remove(edge);
-                if(e==sourceId) continue;
+                if (e == sourceId) continue;
                 edge.Target = source;
                 Edges.Add(edge);
             }
@@ -588,11 +600,11 @@ namespace GraphSharp.GraphStructures
         {
             var Edges = _structureBase.Edges;
             var Nodes = _structureBase.Nodes;
-            var toIsolate = new byte[Nodes.MaxNodeId+1];
-            foreach(var n in nodes)
+            var toIsolate = new byte[Nodes.MaxNodeId + 1];
+            foreach (var n in nodes)
                 toIsolate[n] = 1;
             var toRemove =
-                Edges.Where(x => toIsolate[x.Source.Id]==1 || toIsolate[x.Target.Id]==1)
+                Edges.Where(x => toIsolate[x.Source.Id] == 1 || toIsolate[x.Target.Id] == 1)
                 .ToArray();
 
             foreach (var e in toRemove)
