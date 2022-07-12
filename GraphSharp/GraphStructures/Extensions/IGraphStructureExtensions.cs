@@ -39,7 +39,7 @@ namespace GraphSharp.GraphStructures
             return true;
         }
         /// <summary>
-        /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception. If there is duplicate node throws an exception. If there is duplicate edge throws an exception.
+        /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception. If there is duplicate node throws an exception. If there is duplicate edge throws an exception. If there is unknown reference between nodes that does not present in the edges list throws an exception;
         /// </summary>
         public static void CheckForIntegrity<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph)
         where TNode : INode
@@ -61,8 +61,6 @@ namespace GraphSharp.GraphStructures
                     foreach (var a in actualEdges)
                         b.Append(a.ToString() + '\n');
                     b.Append("---------\n");
-                    foreach (var e in expectedEdges)
-                        b.Append(e.ToString() + '\n');
                     throw new GraphDataIntegrityException($"Edges contains duplicates : {actualEdges.Count()} != {expectedEdges.Count()} \n{b.ToString()}");
                 }
             }
@@ -75,6 +73,12 @@ namespace GraphSharp.GraphStructures
                 if (!graph.Nodes.TryGetNode(e.Target.Id, out var _))
                 {
                     throw new GraphDataIntegrityException($"{e.Target.Id} found among Edges but not found among Nodes");
+                }
+            }
+            foreach(var n in graph.Nodes){
+                foreach(var source in graph.Edges.GetSourcesId(n.Id)){
+                    if(!graph.Edges.TryGetEdge(source,n.Id,out var _))
+                        throw new GraphDataIntegrityException($"Edge {source}->{n.Id} is present in sources list but not found among edges");
                 }
             }
         }
@@ -93,8 +97,8 @@ namespace GraphSharp.GraphStructures
             }
         }
         public static void ValidateCycle<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph, IList<TNode> cycle)
-    where TNode : INode
-    where TEdge : IEdge<TNode>
+        where TNode : INode
+        where TEdge : IEdge<TNode>
         {
             var head = cycle.First();
             try

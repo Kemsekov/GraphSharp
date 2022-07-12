@@ -11,11 +11,13 @@ namespace GraphSharp.Tests
 {
     public class EdgeSourcesTests
     {
+        private GraphStructure<TestNode, TestEdge> _GraphStructure;
         INodeSource<TestNode> Nodes;
         IEnumerable<IEdgeSource<TestNode,TestEdge>> EdgeSources;
 
         public EdgeSourcesTests()
         {
+            this._GraphStructure = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration(new Random()));
             Nodes = new DefaultNodeSource<TestNode>(0);
             Fill(Nodes,1000);
             EdgeSources = new List<IEdgeSource<TestNode,TestEdge>>()
@@ -38,23 +40,19 @@ namespace GraphSharp.Tests
                 var source = nodes[Random.Shared.Next(nodesCount)];
                 var target = nodes[Random.Shared.Next(nodesCount)];
                 var edge = new TestEdge(source,target);
-                edges.Add(edge);
-            }
-        }
-
-        void CheckSources(IEdgeSource<TestNode,TestEdge> edgeSource, int nodesCount){
-            foreach(var e in edgeSource){
-                var sources = edgeSource.GetSourcesId(e.Target.Id);
-                foreach(var s in sources)
-                    Assert.True(edgeSource.TryGetEdge(s,e.Target.Id,out var _));
+                if(!edges.TryGetEdge(source.Id,target.Id,out var _))
+                    edges.Add(edge);
+                else
+                    i--;
             }
         }
 
         [Fact]
         public void GetSourcesId(){
             foreach(var edgeSource in EdgeSources){
+                _GraphStructure.SetSources(Nodes,edgeSource);
                 FillEdges(Nodes,edgeSource,1000);
-                CheckSources(edgeSource,1000);
+                _GraphStructure.CheckForIntegrity();
                 for(int i = 0;i<100;i++){
                     var source = Random.Shared.Next(1000);
                     var target = Random.Shared.Next(1000);
@@ -62,7 +60,7 @@ namespace GraphSharp.Tests
                         edgeSource.Remove(source,target);
                     }
                     catch(Exception){}
-                    CheckSources(edgeSource,1000);
+                    _GraphStructure.CheckForIntegrity();
                 }
             }
         }
@@ -70,13 +68,16 @@ namespace GraphSharp.Tests
         [Fact]
         public void Add_Works(){
             foreach(var edgeSource in EdgeSources){
+                _GraphStructure.SetSources(Nodes,edgeSource);
                 FillEdges(Nodes,edgeSource,1000);
                 Assert.Equal(1000,edgeSource.Count);
+                _GraphStructure.CheckForIntegrity();
             }
         }
         [Fact]
         public void Count_Works(){
             foreach(var edgeSource in EdgeSources){
+                _GraphStructure.SetSources(Nodes,edgeSource);
                 FillEdges(Nodes,edgeSource,1000);
                 Assert.Equal(1000,edgeSource.Count);
                 edgeSource.Remove(edgeSource.First());
@@ -84,11 +85,17 @@ namespace GraphSharp.Tests
                 Assert.Equal(998,edgeSource.Count);
                 edgeSource.Remove(new TestEdge(new TestNode(10000),new TestNode(10010)));
                 Assert.Equal(998,edgeSource.Count);
+                foreach(var e in edgeSource.Take(100).ToArray()){
+                    edgeSource.Remove(e);
+                }
+                Assert.Equal(898,edgeSource.Count);
+                _GraphStructure.CheckForIntegrity();
             }
         }
         [Fact]
         public void Remove_Works(){
             foreach(var edgeSource in EdgeSources){
+                _GraphStructure.SetSources(Nodes,edgeSource);
                 edgeSource.Add(new TestEdge(Nodes[0],Nodes[1]));
                 edgeSource.Add(new TestEdge(Nodes[0],Nodes[2]));
                 Assert.True(edgeSource.Remove(0,1));
@@ -97,6 +104,8 @@ namespace GraphSharp.Tests
                 Assert.Equal(edgeSource.Count,1);
                 Assert.True(edgeSource.Remove(edgeSource.First()));
                 Assert.Equal(edgeSource.Count,0);
+
+                _GraphStructure.CheckForIntegrity();
             }
         }
         [Fact]
@@ -132,12 +141,14 @@ namespace GraphSharp.Tests
         [Fact]
         public void Clear_Works(){
             foreach(var edgeSource in EdgeSources){
+                _GraphStructure.SetSources(Nodes,edgeSource);
                 FillEdges(Nodes,edgeSource,1000);
                 edgeSource.Clear();
                 Assert.Equal(0,edgeSource.Count);
                 foreach(var edge in edgeSource){
                     Assert.False(true);
                 }
+                _GraphStructure.CheckForIntegrity();
             }
         }
     }

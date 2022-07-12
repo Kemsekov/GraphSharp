@@ -47,7 +47,7 @@ where TEdge : IEdge<TNode>
             if (IsNodeInState(edge.Target.Id, ToRemove))
                 toRemove.Add(edge);
         }
-
+        lock(Graph)
         foreach (var edge in toRemove)
             Graph.Edges.Remove(edge);
 

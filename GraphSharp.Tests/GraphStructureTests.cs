@@ -47,7 +47,7 @@ namespace GraphSharp.Tests
         public void FindPath(Func<GraphStructure<TestNode, TestEdge> ,int,int,IList<TestNode>> getPath)
         {
             _GraphStructure.Create(1000);
-            for (int i = 0; i < 1000; i++)
+            for (int i = 0; i < 100; i++)
             {
                 _GraphStructure.Do.ConnectRandomly(0, 7);
                 _GraphStructure.Do.MakeUndirected();
@@ -330,6 +330,13 @@ namespace GraphSharp.Tests
                 Assert.Equal(exp, act);
             }
             graph.CheckForIntegrity();
+
+            _GraphStructure.Do.ConnectRandomly(4,20);
+            var sourcesList = new[]{4,5,10,12,55};
+            _GraphStructure.Do.MakeSources(sourcesList);
+            var sources = _GraphStructure.Nodes.Where(x=>_GraphStructure.Edges.GetSourcesId(x.Id).Count()==0).Select(x=>x.Id).OrderBy(x=>x);
+            Assert.Equal(sources,sourcesList);
+            _GraphStructure.CheckForIntegrity();
         }
         [Fact]
         public void RemoveUndirectedEdgesWorks()

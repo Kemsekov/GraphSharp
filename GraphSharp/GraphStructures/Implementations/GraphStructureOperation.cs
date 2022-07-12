@@ -312,7 +312,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Randomly connects closest nodes using <see cref="IGraphConfiguration{,}.Distance"/>. Producing undirected graph. <br/> 
+        /// Randomly connects closest nodes using <see cref="IGraphConfiguration{,}.Distance"/>. <br/> 
         /// minEdgesCount and maxEdgesCount not gonna give 100% right results. 
         /// This params are just approximation of how much edges per node is gonna be created.<br/>
         /// How it works:<br/>
@@ -593,12 +593,11 @@ namespace GraphSharp.GraphStructures
                 toIsolate[n] = 1;
             var toRemove =
                 Edges.Where(x => toIsolate[x.Source.Id]==1 || toIsolate[x.Target.Id]==1)
-                .Select(x => (x.Source.Id, x.Target.Id))
                 .ToArray();
 
             foreach (var e in toRemove)
             {
-                Edges.Remove(e.Item1, e.Item2);
+                Edges.Remove(e);
             }
             return this;
         }

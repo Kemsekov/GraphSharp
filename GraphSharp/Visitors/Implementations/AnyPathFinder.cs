@@ -23,7 +23,6 @@ namespace GraphSharp.Visitors
         /// _path[nodeId] == nodeId when nodeId is root of the tree
         /// </summary>
         int[] _path;
-        IPropagator<TNode,TEdge> _propagator;
         public IGraphStructure<TNode, TEdge> Graph { get; }
         public int StartNodeId { get;protected set; }
         public int EndNodeId { get; protected set; }
@@ -31,11 +30,16 @@ namespace GraphSharp.Visitors
         public bool DidSomething = true;
         public AnyPathFinder(int startNodeId, int endNodeId, IGraphStructure<TNode, TEdge> graph)
         {
-            _propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
             this.Graph = graph;
             this.StartNodeId = startNodeId;
             this.EndNodeId = endNodeId;
             _path = new int[graph.Nodes.MaxNodeId + 1];
+            Array.Fill(_path, -1);
+        }
+
+        public void SetPosition(int startNodeId, int endNodeId){
+            this.StartNodeId = startNodeId;
+            this.EndNodeId = endNodeId;
             Array.Fill(_path, -1);
         }
 
