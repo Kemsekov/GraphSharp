@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp;
+using GraphSharp.Common;
 using GraphSharp.Edges;
 using GraphSharp.GraphStructures;
 using GraphSharp.Nodes;
@@ -26,7 +27,19 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FindCycleBasis_Works(){
-            throw new NotImplementedException("Test is not implemented");
+            _GraphStructure.Create(1000);
+            _GraphStructure.Do.ConnectRandomly(0,7);
+            var tree = _GraphStructure.Do.FindSpanningTree();
+            var cycles = _GraphStructure.Do.FindCyclesBasis();
+            foreach(var c in cycles){
+                int outEdgesCount = 0;
+                _GraphStructure.ValidateCycle(c);
+                c.Aggregate((n1,n2)=>{
+                    outEdgesCount+=tree.Where(x=>x.Source.Id==n1.Id && x.Target.Id==n2.Id).Count();
+                    return n2;
+                });
+                Assert.Equal(c.Count-outEdgesCount,2);
+            }
         }
         [Fact]
         public void FindAnyPath_Works(){
@@ -64,9 +77,28 @@ namespace GraphSharp.Tests
         public void FindSpanningTree_Works(){
             _GraphStructure.Create(1000);
             _GraphStructure.Do.ConnectRandomly(0,7);
-            var componentsCount = _GraphStructure.Do.FindComponents().components.Count();
+            (var components, var setFinder) = _GraphStructure.Do.FindComponents();
             var tree = _GraphStructure.Do.FindSpanningTree();
             
+            UnionFind u = new(_GraphStructure.Nodes.MaxNodeId+1);
+            foreach(var n in _GraphStructure.Nodes)
+                u.MakeSet(n.Id);
+            foreach(var e in tree){
+                Assert.NotEqual(u.FindSet(e.Source.Id),u.FindSet(e.Target.Id));
+                u.UnionSet(e.Source.Id,e.Target.Id);
+            }
+            foreach(var n1 in _GraphStructure.Nodes){
+                foreach(var n2 in _GraphStructure.Nodes){
+                    if(setFinder.FindSet(n1.Id)==setFinder.FindSet(n2.Id))
+                        Assert.Equal(u.FindSet(n1.Id),u.FindSet(n2.Id));
+                }
+            }
+            var edgeSource = _GraphStructure.Configuration.CreateEdgeSource();
+            foreach(var e in tree){
+                edgeSource.Add(e);
+            }
+            _GraphStructure.SetSources(_GraphStructure.Nodes,edgeSource);
+            Assert.True(_GraphStructure.IsDirected());
         }
         [Fact]
         public void FindArticulationPoints_Works(){
@@ -100,8 +132,8 @@ namespace GraphSharp.Tests
                     if(!paired.TryGetValue((c1.Item1,c2.Item1),out var _))
                     paired[(c1.Item1,c2.Item1)] = 1;
 
-                    foreach(var n1 in c1.x.Nodes)
-                    foreach(var n2 in c2.x.Nodes){
+                    foreach(var n1 in c1.x)
+                    foreach(var n2 in c2.x){
                         var path = _GraphStructure.Do.FindAnyPath(n1.Id,n2.Id);
                         Assert.Empty(path);
                         Assert.NotEqual(setFinder.FindSet(n1.Id),setFinder.FindSet(n2.Id));
@@ -380,21 +412,6 @@ namespace GraphSharp.Tests
                 }
             }
             _GraphStructure.CheckForIntegrity();
-        }
-        [Fact]
-        public void CountIncomingEdges_Works(){
-            _GraphStructure.Do.RemoveEdges(x=>true);
-            var sourcesCount = _GraphStructure.Do.CountIncomingEdges();
-            Assert.All(sourcesCount,x=>Assert.Equal(x.Value,0));
-
-            _GraphStructure.Do.ConnectRandomly(2,5);
-            sourcesCount = _GraphStructure.Do.CountIncomingEdges();
-
-            foreach(var e in _GraphStructure.Edges){
-                sourcesCount[e.Target.Id]--;
-            }
-
-            Assert.All(sourcesCount,x=>Assert.Equal(x.Value,0));
         }
         [Fact]
         public void ReverseEdges_Works(){

@@ -71,8 +71,8 @@ namespace GraphSharp.GraphStructures
         /// </code>
         /// </example>
         /// </summary>
-        /// <returns>Induced subgraphs from current graph where each of them represents different component and <see cref="UnionFind"/> that can be used to determine whatever two points in the same components or not.<br/></returns>
-        public (IEnumerable<GraphStructure<TNode, TEdge>> components,UnionFind setFinder) FindComponents()
+        /// <returns>List of lists of nodes where each of them represents different component and <see cref="UnionFind"/> that can be used to determine whatever two points in the same components or not.<br/></returns>
+        public (IEnumerable<IEnumerable<TNode>> components,UnionFind setFinder) FindComponents()
         {
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
@@ -84,24 +84,7 @@ namespace GraphSharp.GraphStructures
 
             var totalSets = Nodes.Select(x => u.FindSet(x.Id)).Distinct();
             var result = totalSets.Select(setId => Nodes.Where(n => u.FindSet(n.Id) == setId));
-            return (result.Select(x => _structureBase.Induce(x.Select(x=>x.Id).ToArray())),u);
-        }
-        /// <summary>
-        /// Calculate count of incoming edges for each node. In undirected graph will just give you degrees of nodes.
-        /// </summary>
-        /// <returns><see cref="IDictionary{,}"/> where TKey is node id and TValue is incoming to this node edges count</returns>
-        public IDictionary<int, int> CountIncomingEdges()
-        {
-            ConcurrentDictionary<int, int> c = new();
-            foreach (var n in _structureBase.Nodes)
-                c[n.Id] = 0;
-
-            foreach (var e in _structureBase.Edges)
-            {
-                c[e.Target.Id]++;
-            }
-
-            return c;
+            return (result.ToArray(),u);
         }
         /// <summary>
         /// Finds a shortest path from given node to all other nodes using Dijkstra's Algorithm and edge weights.
@@ -621,10 +604,9 @@ namespace GraphSharp.GraphStructures
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
-            var sourcesCount = CountIncomingEdges();
             var toRemove =
                 Nodes
-                .Where(x => sourcesCount[x.Id] == 0 && Edges[x.Id].Count() == 0)
+                .Where(x => Edges.GetSourcesId(x.Id).Count() == 0 && Edges[x.Id].Count() == 0)
                 .Select(x => x.Id)
                 .ToArray();
 

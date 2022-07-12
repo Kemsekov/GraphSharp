@@ -99,6 +99,10 @@ namespace GraphSharp.GraphStructures
             Count = 0;
         }
 
-        public IEnumerable<int> GetSourcesId(int targetId)=>Sources[targetId];
+        public IEnumerable<int> GetSourcesId(int targetId){
+            if(Sources.TryGetValue(targetId,out var list))
+                return list;
+            return Enumerable.Empty<int>();
+        }
     }
 }
