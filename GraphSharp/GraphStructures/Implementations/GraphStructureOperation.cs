@@ -95,6 +95,24 @@ namespace GraphSharp.GraphStructures
         public DijkstrasAlgorithm<TNode, TEdge> FindShortestPaths(int nodeId, Func<TEdge, float>? getWeight = null)
         {
             var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(nodeId, _structureBase, getWeight);
+            var propagator = new Propagator<TNode, TEdge>(pathFinder, _structureBase);
+            propagator.SetPosition(nodeId);
+            while (pathFinder.DidSomething)
+            {
+                pathFinder.DidSomething = false;
+                propagator.Propagate();
+            }
+            return pathFinder;
+        }
+        /// <summary>
+        /// Concurrently Finds a shortest path from given node to all other nodes using Dijkstra's Algorithm and edge weights.
+        /// </summary>
+        /// <param name="nodeId"></param>
+        /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
+        /// <returns>DijkstrasAlgorithm instance that can be used to get path to any other node and length of this path</returns>
+        public DijkstrasAlgorithm<TNode, TEdge> FindShortestPathsParallel(int nodeId, Func<TEdge, float>? getWeight = null)
+        {
+            var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(nodeId, _structureBase, getWeight);
             var propagator = new ParallelPropagator<TNode, TEdge>(pathFinder, _structureBase);
             propagator.SetPosition(nodeId);
             while (pathFinder.DidSomething)
@@ -104,7 +122,6 @@ namespace GraphSharp.GraphStructures
             }
             return pathFinder;
         }
-
         /// <summary>
         /// Finds any first found path between any two nodes. Much faster than <see cref="GraphStructureOperation{,}.FindShortestPaths"/>
         /// </summary>
@@ -130,6 +147,7 @@ namespace GraphSharp.GraphStructures
         {
             var anyPathFinder = new AnyPathFinder<TNode, TEdge>(startNodeId, endNodeId, _structureBase);
             var propagator = new ParallelPropagator<TNode, TEdge>(anyPathFinder, _structureBase);
+            propagator.SetPosition(startNodeId);
             while (anyPathFinder.DidSomething && !anyPathFinder.Done)
             {
                 anyPathFinder.DidSomething = false;
@@ -244,9 +262,12 @@ namespace GraphSharp.GraphStructures
         public GraphStructureOperation<TNode, TEdge> ConnectRandomly(int minEdgesCount, int maxEdgesCount)
         {
             var Nodes = _structureBase.Nodes;
+            var Edges = _structureBase.Edges;
             var Configuration = _structureBase.Configuration;
             minEdgesCount = minEdgesCount < 0 ? 0 : minEdgesCount;
             maxEdgesCount = maxEdgesCount > Nodes.Count ? Nodes.Count : maxEdgesCount;
+
+            Edges.Clear();
 
             //swap using xor
             if (minEdgesCount > maxEdgesCount)

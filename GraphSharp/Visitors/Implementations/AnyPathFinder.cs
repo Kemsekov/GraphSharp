@@ -37,7 +37,6 @@ namespace GraphSharp.Visitors
             this.EndNodeId = endNodeId;
             _path = new int[graph.Nodes.MaxNodeId + 1];
             Array.Fill(_path, -1);
-            _path[startNodeId] = startNodeId;
         }
 
         public void EndVisit()
@@ -47,13 +46,13 @@ namespace GraphSharp.Visitors
         public bool Select(TEdge edge)
         {
             if (Done) return false;
-            if(_path[edge.Target.Id]==-1){
-                _path[edge.Target.Id] = edge.Source.Id;
-                return true;
-            }
             if (edge.Target.Id == EndNodeId)
             {
                 Done = true;
+            }
+            if(_path[edge.Target.Id]==-1){
+                _path[edge.Target.Id] = edge.Source.Id;
+                return true;
             }
             return false;
         }
