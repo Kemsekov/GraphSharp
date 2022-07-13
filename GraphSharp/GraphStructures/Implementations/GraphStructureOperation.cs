@@ -467,6 +467,12 @@ namespace GraphSharp.GraphStructures
                     throw new ArgumentException("nodeIndex is out of range");
             var sourceCreator = new SourceCreator<TNode, TEdge>(_structureBase);
 
+            foreach(var n in nodeIndices){
+                foreach(var source in Edges.GetSourcesId(n).ToArray()){
+                    Edges.Remove(source,n);
+                }
+            }
+
             sourceCreator.SetPosition(nodeIndices);
             while (sourceCreator.DidSomething)
             {
