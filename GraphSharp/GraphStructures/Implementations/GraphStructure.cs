@@ -14,11 +14,15 @@ namespace GraphSharp.GraphStructures
     where TEdge : IEdge<TNode>
     {
         /// <summary>
-        /// Configuration for all needed operations with nodes and edges
+        /// Configuration for this graph.
         /// </summary>
         public IGraphConfiguration<TNode,TEdge> Configuration{get;protected set;}
         public INodeSource<TNode> Nodes { get; protected set; }
         public IEdgeSource<TNode,TEdge> Edges { get; protected set; }
+        /// <summary>
+        /// Just init new graph with empty Nodes and Edges using given configuration.
+        /// </summary>
+        /// <param name="configuration"></param>
         public GraphStructure(IGraphConfiguration<TNode,TEdge> configuration)
         {
             Configuration = configuration;
@@ -35,7 +39,9 @@ namespace GraphSharp.GraphStructures
             Edges         = graphStructure.Edges;
             Configuration = graphStructure.Configuration;
         }
-
+        /// <summary>
+        /// Set current graph's Nodes and Edges
+        /// </summary>
         public GraphStructure<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TNode,TEdge> edges){
             Nodes = nodes;
             Edges = edges;
@@ -43,14 +49,12 @@ namespace GraphSharp.GraphStructures
         }
         
         /// <summary>
-        /// Create some count of nodes. This method will replace current <see cref="IGraphStructure{,}.Nodes"/> and <see cref="IGraphStructure{,}.Edges"/> with new ones.
+        /// Clears graph and creates some count of nodes.
         /// </summary>
         /// <param name="count">Count of nodes to create</param>
-        /// <returns></returns>
         public GraphStructure<TNode,TEdge> Create(int nodesCount)
         {
-            Nodes = Configuration.CreateNodeSource();
-            Edges = Configuration.CreateEdgeSource();
+            Clear();
             //create nodes
             for (int i = 0; i < nodesCount; i++)
             {
@@ -73,7 +77,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Get induced subgraph from this graph structure.
         /// </summary>
-        /// <param name="toInduce">Select nodes to induce</param>
+        /// <param name="nodes">Nodes to induce</param>
         /// <returns>Induced subgraph of current graph</returns>
         public GraphStructure<TNode,TEdge> Induce(params int[] nodes){
             var result = new GraphStructure<TNode,TEdge>(Configuration);
@@ -114,12 +118,11 @@ namespace GraphSharp.GraphStructures
         }
         
         /// <summary>
-        /// Replace current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
+        /// Clears current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
         /// </summary>
-        /// <returns></returns>
         public GraphStructure<TNode,TEdge> Clear(){
-            Nodes = Configuration.CreateNodeSource();
-            Edges = Configuration.CreateEdgeSource();
+            Nodes.Clear();
+            Edges.Clear();
             return this;
         }
 

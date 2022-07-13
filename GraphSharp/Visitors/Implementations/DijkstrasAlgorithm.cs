@@ -8,6 +8,11 @@ using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
 namespace GraphSharp.Visitors;
+/// <summary>
+/// Visitor that finds shortest path between given node and any other node in a graph.
+/// </summary>
+/// <typeparam name="TNode"></typeparam>
+/// <typeparam name="TEdge"></typeparam>
 public class DijkstrasAlgorithm<TNode, TEdge> : IVisitor<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge<TNode>
@@ -15,6 +20,11 @@ where TEdge : IEdge<TNode>
     /// <summary>
     /// _path[node] = parent 
     /// </summary>
+    public int[] Path => _path;
+    /// <summary>
+    /// what is the length of path from startNode to some other node so far.  
+    /// </summary>
+    public float[] PathLength =>_pathLength;
     int[] _path;
     /// <summary>
     /// what is the length of path from startNode to some other node so far.  

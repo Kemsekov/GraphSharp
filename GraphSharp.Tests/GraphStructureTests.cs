@@ -332,10 +332,11 @@ namespace GraphSharp.Tests
             graph.CheckForIntegrity();
 
             _GraphStructure.Do.ConnectRandomly(4,20);
+            _GraphStructure.Do.MakeUndirected();
             var sourcesList = new[]{4,5,10,12,55};
             _GraphStructure.Do.MakeSources(sourcesList);
             var sources = _GraphStructure.Nodes.Where(x=>_GraphStructure.Edges.GetSourcesId(x.Id).Count()==0).Select(x=>x.Id).OrderBy(x=>x);
-            Assert.Equal(sources,sourcesList);
+            Assert.Equal(sourcesList,sources);
             _GraphStructure.CheckForIntegrity();
         }
         [Fact]
@@ -578,8 +579,8 @@ namespace GraphSharp.Tests
             _GraphStructure.Clear();
             Assert.Empty(_GraphStructure.Nodes);
             Assert.Empty(_GraphStructure.Edges);
-            Assert.NotEmpty(nodes);
-            Assert.NotEmpty(edges);
+            Assert.Empty(nodes);
+            Assert.Empty(edges);
         }
         [Fact]
         public void ColorNodes_Works()

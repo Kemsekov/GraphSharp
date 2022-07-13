@@ -98,7 +98,7 @@ namespace GraphSharp.GraphStructures
             Sources.Clear();
             Count = 0;
         }
-
+        /// <returns>Returns all sourceId of edges sourceId->targetId</returns>
         public IEnumerable<int> GetSourcesId(int targetId){
             if(Sources.TryGetValue(targetId,out var list))
                 return list;

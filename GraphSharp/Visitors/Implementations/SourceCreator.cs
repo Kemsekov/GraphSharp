@@ -8,12 +8,19 @@ using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 
 namespace GraphSharp.Visitors;
+/// <summary>
+/// This visitor will create sources on assigned points so any path in graph will ends on some of this points
+/// </summary>
 public class SourceCreator<TNode, TEdge> : Visitor<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge<TNode>
 {
     public const byte Proceed = 4;
     public const byte ToRemove = 8;
+    /// <summary>
+    /// This boolean will be set true on each call of <see cref="IPropagator{,}.Propagate"/> if algorithm inside of this visitor did anything at all.
+    /// Use this to determine when to stop.
+    /// </summary>
     public bool DidSomething = true;
     public override IPropagator<TNode, TEdge> Propagator { get; }
     public IGraphStructure<TNode, TEdge> Graph { get; }
@@ -41,7 +48,7 @@ where TEdge : IEdge<TNode>
         SetNodeState(node.Id, Proceed);
 
         var edges = Graph.Edges[node.Id];
-        var toRemove = new List<TEdge>();
+        var toRemove = new List<TEdge>(edges.Count());
         foreach (var edge in edges)
         {
             if (IsNodeInState(edge.Target.Id, ToRemove))

@@ -249,11 +249,12 @@ namespace GraphSharp.GraphStructures
                 flags[u] |= isApFlag;
         }
         /// <summary>
-        /// Randomly create edgesCount edges for each node
+        /// Clears Edges and randomly create edgesCount of edges for each node.
         /// </summary>
         /// <param name="edgesCount">How much edges each node need</param>
         public GraphStructureOperation<TNode, TEdge> ConnectNodes(int edgesCount)
         {
+            _structureBase.Edges.Clear();
             var Nodes = _structureBase.Nodes;
             var Configuration = _structureBase.Configuration;
             var availableNodes = Nodes.Select(x => x.Id).ToList();
@@ -267,7 +268,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Randomly create some range of edges for each node, so each node have more or equal than minEdgesCount but than less maxEdgesCount edges.
+        /// Clear Edges and randomly create some range of edges for each node, so each node have more or equal than minEdgesCount but than less maxEdgesCount edges.
         /// </summary>
         /// <param name="minEdgesCount">Min count of edges for each node</param>
         /// <param name="maxEdgesCount">Max count of edges for each node</param>
@@ -324,7 +325,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Randomly connects closest nodes using <see cref="IGraphConfiguration{,}.Distance"/>. <br/> 
+        /// Clears Edges and randomly connects closest nodes using <see cref="IGraphConfiguration{,}.Distance"/>. <br/> 
         /// minEdgesCount and maxEdgesCount not gonna give 100% right results. 
         /// This params are just approximation of how much edges per node is gonna be created.<br/>
         /// How it works:<br/>
@@ -594,7 +595,7 @@ namespace GraphSharp.GraphStructures
         }
 
         /// <summary>
-        /// Isolates nodes. Removes all incoming and outcoming edges from each node that satisfies predicate.
+        /// Isolates nodes. Removes all incoming and outcoming edges from each node that satisfies predicate. It is faster to pass many nodes in single call of this function than make many calls of this function on each node.
         /// </summary>
         public GraphStructureOperation<TNode, TEdge> Isolate(params int[] nodes)
         {
@@ -614,7 +615,7 @@ namespace GraphSharp.GraphStructures
             return this;
         }
         /// <summary>
-        /// Isolate and removes nodes that satisfies predicate
+        /// Isolate and removes specified nodes
         /// </summary>
         public GraphStructureOperation<TNode, TEdge> RemoveNodes(params int[] nodes)
         {

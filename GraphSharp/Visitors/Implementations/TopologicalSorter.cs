@@ -8,12 +8,22 @@ using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 namespace GraphSharp.Visitors;
+/// <summary>
+/// Visitor that proceed topological sort for any graph.
+/// </summary>
 public class TopologicalSorter<TNode,TEdge> : Visitor<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge<TNode>
 {
     public override IPropagator<TNode, TEdge> Propagator { get; }
+    /// <summary>
+    /// After topological sort is done all nodes will be sorted out to different layers.
+    /// Nodes on each layer have the same X coordinate and each following layer have X coordinate bigger that previous one.
+    /// </summary>
     public IList<IList<TNode>> Layers { get; }
+    /// <summary>
+    /// True when topological sort is done
+    /// </summary>
     public bool Done { get; private set; } = false;
     public const byte Added = 4;
     public TopologicalSorter(GraphStructure<TNode, TEdge> graph)
@@ -60,7 +70,10 @@ where TEdge : IEdge<TNode>
         lock (Layers)
             Layers[^1].Add(node);
     }
-
+    /// <summary>
+    /// After all nodes have been sorted to different layers 
+    /// this method will assign corresponding X coordinate to each layer.
+    /// </summary>
     public void DoTopologicalSort()
     {
         if (!Done) return;
