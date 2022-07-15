@@ -10,19 +10,11 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Tests.Models
 {
-    public class TestNode : INode
+    public class TestNode : Node
     {
-        public TestNode(int id)
+        public TestNode(int id) : base(id)
         {
-            Id = id;
         }
-        public float Weight{get;set;}
-        Color IColored.Color {get;set;}
-        public Vector2 Position {get;set;}
-
-        public int Id{get;}
-
-        public Color Color;
 
     }
 }

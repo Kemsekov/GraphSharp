@@ -9,18 +9,11 @@ using GraphSharp.Nodes;
 
 namespace GraphSharp.Tests.Models
 {
-    public class TestEdge : IEdge<TestNode>
+    public class TestEdge : Edge<TestNode>
     {
 
-        public TestEdge(TestNode source,TestNode target)
+        public TestEdge(TestNode source,TestNode target) : base(source,target)
         {
-            Source = source;
-            Target = target;
         }
-
-        public TestNode Source {get;set;}
-        public TestNode Target {get;set;}
-        public Color Color {get;set;}
-        public float Weight {get;set;}
     }
 }

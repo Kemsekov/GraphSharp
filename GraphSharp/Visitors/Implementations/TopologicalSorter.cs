@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Graphs;
-using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;

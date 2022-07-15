@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using DelaunatorSharp;
 using GraphSharp.Common;
 using GraphSharp.Exceptions;
-using GraphSharp.Extensions;
 using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;

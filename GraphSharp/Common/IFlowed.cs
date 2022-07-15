@@ -15,5 +15,9 @@ namespace GraphSharp.Common
         /// Maximum amount of flow that must not exceed
         /// </summary>
         float Capacity{get;set;}
+        /// <summary>
+        /// How much flow capacity left. Basically: Capacity - Flow
+        /// </summary>
+        float ResidualCapacity => Capacity-Flow;
     }
 }

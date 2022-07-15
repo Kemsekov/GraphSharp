@@ -18,10 +18,14 @@ namespace GraphSharp.Common
             var target = nodeSource[edge.Target.Id];
             var weight = edge.Weight;
             var color = edge.Color;
+            var capacity = edge.Capacity;
+            var flow = edge.Flow;
 
             var newEdge = configuration.CreateEdge(source, target);
             newEdge.Weight = weight;
-            newEdge.Color=color;
+            newEdge.Color = color;
+            newEdge.Capacity = capacity;
+            newEdge.Flow = flow;
             return newEdge;
         }
         
