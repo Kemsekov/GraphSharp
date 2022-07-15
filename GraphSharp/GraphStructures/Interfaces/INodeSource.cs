@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
 
-namespace GraphSharp.GraphStructures
+namespace GraphSharp.Graphs
 {
     public interface INodeSource<TNode> : IEnumerable<TNode>
     where TNode : INode

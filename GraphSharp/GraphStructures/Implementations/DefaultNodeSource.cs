@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Nodes;
 
-namespace GraphSharp.GraphStructures
+namespace GraphSharp.Graphs
 {
     /// <summary>
     /// Default implementation of <see cref="INodeSource{}"/>

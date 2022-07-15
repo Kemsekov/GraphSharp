@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 using Microsoft.Toolkit.HighPerformance;
@@ -14,7 +14,7 @@ namespace GraphSharp.Propagators
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
-        public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IGraphStructure<TNode,TEdge> graph) : base(visitor,graph)
+        public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode,TEdge> graph) : base(visitor,graph)
         {
         }
         protected override void PropagateNodes()

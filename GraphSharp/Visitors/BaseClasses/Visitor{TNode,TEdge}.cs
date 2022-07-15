@@ -1,6 +1,6 @@
 using System;
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 namespace GraphSharp.Visitors;
@@ -29,7 +29,7 @@ where TEdge : IEdge<TNode>
         Propagator.SetPosition(nodeIndices);
     }
 
-    public void SetGraph(IGraphStructure<TNode, TEdge> nodes)
+    public void SetGraph(IGraph<TNode, TEdge> nodes)
     {
         Propagator.SetGraph(nodes);
     }

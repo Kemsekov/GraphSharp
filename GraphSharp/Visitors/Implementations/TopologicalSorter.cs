@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
@@ -26,7 +27,7 @@ where TEdge : IEdge<TNode>
     /// </summary>
     public bool Done { get; private set; } = false;
     public const byte Added = 4;
-    public TopologicalSorter(GraphStructure<TNode, TEdge> graph)
+    public TopologicalSorter(Graph<TNode, TEdge> graph)
     {
         Propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
         var startingNodes = new List<int>();

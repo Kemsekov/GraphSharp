@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
@@ -12,7 +12,7 @@ namespace GraphSharp.Tests.Models
     public class TestVisitor : Visitor<TestNode, TestEdge>
     {
         
-        public TestVisitor(IGraphStructure<TestNode, TestEdge> graph)
+        public TestVisitor(IGraph<TestNode, TestEdge> graph)
         {
             this.Propagator = new ParallelPropagator<TestNode,TestEdge>(this,graph);
         }

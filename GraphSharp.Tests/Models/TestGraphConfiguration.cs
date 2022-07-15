@@ -1,6 +1,6 @@
 using System;
 using System.Drawing;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 
 namespace GraphSharp.Tests.Models
 {

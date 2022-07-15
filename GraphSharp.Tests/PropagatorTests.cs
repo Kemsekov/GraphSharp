@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Tests.helpers;
@@ -19,11 +19,11 @@ namespace GraphSharp.Tests
     public class PropagatorTests
     {
         Func<IVisitor<TestNode,TestEdge>, PropagatorBase<TestNode,TestEdge>>[] _propagatorFactories;
-        GraphStructure<TestNode, TestEdge> _graph;
+        Graph<TestNode, TestEdge> _graph;
 
         public PropagatorTests()
         {
-            _graph = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration()).Create(1000);
+            _graph = new Graph<TestNode, TestEdge>(new TestGraphConfiguration()).Create(1000);
             _graph.Do.ConnectNodes(10);
 
             _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, PropagatorBase<TestNode,TestEdge>>[2];
@@ -199,7 +199,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void Propagate_HaveRightNodesVisitOrderWithManualData()
         {
-            var graph = new GraphStructure<TestNode, TestEdge>(new TestGraphConfiguration())
+            var graph = new Graph<TestNode, TestEdge>(new TestGraphConfiguration())
                 .Create(10);
             foreach (var pair in ManualTestData.NodesConnections)
             {

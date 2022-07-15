@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Common;
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 
@@ -21,12 +21,12 @@ where TEdge : IEdge<TNode>
     /// _path[nodeId] == -1 when parent is not set <br/>
     /// </summary>
     int[] _path;
-    public IGraphStructure<TNode, TEdge> Graph { get; }
+    public IGraph<TNode, TEdge> Graph { get; }
     public int StartNodeId { get; protected set; }
     public int EndNodeId { get; protected set; }
     public bool Done = false;
     public bool DidSomething = true;
-    public AnyPathFinder(int startNodeId, int endNodeId, IGraphStructure<TNode, TEdge> graph)
+    public AnyPathFinder(int startNodeId, int endNodeId, IGraph<TNode, TEdge> graph)
     {
         this.Graph = graph;
         this.StartNodeId = startNodeId;

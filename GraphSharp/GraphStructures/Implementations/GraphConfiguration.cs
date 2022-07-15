@@ -5,7 +5,7 @@ using GraphSharp.Common;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
 
-namespace GraphSharp.GraphStructures
+namespace GraphSharp.Graphs
 {
     /// <summary>
     /// Default <see cref="IGraphConfiguration{,}"/> implementation that uses default configuration.
@@ -26,10 +26,6 @@ namespace GraphSharp.GraphStructures
         }
         public TEdge CreateEdge(TNode source, TNode target) => createEdge(source,target);
         public TNode CreateNode(int nodeId) => createNode(nodeId);
-        public float Distance(TNode n1, TNode n2)
-        {
-            return (n1.Position-n2.Position).Length();
-        }
         public IEdgeSource<TNode,TEdge> CreateEdgeSource()
         {
             return new DefaultEdgeSource<TNode,TEdge>();

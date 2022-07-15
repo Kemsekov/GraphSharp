@@ -6,19 +6,19 @@ using GraphSharp.Exceptions;
 using GraphSharp.Nodes;
 using MathNet.Numerics.LinearAlgebra.Single;
 
-namespace GraphSharp.GraphStructures
+namespace GraphSharp.Graphs
 {
     /// <summary>
     /// Contains converters for graph structures
     /// </summary>
     /// <typeparam name="TNode"></typeparam>
     /// <typeparam name="TEdge"></typeparam>
-    public class GraphStructureConverters<TNode, TEdge>
+    public class GraphConverters<TNode, TEdge>
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
-        GraphStructure<TNode, TEdge> _structureBase;
-        public GraphStructureConverters(GraphStructure<TNode, TEdge> structureBase)
+        Graph<TNode, TEdge> _structureBase;
+        public GraphConverters(Graph<TNode, TEdge> structureBase)
         {
             _structureBase = structureBase;
         }
@@ -37,7 +37,7 @@ namespace GraphSharp.GraphStructures
             return result;
         }
          /// <summary>
-        /// Converts current <see cref="IGraphStructure.Nodes"/> to sparse adjacency matrix.
+        /// Converts current <see cref="IGraph.Nodes"/> to sparse adjacency matrix.
         /// </summary>
         public Matrix ToAdjacencyMatrix()
         {
@@ -63,7 +63,7 @@ namespace GraphSharp.GraphStructures
         /// n4
         /// </summary>
         /// <param name="binaryCode"></param>
-        public GraphStructureConverters<TNode,TEdge> FromTreeBinaryCode(byte[] binaryCode){
+        public GraphConverters<TNode,TEdge> FromTreeBinaryCode(byte[] binaryCode){
             if(binaryCode.Length==0) return this;
             _structureBase.Clear();
             var Nodes = _structureBase.Nodes;
@@ -97,7 +97,7 @@ namespace GraphSharp.GraphStructures
         /// Create graph from adjacency matrix
         /// </summary>
         /// <param name="adjacencyMatrix"></param>
-        public GraphStructureConverters<TNode,TEdge> FromAdjacencyMatrix(Matrix adjacencyMatrix){
+        public GraphConverters<TNode,TEdge> FromAdjacencyMatrix(Matrix adjacencyMatrix){
             if(adjacencyMatrix.RowCount!=adjacencyMatrix.ColumnCount)
                 throw new GraphConverterException("adjacencyMatrix argument must be square matrix!");
             _structureBase.Clear();
@@ -127,7 +127,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Create graph from from incidence matrix
         /// </summary>
-        public GraphStructureConverters<TNode,TEdge> FromIncidenceMatrix(Matrix incidenceMatrix){
+        public GraphConverters<TNode,TEdge> FromIncidenceMatrix(Matrix incidenceMatrix){
             _structureBase.Clear();
             int nodesCount = incidenceMatrix.RowCount;
             var edgesCount = incidenceMatrix.ColumnCount;
@@ -157,7 +157,7 @@ namespace GraphSharp.GraphStructures
         /// Clears graph and recreates it from connections list
         /// </summary>
         /// <param name="connectionsList">List of connections where key is source id and value is list of targets ids(children). </param>
-        public GraphStructureConverters<TNode,TEdge> FromConnectionsList<TEnumerable>(IDictionary<int,TEnumerable> connectionsList)
+        public GraphConverters<TNode,TEdge> FromConnectionsList<TEnumerable>(IDictionary<int,TEnumerable> connectionsList)
         where TEnumerable : IEnumerable<int>
         {
             _structureBase.Clear();
@@ -188,7 +188,7 @@ namespace GraphSharp.GraphStructures
         /// </summary>
         /// <param name="connectionsList">List of value pairs where source is edge source and target is edge target.</param>
         /// <returns></returns>
-        public GraphStructureConverters<TNode,TEdge> FromConnectionsList(IEnumerable<(int source,int target)> connectionsList){
+        public GraphConverters<TNode,TEdge> FromConnectionsList(IEnumerable<(int source,int target)> connectionsList){
             _structureBase.Clear();
             foreach(var c in connectionsList){
                 if(!_structureBase.Nodes.TryGetNode(c.source,out var _)){

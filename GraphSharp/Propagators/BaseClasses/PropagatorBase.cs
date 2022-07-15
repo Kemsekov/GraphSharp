@@ -4,7 +4,7 @@ using GraphSharp.Edges;
 using GraphSharp.Nodes;
 using GraphSharp.Visitors;
 using System.Linq;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using Microsoft.Toolkit.HighPerformance;
 
 namespace GraphSharp.Propagators
@@ -22,7 +22,7 @@ namespace GraphSharp.Propagators
     where TEdge : IEdge<TNode>
     {
         public IVisitor<TNode,TEdge> Visitor { get; init; }
-        protected IGraphStructure<TNode,TEdge> _graph;
+        protected IGraph<TNode,TEdge> _graph;
         /// <summary>
         /// Default state for node. Every node is a None state by definition.
         /// </summary>
@@ -36,7 +36,7 @@ namespace GraphSharp.Propagators
         /// </summary>
         public const byte Visited = 2;
         protected byte[] _nodeFlags;
-        public PropagatorBase(IVisitor<TNode,TEdge> visitor, IGraphStructure<TNode,TEdge> graph)
+        public PropagatorBase(IVisitor<TNode,TEdge> visitor, IGraph<TNode,TEdge> graph)
         {
             Visitor = visitor;
             _graph = graph;
@@ -60,7 +60,7 @@ namespace GraphSharp.Propagators
         /// Clears all node states for current propagator,
         /// </summary>
         /// <param name="graph"></param>
-        public void SetGraph(IGraphStructure<TNode,TEdge> graph)
+        public void SetGraph(IGraph<TNode,TEdge> graph)
         {
             _graph = graph;
             _nodeFlags = new byte[_graph.Nodes.MaxNodeId+1];

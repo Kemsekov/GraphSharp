@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 
@@ -23,8 +23,8 @@ where TEdge : IEdge<TNode>
     /// </summary>
     public bool DidSomething = true;
     public override IPropagator<TNode, TEdge> Propagator { get; }
-    public IGraphStructure<TNode, TEdge> Graph { get; }
-    public SourceCreator(IGraphStructure<TNode, TEdge> graph)
+    public IGraph<TNode, TEdge> Graph { get; }
+    public SourceCreator(IGraph<TNode, TEdge> graph)
     {
         Propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
         this.Graph = graph;

@@ -8,7 +8,7 @@ using GraphSharp.Edges;
 using GraphSharp.Exceptions;
 using GraphSharp.Nodes;
 
-namespace GraphSharp.GraphStructures
+namespace GraphSharp.Graphs
 {
     /// <summary>
     /// Default implementation of <see cref="IEdgeSource{,}"/>

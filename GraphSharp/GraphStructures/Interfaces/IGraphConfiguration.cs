@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using GraphSharp.Edges;
 using GraphSharp.Nodes;
-namespace GraphSharp.GraphStructures
+namespace GraphSharp.Graphs
 {
     /// <summary>
     /// A set of methods and properties that used to describe manipulations on nodes and edges
@@ -27,11 +27,5 @@ namespace GraphSharp.GraphStructures
         /// Method that used to create new <see cref="TEdge"/> from two <see cref="TNode"/>
         /// </summary>
         TEdge CreateEdge(TNode source, TNode target);
-        /// <summary>
-        /// Method that used to calculate distances between nodes.
-        /// By default uses their position distances.
-        /// </summary>
-        /// <returns>Distance between two nodes as a float value</returns>
-        float Distance(TNode n1, TNode n2) => (n1.Position-n2.Position).Length();
     }
 }

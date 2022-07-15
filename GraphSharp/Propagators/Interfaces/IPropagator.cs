@@ -1,5 +1,5 @@
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 namespace GraphSharp.Propagators
 {
@@ -9,7 +9,7 @@ namespace GraphSharp.Propagators
     {
         void Propagate();
         void SetPosition(params int[] nodeIndices);
-        void SetGraph(IGraphStructure<TNode,TEdge> graph);
+        void SetGraph(IGraph<TNode,TEdge> graph);
         public bool IsNodeInState(int nodeId, byte state);
         public void SetNodeState(int nodeId, byte state);
         public void RemoveNodeState(int nodeId, byte state);

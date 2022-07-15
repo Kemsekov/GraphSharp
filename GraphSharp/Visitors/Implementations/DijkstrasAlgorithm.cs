@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using GraphSharp.Edges;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
@@ -31,7 +31,7 @@ where TEdge : IEdge<TNode>
     /// </summary>
     float[] _pathLength;
     private Func<TEdge, float> _getWeight;
-    IGraphStructure<TNode, TEdge> _graph;
+    IGraph<TNode, TEdge> _graph;
     int _startNodeId;
     public bool DidSomething = true;
     /// <summary>
@@ -41,7 +41,7 @@ where TEdge : IEdge<TNode>
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
-    public DijkstrasAlgorithm(int startNodeId, IGraphStructure<TNode, TEdge> graph, Func<TEdge,float>? getWeight = null)
+    public DijkstrasAlgorithm(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge,float>? getWeight = null)
     {
         getWeight ??= e=>e.Weight;
         this._getWeight = getWeight;

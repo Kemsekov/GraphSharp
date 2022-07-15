@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Edges;
 using GraphSharp.Exceptions;
-using GraphSharp.GraphStructures;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
 using GraphSharp.Tests.Models;
 using MathNet.Numerics.LinearAlgebra.Single;
@@ -12,15 +12,15 @@ using Xunit;
 
 namespace GraphSharp.Tests
 {
-    public class GraphStructureConvertersTests
+    public class GraphConvertersTests
     {
         private Random _rand;
-        private GraphStructure<TestNode, TestEdge> _GraphStructure;
+        private Graph<TestNode, TestEdge> _Graph;
 
-        public GraphStructureConvertersTests()
+        public GraphConvertersTests()
         {
             _rand = new Random();
-            _GraphStructure = new(new TestGraphConfiguration(new Random()));
+            _Graph = new(new TestGraphConfiguration(new Random()));
         }
 
         [Fact]
@@ -32,15 +32,15 @@ namespace GraphSharp.Tests
             // n4
             var code = new byte[]{1,0,1,1,0,1,0};
 
-            _GraphStructure.Converter.FromTreeBinaryCode(code);
-            Assert.Equal(_GraphStructure.Nodes.Count-1,code.Sum(x=>x));
-            Assert.Equal(_GraphStructure.Edges.Count,code.Sum(x=>x));
+            _Graph.Converter.FromTreeBinaryCode(code);
+            Assert.Equal(_Graph.Nodes.Count-1,code.Sum(x=>x));
+            Assert.Equal(_Graph.Edges.Count,code.Sum(x=>x));
             
             Assert.True(
-                _GraphStructure.Edges.TryGetEdge(0,1,out _) &&
-                _GraphStructure.Edges.TryGetEdge(0,2,out _) &&
-                _GraphStructure.Edges.TryGetEdge(2,3,out _) &&
-                _GraphStructure.Edges.TryGetEdge(2,4,out _)
+                _Graph.Edges.TryGetEdge(0,1,out _) &&
+                _Graph.Edges.TryGetEdge(0,2,out _) &&
+                _Graph.Edges.TryGetEdge(2,3,out _) &&
+                _Graph.Edges.TryGetEdge(2,4,out _)
                 );
         }
 
@@ -50,19 +50,19 @@ namespace GraphSharp.Tests
             int size = _rand.Next(100) + 5;
             var adjacencyMatrix = CreateSquareMatrix(size, (i, b) => _rand.Next(2));
 
-            _GraphStructure.Converter.FromAdjacencyMatrix(adjacencyMatrix);
+            _Graph.Converter.FromAdjacencyMatrix(adjacencyMatrix);
             for (int i = 0; i < size; i++)
             {
-                var node = _GraphStructure.Nodes[i];
+                var node = _Graph.Nodes[i];
                 Assert.Equal(node.Id, i);
                 for (int b = 0; b < size; b++)
                 {
                     if (adjacencyMatrix[i, b] == 1)
                     {
-                        Assert.True(_GraphStructure.Edges.TryGetEdge(node.Id,b,out var _));
+                        Assert.True(_Graph.Edges.TryGetEdge(node.Id,b,out var _));
                     }
                     if(adjacencyMatrix[i,b]==0){
-                        Assert.True(!_GraphStructure.Edges.TryGetEdge(node.Id,b,out var _));
+                        Assert.True(!_Graph.Edges.TryGetEdge(node.Id,b,out var _));
                     }
                 }
             }
@@ -77,16 +77,16 @@ namespace GraphSharp.Tests
                 return weight < 0.5 ? 0 : weight;
             });
 
-            _GraphStructure.Converter.FromAdjacencyMatrix(adjacencyMatrix);
+            _Graph.Converter.FromAdjacencyMatrix(adjacencyMatrix);
             for (int i = 0; i < size; i++)
             {
-                var node = _GraphStructure.Nodes[i];
+                var node = _Graph.Nodes[i];
                 Assert.Equal(node.Id, i);
                 for (int b = 0; b < size; b++)
                 {
                     if (adjacencyMatrix[i, b] > 0)
                     {
-                        var edge = _GraphStructure.Edges[node.Id,b];
+                        var edge = _Graph.Edges[node.Id,b];
                         Assert.Equal(edge.Weight, adjacencyMatrix[i, b]);
                     }
                 }
@@ -96,14 +96,14 @@ namespace GraphSharp.Tests
         public void FromAdjacencyMatrix_ThrowsIfMatrixNotSquare()
         {
             var adjacencyMatrix = DenseMatrix.Create(5, 6, 0);
-            Assert.Throws<GraphConverterException>(() => _GraphStructure.Converter.FromAdjacencyMatrix(adjacencyMatrix));
+            Assert.Throws<GraphConverterException>(() => _Graph.Converter.FromAdjacencyMatrix(adjacencyMatrix));
         }
         [Fact]
         public void ToAdjacencyMatrix_Works()
         {
             int size = _rand.Next(100) + 5;
             var adjacencyMatrix = CreateSquareMatrix(size, (i, b) => _rand.Next(2));
-            var result = _GraphStructure.Converter.FromAdjacencyMatrix(adjacencyMatrix).ToAdjacencyMatrix();
+            var result = _Graph.Converter.FromAdjacencyMatrix(adjacencyMatrix).ToAdjacencyMatrix();
             Assert.Equal(adjacencyMatrix, result);
         }
         [Fact]
@@ -113,8 +113,8 @@ namespace GraphSharp.Tests
             int nodesCount = rand.Next(100)+5;
             var edgesCount = rand.Next(100)+5;
             var incidenceMatrix = CreateRandomIncidenceMatrix(nodesCount,edgesCount,(_,_)=>1-_rand.Next(1)*2);
-            _GraphStructure.Converter.FromIncidenceMatrix(incidenceMatrix);
-            var nodes = _GraphStructure.Nodes;
+            _Graph.Converter.FromIncidenceMatrix(incidenceMatrix);
+            var nodes = _Graph.Nodes;
             Assert.Equal(nodes.Count,incidenceMatrix.RowCount);
             Assert.Equal(nodesCount,nodes.Count);
 
@@ -133,19 +133,19 @@ namespace GraphSharp.Tests
                 var source = n1.value>n2.value ? n1 : n2;
                 var to = n1.value<=n2.value ? n1 : n2;
 
-                var edges = _GraphStructure.Edges[source.row];
+                var edges = _Graph.Edges[source.row];
                 
                 var sourceNode = edges.FirstOrDefault(x=>x.Target.Id==to.row);
                 Assert.NotNull(sourceNode);
-                _GraphStructure.Edges.Remove(sourceNode);
+                _Graph.Edges.Remove(sourceNode);
                 if(to.value==1){
-                    var toNode = _GraphStructure.Edges[to.row].FirstOrDefault(x=>x.Target.Id==source.row);
+                    var toNode = _Graph.Edges[to.row].FirstOrDefault(x=>x.Target.Id==source.row);
                     Assert.NotNull(toNode);
-                    _GraphStructure.Edges.Remove(toNode);
+                    _Graph.Edges.Remove(toNode);
                 }
             }
             foreach(var n in nodes)
-                Assert.Empty(_GraphStructure.Edges[n.Id]);
+                Assert.Empty(_Graph.Edges[n.Id]);
         }
         [Fact]
         public void ToAdjacencyMatrix_CalculateWeightFromEdgeWorks()
@@ -157,7 +157,7 @@ namespace GraphSharp.Tests
                 return weight < 0.5 ? 0 : weight;
             });
             var result =
-                _GraphStructure
+                _Graph
                 .Converter
                 .FromAdjacencyMatrix(adjacencyMatrix)
                 .ToAdjacencyMatrix();
@@ -197,10 +197,10 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FromConnectionsList1_Works(){
-            _GraphStructure.Create(100)
+            _Graph.Create(100)
             .Do.ConnectRandomly(5,20);
-            var expected = _GraphStructure.Converter.ToConnectionsList();
-            var actual = _GraphStructure.Converter.FromConnectionsList(expected).ToConnectionsList();
+            var expected = _Graph.Converter.ToConnectionsList();
+            var actual = _Graph.Converter.FromConnectionsList(expected).ToConnectionsList();
             Assert.NotEmpty(actual);
             Assert.Equal(expected.Count(),actual.Count());
             foreach(var e in expected.Zip(actual)){
@@ -209,8 +209,8 @@ namespace GraphSharp.Tests
             }
 
             expected = ManualTestData.TestConnectionsList;
-            _GraphStructure.Converter.FromConnectionsList(expected);
-            actual = _GraphStructure.Converter.ToConnectionsList();
+            _Graph.Converter.FromConnectionsList(expected);
+            actual = _Graph.Converter.ToConnectionsList();
             Assert.NotEmpty(actual);
             Assert.Equal(expected.Count(),actual.Count());
             foreach(var e in expected.Zip(actual)){
@@ -220,10 +220,10 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FromConnectionsList2_Works(){
-            _GraphStructure.Create(500)
+            _Graph.Create(500)
             .Do.ConnectRandomly(5,20);
-            var expected = _GraphStructure.Edges.Select(x=>(x.Source.Id,x.Target.Id));
-            var newGraph = _GraphStructure.Clone();
+            var expected = _Graph.Edges.Select(x=>(x.Source.Id,x.Target.Id));
+            var newGraph = _Graph.Clone();
             newGraph.Converter.FromConnectionsList(expected);
             var actual = newGraph.Edges.Select(x=>(x.Source.Id,x.Target.Id));
             Assert.Equal(expected,actual);

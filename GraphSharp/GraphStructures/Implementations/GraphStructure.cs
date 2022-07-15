@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using GraphSharp.Common;
 using GraphSharp.Edges;
+using GraphSharp.Graphs;
 using GraphSharp.Nodes;
-namespace GraphSharp.GraphStructures
+namespace GraphSharp.Graphs
 {
     /// <summary>
     /// Create nodes for graph structure. Entry for any other logic of graph structure.
     /// </summary>
-    public partial class GraphStructure<TNode,TEdge> : IGraphStructure<TNode,TEdge>, GraphSharp.Common.ICloneable<GraphStructure<TNode,TEdge>>
+    public class Graph<TNode,TEdge> : IGraph<TNode,TEdge>, GraphSharp.Common.ICloneable<Graph<TNode,TEdge>>
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
@@ -23,7 +24,7 @@ namespace GraphSharp.GraphStructures
         /// Just init new graph with empty Nodes and Edges using given configuration.
         /// </summary>
         /// <param name="configuration"></param>
-        public GraphStructure(IGraphConfiguration<TNode,TEdge> configuration)
+        public Graph(IGraphConfiguration<TNode,TEdge> configuration)
         {
             Configuration = configuration;
             Nodes = configuration.CreateNodeSource();
@@ -31,18 +32,18 @@ namespace GraphSharp.GraphStructures
         }
         
         /// <summary>
-        /// Copy constructor. Will make shallow copy of graphStructure
+        /// Copy constructor. Will make shallow copy of Graph
         /// </summary>
-        public GraphStructure(IGraphStructure<TNode, TEdge> graphStructure)
+        public Graph(IGraph<TNode, TEdge> Graph)
         {
-            Nodes         = graphStructure.Nodes;
-            Edges         = graphStructure.Edges;
-            Configuration = graphStructure.Configuration;
+            Nodes         = Graph.Nodes;
+            Edges         = Graph.Edges;
+            Configuration = Graph.Configuration;
         }
         /// <summary>
         /// Set current graph's Nodes and Edges
         /// </summary>
-        public GraphStructure<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TNode,TEdge> edges){
+        public Graph<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TNode,TEdge> edges){
             Nodes = nodes;
             Edges = edges;
             return this;
@@ -52,7 +53,7 @@ namespace GraphSharp.GraphStructures
         /// Clears graph and creates some count of nodes.
         /// </summary>
         /// <param name="count">Count of nodes to create</param>
-        public GraphStructure<TNode,TEdge> Create(int nodesCount)
+        public Graph<TNode,TEdge> Create(int nodesCount)
         {
             Clear();
             //create nodes
@@ -67,20 +68,20 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Returns operations class for this graph structure. This class contains methods to perform different algorithms on current graph structure.
         /// </summary>
-        public GraphStructureOperation<TNode,TEdge> Do => new GraphStructureOperation<TNode, TEdge>(this);
+        public GraphOperation<TNode,TEdge> Do => new GraphOperation<TNode, TEdge>(this);
         
         /// <summary>
         /// Get converters for current graph structure. This class allows you to convert current graph structure to different representations or rebuild current one from other representations as well.
         /// </summary>
-        public GraphStructureConverters<TNode,TEdge> Converter=> new(this);
+        public GraphConverters<TNode,TEdge> Converter=> new(this);
         
         /// <summary>
         /// Get induced subgraph from this graph structure.
         /// </summary>
         /// <param name="nodes">Nodes to induce</param>
         /// <returns>Induced subgraph of current graph</returns>
-        public GraphStructure<TNode,TEdge> Induce(params int[] nodes){
-            var result = new GraphStructure<TNode,TEdge>(Configuration);
+        public Graph<TNode,TEdge> Induce(params int[] nodes){
+            var result = new Graph<TNode,TEdge>(Configuration);
             var toInduce = new byte[Nodes.MaxNodeId+1];
             foreach(var n in nodes){
                 toInduce[n] = 1;
@@ -99,9 +100,9 @@ namespace GraphSharp.GraphStructures
         /// Clones graph structure
         /// </summary>
         /// <returns>Copy of current graph structure</returns>
-        public GraphStructure<TNode,TEdge> Clone()
+        public Graph<TNode,TEdge> Clone()
         {
-            var result = new GraphStructure<TNode,TEdge>(Configuration);
+            var result = new Graph<TNode,TEdge>(Configuration);
             var nodes = Nodes
                 .Select(x=>Configuration.CloneNode(x));
             
@@ -120,7 +121,7 @@ namespace GraphSharp.GraphStructures
         /// <summary>
         /// Clears current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
         /// </summary>
-        public GraphStructure<TNode,TEdge> Clear(){
+        public Graph<TNode,TEdge> Clear(){
             Nodes.Clear();
             Edges.Clear();
             return this;

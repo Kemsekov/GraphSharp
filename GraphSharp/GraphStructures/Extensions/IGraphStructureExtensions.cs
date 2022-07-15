@@ -7,11 +7,11 @@ using GraphSharp.Edges;
 using GraphSharp.Exceptions;
 using GraphSharp.Nodes;
 
-namespace GraphSharp.GraphStructures;
-public static class GraphStructureExtensions
+namespace GraphSharp.Graphs;
+public static class GraphExtensions
 {
     /// <returns>True if graph is directed, else false</returns>
-    public static bool IsDirected<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph)
+    public static bool IsDirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
@@ -25,7 +25,7 @@ public static class GraphStructureExtensions
         return true;
     }
     /// <returns>True if graph is undirected, else false</returns>
-    public static bool IsUndirected<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph)
+    public static bool IsUndirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
@@ -39,7 +39,7 @@ public static class GraphStructureExtensions
     /// <summary>
     /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception. If there is duplicate node throws an exception. If there is duplicate edge throws an exception. If there is unknown reference between nodes that does not present in the edges list throws an exception;
     /// </summary>
-    public static void CheckForIntegrity<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph)
+    public static void CheckForIntegrity<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
@@ -85,7 +85,7 @@ public static class GraphStructureExtensions
     /// <summary>
     /// Validates that given path is a valid path for current graph.
     /// </summary>
-    public static void ValidatePath<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph, IList<TNode> path)
+    public static void ValidatePath<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> path)
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
@@ -102,7 +102,7 @@ public static class GraphStructureExtensions
     /// <summary>
     /// Validates that given path is a valid cycle for given graph.
     /// </summary>
-    public static void ValidateCycle<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph, IList<TNode> cycle)
+    public static void ValidateCycle<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> cycle)
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
@@ -153,7 +153,7 @@ public static class GraphStructureExtensions
     /// <summary>
     /// Checks if graph colored in a right way. Throws an exception if there is a case when some node is not colored in a right way.
     /// </summary>
-    public static void EnsureRightColoring<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph)
+    public static void EnsureRightColoring<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
@@ -167,7 +167,7 @@ public static class GraphStructureExtensions
             }
         }
     }
-    public static float MeanNodeEdgesCount<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph)
+    public static float MeanNodeEdgesCount<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge<TNode>
         => (float)(graph.Edges.Count) / (graph.Nodes.Count == 0 ? 1 : graph.Nodes.Count);
@@ -175,7 +175,7 @@ public static class GraphStructureExtensions
     /// <summary>
     /// Apply predicate on nodes and returns selected nodes Id as int array. Just a shortcut for convenience.
     /// </summary>
-    public static int[] GetNodesIdWhere<TNode, TEdge>(this IGraphStructure<TNode, TEdge> graph, Predicate<TNode> predicate)
+    public static int[] GetNodesIdWhere<TNode, TEdge>(this IGraph<TNode, TEdge> graph, Predicate<TNode> predicate)
     where TNode : INode
     where TEdge : IEdge<TNode>
     {
