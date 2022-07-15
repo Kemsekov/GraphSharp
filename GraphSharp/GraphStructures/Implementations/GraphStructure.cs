@@ -21,6 +21,13 @@ namespace GraphSharp.Graphs
         public INodeSource<TNode> Nodes { get; protected set; }
         public IEdgeSource<TNode,TEdge> Edges { get; protected set; }
         /// <summary>
+        /// Create new graph with specified nodes and edges creation functions
+        /// </summary>
+        public Graph(Func<int,TNode> createNode, Func<TNode,TNode,TEdge> createEdge)
+        : this(new GraphConfiguration<TNode,TEdge>(new Random(),createEdge,createNode))
+        {
+        }
+        /// <summary>
         /// Just init new graph with empty Nodes and Edges using given configuration.
         /// </summary>
         /// <param name="configuration"></param>
