@@ -38,6 +38,7 @@ where TEdge : IEdge<TNode>
     /// Count of steps it took to calculate Dijkstra's Algorithm
     /// </summary>
     public int Steps { get; private set; }
+    public int StartNodeId => _startNodeId;
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>

@@ -16,7 +16,7 @@ namespace GraphSharp.Graphs
         /// <summary>
         /// <see cref="Random"/> that used to implement's any logic when it reqires random values
         /// </summary>
-        public Random Rand {get;}
+        public Random Rand {get;set;}
         IEdgeSource<TNode,TEdge> CreateEdgeSource();
         INodeSource<TNode> CreateNodeSource();
         /// <summary>

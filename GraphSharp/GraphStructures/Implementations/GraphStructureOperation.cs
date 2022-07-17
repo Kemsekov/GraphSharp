@@ -64,15 +64,15 @@ where TEdge : Edges.IEdge<TNode>
         }
 
         var outsideEdges = Edges.Except(treeGraph.Edges);
-        var result = new List<IList<TNode>>();
-        foreach (var e in outsideEdges)
+        var result = new ConcurrentBag<IList<TNode>>();
+        Parallel.ForEach (outsideEdges,e=>
         {
             var path = treeGraph.Do.FindAnyPath(e.Target.Id, e.Source.Id);
             if (path.Count != 0)
             {
                 result.Add(path.Prepend(e.Source).ToList());
             }
-        }
+        });
         return result;
     }
     /// <summary>

@@ -24,7 +24,6 @@ where TEdge : IEdge<TNode>
     public int Count { get; protected set; }
     public DefaultEdgeSource()
     {
-        var m = new List<int>();
         Edges = new ConcurrentDictionary<int, IList<TEdge>>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
         Sources = new ConcurrentDictionary<int, IList<int>>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
     }
