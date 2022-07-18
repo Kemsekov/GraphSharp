@@ -630,11 +630,11 @@ namespace GraphSharp.Tests
             _Graph.Do.ConnectNodes(20);
             var cycles = _Graph.Do.FindCyclesBasis();
             var accumulator = new List<(IList<TestNode> cycle1, IList<TestNode> cycle2)>();
-            cycles.Aggregate((cycle1, cycle2) =>
-            {
-                accumulator.Add((cycle1, cycle2));
-                return cycle2;
-            });
+            foreach(var c1 in cycles){
+                var possibleCycles = cycles.Where(c2=>c2.Intersect(c1).Count()>1).ToArray();
+                if(possibleCycles.Length>2)
+                accumulator.Add((c1,possibleCycles[1]));
+            }
             var inCycles = new byte[_Graph.Nodes.MaxNodeId];
             foreach ((var cycle1, var cycle2) in accumulator)
             {
