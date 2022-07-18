@@ -139,7 +139,7 @@ public static class GraphExtensions
         }
     }
     /// <summary>
-    /// Combines two cycles into one.
+    /// Combines two cycles into one. Given two simple cycles find a new longer cycle that visits all nodes from both cycles.
     /// </summary>
     /// <returns>True if combination is successful else false</returns>
     public static bool CombineCycles<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> cycle1, IList<TNode> cycle2, out IList<TNode> result)

@@ -626,7 +626,7 @@ namespace GraphSharp.Tests
                 Assert.True(_Graph.CombineCycles(cycle1.ToList(),cycle2.ToList(),out var combined));
                 Assert.True(combined.Count>cycle1.Length && combined.Count>cycle2.Length);
             }
-            _Graph.Create(1000);
+            _Graph.Create(2000);
             _Graph.Do.ConnectNodes(20);
             var cycles = _Graph.Do.FindCyclesBasis();
             var accumulator = new List<(IList<TestNode> cycle1, IList<TestNode> cycle2)>();
@@ -635,11 +635,16 @@ namespace GraphSharp.Tests
                 accumulator.Add((cycle1, cycle2));
                 return cycle2;
             });
+            var inCycles = new byte[_Graph.Nodes.MaxNodeId];
             foreach ((var cycle1, var cycle2) in accumulator)
             {
+                Array.Fill(inCycles,(byte)0);
+                foreach(var c in cycle1.Concat(cycle2))
+                    inCycles[c.Id] = 1;
                 if(_Graph.CombineCycles(cycle1.ToList(), cycle2.ToList(), out var combined)){
                     _Graph.ValidateCycle(combined);
                     Assert.True(combined.Count >= cycle1.Count && combined.Count >= cycle2.Count);
+                    Assert.True(combined.All(n=>inCycles[n.Id]==1));
                 }
             }
         }
