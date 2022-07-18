@@ -15,6 +15,6 @@ namespace GraphSharp.Tests.Models
         public TestNode(int id) : base(id)
         {
         }
-
+        
     }
 }

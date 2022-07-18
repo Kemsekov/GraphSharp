@@ -139,6 +139,57 @@ public static class GraphExtensions
         }
     }
     /// <summary>
+    /// Combines two cycles into one.
+    /// </summary>
+    /// <returns>True if combination is successful else false</returns>
+    public static bool CombineCycles<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> cycle1, IList<TNode> cycle2, out IList<TNode> result)
+    where TNode : INode
+    where TEdge : IEdge<TNode>
+    {
+        var intersection = cycle1.Select(x=>x.Id).Intersect(cycle2.Select(y=>y.Id)).ToArray();
+
+        result = new List<TNode>(cycle1.Count+cycle2.Count-intersection.Length);
+        
+        if(intersection.Length<2)
+            return false;
+
+        var dict = new Dictionary<int,IList<TNode>>();
+        foreach(var c1 in cycle1){
+            dict[c1.Id] = new List<TNode>();
+        }
+        foreach(var c1 in cycle2){
+            dict[c1.Id] = new List<TNode>();
+        }
+        cycle1.Aggregate((n1,n2)=>{
+            dict[n1.Id].Add(n2);
+            return n2;
+        });
+        cycle2.Aggregate((n1,n2)=>{
+            dict[n1.Id].Add(n2);
+            return n2;
+        });
+        
+        foreach(var node in dict.Keys){
+            var edges = dict[node];
+            if(intersection.Contains(node))
+            foreach(var e in edges.ToArray()){
+                if(intersection.Contains(e.Id) && edges.Count>1)
+                    edges.Remove(e);
+            }
+        }
+        foreach(var m in dict){
+            if(m.Value.Count!=1) return false;
+        }
+        var tmpNode = dict.First().Key;
+        result.Add(graph.Nodes[tmpNode]);
+        while(true){
+            tmpNode = dict[tmpNode].First().Id;
+            result.Add(graph.Nodes[tmpNode]);
+            if(result.First().Id==result.Last().Id) break;
+        }
+        return true;
+    }
+    /// <summary>
     /// Prints path in a console.
     /// </summary>
     public static void PrintPath<TNode>(IList<TNode> path)

@@ -18,5 +18,10 @@ namespace GraphSharp.Nodes
         {
             Id = id;
         }
+        public override string ToString()
+        {
+            return $"Node {Id}";
+        }
+
     }
 }

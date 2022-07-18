@@ -9,6 +9,7 @@ namespace GraphSharp.Graphs
 {
     public interface IEdgeSource<TNode,TEdge> : IEnumerable<TEdge>
     where TEdge : IEdge<TNode>
+    where TNode : INode
     {
         int Count{ get; }
         void Add(TEdge edge);

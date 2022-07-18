@@ -618,6 +618,31 @@ namespace GraphSharp.Tests
             Assert.Equal(nodes.Select(x => x), _Graph.Nodes.Select(x => x));
             Assert.Equal(edges.Select(x => x), _Graph.Edges.Select(x => x));
         }
+        [Fact]
+        public void CombineCycles_Works(){
+            {
+                var cycle1 = new TestNode[]{new(26),new(90),new(86),new(89),new(26)};
+                var cycle2 = new TestNode[]{new(86),new(26),new(94),new(90),new(86)};
+                Assert.True(_Graph.CombineCycles(cycle1.ToList(),cycle2.ToList(),out var combined));
+                Assert.True(combined.Count>cycle1.Length && combined.Count>cycle2.Length);
+            }
+            _Graph.Create(1000);
+            _Graph.Do.ConnectNodes(20);
+            var cycles = _Graph.Do.FindCyclesBasis();
+            var accumulator = new List<(IList<TestNode> cycle1, IList<TestNode> cycle2)>();
+            cycles.Aggregate((cycle1, cycle2) =>
+            {
+                accumulator.Add((cycle1, cycle2));
+                return cycle2;
+            });
+            foreach ((var cycle1, var cycle2) in accumulator)
+            {
+                if(_Graph.CombineCycles(cycle1.ToList(), cycle2.ToList(), out var combined)){
+                    _Graph.ValidateCycle(combined);
+                    Assert.True(combined.Count >= cycle1.Count && combined.Count >= cycle2.Count);
+                }
+            }
+        }
         public void validateThereIsNoCopiesAndSourcesInEdges(INodeSource<TestNode> nodes, IEdgeSource<TestNode, TestEdge> edges)
         {
             foreach (var source in nodes)

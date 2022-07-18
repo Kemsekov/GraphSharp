@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
+using GraphSharp.Nodes;
 
 namespace GraphSharp.Edges
 {
@@ -11,6 +12,7 @@ namespace GraphSharp.Edges
     /// </summary>
     /// <typeparam name="TNode"></typeparam>
     public class Edge<TNode> : IEdge<TNode>
+    where TNode : INode
     {
         public TNode Source{get;set;}
         public TNode Target{get;set;}
@@ -23,6 +25,10 @@ namespace GraphSharp.Edges
         {
             Source = source;
             Target = target;
+        }
+        public override string ToString()
+        {
+            return $"Edge {Source.Id}->{Target.Id}";
         }
     }
 }
