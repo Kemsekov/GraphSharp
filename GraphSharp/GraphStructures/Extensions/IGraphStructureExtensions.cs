@@ -147,39 +147,43 @@ public static class GraphExtensions
     where TEdge : IEdge<TNode>
     {
         var intersection = cycle1.Select(x=>x.Id).Intersect(cycle2.Select(y=>y.Id)).ToArray();
-
+        
+        var cycles = cycle1.Concat(cycle2);
         result = new List<TNode>(cycle1.Count+cycle2.Count-intersection.Length);
         
         if(intersection.Length<2)
             return false;
 
         var dict = new Dictionary<int,IList<TNode>>();
-        foreach(var c1 in cycle1){
+        var incomingEdges = new Dictionary<int,int>();
+        foreach(var c1 in cycles){
             dict[c1.Id] = new List<TNode>();
+            incomingEdges[c1.Id]=0;
         }
-        foreach(var c1 in cycle2){
-            dict[c1.Id] = new List<TNode>();
-        }
-        cycle1.Aggregate((n1,n2)=>{
+        cycles.Aggregate((n1,n2)=>{
             dict[n1.Id].Add(n2);
+            incomingEdges[n2.Id]++;
             return n2;
         });
-        cycle2.Aggregate((n1,n2)=>{
-            dict[n1.Id].Add(n2);
-            return n2;
-        });
+        
         
         foreach(var node in dict.Keys){
             var edges = dict[node];
             if(intersection.Contains(node))
             foreach(var e in edges.ToArray()){
-                if(intersection.Contains(e.Id) && edges.Count>1)
+                if(intersection.Contains(e.Id) && edges.Count>1 && incomingEdges[e.Id]>1){
                     edges.Remove(e);
+                    incomingEdges[e.Id]--;
+                }
             }
         }
-        foreach(var m in dict){
+        
+        //check if two cycles merged successfully
+        foreach(var m in dict)
             if(m.Value.Count!=1) return false;
-        }
+        foreach(var m in incomingEdges)
+            if(m.Value!=1) return false;
+        
         var tmpNode = dict.First().Key;
         result.Add(graph.Nodes[tmpNode]);
         while(true){
