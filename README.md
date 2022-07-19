@@ -18,3 +18,5 @@ Find articulation points
 ![example](https://user-images.githubusercontent.com/57869319/176494620-2cb92342-aa2d-432f-bfc6-ca503017464d.jpg)
 Get components of a graph
 ![example](https://user-images.githubusercontent.com/57869319/176998046-e1ba18c7-9f11-4b9d-bd2f-54537d5d4a0a.jpg)
+Cycles finder (here I color 10 shortest cycles found)
+![example](https://user-images.githubusercontent.com/57869319/179674538-142bf36b-e760-49d8-9ed6-eed3c512e907.jpg)
