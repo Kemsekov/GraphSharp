@@ -15,5 +15,9 @@ namespace GraphSharp.Graphs
         public Graph() : base(id=>new(id),(n1,n2)=>new(n1,n2))
         {
         }
+        public Graph(Func<int, Node> createNode, Func<Node, Node, Edge<Node>> createEdge) : base(createNode,createEdge)
+        {
+            
+        }
     }
 }
