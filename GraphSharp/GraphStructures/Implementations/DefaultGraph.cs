@@ -10,9 +10,9 @@ namespace GraphSharp.Graphs
     /// <summary>
     /// Default graph
     /// </summary>
-    public class DefaultGraph : Graph<Node,Edge<Node>>
+    public class Graph : Graph<Node,Edge<Node>>
     {
-        public DefaultGraph() : base(id=>new(id),(n1,n2)=>new(n1,n2))
+        public Graph() : base(id=>new(id),(n1,n2)=>new(n1,n2))
         {
         }
     }
