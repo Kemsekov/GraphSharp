@@ -10,14 +10,14 @@ namespace GraphSharp.Graphs
     /// <summary>
     /// Default graph
     /// </summary>
-    public class Graph : Graph<Node,Edge<Node>>
+    public class Graph : Graph<Node,Edge>
     {
         public Graph() : base(id=>new(id),(n1,n2)=>new(n1,n2))
         {
         }
-        public Graph(Func<int, Node> createNode, Func<Node, Node, Edge<Node>> createEdge) : base(createNode,createEdge)
+        public Graph(Func<int, Node> createNode, Func<Node, Node, Edge> createEdge) : base(createNode,createEdge)
         {
-            
+
         }
     }
 }
