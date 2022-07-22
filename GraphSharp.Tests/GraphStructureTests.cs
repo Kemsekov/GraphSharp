@@ -626,6 +626,11 @@ namespace GraphSharp.Tests
                 Assert.True(_Graph.CombineCycles(cycle1.ToList(),cycle2.ToList(),out var combined));
                 Assert.True(combined.Count>cycle1.Length && combined.Count>cycle2.Length);
             }
+            {
+                var cycle1 = new TestNode[]{new(1),new(8),new(7), new(9), new(2),new(1)};
+                var cycle2 = new TestNode[]{new(3),new(2),new(9),new(7),new(6),new(5),new(4),new(3)};
+                Assert.False(_Graph.CombineCycles(cycle1,cycle2,out var combined));
+            }
             _Graph.Create(2000);
             _Graph.Do.ConnectNodes(20);
             var cycles = _Graph.Do.FindCyclesBasis();

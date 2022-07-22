@@ -105,14 +105,8 @@ namespace GraphSharp.Graphs
             var Configuration = _structureBase.Configuration;
             var Nodes = _structureBase.Nodes;
             var Edges = _structureBase.Edges;
-            for(int i = 0;i<width;i++)
-            for(int b = 0;b<width;b++){
-                if(adjacencyMatrix[i,b]!=0){
-                    var node = Configuration.CreateNode(i);
-                    Nodes.Add(node);
-                    break;
-                }
-            }
+
+            _structureBase.Create(width);
             
             for(int i = 0;i<width;i++)
             for(int b = 0;b<width;b++){
@@ -122,6 +116,7 @@ namespace GraphSharp.Graphs
                     Edges.Add(edge);
                 }
             }
+            _structureBase.Do.RemoveIsolatedNodes();
             return this;
         }
         /// <summary>

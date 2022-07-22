@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace GraphSharp.Nodes
 {
+    /// <summary>
+    /// Default Node
+    /// </summary>
     public class Node : INode
     {
         public int Id{get;}
