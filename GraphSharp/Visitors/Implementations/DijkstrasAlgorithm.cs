@@ -22,7 +22,7 @@ where TEdge : IEdge<TNode>
     /// <summary>
     /// what is the length of path from startNode to some other node so far.  
     /// </summary>
-    public float[] PathLength =>_pathLength;
+    public float[] PathLength => _pathLength;
     int[] _path;
     /// <summary>
     /// what is the length of path from startNode to some other node so far.  
@@ -30,26 +30,34 @@ where TEdge : IEdge<TNode>
     float[] _pathLength;
     private Func<TEdge, float> _getWeight;
     IGraph<TNode, TEdge> _graph;
-    int _startNodeId;
     public bool DidSomething = true;
     /// <summary>
     /// Count of steps it took to calculate Dijkstra's Algorithm
     /// </summary>
     public int Steps { get; private set; }
-    public int StartNodeId => _startNodeId;
+    public int StartNodeId;
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
-    public DijkstrasAlgorithm(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge,float>? getWeight = null)
+    public DijkstrasAlgorithm(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge, float>? getWeight = null)
     {
-        getWeight ??= e=>e.Weight;
+        getWeight ??= e => e.Weight;
         this._getWeight = getWeight;
         this._graph = graph;
-        this._startNodeId = startNodeId;
-        _pathLength = new float[graph.Nodes.MaxNodeId+1];
-        _path = new int[graph.Nodes.MaxNodeId+1];
-        Array.Fill(_path,-1);
-        Array.Fill(_pathLength,-1);
+        this.StartNodeId = startNodeId;
+        _pathLength = new float[graph.Nodes.MaxNodeId + 1];
+        _path = new int[graph.Nodes.MaxNodeId + 1];
+        Array.Fill(_path, -1);
+        Array.Fill(_pathLength, -1);
+        _pathLength[startNodeId] = 0;
+    }
+    public void Clear(int startNodeId)
+    {
+        this.StartNodeId = startNodeId;
+        _pathLength = new float[_graph.Nodes.MaxNodeId + 1];
+        _path = new int[_graph.Nodes.MaxNodeId + 1];
+        Array.Fill(_path, -1);
+        Array.Fill(_pathLength, -1);
         _pathLength[startNodeId] = 0;
     }
     public void EndVisit()
@@ -89,15 +97,15 @@ where TEdge : IEdge<TNode>
     public IList<TNode> GetPath(int endNodeId)
     {
         var path = new List<TNode>();
-        if (_path[endNodeId]==-1) return path;
+        if (_path[endNodeId] == -1) return path;
         while (true)
-            {
-                var parent = _path[endNodeId];
-                if(parent==-1) break;
-                path.Add(_graph.Nodes[endNodeId]);
-                endNodeId = parent;
-            }
-        path.Add(this._graph.Nodes[_startNodeId]);
+        {
+            var parent = _path[endNodeId];
+            if (parent == -1) break;
+            path.Add(_graph.Nodes[endNodeId]);
+            endNodeId = parent;
+        }
+        path.Add(this._graph.Nodes[StartNodeId]);
         path.Reverse();
         return path;
     }

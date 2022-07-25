@@ -26,6 +26,25 @@ namespace GraphSharp.Tests
             this._Graph = new Graph<TestNode, TestEdge>(new TestGraphConfiguration(new Random())).Create(_nodes_count);
         }
         [Fact]
+        public void FindCenter_Works(){
+            throw new NotImplementedException();
+        }
+        public void ApproximateCenter_Works(){
+            throw new NotImplementedException();
+        }
+        [Fact]
+        public void FindLowLinkValues_Works(){
+            throw new NotImplementedException();
+        }
+        [Fact]
+        public void FindStronglyConnectedComponents_Works(){
+            throw new NotImplementedException();
+        }
+        [Fact]
+        public void FindEccentricity_Works(){
+            throw new NotImplementedException();
+        }
+        [Fact]
         public void FindCycleBasis_Works()
         {
             _Graph.Create(1000);

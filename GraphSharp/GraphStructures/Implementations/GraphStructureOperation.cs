@@ -27,6 +27,73 @@ where TEdge : Edges.IEdge<TNode>
         _structureBase = structureBase;
     }
     /// <summary>
+    /// Finds low link values for nodes. Can be used to get strongly connected components
+    /// </summary>
+    /// <returns>Array where index is node id and value is low link value. When value is -1 it means that there is not node with given index.</returns>
+    public int[] FindLowLinkValues()
+    {
+        //thanks to https://www.youtube.com/watch?v=wUgWX0nc4NY
+        var Nodes = _structureBase.Nodes;
+        var Edges = _structureBase.Edges;
+        var UNVISITED = -1;
+        //we assign new local id to each node so we can find low link values
+        var ids = new int[_structureBase.Nodes.MaxNodeId + 1];
+        //here we store low link values
+        var low = new int[_structureBase.Nodes.MaxNodeId + 1];
+        //if value > 0 then on a stack
+        var onStack = new byte[_structureBase.Nodes.MaxNodeId + 1];
+        var stack = new Stack<int>();
+        //id counter
+        var id = 0;
+        void dfs(int at)
+        {
+            stack.Push(at);
+            onStack[at] = 1;
+            id++;
+            ids[at] = id;
+            low[at] = id;
+            foreach (var e in Edges[at])
+            {
+                var to = e.Target.Id;
+                if (ids[to] == UNVISITED) dfs(to);
+                if (onStack[to] > 0) low[at] = Math.Min(low[at], low[to]);
+            }
+            if (ids[at] == low[at])
+            {
+                for (var nodeId = stack.Pop(); ; nodeId = stack.Pop())
+                {
+                    onStack[nodeId] = 0;
+                    low[nodeId] = ids[at];
+                    if (nodeId == at) break;
+                }
+            }
+        }
+
+        for (int i = 0; i < ids.Length; i++) ids[i] = UNVISITED;
+        for (int i = 0; i < ids.Length; i++)
+        {
+            if(!Nodes.TryGetNode(i,out var _)) break;
+            if (ids[i] == UNVISITED)
+                dfs(i);
+        }
+        return low;
+    }
+    /// <summary>
+    /// Finds all strongly connected components. It means that if there is a path between two nodes like A->...->B and B->...->A (in both directions) then these nodes are strongly connected and in the same strongly connected component.
+    /// </summary>
+    /// <returns>List of tuples, where first value is a list of nodes in a certain component and second value is this component id.</returns>
+    public IEnumerable<(IEnumerable<TNode> nodes, int componentId)> FindStronglyConnectedComponents()
+    {
+        var low = FindLowLinkValues();
+        var Nodes = _structureBase.Nodes;
+        var result = low
+            .Select((componentId, index) => (componentId, index))
+            .GroupBy(x => x.componentId)
+            .Select(x => (x.Select(x => Nodes[x.index]), x.Key));
+
+        return result;
+    }
+    /// <summary>
     /// Do topological sort on the graph. Changes X coordinates of nodes so any following nodes are ancestors of previous once and have bigger X coordinate
     /// </summary>
     public void TopologicalSort()
@@ -37,6 +104,94 @@ where TEdge : Edges.IEdge<TNode>
             alg.Propagate();
         }
         alg.DoTopologicalSort();
+    }
+    /// <summary>
+    /// Tries to approximate center and radius of a graph. Works only on strongly connected graphs, otherwise produce wrong results. <br/>
+    /// How it works: <br/>
+    /// It tries to step into node longest path until it does not create cycle. <br/>
+    /// 1) It takes node A and finds shortest paths to all other nodes.<br/>
+    /// 2) It finds the longest path among them and reach second node in this path. Like if A->B->C is given path then it takes node B. Now we perform step 1 again but with node B.<br/>
+    /// 3) It repeats step 1 and 2 until path formed by finding these nodes does not lock on itself. <br/>
+    /// So by doing this we repeatedly get closer and closer to center of a graph.<br/>
+    /// Worst time complexity is O(R(G)), where R(G) is a radius of a graph, but the closer node to a center you choose, the faster it finds a solution.
+    /// </summary>
+    /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
+    /// <returns>radius, center nodes and approximation points. The last one can be used to keep track of how algorithm built path to a center from a given startNodeId</returns>
+    public (float radius, IEnumerable<TNode> center, IEnumerable<TNode> approximationPath) ApproximateCenter(int startNodeId, Func<TEdge, float>? getWeight = null)
+    {
+        var Nodes = _structureBase.Nodes;
+        var visited = new byte[Nodes.MaxNodeId + 1];
+        var point = Nodes[1333];
+        var points = new List<TNode>();
+        TNode end;
+        float radius = float.MaxValue;
+        while (true)
+        {
+            visited[point.Id] += 1;
+            if (visited[point.Id] > 1)
+            {
+                end = point;
+                break;
+            }
+            points.Add(point);
+            var paths = _structureBase.Do.FindShortestPathsParallel(point.Id);
+            var direction = paths.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
+            point = paths.GetPath(direction.index)[1];
+            radius = Math.Min(radius, direction.length);
+        }
+        return (radius, points.SkipWhile(x => x.Id != end.Id), points);
+    }
+    /// <param name="getWeight">Determine how to find a eccentricity of a node. By default it uses edges weights, but you can change it.</param>
+    /// <returns>Length of a longest shortest path for a given node and endpoint of that path.</returns>
+    public (float length, TNode farthestNode) FindEccentricity(int nodeId, Func<TEdge, float>? getWeight = null)
+    {
+        var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(nodeId, _structureBase, getWeight);
+        var propagator = new ParallelPropagator<TNode, TEdge>(pathFinder, _structureBase);
+        propagator.SetPosition(nodeId);
+        while (pathFinder.DidSomething)
+        {
+            pathFinder.DidSomething = false;
+            propagator.Propagate();
+        }
+        var p = pathFinder.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
+        return (p.length, _structureBase.Nodes[p.index]);
+    }
+    /// <summary>
+    /// Finds radius and center of graph. <br/>
+    /// Operates in O(V^2 * logV + EV) time where V is a count of nodes and E is a count of edges
+    /// </summary>
+    /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
+    public (float radius, IEnumerable<TNode> center) FindCenter(Func<TEdge, float>? getWeight = null)
+    {
+        var radius = float.MaxValue;
+        var Nodes = _structureBase.Nodes;
+        var center = new List<TNode>();
+        var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(0, _structureBase, getWeight);
+        var propagator = new ParallelPropagator<TNode, TEdge>(pathFinder, _structureBase);
+        foreach (var n in Nodes)
+        {
+            pathFinder.Clear(n.Id);
+            propagator.SetPosition(n.Id);
+            pathFinder.DidSomething = true;
+            while (pathFinder.DidSomething)
+            {
+                pathFinder.DidSomething = false;
+                propagator.Propagate();
+            }
+            // pathFinder = _structureBase.Do.FindShortestPathsParallel(n.Id);
+            var p = pathFinder.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
+            if (p.length != 0)
+                if (p.length < radius)
+                {
+                    radius = p.length;
+                    center.Clear();
+                }
+            if (Math.Abs(p.length - radius) < float.Epsilon)
+                center.Add(Nodes[n.Id]);
+
+        }
+        return (radius, center);
+
     }
     /// <summary>
     /// Finds fundamental cycles basis.
@@ -65,7 +220,7 @@ where TEdge : Edges.IEdge<TNode>
 
         var outsideEdges = Edges.Except(treeGraph.Edges);
         var result = new ConcurrentBag<IList<TNode>>();
-        Parallel.ForEach (outsideEdges,e=>
+        Parallel.ForEach(outsideEdges, e =>
         {
             var path = treeGraph.Do.FindAnyPath(e.Target.Id, e.Source.Id);
             if (path.Count != 0)
@@ -336,10 +491,10 @@ where TEdge : Edges.IEdge<TNode>
     /// <param name="minEdgesCount">minimum edges count</param>
     /// <param name="maxEdgesCount">maximum edges count</param>
     /// <param name="distance">distance function</param>
-    public GraphOperation<TNode, TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<TNode,TNode,float>? distance = null)
+    public GraphOperation<TNode, TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<TNode, TNode, float>? distance = null)
     {
-        if(maxEdgesCount==0) return this;
-        distance ??= (n1,n2)=>(n1.Position-n2.Position).Length();
+        if (maxEdgesCount == 0) return this;
+        distance ??= (n1, n2) => (n1.Position - n2.Position).Length();
         var Nodes = _structureBase.Nodes;
         var Edges = _structureBase.Edges;
         Edges.Clear();

@@ -32,8 +32,8 @@ where TEdge : IEdge<TNode>
     {
         get
         {
-            if (Edges.TryGetValue(sourceId, out var targetren))
-                return targetren;
+            if (Edges.TryGetValue(sourceId, out var edge))
+                return edge;
             return Enumerable.Empty<TEdge>();
         }
     }
