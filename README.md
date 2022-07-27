@@ -20,3 +20,5 @@ For samples see https://github.com/Kemsekov/GraphSharp.Samples
 ![example](https://user-images.githubusercontent.com/57869319/176998046-e1ba18c7-9f11-4b9d-bd2f-54537d5d4a0a.jpg)
 [Cycles finder](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/CycleFinder) (here I color 10 shortest cycles found)
 ![example](https://user-images.githubusercontent.com/57869319/179674538-142bf36b-e760-49d8-9ed6-eed3c512e907.jpg)
+[Strongly connected components finder](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/StronglyComponentsFinder)
+![example](https://user-images.githubusercontent.com/57869319/181353679-86969151-e88e-4600-8db1-8d9e361e96ce.jpg)
