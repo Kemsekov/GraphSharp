@@ -12,15 +12,16 @@ where TNode : INode
 where TEdge : Edges.IEdge<TNode>
 {
     /// <summary>
-    /// Do topological sort on the graph. Changes X coordinates of nodes so any following nodes are ancestors of previous once and have bigger X coordinate
+    /// Do topological sort on the graph.
     /// </summary>
-    public void TopologicalSort()
+    /// <returns>Object that contains List of layers where each layer is a list of nodes at a certain layer of topological sort. Use <see cref="TopologicalSorter{,}.DoTopologicalSort"/> to change X coordinates to a certain value.</returns>
+    public TopologicalSorter<TNode,TEdge> TopologicalSort()
     {
         var alg = new TopologicalSorter<TNode, TEdge>(_structureBase);
         while (!alg.Done)
         {
             alg.Propagate();
         }
-        alg.DoTopologicalSort();
+        return alg;
     }
 }

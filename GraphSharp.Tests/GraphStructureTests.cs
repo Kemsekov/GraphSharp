@@ -26,6 +26,10 @@ namespace GraphSharp.Tests
             this._Graph = new Graph<TestNode, TestEdge>(new TestGraphConfiguration(new Random())).Create(_nodes_count);
         }
         [Fact]
+        public void FindLongestPath_Works(){
+            throw new NotImplementedException();
+        }
+        [Fact]
         public void FindCenter_Works(){
             throw new NotImplementedException();
         }

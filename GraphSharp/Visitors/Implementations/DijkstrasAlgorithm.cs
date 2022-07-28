@@ -15,6 +15,13 @@ public class DijkstrasAlgorithm<TNode, TEdge> : IVisitor<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge<TNode>
 {
+    int[] _path;
+    /// <summary>
+    /// what is the length of path from startNode to some other node so far.  
+    /// </summary>
+    float[] _pathLength;
+    private Func<TEdge, float> _getWeight;
+    IGraph<TNode, TEdge> _graph;
     /// <summary>
     /// _path[node] = parent 
     /// </summary>
@@ -23,18 +30,11 @@ where TEdge : IEdge<TNode>
     /// what is the length of path from startNode to some other node so far.  
     /// </summary>
     public float[] PathLength => _pathLength;
-    int[] _path;
-    /// <summary>
-    /// what is the length of path from startNode to some other node so far.  
-    /// </summary>
-    float[] _pathLength;
-    private Func<TEdge, float> _getWeight;
-    IGraph<TNode, TEdge> _graph;
     public bool DidSomething = true;
     /// <summary>
     /// Count of steps it took to calculate Dijkstra's Algorithm
     /// </summary>
-    public int Steps { get; private set; }
+    public int Steps;
     public int StartNodeId;
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>

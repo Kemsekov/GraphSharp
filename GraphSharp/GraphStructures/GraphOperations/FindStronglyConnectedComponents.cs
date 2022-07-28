@@ -20,6 +20,7 @@ where TEdge : Edges.IEdge<TNode>
         var Nodes = _structureBase.Nodes;
         var result = low
             .Select((componentId, index) => (componentId, index))
+            .Where(x=>_structureBase.Nodes.TryGetNode(x.index,out var _))
             .GroupBy(x => x.componentId)
             .Select(x => (x.Select(x => Nodes[x.index]), x.Key));
 

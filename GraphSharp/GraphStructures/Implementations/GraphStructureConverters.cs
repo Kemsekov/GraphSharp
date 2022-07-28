@@ -183,8 +183,10 @@ namespace GraphSharp.Graphs
         /// </summary>
         /// <param name="connectionsList">List of value pairs where source is edge source and target is edge target.</param>
         /// <returns></returns>
-        public GraphConverters<TNode,TEdge> FromConnectionsList(IEnumerable<(int source,int target)> connectionsList){
+        public GraphConverters<TNode,TEdge> FromConnectionsList(params (int source,int target)[] connectionsList){
             _structureBase.Clear();
+            var nodesCount = connectionsList.SelectMany(x=>new[]{x.source,x.target}).Max();
+            _structureBase.Create(nodesCount);
             foreach(var c in connectionsList){
                 if(!_structureBase.Nodes.TryGetNode(c.source,out var _)){
                     _structureBase.Nodes[c.source] = _structureBase.Configuration.CreateNode(c.source);
@@ -197,6 +199,7 @@ namespace GraphSharp.Graphs
                 var edge = _structureBase.Configuration.CreateEdge(n1,n2);
                 _structureBase.Edges.Add(edge);
             }
+            _structureBase.Do.RemoveIsolatedNodes();
             return this;
         }
     }

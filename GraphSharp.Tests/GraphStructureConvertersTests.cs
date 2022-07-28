@@ -224,7 +224,7 @@ namespace GraphSharp.Tests
             .Do.ConnectRandomly(5,20);
             var expected = _Graph.Edges.Select(x=>(x.Source.Id,x.Target.Id));
             var newGraph = _Graph.Clone();
-            newGraph.Converter.FromConnectionsList(expected);
+            newGraph.Converter.FromConnectionsList(expected.ToArray());
             var actual = newGraph.Edges.Select(x=>(x.Source.Id,x.Target.Id));
             Assert.Equal(expected,actual);
         }
