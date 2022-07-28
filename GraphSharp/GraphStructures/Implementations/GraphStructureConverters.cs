@@ -186,7 +186,7 @@ namespace GraphSharp.Graphs
         public GraphConverters<TNode,TEdge> FromConnectionsList(params (int source,int target)[] connectionsList){
             _structureBase.Clear();
             var nodesCount = connectionsList.SelectMany(x=>new[]{x.source,x.target}).Max();
-            _structureBase.Create(nodesCount);
+            _structureBase.Create(nodesCount+1);
             foreach(var c in connectionsList){
                 if(!_structureBase.Nodes.TryGetNode(c.source,out var _)){
                     _structureBase.Nodes[c.source] = _structureBase.Configuration.CreateNode(c.source);
