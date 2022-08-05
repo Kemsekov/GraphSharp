@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using GraphSharp.Common;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 namespace GraphSharp.Graphs
 {
     /// <summary>
@@ -12,14 +12,14 @@ namespace GraphSharp.Graphs
     /// </summary>
     public class Graph<TNode,TEdge> : IGraph<TNode,TEdge>, GraphSharp.Common.ICloneable<Graph<TNode,TEdge>>
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         /// <summary>
         /// Configuration for this graph.
         /// </summary>
         public IGraphConfiguration<TNode,TEdge> Configuration{get;protected set;}
         public INodeSource<TNode> Nodes { get; protected set; }
-        public IEdgeSource<TNode,TEdge> Edges { get; protected set; }
+        public IEdgeSource<TEdge> Edges { get; protected set; }
         /// <summary>
         /// Create new graph with specified nodes and edges creation functions
         /// </summary>
@@ -50,7 +50,7 @@ namespace GraphSharp.Graphs
         /// <summary>
         /// Set current graph's Nodes and Edges
         /// </summary>
-        public Graph<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TNode,TEdge> edges){
+        public Graph<TNode,TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges){
             Nodes = nodes;
             Edges = edges;
             return this;
@@ -95,7 +95,7 @@ namespace GraphSharp.Graphs
                 result.Nodes.Add(Nodes[n]);
             }
             
-            var edges = Edges.Where(x=>toInduce[x.Source.Id]==1 && toInduce[x.Target.Id]==1);
+            var edges = Edges.Where(x=>toInduce[x.SourceId]==1 && toInduce[x.TargetId]==1);
 
             foreach(var e in edges){
                 result.Edges.Add(e);
@@ -110,18 +110,10 @@ namespace GraphSharp.Graphs
         public Graph<TNode,TEdge> Clone()
         {
             var result = new Graph<TNode,TEdge>(Configuration);
-            var nodes = Nodes
-                .Select(x=>Configuration.CloneNode(x));
-            
-            foreach(var n in nodes){
-                result.Nodes.Add(n);
-            }
-            
-            var edges = Edges.Select(x=>Configuration.CloneEdge(x,result.Nodes));
-
-            foreach(var e in edges){
-                result.Edges.Add(e);
-            }
+            foreach(var n in Nodes)
+                this.CloneNodeTo(n,result.Nodes);
+            foreach(var e in Edges)
+                this.CloneEdgeTo(e,result.Edges);
             return result;
         }
         

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Common;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 
 namespace GraphSharp.Visitors;
@@ -14,7 +14,7 @@ namespace GraphSharp.Visitors;
 /// </summary>
 public class AnyPathFinder<TNode, TEdge> : IVisitor<TNode, TEdge>
 where TNode : INode
-where TEdge : IEdge<TNode>
+where TEdge : IEdge
 {
     /// <summary>
     /// _path[nodeId] = parentId <br/>
@@ -49,13 +49,13 @@ where TEdge : IEdge<TNode>
     public bool Select(TEdge edge)
     {
         if (Done) return false;
-        if (edge.Target.Id == EndNodeId)
+        if (edge.TargetId == EndNodeId)
         {
             Done = true;
         }
-        if (_path[edge.Target.Id] == -1)
+        if (_path[edge.TargetId] == -1)
         {
-            _path[edge.Target.Id] = edge.Source.Id;
+            _path[edge.TargetId] = edge.SourceId;
             return true;
         }
         return false;

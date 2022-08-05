@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Common;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
 
     /// <summary>
@@ -17,29 +17,23 @@ where TEdge : Edges.IEdge<TNode>
     /// </summary>
     public GraphOperation<TNode, TEdge> Reindex()
     {
-        var Nodes = _structureBase.Nodes;
-        var Edges = _structureBase.Edges;
         var reindexed = ReindexNodes();
         var edgesToMove = new List<(TEdge edge, int newSourceId, int newTargetId)>();
         foreach (var edge in Edges)
         {
-            var targetReindexed = reindexed.TryGetValue(edge.Target.Id, out var newTargetId);
-            var sourceReindexed = reindexed.TryGetValue(edge.Source.Id, out var newSourceId);
+            var targetReindexed = reindexed.TryGetValue(edge.TargetId, out var newTargetId);
+            var sourceReindexed = reindexed.TryGetValue(edge.SourceId, out var newSourceId);
             if (targetReindexed || sourceReindexed)
                 edgesToMove.Add((
                     edge,
-                    sourceReindexed ? newSourceId : edge.Source.Id,
-                    targetReindexed ? newTargetId : edge.Target.Id
+                    sourceReindexed ? newSourceId : edge.SourceId,
+                    targetReindexed ? newTargetId : edge.TargetId
                 ));
         }
 
         foreach (var toMove in edgesToMove)
         {
-            var edge = toMove.edge;
-            Edges.Remove(edge.Source.Id, edge.Target.Id);
-            edge.Source = Nodes[toMove.newSourceId];
-            edge.Target = Nodes[toMove.newTargetId];
-            Edges.Add(edge);
+            Edges.Move(toMove.edge,toMove.newSourceId,toMove.newTargetId);
         }
 
         return this;
@@ -50,9 +44,6 @@ where TEdge : Edges.IEdge<TNode>
     /// <returns></returns>
     protected IDictionary<int, int> ReindexNodes()
     {
-        var Nodes = _structureBase.Nodes;
-        var Edges = _structureBase.Edges;
-        var Configuration = _structureBase.Configuration;
         var idMap = new Dictionary<int, int>();
         var nodeIdsMap = new byte[Nodes.MaxNodeId + 1];
         foreach (var n in Nodes)
@@ -60,6 +51,11 @@ where TEdge : Edges.IEdge<TNode>
             nodeIdsMap[n.Id] = 1;
         }
 
+        //search for free index, after it search for occupied index and move
+        //occupied index node id to a free index 
+        //after it change free index to occupied and occupied to a free index
+        //so after this we will 'move' all nodes in a left path of a array
+        //and reindex nodes in result
         for (int i = 0; i < nodeIdsMap.Length; i++)
         {
             if (nodeIdsMap[i] == 0)
@@ -67,10 +63,7 @@ where TEdge : Edges.IEdge<TNode>
                 {
                     if (nodeIdsMap[b] == 1)
                     {
-                        var toMove = Nodes[b];
-                        var moved = Configuration.CloneNode(toMove, x => i);
-                        Nodes.Remove(toMove.Id);
-                        Nodes.Add(moved);
+                        Nodes.Move(b,i);
                         nodeIdsMap[b] = 0;
                         nodeIdsMap[i] = 1;
                         idMap[b] = i;

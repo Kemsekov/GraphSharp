@@ -1,11 +1,11 @@
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 namespace GraphSharp.Propagators
 {
     public interface IPropagator<TNode,TEdge>
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         void Propagate();
         void SetPosition(params int[] nodeIndices);

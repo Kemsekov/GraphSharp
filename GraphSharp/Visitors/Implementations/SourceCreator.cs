@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 
 namespace GraphSharp.Visitors;
@@ -13,7 +13,7 @@ namespace GraphSharp.Visitors;
 /// </summary>
 public class SourceCreator<TNode, TEdge> : Visitor<TNode, TEdge>
 where TNode : INode
-where TEdge : IEdge<TNode>
+where TEdge : IEdge
 {
     public const byte Proceed = 4;
     public const byte ToRemove = 8;
@@ -40,7 +40,7 @@ where TEdge : IEdge<TNode>
 
     public override bool Select(TEdge edge)
     {
-        return !IsNodeInState(edge.Target.Id, Proceed | ToRemove);
+        return !IsNodeInState(edge.TargetId, Proceed | ToRemove);
     }
 
     public override void Visit(TNode node)
@@ -51,7 +51,7 @@ where TEdge : IEdge<TNode>
         var toRemove = new List<TEdge>(edges.Count());
         foreach (var edge in edges)
         {
-            if (IsNodeInState(edge.Target.Id, ToRemove))
+            if (IsNodeInState(edge.TargetId, ToRemove))
                 toRemove.Add(edge);
         }
         lock(Graph)

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Visitors;
 using Microsoft.Toolkit.HighPerformance;
 
@@ -14,7 +14,7 @@ namespace GraphSharp.Propagators
     /// </summary>
     public class Propagator<TNode,TEdge> : PropagatorBase<TNode,TEdge>
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         public Propagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode,TEdge> graph) : base(visitor,graph)
         {

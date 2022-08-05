@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Edges;
+
 using GraphSharp.Exceptions;
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Tests.Models;
 using MathNet.Numerics.LinearAlgebra.Single;
 using Xunit;
@@ -15,7 +15,7 @@ namespace GraphSharp.Tests
     public class GraphConvertersTests
     {
         private Random _rand;
-        private Graph<TestNode, TestEdge> _Graph;
+        private Graph<Node, Edge> _Graph;
 
         public GraphConvertersTests()
         {
@@ -135,11 +135,11 @@ namespace GraphSharp.Tests
 
                 var edges = _Graph.Edges[source.row];
                 
-                var sourceNode = edges.FirstOrDefault(x=>x.Target.Id==to.row);
+                var sourceNode = edges.FirstOrDefault(x=>x.TargetId==to.row);
                 Assert.NotNull(sourceNode);
                 _Graph.Edges.Remove(sourceNode);
                 if(to.value==1){
-                    var toNode = _Graph.Edges[to.row].FirstOrDefault(x=>x.Target.Id==source.row);
+                    var toNode = _Graph.Edges[to.row].FirstOrDefault(x=>x.TargetId==source.row);
                     Assert.NotNull(toNode);
                     _Graph.Edges.Remove(toNode);
                 }
@@ -222,10 +222,10 @@ namespace GraphSharp.Tests
         public void FromConnectionsList2_Works(){
             _Graph.Create(500)
             .Do.ConnectRandomly(5,20);
-            var expected = _Graph.Edges.Select(x=>(x.Source.Id,x.Target.Id));
+            var expected = _Graph.Edges.Select(x=>(x.SourceId,x.TargetId));
             var newGraph = _Graph.Clone();
             newGraph.Converter.FromConnectionsList(expected.ToArray());
-            var actual = newGraph.Edges.Select(x=>(x.Source.Id,x.Target.Id));
+            var actual = newGraph.Edges.Select(x=>(x.SourceId,x.TargetId));
             Assert.Equal(expected,actual);
         }
     }

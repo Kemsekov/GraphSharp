@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
     /// <summary>
     /// Apply graph nodes coloring algorithm.<br/>
@@ -35,7 +35,7 @@ where TEdge : Edges.IEdge<TNode>
         {
             var edges = Edges[n.Id];
             var available_colors = _colors.Except(forbidden_colors[n.Id]);
-            available_colors = available_colors.Except(edges.Select(x => x.Target.Color));
+            available_colors = available_colors.Except(edges.Select(x => Nodes[x.TargetId].Color));
 
             var color = available_colors.FirstOrDefault();
             if (available_colors.Count() == 0)
@@ -48,7 +48,7 @@ where TEdge : Edges.IEdge<TNode>
             usedColors[color] += 1;
             foreach (var e in edges)
             {
-                forbidden_colors[e.Target.Id].Add(color);
+                forbidden_colors[e.TargetId].Add(color);
             }
         }
 

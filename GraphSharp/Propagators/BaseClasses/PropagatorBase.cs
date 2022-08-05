@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using GraphSharp.Edges;
-using GraphSharp.Nodes;
+
+
 using GraphSharp.Visitors;
 using System.Linq;
 using GraphSharp.Graphs;
@@ -19,7 +19,7 @@ namespace GraphSharp.Propagators
     /// </summary>
     public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode,TEdge>
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         public IVisitor<TNode,TEdge> Visitor { get; init; }
         protected IGraph<TNode,TEdge> _graph;
@@ -123,7 +123,7 @@ namespace GraphSharp.Propagators
             foreach(var edge in edges)
             {
                 if (!Visitor.Select(edge)) continue;
-                _nodeFlags.DangerousGetReferenceAt(edge.Target.Id)|=Visited;
+                _nodeFlags.DangerousGetReferenceAt(edge.TargetId)|=Visited;
             }
         }
 

@@ -1,13 +1,13 @@
 using System;
-using GraphSharp.Edges;
-using GraphSharp.Nodes;
+
+
 namespace GraphSharp.Visitors;
 /// <summary>
 /// <see cref="IVisitor{,}"/> implementation that uses lambda functions.
 /// </summary>
 public class ActionVisitor<TNode, TEdge> : IVisitor<TNode, TEdge>
 where TNode : INode
-where TEdge : IEdge<TNode>
+where TEdge : IEdge
 {
     private Action<TNode> visit;
     private Predicate<TEdge> select;

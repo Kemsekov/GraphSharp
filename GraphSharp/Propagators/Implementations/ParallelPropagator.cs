@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Visitors;
 using Microsoft.Toolkit.HighPerformance;
 
@@ -12,7 +12,7 @@ namespace GraphSharp.Propagators
     /// </summary>
     public class ParallelPropagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode,TEdge> graph) : base(visitor,graph)
         {

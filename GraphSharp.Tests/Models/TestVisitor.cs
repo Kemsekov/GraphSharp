@@ -2,32 +2,33 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
 namespace GraphSharp.Tests.Models
 {
-    public class TestVisitor : Visitor<TestNode, TestEdge>
+    public class TestVisitor : Visitor<Node, Edge>
     {
         
-        public TestVisitor(IGraph<TestNode, TestEdge> graph)
+        public TestVisitor(IGraph<Node, Edge> graph)
         {
-            this.Propagator = new ParallelPropagator<TestNode,TestEdge>(this,graph);
+            this.Propagator = new ParallelPropagator<Node,Edge>(this,graph);
         }
 
-        public override IPropagator<TestNode,TestEdge> Propagator{get;}
+        public override IPropagator<Node,Edge> Propagator{get;}
 
         public override void EndVisit()
         {
         }
 
-        public override bool Select(TestEdge edge)
+        public override bool Select(Edge edge)
         {
             return true;
         }
-        public override void Visit(TestNode node)
+        public override void Visit(Node node)
         {
 
         }

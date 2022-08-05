@@ -1,7 +1,7 @@
 using System;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 namespace GraphSharp.Visitors;
 /// <summary>
@@ -9,7 +9,7 @@ namespace GraphSharp.Visitors;
 /// </summary>
 public abstract class Visitor<TNode, TEdge> : IVisitor<TNode, TEdge>, IPropagator<TNode, TEdge>
 where TNode : INode
-where TEdge : IEdge<TNode>
+where TEdge : IEdge
 {
     /// <summary>
     /// <see cref="IPropagator{,}"/> implementation that used for this proxy class

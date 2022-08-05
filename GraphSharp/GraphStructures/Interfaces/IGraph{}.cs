@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using GraphSharp.Edges;
-using GraphSharp.Nodes;
+
+
 namespace GraphSharp.Graphs
 {
     /// <summary>
@@ -8,10 +8,12 @@ namespace GraphSharp.Graphs
     /// </summary>
     public interface IGraph<TNode,TEdge>
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         INodeSource<TNode> Nodes { get; }
-        IEdgeSource<TNode,TEdge> Edges { get; }
+        IEdgeSource<TEdge> Edges { get; }
         IGraphConfiguration<TNode,TEdge> Configuration{get;}
+        GraphOperation<TNode,TEdge> Do{get;}
+
     }
 }

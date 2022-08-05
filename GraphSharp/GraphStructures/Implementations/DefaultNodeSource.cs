@@ -2,9 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using GraphSharp.Nodes;
+using GraphSharp.Common;
+
 
 namespace GraphSharp.Graphs;
 /// <summary>
@@ -18,11 +21,11 @@ where TNode : INode
     public int Count => Nodes.Count;
     public int MaxNodeId { get; protected set; }
     public int MinNodeId { get; protected set; }
-    public DefaultNodeSource(int capacity)
+    public DefaultNodeSource()
     {
         MaxNodeId = -1;
         MinNodeId = -1;
-        Nodes = new ConcurrentDictionary<int, TNode>(Environment.ProcessorCount, capacity);
+        Nodes = new ConcurrentDictionary<int, TNode>(Environment.ProcessorCount,0);
     }
     public void Add(TNode node)
     {
@@ -86,4 +89,19 @@ where TNode : INode
             MaxNodeId = Nodes.Last().Key;
     }
 
+    public bool Move(TNode node, int newId)
+    {
+        if(TryGetNode(newId,out var _)) return false;
+        if(!Remove(node)) return false;
+        node.Id = newId;
+        Add(node);
+        return true;
+    }
+
+    public bool Move(int nodeId, int newId)
+    {
+        if(TryGetNode(nodeId,out var n) && n is not null)
+            return Move(n,newId);
+        return false;
+    }
 }

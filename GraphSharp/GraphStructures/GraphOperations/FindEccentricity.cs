@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
@@ -10,7 +10,7 @@ namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
 
     /// <param name="getWeight">Determine how to find a eccentricity of a node. By default it uses edges weights, but you can change it.</param>
@@ -26,6 +26,6 @@ where TEdge : Edges.IEdge<TNode>
             propagator.Propagate();
         }
         var p = pathFinder.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
-        return (p.length, _structureBase.Nodes[p.index]);
+        return (p.length, Nodes[p.index]);
     }
 }

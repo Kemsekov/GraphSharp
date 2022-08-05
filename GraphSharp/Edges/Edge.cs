@@ -3,31 +3,45 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Nodes;
+using GraphSharp.Common;
 
-namespace GraphSharp.Edges
+
+namespace GraphSharp
 {
     /// <summary>
     /// Default edge
     /// </summary>
     /// <typeparam name="TNode"></typeparam>
-    public class Edge : IEdge<Node>
+    public class Edge : IEdge
     {
-        public Node Source{get;set;}
-        public Node Target{get;set;}
-        public static Color DefaultColor = Color.Violet;
-        public Color Color {get;set;} = DefaultColor;
-        public float Weight {get;set;} = 0;
-        public float Flow {get;set;} = 0;
-        public float Capacity {get;set;} = 0;
-        public Edge(Node source, Node target)
+        public int SourceId{get;set;}
+        public int TargetId{get;set;}
+        public FlowData Flow {get;set;}
+        public float Weight {get;set;}
+        public Color Color {get;set;}
+
+        public Edge(INode source, INode target)
         {
-            Source = source;
-            Target = target;
+            SourceId = source.Id;
+            TargetId = target.Id;
+        }
+        public Edge(int sourceId, int targetId)
+        {
+            SourceId = sourceId;
+            TargetId = targetId;
         }
         public override string ToString()
         {
-            return $"Edge {Source.Id}->{Target.Id}";
+            return $"Edge {SourceId}->{TargetId}";
+        }
+
+        public virtual IEdge Clone()
+        {
+            return new Edge(SourceId,TargetId){
+                Weight = this.Weight, 
+                Color=this.Color,
+                Flow=this.Flow
+            };
         }
     }
 }

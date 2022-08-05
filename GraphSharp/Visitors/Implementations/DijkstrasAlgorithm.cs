@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
@@ -13,7 +13,7 @@ namespace GraphSharp.Visitors;
 /// </summary>
 public class DijkstrasAlgorithm<TNode, TEdge> : IVisitor<TNode, TEdge>
 where TNode : INode
-where TEdge : IEdge<TNode>
+where TEdge : IEdge
 {
     int[] _path;
     /// <summary>
@@ -67,8 +67,8 @@ where TEdge : IEdge<TNode>
 
     public bool Select(TEdge connection)
     {
-        var sourceId = connection.Source.Id;
-        var targetId = connection.Target.Id;
+        var sourceId = connection.SourceId;
+        var targetId = connection.TargetId;
         var pathLength = _pathLength[sourceId] + _getWeight(connection);
 
         var pathSoFar = _pathLength[targetId];

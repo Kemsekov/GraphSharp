@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
     /// <summary>
     /// Algorithm to find articulation points. Works on any type of graph.
@@ -17,8 +17,6 @@ where TEdge : Edges.IEdge<TNode>
     /// <returns>Articulation points of a graph</returns>
     public IEnumerable<TNode> FindArticulationPoints()
     {
-        var Nodes = _structureBase.Nodes;
-        var Edges = _structureBase.Edges;
         if (Nodes.Count == 0 || Edges.Count == 0)
             return Enumerable.Empty<TNode>();
         var disc = new int[Nodes.MaxNodeId + 1];
@@ -48,7 +46,7 @@ where TEdge : Edges.IEdge<TNode>
         }
         return result;
     }
-    void ArticulationPointsFinder(IEdgeSource<TNode, TEdge> adj, int u, byte[] flags, int[] disc, int[] low, ref int time, int parent)
+    void ArticulationPointsFinder(IEdgeSource<TEdge> adj, int u, byte[] flags, int[] disc, int[] low, ref int time, int parent)
     {
         const byte visitedFlag = 1;
         const byte isApFlag = 2;
@@ -62,7 +60,7 @@ where TEdge : Edges.IEdge<TNode>
         disc[u] = low[u] = ++time;
 
         // Go through all vertices adjacent to this
-        foreach (var v in adj[u].Select(x => x.Target.Id))
+        foreach (var v in adj[u].Select(x => x.TargetId))
         {
             // If v is not visited yet, then make it a child of u
             // in DFS tree and recur for it

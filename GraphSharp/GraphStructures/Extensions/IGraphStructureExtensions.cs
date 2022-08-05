@@ -3,21 +3,37 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using GraphSharp.Edges;
+using GraphSharp.Common;
+
 using GraphSharp.Exceptions;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.Graphs;
 public static class GraphExtensions
 {
+    /// <returns>True if given graph have one single component</returns>
+    public static bool IsConnected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        return graph.Do.FindComponents().components.Count() == 1;
+    }
+
+    /// <returns>True if given graph have one single strongly connected component</returns>
+    public static bool IsStronglyConnected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        return graph.Do.FindStronglyConnectedComponents().Count() == 1;
+    }
     /// <returns>True if graph is directed, else false</returns>
     public static bool IsDirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         foreach (var e in graph.Edges)
         {
-            if (graph.Edges.TryGetEdge(e.Target.Id, e.Source.Id, out _))
+            if (graph.Edges.TryGetEdge(e.TargetId, e.SourceId, out _))
             {
                 return false;
             }
@@ -27,67 +43,34 @@ public static class GraphExtensions
     /// <returns>True if graph is undirected, else false</returns>
     public static bool IsUndirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         foreach (var e in graph.Edges)
         {
-            if (!graph.Edges.TryGetEdge(e.Target.Id, e.Source.Id, out _))
+            if (!graph.Edges.TryGetEdge(e.TargetId, e.SourceId, out _))
                 return false;
         }
         return true;
     }
     /// <summary>
-    /// Checks for data integrity in Nodes and Edges. If there is a case when some edge is references to unknown node throws an exception. If there is duplicate node throws an exception. If there is duplicate edge throws an exception. If there is unknown reference between nodes that does not present in the edges list throws an exception;
+    /// Checks for data integrity for Nodes and Edges. <br/>
     /// </summary>
+    /// <exception cref="GraphDataIntegrityException">When there is a problem with data integrity in a graph. See exception message for more details.</exception>
     public static void CheckForIntegrity<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
-        var actual = graph.Nodes.Select(x => x.Id);
-        var expected = actual.Distinct();
-        if (actual.Count() != expected.Count())
-            throw new GraphDataIntegrityException("Nodes contains duplicates");
-
-        foreach (var n in graph.Nodes)
-        {
-            var edges = graph.Edges[n.Id];
-            var actualEdges = edges.Select(x => (x.Source.Id, x.Target.Id));
-            var expectedEdges = actualEdges.Distinct();
-            if (actualEdges.Count() != expectedEdges.Count())
-            {
-                StringBuilder b = new();
-                foreach (var a in actualEdges)
-                    b.Append(a.ToString() + '\n');
-                b.Append("---------\n");
-                throw new GraphDataIntegrityException($"Edges contains duplicates : {actualEdges.Count()} != {expectedEdges.Count()} \n{b.ToString()}");
-            }
-        }
-        foreach (var e in graph.Edges)
-        {
-            if (!graph.Nodes.TryGetNode(e.Source.Id, out var _))
-            {
-                throw new GraphDataIntegrityException($"{e.Source.Id} found among Edges but not found among Nodes");
-            }
-            if (!graph.Nodes.TryGetNode(e.Target.Id, out var _))
-            {
-                throw new GraphDataIntegrityException($"{e.Target.Id} found among Edges but not found among Nodes");
-            }
-        }
-        foreach (var n in graph.Nodes)
-        {
-            foreach (var source in graph.Edges.GetSourcesId(n.Id))
-            {
-                if (!graph.Edges.TryGetEdge(source, n.Id, out var _))
-                    throw new GraphDataIntegrityException($"Edge {source}->{n.Id} is present in sources list but not found among edges");
-            }
-        }
+        GraphDataIntegrityChecker.CheckForEdgeIndicesIntegrity(graph);
+        GraphDataIntegrityChecker.CheckForEdgesDuplicates(graph);
+        GraphDataIntegrityChecker.CheckForNodeIndicesIntegrity(graph);
+        GraphDataIntegrityChecker.CheckForNodesDuplicates(graph);
     }
     /// <summary>
     /// Validates that given path is a valid path for current graph.
     /// </summary>
     public static void ValidatePath<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> path)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         for (int i = 0; i < path.Count - 1; i++)
         {
@@ -104,7 +87,7 @@ public static class GraphExtensions
     /// </summary>
     public static void ValidateCycle<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> cycle)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         var head = cycle.First();
         try
@@ -144,52 +127,58 @@ public static class GraphExtensions
     /// <returns>True if combination is successful else false</returns>
     public static bool CombineCycles<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> cycle1, IList<TNode> cycle2, out IList<TNode> result)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
-        var intersection = cycle1.Select(x=>x.Id).Intersect(cycle2.Select(y=>y.Id)).ToArray();
-        
+        var intersection = cycle1.Select(x => x.Id).Intersect(cycle2.Select(y => y.Id)).ToArray();
+
         var cycles = cycle1.Concat(cycle2);
-        result = new List<TNode>(cycle1.Count+cycle2.Count-intersection.Length);
-        
-        if(intersection.Length<2)
+        result = new List<TNode>(cycle1.Count + cycle2.Count - intersection.Length);
+
+        if (intersection.Length < 2)
             return false;
 
-        var dict = new Dictionary<int,IList<TNode>>();
-        var incomingEdges = new Dictionary<int,int>();
-        foreach(var c1 in cycles){
+        var dict = new Dictionary<int, IList<TNode>>();
+        var incomingEdges = new Dictionary<int, int>();
+        foreach (var c1 in cycles)
+        {
             dict[c1.Id] = new List<TNode>();
-            incomingEdges[c1.Id]=0;
+            incomingEdges[c1.Id] = 0;
         }
-        cycles.Aggregate((n1,n2)=>{
+        cycles.Aggregate((n1, n2) =>
+        {
             dict[n1.Id].Add(n2);
             incomingEdges[n2.Id]++;
             return n2;
         });
-        
-        
-        foreach(var node in dict.Keys){
+
+
+        foreach (var node in dict.Keys)
+        {
             var edges = dict[node];
-            if(intersection.Contains(node))
-            foreach(var e in edges.ToArray()){
-                if(intersection.Contains(e.Id) && edges.Count>1 && incomingEdges[e.Id]>1){
-                    edges.Remove(e);
-                    incomingEdges[e.Id]--;
+            if (intersection.Contains(node))
+                foreach (var e in edges.ToArray())
+                {
+                    if (intersection.Contains(e.Id) && edges.Count > 1 && incomingEdges[e.Id] > 1)
+                    {
+                        edges.Remove(e);
+                        incomingEdges[e.Id]--;
+                    }
                 }
-            }
         }
-        
+
         //check if two cycles merged successfully
-        foreach(var m in dict)
-            if(m.Value.Count!=1) return false;
-        foreach(var m in incomingEdges)
-            if(m.Value!=1) return false;
-        
+        foreach (var m in dict)
+            if (m.Value.Count != 1) return false;
+        foreach (var m in incomingEdges)
+            if (m.Value != 1) return false;
+
         var tmpNode = dict.First().Key;
         result.Add(graph.Nodes[tmpNode]);
-        while(true){
+        while (true)
+        {
             tmpNode = dict[tmpNode].First().Id;
             result.Add(graph.Nodes[tmpNode]);
-            if(result.First().Id==result.Last().Id) break;
+            if (result.First().Id == result.Last().Id) break;
         }
         return true;
     }
@@ -210,13 +199,14 @@ public static class GraphExtensions
     /// </summary>
     public static void EnsureRightColoring<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
-        foreach (var n in graph.Nodes)
+        var Nodes = graph.Nodes;
+        foreach (var n in Nodes)
         {
             var color = n.Color;
             var edges = graph.Edges[n.Id];
-            if (edges.Any(x => x.Target.Color == color))
+            if (edges.Any(x => Nodes[x.TargetId].Color == color))
             {
                 throw new WrongGraphColoringException($"Wrong graph coloring! Node {n.Id} with color {color} have edge with the same color!");
             }
@@ -224,7 +214,7 @@ public static class GraphExtensions
     }
     public static float MeanNodeEdgesCount<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
         => (float)(graph.Edges.Count) / (graph.Nodes.Count == 0 ? 1 : graph.Nodes.Count);
 
     /// <summary>
@@ -232,8 +222,39 @@ public static class GraphExtensions
     /// </summary>
     public static int[] GetNodesIdWhere<TNode, TEdge>(this IGraph<TNode, TEdge> graph, Predicate<TNode> predicate)
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         return graph.Nodes.Where(x => predicate(x)).Select(x => x.Id).ToArray();
+    }
+    public static TEdge CloneEdgeTo<TNode, TEdge>(this IGraph<TNode, TEdge> src, TEdge edge, IEdgeSource<TEdge> destination)
+            where TNode : INode
+            where TEdge : IEdge
+    {
+        var clonedEdge = (TEdge)edge.Clone();
+        destination.Add(clonedEdge);
+        return clonedEdge;
+    }
+
+    public static TNode CloneNodeTo<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TNode node, INodeSource<TNode> destination)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        var newNode = (TNode)node.Clone();
+        destination.Add(newNode);
+        return newNode;
+    }
+    public static void SetColorToAll<TNode>(this INodeSource<TNode> nodes, System.Drawing.Color color)
+    where TNode : INode
+    {
+        foreach(var n in nodes){
+            n.Color = color;
+        }
+    }
+    public static void SetColorToAll<TEdge>(this IEdgeSource<TEdge> edges, System.Drawing.Color color)
+    where TEdge : IEdge
+    {
+        foreach(var n in edges){
+            n.Color = color;
+        }
     }
 }

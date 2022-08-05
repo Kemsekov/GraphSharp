@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
-using GraphSharp.Edges;
-using GraphSharp.Nodes;
+using GraphSharp.Common;
+
+
 
 namespace GraphSharp.Graphs
 {
@@ -25,6 +28,16 @@ namespace GraphSharp.Graphs
         bool Remove(TNode node);
         bool Remove(int nodeId);
         TNode this[int nodeId] {get;set;}
+        /// <summary>
+        /// Changes node Id by moving it
+        /// </summary>
+        /// <returns>true if moved successfully, else false</returns>
+        bool Move(TNode node, int newId);
+        /// <summary>
+        /// Changes node Id by moving it
+        /// </summary>
+        /// <returns>true if moved successfully, else false</returns>
+        bool Move(int nodeId, int newId);
         bool TryGetNode(int nodeId, out TNode? node);
         void Clear();
     }

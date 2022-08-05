@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 using GraphSharp.Tests.helpers;
 using GraphSharp.Tests.Helpers;
@@ -18,24 +18,24 @@ namespace GraphSharp.Tests
 {
     public class PropagatorTests
     {
-        Func<IVisitor<TestNode,TestEdge>, PropagatorBase<TestNode,TestEdge>>[] _propagatorFactories;
-        Graph<TestNode, TestEdge> _graph;
+        Func<IVisitor<Node,Edge>, PropagatorBase<Node,Edge>>[] _propagatorFactories;
+        Graph<Node, Edge> _graph;
 
         public PropagatorTests()
         {
-            _graph = new Graph<TestNode, TestEdge>(new TestGraphConfiguration()).Create(1000);
+            _graph = new Graph<Node, Edge>(new TestGraphConfiguration()).Create(1000);
             _graph.Do.ConnectNodes(10);
 
-            _propagatorFactories = new Func<IVisitor<TestNode,TestEdge>, PropagatorBase<TestNode,TestEdge>>[2];
-            _propagatorFactories[0] = visitor => new Propagator<TestNode,TestEdge>(visitor,_graph);
-            _propagatorFactories[1] = visitor => new ParallelPropagator<TestNode,TestEdge>(visitor,_graph);
+            _propagatorFactories = new Func<IVisitor<Node,Edge>, PropagatorBase<Node,Edge>>[2];
+            _propagatorFactories[0] = visitor => new Propagator<Node,Edge>(visitor,_graph);
+            _propagatorFactories[1] = visitor => new ParallelPropagator<Node,Edge>(visitor,_graph);
         }
 
         [Fact]
         public void RetainsStatesBetweenIterations(){
             var states = new Dictionary<int,byte>();
 
-            void checkStates(PropagatorBase<TestNode,TestEdge> propagator){
+            void checkStates(PropagatorBase<Node,Edge> propagator){
                 foreach(var state in states){
                     Assert.True(propagator.IsNodeInState(state.Key,state.Value));
                 }
@@ -46,7 +46,7 @@ namespace GraphSharp.Tests
             }
             foreach (var factory in _propagatorFactories)
             {
-                var visitor = new ActionVisitor<TestNode,TestEdge>(
+                var visitor = new ActionVisitor<Node,Edge>(
                     n => {},
                     e => true);
                 var propagator = factory(visitor);
@@ -67,7 +67,7 @@ namespace GraphSharp.Tests
             foreach (var factory in _propagatorFactories)
             {
                 var visitedNodes = new List<INode>();
-                var visitor = new ActionVisitor<TestNode,TestEdge>(
+                var visitor = new ActionVisitor<Node,Edge>(
                     (node) =>
                     {
                         lock (visitedNodes)
@@ -96,9 +96,9 @@ namespace GraphSharp.Tests
             foreach (var factory in _propagatorFactories)
             {
                 visited.Clear();
-                var visitor = new ActionVisitor<TestNode,TestEdge>(
+                var visitor = new ActionVisitor<Node,Edge>(
                     n => visited.Add(n),
-                    e => e.Target.Id % 2 == 0);
+                    e => e.TargetId % 2 == 0);
                 var propagator = factory(visitor);
                 propagator.SetGraph(_graph);
                 propagator.SetPosition(0, 1, 2, 3, 4, 5);
@@ -123,7 +123,7 @@ namespace GraphSharp.Tests
             foreach (var factory in _propagatorFactories)
             {
 
-                var visitor = new ActionVisitor<TestNode,TestEdge>(
+                var visitor = new ActionVisitor<Node,Edge>(
                     n =>
                     {
                         lock (visited)
@@ -155,7 +155,7 @@ namespace GraphSharp.Tests
             foreach (var factory in _propagatorFactories)
             {
 
-                var visitor = new ActionVisitor<TestNode,TestEdge>(
+                var visitor = new ActionVisitor<Node,Edge>(
                     n =>
                     {
                         lock (visited)
@@ -164,8 +164,8 @@ namespace GraphSharp.Tests
                     e =>
                     {
                         lock (expected)
-                            foreach (var n in _graph.Edges[e.Target.Id])
-                                expected.Add(n.Target);
+                            foreach (var n in _graph.Edges[e.TargetId])
+                                expected.Add(_graph.Nodes[n.TargetId]);
                         return true;
                     });
                 var propagator = factory(visitor);
@@ -187,7 +187,7 @@ namespace GraphSharp.Tests
                     //manually
                     if(i==0){
                         foreach(var e in buf)
-                            visitor.Select(new TestEdge(null,e as TestNode));
+                            visitor.Select(new Edge(new Node(-1),e as Node));
                     }
                     visited.Sort();
                     Assert.Equal(buf.Count,visited.Count);
@@ -199,15 +199,15 @@ namespace GraphSharp.Tests
         [Fact]
         public void Propagate_HaveRightNodesVisitOrderWithManualData()
         {
-            var graph = new Graph<TestNode, TestEdge>(new TestGraphConfiguration())
+            var graph = new Graph<Node, Edge>(new TestGraphConfiguration())
                 .Create(10);
             foreach (var pair in ManualTestData.NodesConnections)
             {
-                graph.Edges.Add(new TestEdge(graph.Nodes[pair[0]],graph.Nodes[pair[1]]));
+                graph.Edges.Add(new Edge(graph.Nodes[pair[0]],graph.Nodes[pair[1]]));
             }
 
             var actualValues = new List<int>();
-            var visitor = new ActionVisitor<TestNode,TestEdge>(
+            var visitor = new ActionVisitor<Node,Edge>(
                 x =>
                 {
                     lock (actualValues)

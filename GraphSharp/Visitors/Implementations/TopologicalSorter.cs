@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 namespace GraphSharp.Visitors;
@@ -13,7 +13,7 @@ namespace GraphSharp.Visitors;
 /// </summary>
 public class TopologicalSorter<TNode,TEdge> : Visitor<TNode, TEdge>
 where TNode : INode
-where TEdge : IEdge<TNode>
+where TEdge : IEdge
 {
     public override IPropagator<TNode, TEdge> Propagator { get; }
     /// <summary>
@@ -26,7 +26,7 @@ where TEdge : IEdge<TNode>
     /// </summary>
     public bool Done { get; private set; } = false;
     public const byte Added = 4;
-    public TopologicalSorter(Graph<TNode, TEdge> graph)
+    public TopologicalSorter(IGraph<TNode, TEdge> graph)
     {
         Propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
         var startingNodes = new List<int>();
@@ -56,11 +56,11 @@ where TEdge : IEdge<TNode>
     public override bool Select(TEdge edge)
     {
         if (Done) return false;
-        if (Propagator.IsNodeInState(edge.Target.Id, Added))
+        if (Propagator.IsNodeInState(edge.TargetId, Added))
         {
             return false;
         }
-        Propagator.SetNodeState(edge.Target.Id, Added);
+        Propagator.SetNodeState(edge.TargetId, Added);
         return true;
     }
 

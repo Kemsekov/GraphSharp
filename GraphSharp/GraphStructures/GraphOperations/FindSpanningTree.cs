@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Common;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
     /// <summary>
     /// Finds a spanning tree using Kruskal algorithm
@@ -19,8 +19,6 @@ where TEdge : Edges.IEdge<TNode>
     public IList<TEdge> FindSpanningTree(Func<TEdge, float>? getWeight = null)
     {
         getWeight ??= e => e.Weight;
-        var Edges = _structureBase.Edges;
-        var Configuration = _structureBase.Configuration;
         var edges = Edges.OrderBy(x => getWeight(x));
         var result = new List<TEdge>();
         KruskalAlgorithm(edges, result);
@@ -32,21 +30,18 @@ where TEdge : Edges.IEdge<TNode>
     /// <param name="edges">Spanning tree edges</param>
     void KruskalAlgorithm(IEnumerable<TEdge> edges, IList<TEdge> outputEdges)
     {
-        var Nodes = _structureBase.Nodes;
-        var Edges = _structureBase.Edges;
-        var Configuration = _structureBase.Configuration;
         UnionFind unionFind = new(Nodes.MaxNodeId + 1);
         foreach (var n in Nodes)
             unionFind.MakeSet(n.Id);
-        int sourceId = 0, targetId = 0;
+        int SourceId = 0, targetId = 0;
         foreach (var edge in edges)
         {
-            sourceId = edge.Source.Id;
-            targetId = edge.Target.Id;
-            if (unionFind.FindSet(sourceId) == unionFind.FindSet(targetId))
+            SourceId = edge.SourceId;
+            targetId = edge.TargetId;
+            if (unionFind.FindSet(SourceId) == unionFind.FindSet(targetId))
                 continue;
             outputEdges.Add(edge);
-            unionFind.UnionSet(sourceId, targetId);
+            unionFind.UnionSet(SourceId, targetId);
         }
     }
 }

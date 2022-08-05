@@ -10,27 +10,33 @@ namespace GraphSharp.Tests
 {
     public class NodeSourcesTests
     {
-        IEnumerable<INodeSource<TestNode>> NodeSources;
-        IEnumerable<IEdgeSource<TestNode,TestEdge>> EdgeSources;
+        IEnumerable<INodeSource<Node>> NodeSources;
+        IEnumerable<IEdgeSource<Edge>> EdgeSources;
 
         public NodeSourcesTests()
         {
-            NodeSources = new List<INodeSource<TestNode>>()
+            NodeSources = new List<INodeSource<Node>>()
             {
-                new DefaultNodeSource<TestNode>(0)
+                new DefaultNodeSource<Node>()
             };
-            EdgeSources = new List<IEdgeSource<TestNode,TestEdge>>()
+            EdgeSources = new List<IEdgeSource<Edge>>()
             {
-                new DefaultEdgeSource<TestNode,TestEdge>()
+                new DefaultEdgeSource<Edge>()
             };
         }
 
-        void Fill(INodeSource<TestNode> Nodes, int nodesCount){
+        void Fill(INodeSource<Node> Nodes, int nodesCount){
             for (int i = 0; i < nodesCount; i++)
             {
-                var node = new TestNode(i);
+                var node = new Node(i);
                 Nodes.Add(node);
             }
+        }
+
+        void CheckForIntegrity(INodeSource<Node> n){
+            var g = new Graph();
+            g.SetSources(n,new DefaultEdgeSource<Edge>());
+            g.CheckForIntegrity();
         }
 
         [Fact]
@@ -51,6 +57,7 @@ namespace GraphSharp.Tests
                 foreach(var n in nodeSource){
                     Assert.Equal(n.Id,counter++);
                 }
+                CheckForIntegrity(nodeSource);
             }
         }
         [Fact]
@@ -60,15 +67,21 @@ namespace GraphSharp.Tests
 
                 Assert.Equal(nodeSource.MaxNodeId,999);
 
-                nodeSource.Add(new TestNode(1010));
+                nodeSource.Add(new Node(1010));
                 Assert.Equal(nodeSource[1010].Id, 1010);
                 Assert.Equal(nodeSource.Count,1001);
                 Assert.Equal(nodeSource.MaxNodeId,1010);
 
-                nodeSource.Add(new TestNode(-1));
+                nodeSource.Add(new Node(-1));
                 Assert.Equal(nodeSource[-1].Id, -1);
                 Assert.Equal(nodeSource.Count,1002);
                 Assert.Equal(nodeSource.MinNodeId,-1);
+                CheckForIntegrity(nodeSource);
+                nodeSource.Clear();
+                for(int i = 0;i<1000;i++){
+                    nodeSource.Add(new Node(i));
+                    Assert.True(nodeSource.TryGetNode(i,out var _));
+                }
             }
         }
         [Fact]
@@ -82,6 +95,7 @@ namespace GraphSharp.Tests
                 nodeSource.Remove(0);
                 Assert.Equal(nodeSource.MinNodeId,1);
                 Assert.Equal(nodeSource.Count,997);
+                CheckForIntegrity(nodeSource);
             }
         }
         [Fact]
@@ -119,6 +133,8 @@ namespace GraphSharp.Tests
                 foreach(var n in nodeSource){
                     Assert.True(false);
                 }
+                CheckForIntegrity(nodeSource);
+
             }
         }
         [Fact]
@@ -131,6 +147,29 @@ namespace GraphSharp.Tests
                 Assert.Equal(nodeSource[0].Id,0);
                 Assert.Throws<KeyNotFoundException>(()=>nodeSource[-1]);
                 Assert.Throws<KeyNotFoundException>(()=>nodeSource[12345]);
+            }
+        }
+        [Fact]
+        public void Move_Works(){
+            foreach(var nodeSource in NodeSources){
+                Fill(nodeSource,1000);
+                for(int i = 0;i<100;i++){
+                    var id1 = Random.Shared.Next(1000);
+                    var id2 = Random.Shared.Next(2000);
+                    if(!nodeSource.TryGetNode(id2,out var _)){
+                        if(!nodeSource.TryGetNode(id1,out var _)) continue;
+                        var n1 = nodeSource[id1];
+                        Assert.True(nodeSource.Move(id1,id2));
+                        Assert.False(nodeSource.TryGetNode(id1,out var _));
+                        Assert.True(nodeSource.TryGetNode(id2,out var _));
+                    }
+                    else{
+                        Assert.False(nodeSource.Move(id1,id2));
+                    }
+                    CheckForIntegrity(nodeSource);
+                    Assert.Equal(nodeSource.Count,1000);
+                }
+
             }
         }
     }

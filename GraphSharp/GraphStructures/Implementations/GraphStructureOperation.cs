@@ -8,7 +8,7 @@ using DelaunatorSharp;
 using GraphSharp.Common;
 using GraphSharp.Exceptions;
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
@@ -18,11 +18,14 @@ namespace GraphSharp.Graphs;
 /// </summary>
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
-    Graph<TNode, TEdge> StructureBase => _structureBase;
-    Graph<TNode, TEdge> _structureBase;
-    public GraphOperation(Graph<TNode, TEdge> structureBase)
+    IGraph<TNode, TEdge> StructureBase => _structureBase;
+    IGraph<TNode, TEdge> _structureBase;
+    INodeSource<TNode> Nodes => _structureBase.Nodes;
+    IEdgeSource<TEdge> Edges => _structureBase.Edges;
+    IGraphConfiguration<TNode,TEdge> Configuration => _structureBase.Configuration;
+    public GraphOperation(IGraph<TNode, TEdge> structureBase)
     {
         _structureBase = structureBase;
     }

@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
     /// <summary>
     /// Clears Edges and randomly create edgesCount of edges for each node.
@@ -17,8 +17,6 @@ where TEdge : Edges.IEdge<TNode>
     public GraphOperation<TNode, TEdge> ConnectNodes(int edgesCount)
     {
         _structureBase.Edges.Clear();
-        var Nodes = _structureBase.Nodes;
-        var Configuration = _structureBase.Configuration;
         var availableNodes = Nodes.Select(x => x.Id).ToList();
         edgesCount = edgesCount > Nodes.Count ? Nodes.Count : edgesCount;
 

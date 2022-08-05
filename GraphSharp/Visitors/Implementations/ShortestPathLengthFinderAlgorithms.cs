@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.Visitors;
 /// <summary>
@@ -15,7 +15,7 @@ namespace GraphSharp.Visitors;
 /// <typeparam name="TEdge"></typeparam>
 public class ShortestPathsLengthFinderAlgorithms<TNode, TEdge> : IVisitor<TNode, TEdge>
 where TNode : INode
-where TEdge : IEdge<TNode>
+where TEdge : IEdge
 {
     /// <summary>
     /// what is the length of path from startNode to some other node so far.  
@@ -61,8 +61,8 @@ where TEdge : IEdge<TNode>
 
     public bool Select(TEdge connection)
     {
-        var sourceId = connection.Source.Id;
-        var targetId = connection.Target.Id;
+        var sourceId = connection.SourceId;
+        var targetId = connection.TargetId;
         var pathLength = _pathLength[sourceId] + _getWeight(connection);
 
         var pathSoFar = _pathLength[targetId];

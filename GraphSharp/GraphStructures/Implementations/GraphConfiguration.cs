@@ -2,8 +2,8 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using GraphSharp.Common;
-using GraphSharp.Edges;
-using GraphSharp.Nodes;
+
+
 
 namespace GraphSharp.Graphs;
 /// <summary>
@@ -11,7 +11,7 @@ namespace GraphSharp.Graphs;
 /// </summary>
 public class GraphConfiguration<TNode, TEdge> : IGraphConfiguration<TNode, TEdge>
 where TNode : INode
-where TEdge : IEdge<TNode>
+where TEdge : IEdge
 {
     Func<TNode, TNode, TEdge> createEdge;
     Func<int, TNode> createNode;
@@ -25,13 +25,13 @@ where TEdge : IEdge<TNode>
     }
     public TEdge CreateEdge(TNode source, TNode target) => createEdge(source, target);
     public TNode CreateNode(int nodeId) => createNode(nodeId);
-    public IEdgeSource<TNode, TEdge> CreateEdgeSource()
+    public IEdgeSource<TEdge> CreateEdgeSource()
     {
-        return new DefaultEdgeSource<TNode, TEdge>();
+        return new DefaultEdgeSource<TEdge>();
     }
 
     public INodeSource<TNode> CreateNodeSource()
     {
-        return new DefaultNodeSource<TNode>(0);
+        return new DefaultNodeSource<TNode>();
     }
 }

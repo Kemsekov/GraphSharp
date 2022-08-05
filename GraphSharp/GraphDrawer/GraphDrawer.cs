@@ -4,9 +4,9 @@ using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using GraphSharp.Edges;
+
 using GraphSharp.Graphs;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.GraphDrawer
 {
@@ -15,18 +15,20 @@ namespace GraphSharp.GraphDrawer
     /// </summary>
     public class GraphDrawer<TNode,TEdge>
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
-        public IGraphConfiguration<TNode,TEdge> Configuration { get; }
+        public IGraph<TNode,TEdge> Graph { get; }
         public IShapeDrawer Drawer { get; }
-        public GraphDrawer(IGraphConfiguration<TNode,TEdge> configuration, IShapeDrawer drawer)
+        INodeSource<TNode> Nodes => Graph.Nodes;
+        public GraphDrawer(IGraph<TNode,TEdge> graph, IShapeDrawer drawer)
         {
-            Configuration = configuration;
+            Graph = graph;
             Drawer = drawer;
         }
         public void DrawPath(IEnumerable<TNode> path,Color color,float lineThickness){
+            if(path.Count()==0) return;
             path.Aggregate((n1,n2)=>{
-                var tmp_edge = Configuration.CreateEdge(n1,n2);
+                var tmp_edge = Graph.Configuration.CreateEdge(n1,n2);
                 tmp_edge.Color = color;
                 DrawEdge(tmp_edge,lineThickness);
                 return n2;
@@ -87,8 +89,8 @@ namespace GraphSharp.GraphDrawer
         }
         public void DrawEdge(TEdge edge, float lineThickness)
         {
-            var sourcePos = edge.Source.Position;
-            var targetPos = edge.Target.Position;
+            var sourcePos = Nodes[edge.SourceId].Position;
+            var targetPos = Nodes[edge.TargetId].Position;
             var color = edge.Color;
             var width = Drawer.Size.X;
             var height = Drawer.Size.Y;
@@ -97,8 +99,8 @@ namespace GraphSharp.GraphDrawer
             Drawer.DrawLine(point1, point2, color, lineThickness);
         }
         public void DrawDirection(TEdge edge,float lineThickness,float directionLength, Color color){
-            var sourcePos = edge.Source.Position;
-            var targetPos = edge.Target.Position;
+            var sourcePos = Nodes[edge.SourceId].Position;
+            var targetPos = Nodes[edge.TargetId].Position;
             
             var distance = Vector2.Distance(sourcePos,targetPos);
 

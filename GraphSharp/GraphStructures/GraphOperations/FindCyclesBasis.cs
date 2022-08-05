@@ -3,13 +3,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Nodes;
+
 
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
 
     /// <summary>
@@ -20,16 +20,14 @@ where TEdge : Edges.IEdge<TNode>
     /// <returns>A list of paths that forms a fundamental cycles basis</returns>
     public IEnumerable<IList<TNode>> FindCyclesBasis()
     {
-        var Edges = _structureBase.Edges;
-        var Nodes = _structureBase.Nodes;
-        var treeGraph = new Graph<TNode, TEdge>(_structureBase.Configuration);
-        treeGraph.SetSources(Nodes, _structureBase.Configuration.CreateEdgeSource());
+        var treeGraph = new Graph<TNode, TEdge>(Configuration);
+        treeGraph.SetSources(Nodes, Configuration.CreateEdgeSource());
         {
             var tree = FindSpanningTree();
             foreach (var e in tree)
             {
                 treeGraph.Edges.Add(e);
-                if (Edges.TryGetEdge(e.Target.Id, e.Source.Id, out var undirected))
+                if (Edges.TryGetEdge(e.TargetId, e.SourceId, out var undirected))
                 {
                     if (undirected is not null)
                         treeGraph.Edges.Add(undirected);
@@ -41,10 +39,10 @@ where TEdge : Edges.IEdge<TNode>
         var result = new ConcurrentBag<IList<TNode>>();
         Parallel.ForEach(outsideEdges, e =>
         {
-            var path = treeGraph.Do.FindAnyPath(e.Target.Id, e.Source.Id);
+            var path = treeGraph.Do.FindAnyPath(e.TargetId, e.SourceId);
             if (path.Count != 0)
             {
-                result.Add(path.Prepend(e.Source).ToList());
+                result.Add(path.Prepend(Nodes[e.SourceId]).ToList());
             }
         });
         return result;

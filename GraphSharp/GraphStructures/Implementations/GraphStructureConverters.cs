@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using GraphSharp.Edges;
+
 using GraphSharp.Exceptions;
-using GraphSharp.Nodes;
+
 using MathNet.Numerics.LinearAlgebra.Single;
 
 namespace GraphSharp.Graphs
@@ -15,9 +15,12 @@ namespace GraphSharp.Graphs
     /// <typeparam name="TEdge"></typeparam>
     public class GraphConverters<TNode, TEdge>
     where TNode : INode
-    where TEdge : IEdge<TNode>
+    where TEdge : IEdge
     {
         Graph<TNode, TEdge> _structureBase;
+        INodeSource<TNode> Nodes => _structureBase.Nodes;
+        IEdgeSource<TEdge> Edges => _structureBase.Edges;
+        IGraphConfiguration<TNode,TEdge> Configuration => _structureBase.Configuration;
         public GraphConverters(Graph<TNode, TEdge> structureBase)
         {
             _structureBase = structureBase;
@@ -29,10 +32,10 @@ namespace GraphSharp.Graphs
         public IDictionary<int, IEnumerable<int>> ToConnectionsList(){
             var result = new Dictionary<int,IEnumerable<int>>();
 
-            foreach(var n in _structureBase.Nodes){
-                var edges = _structureBase.Edges[n.Id];
+            foreach(var n in Nodes){
+                var edges = Edges[n.Id];
                 if(edges.Count()==0) continue;
-                result.Add(n.Id, edges.Select(e=>e.Target.Id).ToList());
+                result.Add(n.Id, edges.Select(e=>e.TargetId).ToList());
             }
             return result;
         }
@@ -41,14 +44,12 @@ namespace GraphSharp.Graphs
         /// </summary>
         public Matrix ToAdjacencyMatrix()
         {
-            var Nodes = _structureBase.Nodes;
-            var Configuration = _structureBase.Configuration;
             Matrix adjacencyMatrix;
             int size = Nodes.MaxNodeId+1;
             adjacencyMatrix = SparseMatrix.Create(size, size, 0);
-            foreach(var e in _structureBase.Edges)
+            foreach(var e in Edges)
             {
-                adjacencyMatrix[e.Source.Id, e.Target.Id] = e.Weight;
+                adjacencyMatrix[e.SourceId, e.TargetId] = e.Weight;
             }
             return adjacencyMatrix;
         }
@@ -66,9 +67,6 @@ namespace GraphSharp.Graphs
         public GraphConverters<TNode,TEdge> FromTreeBinaryCode(byte[] binaryCode){
             if(binaryCode.Length==0) return this;
             _structureBase.Clear();
-            var Nodes = _structureBase.Nodes;
-            var Edges = _structureBase.Edges;
-            var Configuration = _structureBase.Configuration;
             
             Nodes.Add(Configuration.CreateNode(0));
             var backtracking = new List<TNode>(){Nodes.First()};
@@ -102,9 +100,6 @@ namespace GraphSharp.Graphs
                 throw new GraphConverterException("adjacencyMatrix argument must be square matrix!");
             _structureBase.Clear();
             int width = adjacencyMatrix.RowCount;
-            var Configuration = _structureBase.Configuration;
-            var Nodes = _structureBase.Nodes;
-            var Edges = _structureBase.Edges;
 
             _structureBase.Create(width);
             
@@ -126,9 +121,7 @@ namespace GraphSharp.Graphs
             _structureBase.Clear();
             int nodesCount = incidenceMatrix.RowCount;
             var edgesCount = incidenceMatrix.ColumnCount;
-            var Configuration = _structureBase.Configuration;
             _structureBase.Create(nodesCount);
-            var Nodes = _structureBase.Nodes;
 
             for(int i = 0;i<edgesCount;++i){
                 (int nodeId,float Value) n1 = (-1,0),n2 = (-1,0);
@@ -141,9 +134,9 @@ namespace GraphSharp.Graphs
                 }
                 if(n1.nodeId!=-1 && n2.nodeId != -1){
                     if(n1.Value==1)
-                        _structureBase.Edges.Add(Configuration.CreateEdge(Nodes[n1.nodeId],Nodes[n2.nodeId]));
+                        Edges.Add(Configuration.CreateEdge(Nodes[n1.nodeId],Nodes[n2.nodeId]));
                     if(n2.Value==1)
-                        _structureBase.Edges.Add(Configuration.CreateEdge(Nodes[n2.nodeId],Nodes[n1.nodeId]));
+                        Edges.Add(Configuration.CreateEdge(Nodes[n2.nodeId],Nodes[n1.nodeId]));
                 }
             }
             return this;
@@ -156,24 +149,23 @@ namespace GraphSharp.Graphs
         where TEnumerable : IEnumerable<int>
         {
             _structureBase.Clear();
-            var Configuration = _structureBase.Configuration;
             foreach(var m in connectionsList){
                 var source = Configuration.CreateNode(m.Key);
-                _structureBase.Nodes.Add(source);
+                Nodes.Add(source);
             }
 
             foreach(var m in connectionsList)
                 foreach(var targetId in m.Value){
-                    if(!_structureBase.Nodes.TryGetNode(targetId,out var _)){
+                    if(!Nodes.TryGetNode(targetId,out var _)){
                         var target = Configuration.CreateNode(targetId);
-                        _structureBase.Nodes.Add(target);
+                        Nodes.Add(target);
                     }
                 }
 
             foreach(var m in connectionsList){
                 foreach(var target in m.Value){
-                    var edge = Configuration.CreateEdge(_structureBase.Nodes[m.Key],_structureBase.Nodes[target]);
-                    _structureBase.Edges.Add(edge);
+                    var edge = Configuration.CreateEdge(Nodes[m.Key],Nodes[target]);
+                    Edges.Add(edge);
                 }
             }
             return this;
@@ -188,16 +180,16 @@ namespace GraphSharp.Graphs
             var nodesCount = connectionsList.SelectMany(x=>new[]{x.source,x.target}).Max();
             _structureBase.Create(nodesCount+1);
             foreach(var c in connectionsList){
-                if(!_structureBase.Nodes.TryGetNode(c.source,out var _)){
-                    _structureBase.Nodes[c.source] = _structureBase.Configuration.CreateNode(c.source);
+                if(!Nodes.TryGetNode(c.source,out var _)){
+                    Nodes[c.source] = Configuration.CreateNode(c.source);
                 }
-                if(!_structureBase.Nodes.TryGetNode(c.target,out var _)){
-                    _structureBase.Nodes[c.target] = _structureBase.Configuration.CreateNode(c.target);
+                if(!Nodes.TryGetNode(c.target,out var _)){
+                    Nodes[c.target] = Configuration.CreateNode(c.target);
                 }
-                var n1 = _structureBase.Nodes[c.source];
-                var n2 = _structureBase.Nodes[c.target];
-                var edge = _structureBase.Configuration.CreateEdge(n1,n2);
-                _structureBase.Edges.Add(edge);
+                var n1 = Nodes[c.source];
+                var n2 = Nodes[c.target];
+                var edge = Configuration.CreateEdge(n1,n2);
+                Edges.Add(edge);
             }
             _structureBase.Do.RemoveIsolatedNodes();
             return this;

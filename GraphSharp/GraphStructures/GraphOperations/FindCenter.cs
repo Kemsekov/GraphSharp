@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using GraphSharp.Nodes;
+
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
@@ -11,7 +11,7 @@ namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
-where TEdge : Edges.IEdge<TNode>
+where TEdge : IEdge
 {
     /// <summary>
     /// Finds radius and center of graph using approximation technic. In general produce exact center of a graph but works a lot faster.<br/>
@@ -19,26 +19,21 @@ where TEdge : Edges.IEdge<TNode>
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
     public (float radius, IEnumerable<TNode> center) FindCenterByApproximation(Func<TEdge, float>? getWeight = null)
     {
-        var Nodes = _structureBase.Nodes;
         var visited = new byte[Nodes.MaxNodeId + 1];
-        //because we will likely hit the same nodes along the execution of approximation
-        //we avoid recomputing DijkstrasAlgorithm by caching it
-        var shortestPaths = new ConcurrentDictionary<int,DijkstrasAlgorithm<TNode,TEdge>>();
         //this method do following:
         //1) take node A and find all shortest paths to all other nodes
         //2) find longest among them (direction to eccentricity)
         //3) find eccentricity and update radius if radius > eccentricity
         //4) step into longest path by 1. By doing this we will slowly approach center of current 
         //   strongly connected component 
-        //4) save all nodes and their eccentricity along the way
-        //5) in the end select all
-        (float radius, IEnumerable<TNode> center) ApproximateCenter(int startNodeId, Func<TEdge, float>? getWeight = null)
+        //5) save all nodes and their eccentricity along the way
+        //6) in the end select all
+        (float radius, IEnumerable<int> center) ApproximateCenter(int startNodeId, Func<TEdge, float>? getWeight = null)
         {
-            Array.Fill(visited,(byte)0);
-            (int Id,float eccentricity) point = (startNodeId,0);
-            var points = new List<(int Id,float eccentricity)>();
+            (int Id, float eccentricity) point = (startNodeId, 0);
+            var points = new List<(int Id, float eccentricity)>();
             float radius = float.MaxValue;
-
+            float error = 1f;
             while (true)
             {
                 visited[point.Id] += 1;
@@ -46,45 +41,39 @@ where TEdge : Edges.IEdge<TNode>
                 {
                     break;
                 }
-                points.Add(point);
-                if(!shortestPaths.TryGetValue(point.Id,out var paths)){
-                    paths = _structureBase.Do.FindShortestPathsParallel(point.Id);
-                    shortestPaths[point.Id] = paths;
-                }
+                var paths = _structureBase.Do.FindShortestPathsParallel(point.Id);
 
                 var direction = paths.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
-                if(direction.length==0) continue;
                 var path = paths.GetPath(direction.index);
-                points[points.Count-1] = (points[points.Count-1].Id,direction.length);
+                points.Add((point.Id, direction.length));
                 radius = Math.Min(radius, direction.length);
-                if(path.Count<2) continue;
-                if(direction.length==radius)
-                    point = (path[1].Id,float.MaxValue);
-                else break;
+                var index = (int)(1+error*(path.Count-2));
+                if (path.Count < index+1) continue;
+                point = (path[index].Id, float.MaxValue);
+                error*=0.7f;
             }
-            return (radius, points.Where(x=>x.eccentricity==radius).Select(x=>Nodes[x.Id]));
+            return (radius, points.Where(x => x.eccentricity == radius).Select(x=>x.Id));
         }
         var components = _structureBase.Do.FindStronglyConnectedComponents();
         var radius = float.MaxValue;
-        var center = Enumerable.Empty<TNode>();
+        var center = Enumerable.Empty<int>();
         if (components.Count() > 1)
-            Parallel.ForEach(components, c =>
+            foreach(var c in components)
             {
                 (var rad, var cr) = ApproximateCenter(c.nodes.First().Id);
-                if (rad > radius) return;
+                if (rad > radius) continue;
                 lock (components)
                 {
                     radius = Math.Min(rad, radius);
                     if (rad == radius)
                         center = cr;
                 }
-            });
+            }
         else
-        {
-            (radius, center) = ApproximateCenter(_structureBase.Nodes.First().Id);
-        }
-        shortestPaths.Clear();
-        return (radius, center);
+            (radius, center) = ApproximateCenter(Nodes.First().Id);
+        
+        center = center.Distinct();
+        return (radius, center.Select(id=>Nodes[id]));
     }
     /// <summary>
     /// Finds radius and center of graph using Dijkstras Algorithm to brute force eccentricity of all nodes and select minimum of them.<br/>
@@ -94,7 +83,6 @@ where TEdge : Edges.IEdge<TNode>
     public (float radius, IEnumerable<TNode> center) FindCenterByDijkstras(Func<TEdge, float>? getWeight = null)
     {
         var radius = float.MaxValue;
-        var Nodes = _structureBase.Nodes;
         var center = new List<TNode>();
         var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(0, _structureBase, getWeight);
         var propagator = new ParallelPropagator<TNode, TEdge>(pathFinder, _structureBase);
