@@ -40,8 +40,7 @@ where TEdge : IEdge
                 var e = edges.MinBy(x=>{
                     var p1 = Nodes[x.SourceId].Position;
                     var p2 = Nodes[x.TargetId].Position;
-                    var center = (p1+p2)/2;
-                    return (pos-center).Length();
+                    return (pos-p2).Length();
                 });
                 if(e is null) break;
                 edges.Remove(e);
