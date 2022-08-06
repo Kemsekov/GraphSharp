@@ -12,9 +12,10 @@ namespace GraphSharp
     /// </summary>
     public class Node : INode
     {
+        public static Color DefaultColor = Color.Brown;
         public int Id{get;set;}
         public Vector2 Position {get;set;}
-        public Color Color {get;set;}
+        public Color Color {get;set;} = DefaultColor;
         public float Weight {get;set;}
 
         public Node(int id)

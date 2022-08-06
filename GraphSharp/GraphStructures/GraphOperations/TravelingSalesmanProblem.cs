@@ -12,7 +12,8 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Traveling salesman problem solver.<br/>.<br/>
+    /// Traveling salesman problem solver.<br/>
+    /// It works like expanding bubble<br/>
     /// 1) Find delaunay triangulation of current nodes in a graph.<br/>
     /// 2) Make graph undirected.<br/>
     /// 3) Create another edge source which contains information about added edges.<br/>
@@ -30,19 +31,22 @@ where TEdge : IEdge
             return g.Do.TravelingSalesmanProblem(getWeight);
         }
 
-        DelaunayTriangulation();
+        DelaunayTriangulationWithoutHull();
         MakeUndirected();
-        (var edges,var addedNodes) = FindHamiltonianCycle(getWeight);
+        (var edges, var addedNodes) = FindHamiltonianCycle(getWeight);
 
-        for(int i = 0;i<addedNodes.Length;i++){
-            if(addedNodes[i]==0){
+        for (int i = 0; i < addedNodes.Length; i++)
+        {
+            if (addedNodes[i] == 0)
+            {
                 var pos = Nodes[i].Position;
-                var e = edges.MinBy(x=>{
+                var e = edges.MinBy(x =>
+                {
                     var p1 = Nodes[x.SourceId].Position;
                     var p2 = Nodes[x.TargetId].Position;
-                    return (pos-p2).Length();
+                    return (pos - p2).Length()+(pos-p1).Length();
                 });
-                if(e is null) break;
+                if (e is null) break;
                 edges.Remove(e);
                 var toAdd1 = Configuration.CreateEdge(Nodes[e.SourceId], Nodes[i]);
                 var toAdd2 = Configuration.CreateEdge(Nodes[i], Nodes[e.TargetId]);
@@ -69,7 +73,7 @@ where TEdge : IEdge
         var start = Edges.MinBy(getWeight);
         var edges = new DefaultEdgeSource<TEdge>();
         var addedNodes = new byte[Nodes.MaxNodeId + 1];
-        if (start is null) return (edges,addedNodes);
+        if (start is null) return (edges, addedNodes);
         edges.Add(start);
 
         var invalidEdges = new Dictionary<TEdge, byte>();
@@ -78,9 +82,12 @@ where TEdge : IEdge
         addedNodes[start.TargetId] = 1;
 
         var didSomething = true;
+        float minWeight=float.MaxValue;
+        var lastAddedEdges = new List<TEdge>();
         while (didSomething)
         {
             didSomething = false;
+            minWeight = float.MaxValue;
             foreach (var e in edges.OrderBy(getWeight).ToList())
             {
                 if (invalidEdges.TryGetValue(e, out var _)) continue;
@@ -93,9 +100,14 @@ where TEdge : IEdge
                     continue;
                 }
                 var toConnect = intersection.First();
-                edges.Remove(e);
                 var toAdd1 = Edges[e.SourceId, toConnect];
                 var toAdd2 = Edges[toConnect, e.TargetId];
+
+                var weight = toAdd1.Weight + toAdd2.Weight - e.Weight;
+                if(weight>minWeight) continue;
+
+                minWeight = weight;
+                edges.Remove(e);
                 edges.Add(toAdd1);
                 edges.Add(toAdd2);
                 addedNodes[toConnect] = 1;
@@ -105,6 +117,6 @@ where TEdge : IEdge
 
         edges.Add(Edges[start.TargetId, start.SourceId]);
 
-        return (edges,addedNodes);
+        return (edges, addedNodes);
     }
 }

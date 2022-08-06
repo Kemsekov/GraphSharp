@@ -14,11 +14,12 @@ namespace GraphSharp
     /// <typeparam name="TNode"></typeparam>
     public class Edge : IEdge
     {
+        public static Color DefaultColor = Color.DarkViolet;
         public int SourceId{get;set;}
         public int TargetId{get;set;}
         public FlowData Flow {get;set;}
         public float Weight {get;set;}
-        public Color Color {get;set;}
+        public Color Color {get;set;} = DefaultColor;
 
         public Edge(INode source, INode target)
         {
