@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,7 +45,7 @@ where TEdge : IEdge
                 {
                     var p1 = Nodes[x.SourceId].Position;
                     var p2 = Nodes[x.TargetId].Position;
-                    return (pos - p2).Length()+(pos-p1).Length();
+                    return (pos - p2).Length()+(pos-p1).Length()-x.Weight;
                 });
                 if (e is null) break;
                 edges.Remove(e);
@@ -76,27 +77,41 @@ where TEdge : IEdge
         if (start is null) return (edges, addedNodes);
         edges.Add(start);
 
-        var invalidEdges = new Dictionary<TEdge, byte>();
+        var edgeInfo = new ConcurrentDictionary<TEdge,(byte isInvalid,List<int> intersection)>();
 
         addedNodes[start.SourceId] = 1;
         addedNodes[start.TargetId] = 1;
 
+        Parallel.ForEach(Edges,e=>{
+            var e1 = Edges[e.SourceId].Select(x => x.TargetId);
+            var e2 = Edges[e.TargetId].Select(x => x.TargetId);
+
+            var pos1 = Nodes[e.SourceId].Position;
+            var pos2 = Nodes[e.TargetId].Position;
+
+            var intersection = e1.Intersect(e2).ToList();
+            edgeInfo[e] = (0,intersection);
+        });
+
+        var mst = FindSpanningTree(x=>-getWeight(x));
+        foreach(var e in mst){
+            var info = edgeInfo[e];
+            edgeInfo[e] = (1,info.intersection);
+        }
+
         var didSomething = true;
         float minWeight=float.MaxValue;
-        var lastAddedEdges = new List<TEdge>();
         while (didSomething)
         {
             didSomething = false;
             minWeight = float.MaxValue;
             foreach (var e in edges.OrderBy(getWeight).ToList())
             {
-                if (invalidEdges.TryGetValue(e, out var _)) continue;
-                var e1 = Edges[e.SourceId].Select(x => x.TargetId);
-                var e2 = Edges[e.TargetId].Select(x => x.TargetId);
-                var intersection = e1.Intersect(e2).Where(x => addedNodes[x] == 0).ToList();
+                if (edgeInfo.TryGetValue(e, out var eInfo) && eInfo.isInvalid>0) continue;
+                var intersection = eInfo.intersection.Where(x => addedNodes[x] == 0).ToList();
                 if (intersection.Count == 0)
                 {
-                    invalidEdges[e] = 1;
+                    edgeInfo[e]= (1,eInfo.intersection);
                     continue;
                 }
                 var toConnect = intersection.First();
