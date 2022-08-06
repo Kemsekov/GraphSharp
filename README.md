@@ -22,3 +22,5 @@ For samples see https://github.com/Kemsekov/GraphSharp.Samples
 ![example](https://user-images.githubusercontent.com/57869319/179674538-142bf36b-e760-49d8-9ed6-eed3c512e907.jpg)
 [Strongly connected components finder](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/StronglyComponentsFinder)
 ![example](https://user-images.githubusercontent.com/57869319/181353679-86969151-e88e-4600-8db1-8d9e361e96ce.jpg)
+[TravelingSalesmanProblem](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/TravelingSalesmanProblem) (for 5k nodes it took my old i5 about 2 seconds to calculate this)
+![example](https://user-images.githubusercontent.com/57869319/183226714-827188f0-2f34-4a99-b90d-c6937c5dd41f.jpg)
