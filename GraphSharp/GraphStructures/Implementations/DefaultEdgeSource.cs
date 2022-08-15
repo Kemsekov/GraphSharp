@@ -23,12 +23,18 @@ where TEdge : IEdge
     /// </summary>
     IDictionary<int, IList<int>> Sources;
     public int Count { get; protected set; }
-    public TEdge this[INode source, INode target] => this[source.Id,target.Id];
+    public TEdge this[INode source, INode target] => this[source.Id, target.Id];
 
     public DefaultEdgeSource()
     {
         Edges = new ConcurrentDictionary<int, IList<TEdge>>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
         Sources = new ConcurrentDictionary<int, IList<int>>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
+    }
+
+    public DefaultEdgeSource(IEnumerable<TEdge> edges) : this()
+    {
+        foreach(var e in edges)
+            Add(e);
     }
 
     public IEnumerable<TEdge> this[int SourceId]
@@ -114,32 +120,32 @@ where TEdge : IEdge
 
     public bool IsSink(int nodeId)
     {
-        return this[nodeId].Count()==0;
+        return this[nodeId].Count() == 0;
     }
 
     public bool IsSource(int nodeId)
     {
-        return GetSourcesId(nodeId).Count()==0;
+        return GetSourcesId(nodeId).Count() == 0;
     }
 
     public bool IsIsolated(int nodeId)
     {
-        return this[nodeId].Count()==0 && GetSourcesId(nodeId).Count()==0;
+        return this[nodeId].Count() == 0 && GetSourcesId(nodeId).Count() == 0;
     }
 
     public int Degree(int nodeId)
     {
-        return this[nodeId].Count()+GetSourcesId(nodeId).Count();
+        return this[nodeId].Count() + GetSourcesId(nodeId).Count();
     }
 
     public bool Remove(INode source, INode target)
     {
-        return Remove(source.Id,target.Id);
+        return Remove(source.Id, target.Id);
     }
 
     public bool Move(TEdge edge, int newSourceId, int newTargetId)
     {
-        if(!Remove(edge)) return false;
+        if (!Remove(edge)) return false;
         edge.SourceId = newSourceId;
         edge.TargetId = newTargetId;
         Add(edge);
@@ -148,6 +154,6 @@ where TEdge : IEdge
 
     public bool Move(int oldSourceId, int oldTargetId, int newSourceId, int newTargetId)
     {
-        return Move(this[oldSourceId,oldTargetId],newSourceId,newTargetId);
+        return Move(this[oldSourceId, oldTargetId], newSourceId, newTargetId);
     }
 }

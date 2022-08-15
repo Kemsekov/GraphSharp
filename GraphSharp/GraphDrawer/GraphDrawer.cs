@@ -34,6 +34,13 @@ namespace GraphSharp.GraphDrawer
                 return n2;
             });
         }
+        public void DrawPath(IEnumerable<TEdge> path,Color color,float lineThickness){
+            if(path.Count()==0) return;
+            foreach(var e in path)
+            {
+                DrawEdge(e,lineThickness,color);
+            };
+        }
         public void DrawNodeIds(IEnumerable<TNode> nodes, Color color, float fontSize){
             foreach(var n in nodes){
                 DrawNodeId(n,color,fontSize);
@@ -87,11 +94,11 @@ namespace GraphSharp.GraphDrawer
             var point = new Vector2((float)pos.X * Drawer.Size.X, (float)pos.Y * Drawer.Size.Y);
             Drawer.FillEllipse(point, nodeSize, nodeSize, color);
         }
-        public void DrawEdge(TEdge edge, float lineThickness)
+        public void DrawEdge(TEdge edge, float lineThickness, Color color = default)
         {
             var sourcePos = Nodes[edge.SourceId].Position;
             var targetPos = Nodes[edge.TargetId].Position;
-            var color = edge.Color;
+            color = color==default ? edge.Color : color;
             var width = Drawer.Size.X;
             var height = Drawer.Size.Y;
             var point1 = new Vector2((float)sourcePos.X * width, (float)sourcePos.Y * height);

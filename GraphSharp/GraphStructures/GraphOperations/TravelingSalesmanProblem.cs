@@ -34,7 +34,7 @@ where TEdge : IEdge
 
         DelaunayTriangulationWithoutHull();
         MakeUndirected();
-        (var edges, var addedNodes) = FindHamiltonianCycle(getWeight);
+        (var edges, var addedNodes) = FindHamiltonianCycleDelaunayTriangulationWithoutHull(getWeight);
 
         for (int i = 0; i < addedNodes.Length; i++)
         {
@@ -45,7 +45,7 @@ where TEdge : IEdge
                 {
                     var p1 = Nodes[x.SourceId].Position;
                     var p2 = Nodes[x.TargetId].Position;
-                    return (pos - p2).Length()+(pos-p1).Length()-x.Weight;
+                    return (pos - p2).Length() + (pos - p1).Length() - x.Weight;
                 });
                 if (e is null) break;
                 edges.Remove(e);
@@ -57,32 +57,35 @@ where TEdge : IEdge
             }
         }
 
+        var edgesSource = new DefaultEdgeSource<TEdge>(edges);
+
         var tmp = edges.First();
         var path = new List<TNode>();
         path.Add(Nodes[tmp.SourceId]);
         while (path.First().Id != tmp.TargetId)
         {
             path.Add(Nodes[tmp.TargetId]);
-            tmp = edges[tmp.TargetId].First();
+            tmp = edgesSource[tmp.TargetId].First();
         }
         Edges.Clear();
-        return (edges, path);
+        return (edgesSource, path);
     }
-    public (IEdgeSource<TEdge> edges, byte[] addedNodes) FindHamiltonianCycle(Func<TEdge, float>? getWeight = null)
+    public (IList<TEdge> edges, byte[] addedNodes) FindHamiltonianCycleDelaunayTriangulationWithoutHull(Func<TEdge, float>? getWeight = null)
     {
-        getWeight ??= x => -x.Weight;
-        var start = Edges.MinBy(getWeight);
-        var edges = new DefaultEdgeSource<TEdge>();
+        getWeight ??= x => x.Weight;
+        var start = Edges.MaxBy(getWeight);
+        var edges = new List<TEdge>();
         var addedNodes = new byte[Nodes.MaxNodeId + 1];
         if (start is null) return (edges, addedNodes);
         edges.Add(start);
 
-        var edgeInfo = new ConcurrentDictionary<TEdge,(byte isInvalid,List<int> intersection)>();
+        var edgeInfo = new ConcurrentDictionary<TEdge, (byte isInvalid, List<int> intersection)>();
 
         addedNodes[start.SourceId] = 1;
         addedNodes[start.TargetId] = 1;
 
-        Parallel.ForEach(Edges,e=>{
+        Parallel.ForEach(Edges, e =>
+        {
             var e1 = Edges[e.SourceId].Select(x => x.TargetId);
             var e2 = Edges[e.TargetId].Select(x => x.TargetId);
 
@@ -90,28 +93,36 @@ where TEdge : IEdge
             var pos2 = Nodes[e.TargetId].Position;
 
             var intersection = e1.Intersect(e2).ToList();
-            edgeInfo[e] = (0,intersection);
+
+            edgeInfo[e] = (0, intersection);
         });
 
-        var mst = FindSpanningTree(x=>-getWeight(x));
-        foreach(var e in mst){
+        var mst = FindSpanningTree(x => getWeight(x));
+        foreach (var e in mst)
+        {
             var info = edgeInfo[e];
-            edgeInfo[e] = (1,info.intersection);
+            edgeInfo[e] = (1, info.intersection);
         }
 
         var didSomething = true;
-        float minWeight=float.MaxValue;
+        float minWeight = float.MaxValue;
+
+        Func<TEdge, float> order = x =>
+        {
+            return -getWeight(x);
+        };
+
         while (didSomething)
         {
             didSomething = false;
             minWeight = float.MaxValue;
-            foreach (var e in edges.OrderBy(getWeight).ToList())
+            foreach (var e in edges.OrderBy(order).ToList())
             {
-                if (edgeInfo.TryGetValue(e, out var eInfo) && eInfo.isInvalid>0) continue;
+                if (edgeInfo.TryGetValue(e, out var eInfo) && eInfo.isInvalid > 0) continue;
                 var intersection = eInfo.intersection.Where(x => addedNodes[x] == 0).ToList();
                 if (intersection.Count == 0)
                 {
-                    edgeInfo[e]= (1,eInfo.intersection);
+                    edgeInfo[e] = (1, eInfo.intersection);
                     continue;
                 }
                 var toConnect = intersection.First();
@@ -119,7 +130,7 @@ where TEdge : IEdge
                 var toAdd2 = Edges[toConnect, e.TargetId];
 
                 var weight = toAdd1.Weight + toAdd2.Weight - e.Weight;
-                if(weight>minWeight) continue;
+                if (weight > minWeight) continue;
 
                 minWeight = weight;
                 edges.Remove(e);
