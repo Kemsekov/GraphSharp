@@ -29,7 +29,7 @@ where TEdge : IEdge
         while (true)
         {
             counter++;
-            // if(counter>=maxIterations) break;
+            if(counter>=maxIterations) break;
             colony.RunParallel(0);
             colony.UpdateSmellParallel();
             colony.ReduceSmell();
