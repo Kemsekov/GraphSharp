@@ -18,24 +18,20 @@ where TEdge : IEdge
     /// <param name="startNodeId">Start points that used for searching hamiltonian path</param>
     /// <param name="maxIterations">Because this algorithm works in non-deterministic time it can just blew up to infinity so this parameter can limit count of algorithm iterations</param>
     /// <returns>Hamiltonian path, if found before hit maxIterationsLimit. Else some random very long path. And as seconds parameter count of iterations it took to compute path.</returns>
-    public (IList<TEdge> path, int steps) TryFindHamiltonianPathByAntSimulation(int colonySize = 256,int startNodeId=0, int maxIterations=1000, float startSmell = 0.5f)
+    public (IList<TEdge> path, int steps) TryFindHamiltonianPathByAntSimulation(int colonySize = 256,int startNodeId=0, int maxIterations=1000, float startSmell = 0.5f, float minSmell = 0.0001f)
     {
         var smell = new ConcurrentDictionary<TEdge, float>();
         foreach (var e in Edges)
             smell[e] = startSmell;
-
-        // foreach(var e in FindHamiltonianCycleByBubbleExpansion()){
-        //     smell[e] = 1;
-        // }
 
         var colony = new AntColony<TNode, TEdge>(_structureBase, smell, colonySize);
         int counter = 0;
         while (true)
         {
             counter++;
-            if(counter>=maxIterations) break;
+            // if(counter>=maxIterations) break;
             colony.RunParallel(0);
-            colony.UpdateSmellParallel();
+            colony.UpdatePaths();
             colony.ReduceSmell();
             colony.Reset();
             if (colony.BestPath.Count == Nodes.Count - 1)
@@ -46,7 +42,12 @@ where TEdge : IEdge
         var path = colony.BestPath;
         return (path,counter);
     }
-    public IList<TEdge> FindHamiltonianCycleByBubbleExpansion(Func<TEdge, float>? getWeight = null)
+    /// <summary>
+    /// Tries to find hamiltonian cycle by 'bubble expansion' technic. Results wary and can be exact hamiltonian cycle or just a very long cycle in a graph.<br/>
+    /// If it found hamiltonian cycle then it's performance is about 1.2-1.3 times higher than minimal spanning tree weight
+    /// </summary>
+    /// <param name="getWeight"></param>
+    public IList<TEdge> TryFindHamiltonianCycleByBubbleExpansion(Func<TEdge, float>? getWeight = null)
     {
         getWeight ??= x => x.Weight;
         var start = Edges.MinBy(getWeight);

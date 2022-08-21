@@ -51,7 +51,11 @@ where TEdge : IEdge
             ant.Run(nodeId);
         });
     }
-    void UpdateSmell(Ant<TNode, TEdge> ant)
+    public void UpdatePaths(){
+        foreach(var ant in Ants)
+            UpdatePath(ant);
+    }
+    void UpdatePath(Ant<TNode, TEdge> ant)
     {
         if (ant.Path.Count < BestPath.Count)
         {
@@ -59,7 +63,6 @@ where TEdge : IEdge
         }
         if (ant.Path.Count > BestPath.Count)
         {
-            ant.AddSmell();
             lock(BestPath){
                 BestPath = ant.Path.ToList();
                 BestPathCoefficient = ant.Coefficient;
@@ -69,29 +72,17 @@ where TEdge : IEdge
 
         if (ant.Coefficient > BestPathCoefficient)
         {
-            ant.AddSmell();
             lock(BestPath){
                 BestPath = ant.Path.ToList();
                 BestPathCoefficient = ant.Coefficient;
             }
         }
     }
-    public void UpdateSmell()
-    {
-        foreach (var ant in Ants)
-        {
-            UpdateSmell(ant);
-        }
-    }
-    public void UpdateSmellParallel()
-    {
-        Parallel.ForEach(Ants,ant=>UpdateSmell(ant));
-    }
     public void ReduceSmell()
     {
         var maxSmell = Smell.MaxBy(x => x.Value).Value;
         var avarage = Smell.Average(x => x.Value);
-        var newMinSmell = avarage / maxSmell / ColonySize;
+        var newMinSmell = avarage / maxSmell;
         foreach (var e in Graph.Edges)
         {
             // Smell[e]=MathF.Abs(MathF.Log(Smell[e]));

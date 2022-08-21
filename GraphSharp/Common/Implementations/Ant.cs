@@ -40,14 +40,22 @@ where TEdge : IEdge
         float smellSum = 0;
         float destination = 0;
         float smellAccumulator = 0;
+        var startNode = nodeId;
+        var nodesCount = Graph.Nodes.Count;
+
         while(true){
             if(nodeId<0) return;
             VisitNode(nodeId);
-            if (Path.Count == nodesCount) return;
+            if(Path.Count==nodesCount) return;
+            if(Path.Count>1)
+            if (Path.Last().TargetId == startNode){
+                AddSmell();
+                return;
+            }
             edges = 
             Edges[nodeId]
-                .Where(e => !VisitedNode(e.TargetId))
-                .Select(e => (e, Smell[e]/e.Weight))
+                .Where(e => !VisitedNode(e.TargetId) || e.TargetId==startNode)
+                .Select(e => (e, Smell[e]))
                 .OrderBy(x => x.Item2)
                 .ToList();
             count = edges.Count();

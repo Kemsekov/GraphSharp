@@ -14,10 +14,10 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Finds radius and center of graph using approximation technic. In general produce exact center of a graph but works a lot faster.<br/>
+    /// Finds radius and center of graph using approximation technic. In general produce close to center of a graph results but works a lot faster.<br/>
     /// </summary>
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
-    public (float radius, IEnumerable<TNode> center) FindCenterByApproximation(Func<TEdge, float>? getWeight = null)
+    public (float radius, IEnumerable<TNode> center) TryFindCenterByApproximation(Func<TEdge, float>? getWeight = null)
     {
         var visited = new byte[Nodes.MaxNodeId + 1];
         //this method do following:
