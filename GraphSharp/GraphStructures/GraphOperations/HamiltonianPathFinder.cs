@@ -31,7 +31,7 @@ where TEdge : IEdge
             counter++;
             // if(counter>=maxIterations) break;
             colony.RunParallel(0);
-            colony.UpdatePaths();
+            colony.UpdateSmellParallel();
             colony.ReduceSmell();
             colony.Reset();
             if (colony.BestPath.Count == Nodes.Count - 1)
