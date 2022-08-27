@@ -14,7 +14,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Finds radius and center of graph using approximation technic. In general produce close to center of a graph results but works a lot faster.<br/>
+    /// Finds radius and center of graph using approximation technic. In general produce very good results, but works a lot faster.<br/>
     /// </summary>
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
     public (float radius, IEnumerable<TNode> center) TryFindCenterByApproximation(Func<TEdge, float>? getWeight = null)
@@ -24,11 +24,12 @@ where TEdge : IEdge
         //1) take node A and find all shortest paths to all other nodes
         //2) find longest among them (direction to eccentricity)
         //3) find eccentricity and update radius if radius > eccentricity
-        //4) step into longest path by 1. By doing this we will slowly approach center of current 
-        //   strongly connected component 
-        //5) save all nodes and their eccentricity along the way
-        //6) in the end select all
-        (float radius, IEnumerable<int> center) ApproximateCenter(int startNodeId, Func<TEdge, float>? getWeight = null)
+        //4) step into longest path by exponentially decreasing order(like simulated annealing). 
+        //   By doing this we will slowly approach center of current graph.
+        //5) Repeat process with node we did step into until we step twice in the same node
+        //6) When we step twice in the same node it means that direction of center is accelerating
+        //   and we found a center of a graph. 
+        (float radius, IEnumerable<int> center) ApproximateCenter(int startNodeId)
         {
             (int Id, float eccentricity) point = (startNodeId, 0);
             var points = new List<(int Id, float eccentricity)>();
@@ -41,14 +42,16 @@ where TEdge : IEdge
                 {
                     break;
                 }
-                var paths = _structureBase.Do.FindShortestPathsParallel(point.Id);
+                var paths = _structureBase.Do.FindShortestPathsParallel(point.Id,getWeight);
 
                 var direction = paths.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
-                var path = paths.GetPath(direction.index);
+                var path = paths.GetPath(direction.index).Where(x=>visited[x.Id]==0).ToList();
+                if(path.Count==0) continue;
                 points.Add((point.Id, direction.length));
                 radius = Math.Min(radius, direction.length);
                 var index = (int)(1+error*(path.Count-2));
-                if (path.Count < index+1) continue;
+                index = Math.Max(index,0);
+                index = Math.Min(index,path.Count-1);
                 point = (path[index].Id, float.MaxValue);
                 error*=0.7f;
             }
@@ -57,6 +60,9 @@ where TEdge : IEdge
         var components = _structureBase.Do.FindStronglyConnectedComponents();
         var radius = float.MaxValue;
         var center = Enumerable.Empty<int>();
+
+        //we use ApproximateCenter on each of SSC so we can cover
+        //a lot of possible paths to a center with a good accuracy.
         if (components.Count() > 1)
             foreach(var c in components)
             {

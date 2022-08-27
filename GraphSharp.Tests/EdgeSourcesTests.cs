@@ -56,7 +56,7 @@ public class EdgeSourcesTests
         {
             _Graph.SetSources(Nodes, edgeSource);
             FillEdges(Nodes, edgeSource, 1000);
-            _Graph.CheckForIntegrity();
+            _Graph.CheckForIntegrityOfSimpleGraph();
             for (int i = 0; i < 100; i++)
             {
                 var source = Random.Shared.Next(1000);
@@ -66,7 +66,7 @@ public class EdgeSourcesTests
                     edgeSource.Remove(source, target);
                 }
                 catch (Exception) { }
-                _Graph.CheckForIntegrity();
+                _Graph.CheckForIntegrityOfSimpleGraph();
             }
         }
     }
@@ -79,7 +79,7 @@ public class EdgeSourcesTests
             _Graph.SetSources(Nodes, edgeSource);
             FillEdges(Nodes, edgeSource, 1000);
             Assert.Equal(1000, edgeSource.Count);
-            _Graph.CheckForIntegrity();
+            _Graph.CheckForIntegrityOfSimpleGraph();
         }
     }
     [Fact]
@@ -100,7 +100,7 @@ public class EdgeSourcesTests
                 edgeSource.Remove(e);
             }
             Assert.Equal(898, edgeSource.Count);
-            _Graph.CheckForIntegrity();
+            _Graph.CheckForIntegrityOfSimpleGraph();
         }
     }
     [Fact]
@@ -118,7 +118,7 @@ public class EdgeSourcesTests
             Assert.True(edgeSource.Remove(edgeSource.First()));
             Assert.Equal(edgeSource.Count, 0);
 
-            _Graph.CheckForIntegrity();
+            _Graph.CheckForIntegrityOfSimpleGraph();
         }
     }
     [Fact]
@@ -130,12 +130,12 @@ public class EdgeSourcesTests
             var edges = edgeSource.Take(100).ToArray();
             foreach (var edge in edges)
             {
-                Assert.NotEmpty(edgeSource[edge.SourceId]);
-                Assert.Contains((edge.SourceId, edge.TargetId), edgeSource[edge.SourceId].Select(x => (x.SourceId, x.TargetId)));
+                Assert.NotEmpty(edgeSource.OutEdges(edge.SourceId));
+                Assert.Contains((edge.SourceId, edge.TargetId), edgeSource.OutEdges(edge.SourceId).Select(x => (x.SourceId, x.TargetId)));
                 var _ = edgeSource[edge.SourceId, edge.TargetId];
             }
-            Assert.Empty(edgeSource[-100]);
-            Assert.Empty(edgeSource[12300]);
+            Assert.Empty(edgeSource.OutEdges(-100));
+            Assert.Empty(edgeSource.OutEdges(12300));
             Assert.Throws<EdgeNotFoundException>(() => edgeSource[1234, 1235]);
         }
     }
@@ -170,7 +170,7 @@ public class EdgeSourcesTests
             {
                 Assert.False(true);
             }
-            _Graph.CheckForIntegrity();
+            _Graph.CheckForIntegrityOfSimpleGraph();
         }
     }
     [Fact]
@@ -207,7 +207,7 @@ public class EdgeSourcesTests
                 Assert.Equal((e.SourceId, e.TargetId), (newSourceIndex, newTargetIndex));
 
                 //check that everything with edge data is OK
-                _Graph.CheckForIntegrity();
+                _Graph.CheckForIntegrityOfSimpleGraph();
 
                 //and count of edge must keep the same
                 Assert.Equal(edgeSource.Count, edgesCount);

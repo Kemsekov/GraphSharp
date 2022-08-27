@@ -17,10 +17,13 @@ namespace GraphSharp.Graphs
         bool Remove(TEdge edge);
         bool Remove(int sourceId, int targetId);
         bool Remove(INode source, INode target);
-        IEnumerable<TEdge> this[int SourceId] {get;}
-        /// <returns>Returns all sourceId of edges like sourceId->targetId</returns>
-        IEnumerable<int> GetSourcesId(int targetId);
-        TEdge this[int SourceId,int targetId]{get;}
+        /// <returns>All out edges</returns>
+        IEnumerable<TEdge> OutEdges(int sourceId);
+        /// <returns>All in edges</returns>
+        IEnumerable<TEdge> InEdges(int targetId);
+        /// <returns>Both in and out edges. If you need to get both of edges this method will be faster.</returns>
+        (IEnumerable<TEdge> InEdges, IEnumerable<TEdge> OutEdges) BothEdges(int nodeId);
+        TEdge this[int sourceId,int targetId]{get;}
         TEdge this[INode source,INode target]{get;}
         bool TryGetEdge(int sourceId, int targetId, out TEdge? edge);
         void Clear();

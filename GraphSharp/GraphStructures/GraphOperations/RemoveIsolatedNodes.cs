@@ -17,7 +17,7 @@ where TEdge : IEdge
     {
         var toRemove =
             Nodes
-            .Where(x => Edges.GetSourcesId(x.Id).Count() == 0 && Edges[x.Id].Count() == 0)
+            .Where(x => Edges.IsIsolated(x.Id))
             .Select(x => x.Id)
             .ToArray();
 

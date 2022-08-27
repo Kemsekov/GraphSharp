@@ -45,7 +45,7 @@ where TEdge : IEdge
             VisitNode(nodeId);
             if (Path.Count == nodesCount) return;
             edges = 
-            Edges[nodeId]
+            Edges.OutEdges(nodeId)
                 .Where(e => !VisitedNode(e.TargetId))
                 .Select(e => (e, Smell[e]/e.Weight))
                 .OrderBy(x => x.Item2)
@@ -82,9 +82,9 @@ where TEdge : IEdge
         bool isolate = false;
         VisitNode(targetId);
         var isolatedCount = 0;
-        foreach(var e in Graph.Edges[targetId]){
+        foreach(var e in Graph.Edges.OutEdges(targetId)){
             if(VisitedNode(e.TargetId)) continue;
-            var freePathsInside = Graph.Edges.GetSourcesId(e.TargetId).Sum(x=>VisitedNode(x) ? 0 : 1);
+            var freePathsInside = Graph.Edges.InEdges(e.TargetId).Sum(x=>VisitedNode(x.SourceId) ? 0 : 1);
             if(freePathsInside==0) {
                 isolatedCount++;
             }

@@ -37,7 +37,7 @@ public static class GraphDataIntegrityChecker
     {
         foreach (var n in graph.Nodes)
         {
-            var edges = graph.Edges[n.Id];
+            var edges = graph.Edges.OutEdges(n.Id);
             if (!edges.All(x => x.SourceId == n.Id))
             {
                 throw new GraphDataIntegrityException($"Edges list for node {n.Id} has edge which source Id is not {n.Id}");
@@ -61,7 +61,7 @@ public static class GraphDataIntegrityChecker
         }
         foreach (var n in graph.Nodes)
         {
-            foreach (var source in graph.Edges.GetSourcesId(n.Id))
+            foreach (var source in graph.Edges.InEdges(n.Id).Select(x=>x.SourceId))
             {
                 if (!graph.Edges.TryGetEdge(source, n.Id, out var _))
                     throw new GraphDataIntegrityException($"Edge {source}->{n.Id} is present in sources list but not found among edges");
@@ -73,7 +73,7 @@ public static class GraphDataIntegrityChecker
     where TEdge : IEdge
     {
         foreach (var n in graph.Nodes){
-            var edges = graph.Edges[n.Id];
+            var edges = graph.Edges.OutEdges(n.Id);
             var actualEdges = edges.Select(x => (x.SourceId, x.TargetId));
             var expectedEdges = actualEdges.Distinct();
             if (actualEdges.Count() != expectedEdges.Count())

@@ -119,7 +119,7 @@ namespace GraphSharp.Propagators
         protected abstract void PropagateNodes();
         protected void PropagateNode(int nodeId)
         {
-            var edges = _graph.Edges[nodeId];
+            var edges = _graph.Edges.OutEdges(nodeId);
             foreach(var edge in edges)
             {
                 if (!Visitor.Select(edge)) continue;

@@ -33,7 +33,7 @@ namespace GraphSharp.Graphs
             var result = new Dictionary<int,IEnumerable<int>>();
 
             foreach(var n in Nodes){
-                var edges = Edges[n.Id];
+                var edges = Edges.OutEdges(n.Id);
                 if(edges.Count()==0) continue;
                 result.Add(n.Id, edges.Select(e=>e.TargetId).ToList());
             }
@@ -115,27 +115,30 @@ namespace GraphSharp.Graphs
             return this;
         }
         /// <summary>
-        /// Create graph from from incidence matrix
+        /// Create graph from from incidence matrix. 1.0 means out edge, -1.0 means in edge.
         /// </summary>
         public GraphConverters<TNode,TEdge> FromIncidenceMatrix(Matrix incidenceMatrix){
             _structureBase.Clear();
             int nodesCount = incidenceMatrix.RowCount;
             var edgesCount = incidenceMatrix.ColumnCount;
             _structureBase.Create(nodesCount);
-
-            for(int i = 0;i<edgesCount;++i){
+            
+            for(int col = 0;col<edgesCount;++col){
                 (int nodeId,float Value) n1 = (-1,0),n2 = (-1,0);
-                for(int b = 0;b<nodesCount;++b){
-                    var value = incidenceMatrix[b,i];
+                for(int row = 0;row<nodesCount;++row){
+                    var value = incidenceMatrix[row,col];
                     if(value!=0){
                         n1 = n2;
-                        n2 = (b,value);
+                        n2 = (row,value);
                     }
                 }
+                if(Math.Min(n1.nodeId,n2.nodeId)==7 && Math.Max(n1.nodeId,n2.nodeId)==25){
+                    System.Console.WriteLine("debug");
+                }
                 if(n1.nodeId!=-1 && n2.nodeId != -1){
-                    if(n1.Value==1)
+                    if(n1.Value>0)
                         Edges.Add(Configuration.CreateEdge(Nodes[n1.nodeId],Nodes[n2.nodeId]));
-                    if(n2.Value==1)
+                    if(n2.Value>0)
                         Edges.Add(Configuration.CreateEdge(Nodes[n2.nodeId],Nodes[n1.nodeId]));
                 }
             }

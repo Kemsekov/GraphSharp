@@ -31,7 +31,7 @@ where TEdge : IEdge
         Propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
         var startingNodes = new List<int>();
         foreach(var n in graph.Nodes){
-            if(graph.Edges.GetSourcesId(n.Id).Count()==0)
+            if(graph.Edges.InEdges(n.Id).Count()==0)
                 startingNodes.Add(n.Id);
         }
         Layers = new List<IList<TNode>>();

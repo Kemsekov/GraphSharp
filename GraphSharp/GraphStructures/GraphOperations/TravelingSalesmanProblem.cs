@@ -13,7 +13,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Traveling salesman problem solver.<br/>
+    /// Traveling salesman problem solver. About 1.25 longer than MST.<br/>
     /// It works like expanding bubble<br/>
     /// 1) Find delaunay triangulation of current nodes in a graph.<br/>
     /// 2) Make graph undirected.<br/>
@@ -65,12 +65,12 @@ where TEdge : IEdge
         while (path.First().Id != tmp.TargetId)
         {
             path.Add(Nodes[tmp.TargetId]);
-            tmp = edgesSource[tmp.TargetId].First();
+            tmp = edgesSource.OutEdges(tmp.TargetId).First();
         }
         Edges.Clear();
         return (edgesSource, path);
     }
-    public (IList<TEdge> edges, byte[] addedNodes) FindHamiltonianCycleDelaunayTriangulationWithoutHull(Func<TEdge, float>? getWeight = null)
+    (IList<TEdge> edges, byte[] addedNodes) FindHamiltonianCycleDelaunayTriangulationWithoutHull(Func<TEdge, float>? getWeight = null)
     {
         getWeight ??= x => x.Weight;
         var start = Edges.MaxBy(getWeight);
@@ -86,8 +86,8 @@ where TEdge : IEdge
 
         Parallel.ForEach(Edges, e =>
         {
-            var e1 = Edges[e.SourceId].Select(x => x.TargetId);
-            var e2 = Edges[e.TargetId].Select(x => x.TargetId);
+            var e1 = Edges.OutEdges(e.SourceId).Select(x => x.TargetId);
+            var e2 = Edges.OutEdges(e.TargetId).Select(x => x.TargetId);
 
             var pos1 = Nodes[e.SourceId].Position;
             var pos2 = Nodes[e.TargetId].Position;

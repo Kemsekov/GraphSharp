@@ -36,7 +36,7 @@ namespace GraphSharp.Tests
         void CheckForIntegrity(INodeSource<Node> n){
             var g = new Graph();
             g.SetSources(n,new DefaultEdgeSource<Edge>());
-            g.CheckForIntegrity();
+            g.CheckForIntegrityOfSimpleGraph();
         }
 
         [Fact]

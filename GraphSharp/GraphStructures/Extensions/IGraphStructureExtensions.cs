@@ -53,10 +53,10 @@ public static class GraphExtensions
         return true;
     }
     /// <summary>
-    /// Checks for data integrity for Nodes and Edges. <br/>
+    /// Checks for data integrity for Nodes and Edges for the case when current graph is simple. <br/>
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">When there is a problem with data integrity in a graph. See exception message for more details.</exception>
-    public static void CheckForIntegrity<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static void CheckForIntegrityOfSimpleGraph<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -205,7 +205,7 @@ public static class GraphExtensions
         foreach (var n in Nodes)
         {
             var color = n.Color;
-            var edges = graph.Edges[n.Id];
+            var edges = graph.Edges.OutEdges(n.Id);
             if (edges.Any(x => Nodes[x.TargetId].Color == color))
             {
                 throw new WrongGraphColoringException($"Wrong graph coloring! Node {n.Id} with color {color} have edge with the same color!");

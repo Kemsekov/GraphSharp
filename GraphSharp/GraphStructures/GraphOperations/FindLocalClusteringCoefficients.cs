@@ -21,7 +21,7 @@ where TEdge : IEdge
         Array.Fill(coeff,-1f);
         var neighbourhood = new byte[Nodes.MaxNodeId+1];
         foreach(var n in Nodes){
-            var edges = Edges[n.Id];
+            var edges = Edges.OutEdges(n.Id);
             var edgesCount = edges.Count();
             if(edgesCount<2) continue;
             Array.Fill(neighbourhood,(byte)0);
@@ -31,7 +31,7 @@ where TEdge : IEdge
                 neighbourhood[e.TargetId] = 1;
             }
             foreach(var e in edges){
-                foreach(var e1 in Edges[e.TargetId]){
+                foreach(var e1 in Edges.OutEdges(e.TargetId)){
                     if(neighbourhood[e1.TargetId]==1) connectionsCount++;
                 }
             }

@@ -34,7 +34,7 @@ where TEdge : IEdge
             id++;
             ids[at] = id;
             low[at] = id;
-            foreach (var e in Edges[at])
+            foreach (var e in Edges.OutEdges(at))
             {
                 var to = e.TargetId;
                 if (ids[to] == UNVISITED) dfs(to);

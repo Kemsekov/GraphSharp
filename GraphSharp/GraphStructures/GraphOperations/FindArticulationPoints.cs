@@ -60,7 +60,7 @@ where TEdge : IEdge
         disc[u] = low[u] = ++time;
 
         // Go through all vertices adjacent to this
-        foreach (var v in adj[u].Select(x => x.TargetId))
+        foreach (var v in adj.OutEdges(u).Select(x => x.TargetId))
         {
             // If v is not visited yet, then make it a child of u
             // in DFS tree and recur for it

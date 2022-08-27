@@ -33,7 +33,7 @@ where TEdge : IEdge
         //Helper function (does step 1 and step 2)
         void SetColor(TNode n)
         {
-            var edges = Edges[n.Id];
+            var edges = Edges.OutEdges(n.Id);
             var available_colors = _colors.Except(forbidden_colors[n.Id]);
             available_colors = available_colors.Except(edges.Select(x => Nodes[x.TargetId].Color));
 

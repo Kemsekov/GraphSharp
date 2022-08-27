@@ -18,7 +18,7 @@ where TEdge : IEdge
         onCreatedEdge ??= (edge) => { };
         foreach (var source in Nodes)
         {
-            var edges = Edges[source.Id];
+            var edges = Edges.OutEdges(source.Id);
             foreach (var edge in edges)
             {
                 if (Edges.TryGetEdge(edge.TargetId, edge.SourceId, out var _)) continue;

@@ -23,7 +23,7 @@ namespace GraphSharp.Tests
 
         public PropagatorTests()
         {
-            _graph = new Graph<Node, Edge>(new TestGraphConfiguration()).Create(1000);
+            _graph = new Graph<Node, Edge>(new TestGraphConfiguration(new())).Create(1000);
             _graph.Do.ConnectNodes(10);
 
             _propagatorFactories = new Func<IVisitor<Node,Edge>, PropagatorBase<Node,Edge>>[2];
@@ -164,7 +164,7 @@ namespace GraphSharp.Tests
                     e =>
                     {
                         lock (expected)
-                            foreach (var n in _graph.Edges[e.TargetId])
+                            foreach (var n in _graph.Edges.OutEdges(e.TargetId))
                                 expected.Add(_graph.Nodes[n.TargetId]);
                         return true;
                     });
@@ -199,7 +199,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void Propagate_HaveRightNodesVisitOrderWithManualData()
         {
-            var graph = new Graph<Node, Edge>(new TestGraphConfiguration())
+            var graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()))
                 .Create(10);
             foreach (var pair in ManualTestData.NodesConnections)
             {

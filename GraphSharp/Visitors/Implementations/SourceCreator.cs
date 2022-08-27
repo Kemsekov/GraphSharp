@@ -47,7 +47,7 @@ where TEdge : IEdge
     {
         SetNodeState(node.Id, Proceed);
 
-        var edges = Graph.Edges[node.Id];
+        var edges = Graph.Edges.OutEdges(node.Id);
         var toRemove = new List<TEdge>(edges.Count());
         foreach (var edge in edges)
         {

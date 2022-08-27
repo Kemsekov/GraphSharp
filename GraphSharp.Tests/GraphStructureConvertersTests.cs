@@ -109,10 +109,10 @@ namespace GraphSharp.Tests
         [Fact]
         public void FromIncidenceMatrix_Works()
         {
-            var rand = new Random();
+            var rand = new Random(3);
             int nodesCount = rand.Next(100)+5;
             var edgesCount = rand.Next(100)+5;
-            var incidenceMatrix = CreateRandomIncidenceMatrix(nodesCount,edgesCount,(_,_)=>1-_rand.Next(1)*2);
+            var incidenceMatrix = CreateRandomIncidenceMatrix(rand,nodesCount,edgesCount,(_,_)=>1-_rand.Next(1)*2);
             _Graph.Converter.FromIncidenceMatrix(incidenceMatrix);
             var nodes = _Graph.Nodes;
             Assert.Equal(nodes.Count,incidenceMatrix.RowCount);
@@ -123,29 +123,26 @@ namespace GraphSharp.Tests
                 (int row,float value) n2 = (-1,-1);
 
                 for(int row = 0;row<nodesCount;row++){
-                    var value = incidenceMatrix.At(row:row,column:col);
+                    var value = incidenceMatrix[row,col];
                     if(value!=0){
                         n2 = n1;
                         n1 = (row,value);
                     }
                 }
                 if(n1==(-1,-1) || n2==(-1,-1)) continue;
-                var source = n1.value>n2.value ? n1 : n2;
-                var to = n1.value<=n2.value ? n1 : n2;
-
-                var edges = _Graph.Edges[source.row];
-                
-                var sourceNode = edges.FirstOrDefault(x=>x.TargetId==to.row);
-                Assert.NotNull(sourceNode);
-                _Graph.Edges.Remove(sourceNode);
-                if(to.value==1){
-                    var toNode = _Graph.Edges[to.row].FirstOrDefault(x=>x.TargetId==source.row);
-                    Assert.NotNull(toNode);
-                    _Graph.Edges.Remove(toNode);
+                if(n1.value==1){
+                    Assert.True(_Graph.Edges.TryGetEdge(n1.row,n2.row,out var e1));
+                    _Graph.Edges.Remove(e1);
+                }
+                if(n2.value==1){
+                    Assert.True(_Graph.Edges.TryGetEdge(n2.row,n1.row,out var e2));
+                    _Graph.Edges.Remove(e2);
                 }
             }
-            foreach(var n in nodes)
-                Assert.Empty(_Graph.Edges[n.Id]);
+            foreach(var n in nodes){
+                Assert.Empty(_Graph.Edges.OutEdges(n.Id));
+                Assert.Empty(_Graph.Edges.InEdges(n.Id));
+            }
         }
         [Fact]
         public void ToAdjacencyMatrix_CalculateWeightFromEdgeWorks()
@@ -172,10 +169,9 @@ namespace GraphSharp.Tests
                     result[i, b] = createElement(i, b);
             return DenseMatrix.OfArray(result);
         }
-        public Matrix CreateRandomIncidenceMatrix(int nodesCount, int edgesCount, Func<int, int, float> createElement)
+        public Matrix CreateRandomIncidenceMatrix(Random rand, int nodesCount, int edgesCount, Func<int, int, float> createElement)
         {
             var result = new float[nodesCount, edgesCount];
-            var rand = new Random();
             for (int e = 0; e < edgesCount; e++)
             {
                 int randPoint1 = rand.Next(nodesCount);

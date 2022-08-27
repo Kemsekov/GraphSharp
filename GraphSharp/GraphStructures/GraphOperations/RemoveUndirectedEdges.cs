@@ -17,7 +17,7 @@ where TEdge : IEdge
     {
         foreach (var n in Nodes)
         {
-            var edges = Edges[n.Id].ToArray();
+            var edges = Edges.OutEdges(n.Id).ToArray();
             foreach (var edge in edges)
             {
                 if (Edges.Remove(edge.TargetId, edge.SourceId))

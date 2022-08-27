@@ -28,9 +28,9 @@ where TEdge : IEdge
 
         foreach (var n in nodeIndices)
         {
-            foreach (var source in Edges.GetSourcesId(n).ToArray())
+            foreach (var inEdge in Edges.InEdges(n).ToArray())
             {
-                Edges.Remove(source, n);
+                Edges.Remove(inEdge.SourceId, n);
             }
         }
 

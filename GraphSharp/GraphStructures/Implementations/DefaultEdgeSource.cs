@@ -17,18 +17,16 @@ namespace GraphSharp.Graphs;
 public class DefaultEdgeSource<TEdge> : IEdgeSource<TEdge>
 where TEdge : IEdge
 {
-    IDictionary<int, IList<TEdge>> Edges;
+    IDictionary<int, (List<TEdge> outEdges,List<TEdge> inEdges)> Edges;
     /// <summary>
     /// Sources[targetId] = List of sources
     /// </summary>
-    IDictionary<int, IList<int>> Sources;
     public int Count { get; protected set; }
     public TEdge this[INode source, INode target] => this[source.Id, target.Id];
 
     public DefaultEdgeSource()
     {
-        Edges = new ConcurrentDictionary<int, IList<TEdge>>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
-        Sources = new ConcurrentDictionary<int, IList<int>>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
+        Edges = new ConcurrentDictionary<int, (List<TEdge> outEdges,List<TEdge> inEdges)>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
     }
 
     public DefaultEdgeSource(IEnumerable<TEdge> edges) : this()
@@ -37,29 +35,38 @@ where TEdge : IEdge
             Add(e);
     }
 
-    public IEnumerable<TEdge> this[int SourceId]
+    public IEnumerable<TEdge> OutEdges(int sourceId)
     {
-        get
-        {
-            if (Edges.TryGetValue(SourceId, out var edge))
-                return edge;
-            return Enumerable.Empty<TEdge>();
-        }
+        if (Edges.TryGetValue(sourceId, out var edge))
+            return edge.outEdges;
+        return Enumerable.Empty<TEdge>();
     }
-    public TEdge this[int SourceId, int targetId]
-        => this[SourceId].FirstOrDefault(x => x.TargetId == targetId) ??
-            throw new EdgeNotFoundException($"Edge {SourceId} -> {targetId} not found.");
+    public IEnumerable<TEdge> InEdges(int targetId)
+    {
+        if (Edges.TryGetValue(targetId, out var edge))
+            return edge.inEdges;
+        return Enumerable.Empty<TEdge>();
+    }
+    public (IEnumerable<TEdge> InEdges, IEnumerable<TEdge> OutEdges) BothEdges(int nodeId){
+        if (Edges.TryGetValue(nodeId, out var edge))
+            return edge;
+        return (Enumerable.Empty<TEdge>(),Enumerable.Empty<TEdge>());
+    }
+
+    public TEdge this[int sourceId, int targetId]
+        => OutEdges(sourceId).FirstOrDefault(x => x.TargetId == targetId) ??
+            throw new EdgeNotFoundException($"Edge {sourceId} -> {targetId} not found.");
     public void Add(TEdge edge)
     {
         if (Edges.TryGetValue(edge.SourceId, out var holder))
-            holder.Add(edge);
+            holder.outEdges.Add(edge);
         else
-            Edges[edge.SourceId] = new List<TEdge>() { edge };
+            Edges[edge.SourceId] = (new List<TEdge>() { edge },new List<TEdge>());
 
-        if (Sources.TryGetValue(edge.TargetId, out var sources))
-            sources.Add(edge.SourceId);
+        if (Edges.TryGetValue(edge.TargetId, out var sources))
+            sources.inEdges.Add(edge);
         else
-            Sources[edge.TargetId] = new List<int>() { edge.SourceId };
+            Edges[edge.TargetId] = (new List<TEdge>(),new List<TEdge>() { edge });
 
         Count++;
     }
@@ -67,81 +74,95 @@ where TEdge : IEdge
     public IEnumerator<TEdge> GetEnumerator()
     {
         foreach (var e in Edges)
-            foreach (var m in e.Value)
+            foreach (var m in e.Value.outEdges)
                 yield return m;
     }
-
+    /// <summary>
+    /// Removes all edges that equals to edge by <see cref="TEdge.Equals"/>. 
+    /// This method of removal allows to remove some of parallel edges, which
+    /// are not equal to each other.
+    /// Meanwhile other Remove methods will remove all parallel edges.
+    /// </summary>
     public bool Remove(TEdge edge)
     {
-        return Remove(edge.SourceId, edge.TargetId);
-    }
-
-    public bool Remove(int sourceId, int targetId)
-    {
-        if (Edges.TryGetValue(sourceId, out var list))
+        if (Edges.TryGetValue(edge.SourceId, out var e))
         {
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (list[i].TargetId == targetId)
-                {
-                    list.RemoveAt(i);
-                    Count--;
-                    Sources[targetId].Remove(sourceId);
-                    return true;
-                }
-            }
+            var outEdges = e.outEdges;
+            var inEdges = Edges[edge.TargetId].inEdges;
+            var removed = 
+                outEdges.RemoveAll(x=>x.Equals(edge))+
+                inEdges.RemoveAll(x=>x.Equals(edge));
+            if(removed>0){
+                Count--;
+                return true;
+            } 
         }
         return false;
     }
-
+    /// <summary>
+    /// Removes all edges that directs sourceId -> targetId (including parallel edges)
+    /// </summary>
+    public bool Remove(int sourceId, int targetId)
+    {
+        if (Edges.TryGetValue(sourceId, out var e))
+        {
+            var outEdges = e.outEdges;
+            var inEdges = Edges[targetId].inEdges;
+            var removed = 
+                outEdges.RemoveAll(x=>x.SourceId==sourceId && x.TargetId==targetId)+
+                inEdges.RemoveAll(x=>x.SourceId==sourceId && x.TargetId==targetId);
+            if(removed>0){
+                Count--;
+                return true;
+            } 
+        }
+        return false;
+    }
+    /// <summary>
+    /// Removes all edges that directs sourceId -> targetId (including parallel edges)
+    /// </summary>
+    public bool Remove(INode source, INode target)
+    {
+        return Remove(source.Id, target.Id);
+    }
     IEnumerator IEnumerable.GetEnumerator()
     {
         return this.GetEnumerator();
     }
 
-    public bool TryGetEdge(int SourceId, int targetId, out TEdge? edge)
+    public bool TryGetEdge(int sourceId, int targetId, out TEdge? edge)
     {
-        edge = this[SourceId].FirstOrDefault(e => e.TargetId == targetId);
+        edge = OutEdges(sourceId).FirstOrDefault(e => e.TargetId == targetId);
         return edge is not null;
     }
 
     public void Clear()
     {
         Edges.Clear();
-        Sources.Clear();
         Count = 0;
-    }
-    public IEnumerable<int> GetSourcesId(int targetId)
-    {
-        if (Sources.TryGetValue(targetId, out var list))
-            return list;
-        return Enumerable.Empty<int>();
     }
 
     public bool IsSink(int nodeId)
     {
-        return this[nodeId].Count() == 0;
+        return OutEdges(nodeId).Count() == 0;
     }
 
     public bool IsSource(int nodeId)
     {
-        return GetSourcesId(nodeId).Count() == 0;
+        return InEdges(nodeId).Count() == 0;
     }
 
     public bool IsIsolated(int nodeId)
     {
-        return this[nodeId].Count() == 0 && GetSourcesId(nodeId).Count() == 0;
+        return Degree(nodeId) == 0;
     }
 
     public int Degree(int nodeId)
     {
-        return this[nodeId].Count() + GetSourcesId(nodeId).Count();
+        return OutEdges(nodeId).Count() + InEdges(nodeId).Count();
     }
 
-    public bool Remove(INode source, INode target)
-    {
-        return Remove(source.Id, target.Id);
-    }
+
 
     public bool Move(TEdge edge, int newSourceId, int newTargetId)
     {
@@ -156,4 +177,6 @@ where TEdge : IEdge
     {
         return Move(this[oldSourceId, oldTargetId], newSourceId, newTargetId);
     }
+
+
 }

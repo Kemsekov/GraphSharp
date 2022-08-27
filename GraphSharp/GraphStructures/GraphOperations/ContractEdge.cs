@@ -24,8 +24,8 @@ where TEdge : IEdge
         //we will be merging everything into source
         var source = Nodes[sourceId];
 
-        var targetEdges = Edges[targetId].ToArray();
-        var toMove = Edges.GetSourcesId(targetId).ToArray();
+        var targetEdges = Edges.OutEdges(targetId).ToArray();
+        var toMove = Edges.InEdges(targetId).ToArray();
 
         //move target edges to became source edges
         foreach (var e in targetEdges)
@@ -36,7 +36,7 @@ where TEdge : IEdge
         //move target sources to because source sources (all edges that look like A->targetId became A->sourceId)
         foreach (var e in toMove)
         {
-            Edges.Move(e,targetId,e,sourceId);
+            Edges.Move(e.SourceId,targetId,e.SourceId,sourceId);
         }
 
         //after merging complete remove merged node
