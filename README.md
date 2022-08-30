@@ -2,6 +2,9 @@
 # GraphSharp
 GraphSharp is a tool to manipulate on the set of connected nodes, or just graph. 
 It allow you to create such algorithms as dijkstra algorithm(shortest path finder), graph coloring, components finder etc...
+Also, this library have adapter for graph structure to works as one from [QuikGraph](https://github.com/KeRNeLith/QuikGraph).
+So I could call this lib like an extension for QuikGraph library at this point.
+
 For samples see https://github.com/Kemsekov/GraphSharp.Samples
 
 [Dijkstra algorithm](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/Dijkstra's%20algorithm)
@@ -24,3 +27,6 @@ For samples see https://github.com/Kemsekov/GraphSharp.Samples
 ![example](https://user-images.githubusercontent.com/57869319/181353679-86969151-e88e-4600-8db1-8d9e361e96ce.jpg)
 [TravelingSalesmanProblem](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/TravelingSalesmanProblem) (for 5k nodes it took my old i5 about 2 seconds to calculate this)
 ![example](https://user-images.githubusercontent.com/57869319/183226714-827188f0-2f34-4a99-b90d-c6937c5dd41f.jpg)
+I have a adapter for `IGraph` to work as graph from [QuikGraph](https://github.com/KeRNeLith/QuikGraph).
+[Here is an example how this works](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/PageRank) using PageRank implementation from [QuikGraph](https://github.com/KeRNeLith/QuikGraph).
+![example](https://user-images.githubusercontent.com/57869319/187511214-3963fa78-ebf5-4d84-8bac-b483ea70f4b1.jpg)
