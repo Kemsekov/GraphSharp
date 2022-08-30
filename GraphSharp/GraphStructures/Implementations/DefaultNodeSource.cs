@@ -104,4 +104,14 @@ where TNode : INode
             return Move(n,newId);
         return false;
     }
+
+    public bool Contains(int nodeId)
+    {
+        return TryGetNode(nodeId,out var _);
+    }
+
+    public bool Contains(TNode node)
+    {
+        return Contains(node.Id);
+    }
 }

@@ -18,12 +18,8 @@ public class DefaultEdgeSource<TEdge> : IEdgeSource<TEdge>
 where TEdge : IEdge
 {
     IDictionary<int, (List<TEdge> outEdges,List<TEdge> inEdges)> Edges;
-    /// <summary>
-    /// Sources[targetId] = List of sources
-    /// </summary>
     public int Count { get; protected set; }
     public TEdge this[INode source, INode target] => this[source.Id, target.Id];
-
     public DefaultEdgeSource()
     {
         Edges = new ConcurrentDictionary<int, (List<TEdge> outEdges,List<TEdge> inEdges)>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
@@ -77,12 +73,7 @@ where TEdge : IEdge
             foreach (var m in e.Value.outEdges)
                 yield return m;
     }
-    /// <summary>
-    /// Removes all edges that equals to edge by <see cref="TEdge.Equals"/>. 
-    /// This method of removal allows to remove some of parallel edges, which
-    /// are not equal to each other.
-    /// Meanwhile other Remove methods will remove all parallel edges.
-    /// </summary>
+
     public bool Remove(TEdge edge)
     {
         if (Edges.TryGetValue(edge.SourceId, out var e))
@@ -99,9 +90,6 @@ where TEdge : IEdge
         }
         return false;
     }
-    /// <summary>
-    /// Removes all edges that directs sourceId -> targetId (including parallel edges)
-    /// </summary>
     public bool Remove(int sourceId, int targetId)
     {
         if (Edges.TryGetValue(sourceId, out var e))
@@ -118,9 +106,6 @@ where TEdge : IEdge
         }
         return false;
     }
-    /// <summary>
-    /// Removes all edges that directs sourceId -> targetId (including parallel edges)
-    /// </summary>
     public bool Remove(INode source, INode target)
     {
         return Remove(source.Id, target.Id);
@@ -162,8 +147,6 @@ where TEdge : IEdge
         return OutEdges(nodeId).Count() + InEdges(nodeId).Count();
     }
 
-
-
     public bool Move(TEdge edge, int newSourceId, int newTargetId)
     {
         if (!Remove(edge)) return false;
@@ -177,6 +160,17 @@ where TEdge : IEdge
     {
         return Move(this[oldSourceId, oldTargetId], newSourceId, newTargetId);
     }
-
+    public bool Contains(TEdge edge)
+    {
+        return Edges[edge.SourceId].outEdges.Contains(edge);
+    }
+    public bool Contains(int sourceId, int targetId)
+    {
+        return TryGetEdge(sourceId,targetId,out var _);
+    }
+    public IEnumerable<TEdge> GetParallelEdges(int sourceId, int targetId)
+    {
+        return OutEdges(sourceId).Where(x=>x.TargetId==targetId);
+    }
 
 }

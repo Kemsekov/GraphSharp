@@ -18,7 +18,49 @@ public static class GraphExtensions
     {
         return graph.Do.FindComponents().components.Count() == 1;
     }
-
+    /// <summary>
+    /// Clears graph and creates some count of nodes.
+    /// </summary>
+    /// <param name="count">Count of nodes to create</param>
+    public static IGraph<TNode, TEdge> CreateNodes<TNode, TEdge>(this IGraph<TNode, TEdge> graph, int nodesCount)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        graph.Clear();
+        //create nodes
+        for (int i = 0; i < nodesCount; i++)
+        {
+            var node = graph.Configuration.CreateNode(i);
+            graph.Nodes.Add(node);
+        }
+        return graph;
+    }
+    /// <summary>
+    /// Clears current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
+    /// </summary>
+    public static IGraph<TNode, TEdge> Clear<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        graph.Nodes.Clear();
+        graph.Edges.Clear();
+        return graph;
+    }
+    /// <summary>
+    /// Clones graph structure
+    /// </summary>
+    /// <returns>Copy of current graph structure</returns>
+    public static IGraph<TNode, TEdge> Clone<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        var result = new Graph<TNode, TEdge>(graph.Configuration);
+        foreach (var n in graph.Nodes)
+            graph.CloneNodeTo(n, result.Nodes);
+        foreach (var e in graph.Edges)
+            graph.CloneEdgeTo(e, result.Edges);
+        return result;
+    }
     /// <returns>True if given graph have one single strongly connected component</returns>
     public static bool IsStronglyConnected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
@@ -246,15 +288,58 @@ public static class GraphExtensions
     public static void SetColorToAll<TNode>(this INodeSource<TNode> nodes, System.Drawing.Color color)
     where TNode : INode
     {
-        foreach(var n in nodes){
+        foreach (var n in nodes)
+        {
             n.Color = color;
         }
     }
     public static void SetColorToAll<TEdge>(this IEdgeSource<TEdge> edges, System.Drawing.Color color)
     where TEdge : IEdge
     {
-        foreach(var n in edges){
+        foreach (var n in edges)
+        {
             n.Color = color;
         }
+    }
+    /// <summary>
+    /// Converts edges list to path (nodes list)
+    /// </summary>
+    /// <param name="edges"></param>
+    /// <typeparam name="TEdge"></typeparam>
+    /// <returns></returns>
+    public static IList<TNode> ConvertEdgesListToPath<TNode,TEdge>(this IGraph<TNode,TEdge> graph, IList<TEdge> edges)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        if(edges.Count==0) return new List<TNode>();
+        var m = edges.MaxBy(x=>Math.Max(x.SourceId,x.TargetId)) ?? throw new Exception();
+        var nodesCount = Math.Max(m.SourceId,m.TargetId);
+        var addedNodes = new byte[nodesCount+1];
+        var edgesSource = new DefaultEdgeSource<TEdge>(edges);
+        var expectedNodesCount = edges.Count+1;
+        int sink = -1;
+        foreach(var e in edges){
+            if(edgesSource.InEdges(e.SourceId).Count()==0){
+                sink = e.SourceId;
+            }
+        }
+        if(sink==-1) throw new ArgumentException("Given edges list is not a path. There is no sink");
+        var result = new List<int>(expectedNodesCount);
+        result.Add(sink);
+        
+        var next = edgesSource.OutEdges(result.Last());
+        while(true){
+            next = edgesSource.OutEdges(result.Last());
+            if(next.Count()!=1) break;
+            var toAdd = next.First().TargetId;
+            addedNodes[toAdd] += 1;
+            if(addedNodes[toAdd]>1)
+                throw new ArgumentException("Given edges list is not a path. Some edges touch the same node twice");
+
+            result.Add(toAdd);
+        }
+        if(result.Count!=expectedNodesCount)
+            throw new ArgumentException("Given edges list is not a path");
+        return result.Select(x=>graph.Nodes[x]).ToList();
     }
 }

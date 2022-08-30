@@ -19,11 +19,11 @@ namespace GraphSharp.Tests
     public class PropagatorTests
     {
         Func<IVisitor<Node,Edge>, PropagatorBase<Node,Edge>>[] _propagatorFactories;
-        Graph<Node, Edge> _graph;
+        IGraph<Node, Edge> _graph;
 
         public PropagatorTests()
         {
-            _graph = new Graph<Node, Edge>(new TestGraphConfiguration(new())).Create(1000);
+            _graph = new Graph<Node, Edge>(new TestGraphConfiguration(new())).CreateNodes(1000);
             _graph.Do.ConnectNodes(10);
 
             _propagatorFactories = new Func<IVisitor<Node,Edge>, PropagatorBase<Node,Edge>>[2];
@@ -200,7 +200,7 @@ namespace GraphSharp.Tests
         public void Propagate_HaveRightNodesVisitOrderWithManualData()
         {
             var graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()))
-                .Create(10);
+                .CreateNodes(10);
             foreach (var pair in ManualTestData.NodesConnections)
             {
                 graph.Edges.Add(new Edge(graph.Nodes[pair[0]],graph.Nodes[pair[1]]));

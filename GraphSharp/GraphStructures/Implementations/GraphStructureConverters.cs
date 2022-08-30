@@ -17,7 +17,7 @@ namespace GraphSharp.Graphs
     where TNode : INode
     where TEdge : IEdge
     {
-        Graph<TNode, TEdge> _structureBase;
+        IGraph<TNode, TEdge> _structureBase;
         INodeSource<TNode> Nodes => _structureBase.Nodes;
         IEdgeSource<TEdge> Edges => _structureBase.Edges;
         IGraphConfiguration<TNode,TEdge> Configuration => _structureBase.Configuration;
@@ -101,7 +101,7 @@ namespace GraphSharp.Graphs
             _structureBase.Clear();
             int width = adjacencyMatrix.RowCount;
 
-            _structureBase.Create(width);
+            _structureBase.CreateNodes(width);
             
             for(int i = 0;i<width;i++)
             for(int b = 0;b<width;b++){
@@ -121,7 +121,7 @@ namespace GraphSharp.Graphs
             _structureBase.Clear();
             int nodesCount = incidenceMatrix.RowCount;
             var edgesCount = incidenceMatrix.ColumnCount;
-            _structureBase.Create(nodesCount);
+            _structureBase.CreateNodes(nodesCount);
             
             for(int col = 0;col<edgesCount;++col){
                 (int nodeId,float Value) n1 = (-1,0),n2 = (-1,0);
@@ -181,7 +181,7 @@ namespace GraphSharp.Graphs
         public GraphConverters<TNode,TEdge> FromConnectionsList(params (int source,int target)[] connectionsList){
             _structureBase.Clear();
             var nodesCount = connectionsList.SelectMany(x=>new[]{x.source,x.target}).Max();
-            _structureBase.Create(nodesCount+1);
+            _structureBase.CreateNodes(nodesCount+1);
             foreach(var c in connectionsList){
                 if(!Nodes.TryGetNode(c.source,out var _)){
                     Nodes[c.source] = Configuration.CreateNode(c.source);

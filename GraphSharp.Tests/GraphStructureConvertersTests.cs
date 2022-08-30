@@ -193,7 +193,7 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FromConnectionsList1_Works(){
-            _Graph.Create(100)
+            _Graph.CreateNodes(100)
             .Do.ConnectRandomly(5,20);
             var expected = _Graph.Converter.ToConnectionsList();
             var actual = _Graph.Converter.FromConnectionsList(expected).ToConnectionsList();
@@ -216,7 +216,7 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FromConnectionsList2_Works(){
-            _Graph.Create(500)
+            _Graph.CreateNodes(500)
             .Do.ConnectRandomly(5,20);
             var expected = _Graph.Edges.Select(x=>(x.SourceId,x.TargetId));
             var newGraph = _Graph.Clone();

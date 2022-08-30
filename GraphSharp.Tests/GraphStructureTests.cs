@@ -18,17 +18,25 @@ namespace GraphSharp.Tests
     {
 
         private int _nodes_count;
-        private Graph<Node, Edge> _Graph;
+        private IGraph<Node, Edge> _Graph;
 
         public GraphTests()
         {
             this._nodes_count = 500;
-            this._Graph = new Graph<Node, Edge>(new TestGraphConfiguration(new Random())).Create(_nodes_count);
+            this._Graph = new Graph<Node, Edge>(new TestGraphConfiguration(new Random())).CreateNodes(_nodes_count);
         }
         [Fact]
         public void TryFindHamiltonianPathByAntSimulation_Works()
         {
-            throw new NotImplementedException();
+            _Graph.CreateNodes(50);
+            _Graph.Do.DelaunayTriangulation();
+            _Graph.Do.MakeUndirected();
+            //It works very good at small graphs<200 nodes, especially on
+            //triangulated graphs, so I am expecting it to return exact solution here.
+            var result = _Graph.Do.TryFindHamiltonianPathByAntSimulation();
+            Assert.Equal(result.path.Count,49);
+            var convertedPath = _Graph.ConvertEdgesListToPath(result.path);
+            _Graph.ValidatePath(convertedPath);
         }
         [Fact]
         public void TryFindHamiltonianCycleByBubbleExpansion_Works()
@@ -38,7 +46,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void TryFindCenter_Works()
         {
-            _Graph.Create(1000);
+            _Graph.CreateNodes(1000);
             _Graph.Do.DelaunayTriangulation();
             (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1);
             (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1);
@@ -68,7 +76,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void FindEccentricity_Works()
         {
-            _Graph.Create(1000);
+            _Graph.CreateNodes(1000);
             _Graph.Do.DelaunayTriangulation();
             var node = _Graph.Nodes[Random.Shared.Next(1000)];
             var ecc = _Graph.Do.FindEccentricity(node.Id);
@@ -79,7 +87,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void FindCycleBasis_Works()
         {
-            _Graph.Create(1000);
+            _Graph.CreateNodes(1000);
             _Graph.Do.ConnectRandomly(0, 7);
             var tree = _Graph.Do.FindSpanningTree();
             var cycles = _Graph.Do.FindCyclesBasis();
@@ -95,9 +103,9 @@ namespace GraphSharp.Tests
                 Assert.Equal(c.Count - outEdgesCount, 2);
             }
         }
-        public void FindPath(Func<Graph<Node, Edge>, int, int, IList<Node>> getPath)
+        public void FindPath(Func<IGraph<Node, Edge>, int, int, IList<Node>> getPath)
         {
-            _Graph.Create(1000);
+            _Graph.CreateNodes(1000);
             for (int i = 0; i < 100; i++)
             {
                 _Graph.Do.ConnectRandomly(0, 7);
@@ -132,7 +140,7 @@ namespace GraphSharp.Tests
         {
             for (int i = 0; i < 100; i++)
             {
-                _Graph.Create(1000);
+                _Graph.CreateNodes(1000);
                 _Graph.Do.ConnectRandomly(0, 7);
                 var index = Random.Shared.Next(_Graph.Edges.Count);
                 var e1 = _Graph.Edges.ElementAt(index);
@@ -164,7 +172,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void FindSpanningTree_Works()
         {
-            _Graph.Create(1000);
+            _Graph.CreateNodes(1000);
             _Graph.Do.ConnectRandomly(0, 7);
             (var components, var setFinder) = _Graph.Do.FindComponents();
             var tree = _Graph.Do.FindSpanningTree();
@@ -196,7 +204,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void FindArticulationPoints_Works()
         {
-            _Graph.Create(1000);
+            _Graph.CreateNodes(1000);
             _Graph.Do.ConnectRandomly(0, 7);
             var before = _Graph.Do.FindComponents().components.Count();
             var after = 0;
@@ -245,7 +253,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void Reindex_Works()
         {
-            _Graph.Create(1000);
+            _Graph.CreateNodes(1000);
             var toRemove = _Graph.Nodes.Where(x => x.Id % 3 == 0).Select(x => x.Id).ToArray();
             _Graph.Do.RemoveNodes(toRemove);
             foreach (var n in _Graph.Nodes)
@@ -270,7 +278,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void RemoveNodes_Works()
         {
-            _Graph.Create(1000);
+            _Graph.CreateNodes(1000);
             var nodes_before_removal = _Graph.Nodes.Select(x => x.Id).ToArray();
             var edges_before_removal = _Graph.Edges.Select(x => (x.SourceId, x.TargetId)).ToArray();
             _Graph.Do.RemoveNodes(_Graph.GetNodesIdWhere(x => x.Id % 3 == 0));
@@ -303,7 +311,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void Create_RightCountOfNodes()
         {
-            _Graph.Create(100);
+            _Graph.CreateNodes(100);
             Assert.Equal(_Graph.Nodes.Count, 100);
             Assert.Equal(_Graph.Nodes.MaxNodeId, 99);
             Assert.Equal(_Graph.Nodes.MinNodeId, 0);
@@ -324,7 +332,7 @@ namespace GraphSharp.Tests
         public void IsDirected_Works()
         {
             var seed = new Random().Next();
-            var directed = _Graph.Create(1000);
+            var directed = _Graph.CreateNodes(1000);
             directed
                 .Do
                 .ConnectNodes(20)
@@ -335,7 +343,7 @@ namespace GraphSharp.Tests
         public void IsUndirected_Works()
         {
             var seed = new Random().Next();
-            var directed = _Graph.Create(1000);
+            var directed = _Graph.CreateNodes(1000);
             directed
                 .Do
                 .ConnectNodes(20)
@@ -349,7 +357,7 @@ namespace GraphSharp.Tests
             var seed = new Random().Next();
             var directed =
                 new Graph<Node, Edge>(new TestGraphConfiguration(new(seed)))
-                    .Create(2000);
+                    .CreateNodes(2000);
             directed
                 .Do
                 .ConnectNodes(20)
@@ -357,7 +365,7 @@ namespace GraphSharp.Tests
 
             var undirected =
                 new Graph<Node, Edge>(new TestGraphConfiguration(new(seed)))
-                    .Create(2000);
+                    .CreateNodes(2000);
             undirected
                 .Do
                 .ConnectNodes(20);
@@ -400,7 +408,7 @@ namespace GraphSharp.Tests
         public void RemoveUndirectedEdgesWorks()
         {
             var graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()));
-            graph.Create(500);
+            graph.CreateNodes(500);
             graph.Do.ConnectRandomly(0, 8);
             var before_removal = graph.Converter.ToConnectionsList().ToList();
             graph.Do.RemoveUndirectedEdges();
@@ -444,14 +452,14 @@ namespace GraphSharp.Tests
             var seed = new Random().Next();
             var maybeUndirected =
                 new Graph<Node, Edge>(new TestGraphConfiguration(new()) { Rand = new(seed) })
-                .Create(2000);
+                .CreateNodes(2000);
             maybeUndirected
                 .Do
                 .ConnectNodes(20);
 
             var undirected =
                 new Graph<Node, Edge>(new TestGraphConfiguration(new()) { Rand = new(seed) })
-                .Create(2000);
+                .CreateNodes(2000);
             undirected
                 .Do
                 .ConnectNodes(20)
@@ -585,7 +593,7 @@ namespace GraphSharp.Tests
         {
             _Graph.Do.ConnectRandomly(1, 5);
             var toInduce = _Graph.GetNodesIdWhere(x => x.Id % 3 == 0);
-            var induced = _Graph.Induce(toInduce);
+            var induced = _Graph.Do.Induce(toInduce);
             induced.CheckForIntegrityOfSimpleGraph();
 
             foreach (var n in induced.Nodes)
@@ -640,9 +648,9 @@ namespace GraphSharp.Tests
             Assert.Empty(edges);
         }
         [Fact]
-        public void ColorNodes_Works()
+        public void GreedyColorNodes_Works()
         {
-            var usedColors = _Graph.Do.ConnectRandomly(1, 5).ColorNodes();
+            var usedColors = _Graph.Do.ConnectRandomly(1, 5).GreedyColorNodes();
             _Graph.EnsureRightColoring();
             Assert.Equal(usedColors.Sum(x => x.Value), _Graph.Nodes.Count);
         }
@@ -652,7 +660,7 @@ namespace GraphSharp.Tests
             var colors = new[] { Color.AntiqueWhite, Color.Beige, Color.Blue };
             var usedColors = _Graph.Do
                 .ConnectRandomly(2, 10)
-                .ColorNodes(
+                .GreedyColorNodes(
                     colors,
                     x => x.OrderBy(m => _Graph.Edges.OutEdges(m.Id).Count()));
             _Graph.EnsureRightColoring();
@@ -689,7 +697,7 @@ namespace GraphSharp.Tests
                 var cycle2 = new Node[] { new(3), new(2), new(9), new(7), new(6), new(5), new(4), new(3) };
                 Assert.False(_Graph.CombineCycles(cycle1, cycle2, out var combined));
             }
-            _Graph.Create(2000);
+            _Graph.CreateNodes(2000);
             _Graph.Do.ConnectNodes(20);
             var cycles = _Graph.Do.FindCyclesBasis();
             var accumulator = new List<(IList<Node> cycle1, IList<Node> cycle2)>();

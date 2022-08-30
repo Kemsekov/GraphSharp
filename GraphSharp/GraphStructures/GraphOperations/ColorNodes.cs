@@ -12,12 +12,12 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Apply graph nodes coloring algorithm.<br/>
+    /// Apply greedy graph nodes coloring algorithm.<br/>
     /// 1) Assign color to a node by excepting forbidden and neighbours colors from available.<br/>
     /// 2) For each of this node neighbours add chosen color as forbidden.<br/>
     /// Apply 1 and 2 steps in order set by order parameter
     /// </summary>
-    public IDictionary<Color, int> ColorNodes(IEnumerable<Color>? colors = null, Func<IEnumerable<TNode>, IEnumerable<TNode>>? order = null)
+    public IDictionary<Color, int> GreedyColorNodes(IEnumerable<Color>? colors = null, Func<IEnumerable<TNode>, IEnumerable<TNode>>? order = null)
     {
         order ??= x => x;
         colors ??= Enumerable.Empty<Color>();

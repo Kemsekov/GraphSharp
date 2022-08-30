@@ -39,6 +39,8 @@ namespace GraphSharp.Graphs
         /// <returns>true if moved successfully, else false</returns>
         bool Move(int nodeId, int newId);
         bool TryGetNode(int nodeId, out TNode? node);
+        bool Contains(int nodeId);
+        bool Contains(TNode node);
         void Clear();
     }
 }
