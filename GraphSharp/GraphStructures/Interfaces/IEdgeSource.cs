@@ -15,7 +15,6 @@ where TEdge : IEdge
     /// Adds new edge
     /// </summary>
     void Add(TEdge edge);
-    // TODO: Add tests for different versions of Remove method
     /// <summary>
     /// Removes all edges that equals to <paramref name="edge"/> by <paramref name="Equals"/>. 
     /// This method of removal allows to remove some of parallel edges, which
@@ -35,16 +34,18 @@ where TEdge : IEdge
     IEnumerable<TEdge> OutEdges(int sourceId);
     /// <returns>All in edges</returns>
     IEnumerable<TEdge> InEdges(int targetId);
-    // TODO: add test for BothEdges
     /// <returns>Both in and out edges. If you need to get both of edges this method will be faster.</returns>
-    (IEnumerable<TEdge> InEdges, IEnumerable<TEdge> OutEdges) BothEdges(int nodeId);
+    (IEnumerable<TEdge> OutEdges, IEnumerable<TEdge> InEdges) BothEdges(int nodeId);
+    /// <summary>
+    /// Finds neighbors of given node. Nodes A and B are neighbors when there is an edge A->B or B->A
+    /// </summary>
+    /// <returns>A list of node ids</returns>
+    IEnumerable<int> Neighbors(int nodeId);
     TEdge this[int sourceId, int targetId] { get; }
     TEdge this[INode source, INode target] { get; }
-    // TODO: add tests for GetParallelEdges
     /// <returns>All edges that directs as source id -> target id</returns>
     IEnumerable<TEdge> GetParallelEdges(int sourceId, int targetId);
     bool TryGetEdge(int sourceId, int targetId, out TEdge? edge);
-    // TODO: add tests for Contains methods
     /// <summary>
     /// Tries to find a edge by default equality comparer
     /// </summary>
@@ -56,7 +57,6 @@ where TEdge : IEdge
     /// <returns>True if found, else false</returns>
     bool Contains(int sourceId, int targetId);
     void Clear();
-    // TODO: add tests for IsSink() IsSource() IsIsolated() and Degree()
     /// <returns>True if given node don't have any out edges</returns>
     bool IsSink(int nodeId);
     /// <returns>True if given node don't have any in edges</returns>

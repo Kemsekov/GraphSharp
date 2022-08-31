@@ -163,7 +163,11 @@ public static class GraphExtensions
         }
     }
     /// <summary>
-    /// Combines two cycles into one. Given two simple cycles find a longer cycle that visits all nodes from both cycles. Can be used to determine whatever two given cycles are simple to each other.
+    /// Combines two cycles into one. 
+    /// Given two cycles find a longer cycle that visits all nodes from both cycles. 
+    /// Can be used to determine whatever two given cycles are simple to each other.
+    /// If it can combine two cycles into one(returns true) it means given cycles are not simple to
+    /// each other, if it cannot - they simple to each other.
     /// </summary>
     /// <returns>True if combination is successful else false</returns>
     public static bool CombineCycles<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> cycle1, IList<TNode> cycle2, out IList<TNode> result)
@@ -267,8 +271,6 @@ public static class GraphExtensions
     {
         return graph.Nodes.Where(x => predicate(x)).Select(x => x.Id).ToArray();
     }
-    // TODO: Add tests for CloneEdgeTo and CloneNodeTo
-
     /// <summary>
     /// Clones <paramref name="edge"/> to <paramref name="destination"/>
     /// </summary>
@@ -319,7 +321,6 @@ public static class GraphExtensions
             n.Color = color;
         }
     }
-    // TODO: add tests for ConvertEdgesListToPath
     /// <summary>
     /// Converts edges list to path (nodes list)
     /// </summary>

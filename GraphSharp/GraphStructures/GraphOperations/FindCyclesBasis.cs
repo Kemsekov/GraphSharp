@@ -8,7 +8,6 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    // TODO: add test that checks that all returned cycles are simple to each other
     /// <summary>
     /// Finds fundamental cycles basis.
     /// See https://en.wikipedia.org/wiki/Cycle_basis#Fundamental_cycles

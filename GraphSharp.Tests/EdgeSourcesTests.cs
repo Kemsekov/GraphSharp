@@ -83,6 +83,21 @@ public class EdgeSourcesTests
         }
     }
     [Fact]
+    public void Neighbors_Works(){
+        foreach (var edgeSource in EdgeSources)
+        {
+            _Graph.SetSources(Nodes, edgeSource);
+            _Graph.Do.ConnectRandomly(2,10);
+            foreach(var n in Nodes){
+                var outNeighbors = _Graph.Edges.OutEdges(n.Id).Select(x=>x.TargetId);
+                var inNeighbors = _Graph.Edges.InEdges(n.Id).Select(x=>x.SourceId);
+                var expected = outNeighbors.Union(inNeighbors);
+                var actual = _Graph.Edges.Neighbors(n.Id);
+                Assert.Equal(expected,actual);
+            }
+        }
+    }
+    [Fact]
     public void Count_Works()
     {
         foreach (var edgeSource in EdgeSources)
@@ -117,10 +132,145 @@ public class EdgeSourcesTests
             Assert.Equal(edgeSource.Count, 1);
             Assert.True(edgeSource.Remove(edgeSource.First()));
             Assert.Equal(edgeSource.Count, 0);
-
             _Graph.CheckForIntegrityOfSimpleGraph();
+
+            var e1 = new Edge(Nodes[0], Nodes[5]){Weight=1};
+            var e2 = new Edge(Nodes[0], Nodes[5]){Weight=2};
+            edgeSource.Add(e1);
+            edgeSource.Add(e2);
+            edgeSource.Remove(e1);
+            Assert.Equal(edgeSource[0,5].Weight,e2.Weight);
+            edgeSource.Add(e1);
+            edgeSource.Remove(0,5);
+            Assert.Empty(edgeSource.GetParallelEdges(0,5));
+
+            edgeSource.Add(e1);
+            edgeSource.Add(e1);
+            edgeSource.Add(e1);
+            Assert.Equal(edgeSource.GetParallelEdges(0,5).Count(),3);
+            edgeSource.Remove(e1);
+            Assert.Equal(edgeSource.GetParallelEdges(0,5).Count(),0);
+
+
         }
     }
+    [Fact]
+    public void GetBothEdges_Works(){
+        foreach (var edgeSource in EdgeSources)
+        {
+            _Graph.SetSources(Nodes, edgeSource);
+            FillEdges(Nodes, edgeSource, 1000);
+            for(int i = 0;i<100;i++){
+                (var outEdges, var inEdges) = edgeSource.BothEdges(i);
+                Assert.Equal(inEdges,edgeSource.InEdges(i));
+                Assert.Equal(outEdges,edgeSource.OutEdges(i));
+            }
+        }
+    }
+    [Fact]
+    public void GetParallelEdges_Works(){
+        foreach (var edgeSource in EdgeSources)
+        {
+            var e1 = new Edge(Nodes[0], Nodes[5]){Weight=1};
+            var e2 = new Edge(Nodes[0], Nodes[5]){Weight=2};
+            var e3 = new Edge(Nodes[0], Nodes[5]){Weight=3};
+
+            edgeSource.Add(e1);
+            edgeSource.Add(e2);
+            edgeSource.Add(e3);
+
+            Assert.Equal(edgeSource.GetParallelEdges(0,5).Select(x=>x.Weight),new[]{e1,e2,e3}.Select(x=>x.Weight));
+            edgeSource.Remove(e3);
+            Assert.Equal(edgeSource.GetParallelEdges(0,5),new[]{e1,e2});
+        }
+    }
+    [Fact]
+    public void Contains_Works(){
+        foreach (var edgeSource in EdgeSources)
+        {
+            var e1 = new Edge(Nodes[0], Nodes[5]){Weight=1};
+            var e2 = new Edge(Nodes[0], Nodes[5]){Weight=2};
+            edgeSource.Add(e1);
+            edgeSource.Add(e2);
+            Assert.True(edgeSource.Contains(0,5));
+            edgeSource.Remove(e2);
+            Assert.True(edgeSource.Contains(0,5));
+            Assert.False(edgeSource.Contains(e2));
+            edgeSource.Remove(e1);
+
+            _Graph.SetSources(Nodes, edgeSource);
+            FillEdges(Nodes, edgeSource, 1000);
+            foreach(var e in edgeSource){
+                Assert.True(edgeSource.Contains(e));
+                Assert.True(edgeSource.Contains(e.SourceId,e.TargetId));
+            }
+        }
+    }
+    [Fact]
+    public void Degree_Works(){
+        foreach (var edgeSource in EdgeSources)
+        {
+            _Graph.SetSources(Nodes, edgeSource);
+            FillEdges(Nodes, edgeSource, 1000);
+            for(var i = 0;i<1000;i++){
+                var expected = edgeSource.OutEdges(i).Count()+edgeSource.InEdges(i).Count();
+                var actual = edgeSource.Degree(i);
+                Assert.Equal(expected,actual);
+            }
+        }
+    }
+    [Fact]
+    public void IsSink_And_IsSources_Works(){
+        foreach (var edgeSource in EdgeSources)
+        {
+            _Graph.SetSources(Nodes, edgeSource);
+            FillEdges(Nodes, edgeSource, 1000);
+            _Graph.Do.MakeUndirected();
+            _Graph.Do.MakeSources(1,2,3,4);
+            
+            Assert.True(edgeSource.IsSource(1));
+            Assert.True(edgeSource.IsSource(2));
+            Assert.True(edgeSource.IsSource(3));
+            Assert.True(edgeSource.IsSource(4));
+
+            for(int i = 5;i<1000;i++){
+                if(edgeSource.Degree(i)!=0){
+                    Assert.False(edgeSource.IsSource(i));
+                }
+            }
+
+            _Graph.Do.ReverseEdges();
+
+            Assert.True(edgeSource.IsSink(1));
+            Assert.True(edgeSource.IsSink(2));
+            Assert.True(edgeSource.IsSink(3));
+            Assert.True(edgeSource.IsSink(4));
+
+            for(int i = 5;i<1000;i++){
+                if(edgeSource.Degree(i)!=0){
+                    Assert.False(edgeSource.IsSink(i));
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void IsIsolated_Works(){
+        foreach (var edgeSource in EdgeSources)
+        {
+            _Graph.SetSources(Nodes, edgeSource);
+            _Graph.Do.ConnectToClosest(0,3);
+            var isolated = _Graph.GetNodesIdWhere(x=>edgeSource.Degree(x.Id)==0);
+            var nonIsolated = Nodes.Select(x=>x.Id).Except(isolated);
+            foreach(var i in isolated){
+                Assert.True(edgeSource.IsIsolated(i));
+            }
+            foreach(var i in nonIsolated){
+                Assert.False(edgeSource.IsIsolated(i));
+            }
+        }
+    }
+
     [Fact]
     public void RandomAccess_Works()
     {

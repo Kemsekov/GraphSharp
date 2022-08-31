@@ -38,7 +38,7 @@ where TEdge : IEdge
             return edge.inEdges;
         return Enumerable.Empty<TEdge>();
     }
-    public (IEnumerable<TEdge> InEdges, IEnumerable<TEdge> OutEdges) BothEdges(int nodeId){
+    public (IEnumerable<TEdge> OutEdges, IEnumerable<TEdge> InEdges) BothEdges(int nodeId){
         if (Edges.TryGetValue(nodeId, out var edge))
             return edge;
         return (Enumerable.Empty<TEdge>(),Enumerable.Empty<TEdge>());
@@ -168,4 +168,10 @@ where TEdge : IEdge
         return OutEdges(sourceId).Where(x=>x.TargetId==targetId);
     }
 
+    public IEnumerable<int> Neighbors(int nodeId)
+    {
+        var outNeighbors = OutEdges(nodeId).Select(x=>x.TargetId);
+        var inNeighbors = InEdges(nodeId).Select(x=>x.SourceId);
+        return outNeighbors.Union(inNeighbors);
+    }
 }

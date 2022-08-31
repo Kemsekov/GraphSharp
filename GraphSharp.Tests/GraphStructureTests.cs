@@ -34,7 +34,7 @@ namespace GraphSharp.Tests
             //It works very good at small graphs<200 nodes, especially on
             //triangulated graphs, so I am expecting it to return exact solution here.
             var result = _Graph.Do.TryFindHamiltonianPathByAntSimulation();
-            Assert.Equal(result.path.Count,49);
+            Assert.Equal(result.path.Count, 49);
             var convertedPath = _Graph.ConvertEdgesListToPath(result.path);
             _Graph.ValidatePath(convertedPath);
         }
@@ -59,9 +59,19 @@ namespace GraphSharp.Tests
                 Assert.Equal(ecc, r1);
             }
         }
-        public void ApproximateCenter_Works()
-        {
-            throw new NotImplementedException();
+        [Fact]
+        public void FindLocalClusteringCoefficients_Works(){
+            _Graph.CreateNodes(1000);
+            _Graph.Do.ConnectRandomly(2,10);
+            var coeffs = _Graph.Do.FindLocalClusteringCoefficients();
+            Assert.True(coeffs.All(x=>x<=1f && x>=0f));
+            foreach(var n in _Graph.Nodes){
+                var neighbors = _Graph.Edges.Neighbors(n.Id).ToArray();
+                var degree = _Graph.Edges.Degree(n.Id);
+                float inducedEdgesCount = _Graph.Do.Induce(neighbors).Edges.Count + degree;
+                var nodesCount = 1+neighbors.Count();
+                Assert.Equal(coeffs[n.Id],inducedEdgesCount/(nodesCount*(nodesCount-1)));
+            }
         }
         [Fact]
         public void FindLowLinkValues_Works()
@@ -80,16 +90,16 @@ namespace GraphSharp.Tests
             _Graph.Do.DelaunayTriangulation();
             var node = _Graph.Nodes[Random.Shared.Next(1000)];
             var ecc = _Graph.Do.FindEccentricity(node.Id);
-            var paths = _Graph.Do.FindShortestPaths(node.Id);
-            var foundEcc = paths.PathLength.MaxBy(x=>x);
-            Assert.Equal(ecc.length,foundEcc);
+            var paths = _Graph.Do.FindShortestPathsDijkstra(node.Id);
+            var foundEcc = paths.PathLength.MaxBy(x => x);
+            Assert.Equal(ecc.length, foundEcc);
         }
         [Fact]
         public void FindCycleBasis_Works()
         {
             _Graph.CreateNodes(1000);
             _Graph.Do.ConnectRandomly(0, 7);
-            var tree = _Graph.Do.FindSpanningTree();
+            var tree = _Graph.Do.FindSpanningTreeKruskal();
             var cycles = _Graph.Do.FindCyclesBasis();
             foreach (var c in cycles)
             {
@@ -102,6 +112,11 @@ namespace GraphSharp.Tests
                 });
                 Assert.Equal(c.Count - outEdgesCount, 2);
             }
+            foreach(var c1 in cycles)
+                foreach(var c2 in cycles){
+                    if(c1.Equals(c2)) continue;
+                    Assert.False(_Graph.CombineCycles(c1,c2,out var _));
+                }
         }
         public void FindPath(Func<IGraph<Node, Edge>, int, int, IList<Node>> getPath)
         {
@@ -134,6 +149,26 @@ namespace GraphSharp.Tests
         {
             FindPath((graph, n1, n2) => graph.Do.FindAnyPath(n1, n2));
             FindPath((graph, n1, n2) => graph.Do.FindAnyPathParallel(n1, n2));
+        }
+        [Fact]
+        public void FindAnyPathWithCondition_Works()
+        {
+            FindPath((graph, n1, n2) =>graph.Do.FindAnyPathWithCondition(n1, n2, x => true));
+            FindPath((graph, n1, n2) =>graph.Do.FindAnyPathWithConditionParallel(n1, n2, x => true));
+            _Graph.Do.DelaunayTriangulation();
+            for(int i = 0;i<10;i++){
+                var p = Random.Shared.Next(999)+1;
+                var path1 = _Graph.Do.FindAnyPathWithCondition(0, p, x => x.TargetId%5!=0);
+                var path2 = _Graph.Do.FindAnyPathWithConditionParallel(0, p, x => x.TargetId%5!=0);
+                if(path1.Count==0){
+                    Assert.Empty(path2);
+                    continue;
+                }
+                Assert.NotEmpty(path1);
+                Assert.NotEmpty(path2);
+                Assert.True(path1.All(x=>x.Id%5!=0 || x.Id==0));
+                Assert.True(path2.All(x=>x.Id%5!=0 || x.Id==0));
+            }
         }
         [Fact]
         public void ContractEdge_Works()
@@ -175,7 +210,7 @@ namespace GraphSharp.Tests
             _Graph.CreateNodes(1000);
             _Graph.Do.ConnectRandomly(0, 7);
             (var components, var setFinder) = _Graph.Do.FindComponents();
-            var tree = _Graph.Do.FindSpanningTree();
+            var tree = _Graph.Do.FindSpanningTreeKruskal();
 
             UnionFind u = new(_Graph.Nodes.MaxNodeId + 1);
             foreach (var n in _Graph.Nodes)
@@ -208,7 +243,7 @@ namespace GraphSharp.Tests
             _Graph.Do.ConnectRandomly(0, 7);
             var before = _Graph.Do.FindComponents().components.Count();
             var after = 0;
-            var points = _Graph.Do.FindArticulationPoints().Select(x => x.Id);
+            var points = _Graph.Do.FindArticulationPointsTarjan().Select(x => x.Id);
             Assert.Equal(points, points.Distinct());
             foreach (var p in points)
             {
@@ -221,8 +256,8 @@ namespace GraphSharp.Tests
         [Fact]
         public void FindShortestPaths_Works()
         {
-            FindPath((graph, n1, n2) => graph.Do.FindShortestPaths(n1).GetPath(n2));
-            FindPath((graph, n1, n2) => graph.Do.FindShortestPathsParallel(n1).GetPath(n2));
+            FindPath((graph, n1, n2) => graph.Do.FindShortestPathsDijkstra(n1).GetPath(n2));
+            FindPath((graph, n1, n2) => graph.Do.FindShortestPathsParallelDijkstra(n1).GetPath(n2));
         }
         [Fact]
         public void FindComponents_Works()

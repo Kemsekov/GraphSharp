@@ -3,7 +3,7 @@ namespace GraphSharp.Adapters;
 /// <summary>
 /// Adapter for edges from GraphSharp to work as edges from QuikGraph
 /// </summary>
-public class EdgeAdapter<TVertex, TEdge> : QuikGraph.IEdge<TVertex>
+public struct EdgeAdapter<TVertex, TEdge> : QuikGraph.IEdge<TVertex>
 where TVertex : INode
 where TEdge : IEdge
 {

@@ -224,5 +224,28 @@ namespace GraphSharp.Tests
             var actual = newGraph.Edges.Select(x=>(x.SourceId,x.TargetId));
             Assert.Equal(expected,actual);
         }
+
+        [Fact]
+        public void ToQuikGraph_Works(){
+            _Graph.CreateNodes(1000).Do.ConnectRandomly(2,10);
+            var converted = _Graph.Converter.ToQuikGraph();
+            _Graph.Do.ConnectRandomly(2,3);
+            foreach(var n in _Graph.Nodes){
+                var e1 = converted.OutEdges(n).Select(x=>x.GraphSharpEdge);
+                var e2 = _Graph.Edges.OutEdges(n.Id);
+                Assert.Equal(e1,e2);
+                Assert.Equal(_Graph.Edges.Degree(n.Id),converted.Degree(n));
+            }
+            foreach(var n in _Graph.Nodes){
+                var e1 = converted.InEdges(n).Select(x=>x.GraphSharpEdge);
+                var e2 = _Graph.Edges.InEdges(n.Id);
+                Assert.Equal(e1,e2);
+            }
+            Assert.Equal(_Graph.Edges.Count,converted.EdgeCount);
+        }
+        [Fact]
+        public void ConvertEdgesListToPath(){
+            throw new NotImplementedException();
+        }
     }
 }

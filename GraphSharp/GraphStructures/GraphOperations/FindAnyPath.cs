@@ -43,7 +43,6 @@ where TEdge : IEdge
         }
         return anyPathFinder.GetPath();
     }
-    // TODO: add tests for FindAnyPathWithCondition and FindAnyPathWithConditionParallel
     /// <summary>
     /// Finds any first found path between any two nodes. Much faster than <see cref="GraphOperation{,}.FindShortestPaths"/>
     /// </summary>

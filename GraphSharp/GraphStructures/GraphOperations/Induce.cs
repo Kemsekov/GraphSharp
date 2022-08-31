@@ -18,10 +18,11 @@ where TEdge : IEdge
             toInduce[n] = 1;
             result.Nodes.Add(Nodes[n]);
         }
-        
-        var edges = Edges.Where(x=>toInduce[x.SourceId]==1 && toInduce[x.TargetId]==1);
-        foreach(var e in edges){
-            result.Edges.Add(e);
+        foreach(var nodeId in nodes){
+            var edges = Edges.OutEdges(nodeId).Where(x=>toInduce[x.SourceId]==1 && toInduce[x.TargetId]==1);
+            foreach(var e in edges){
+                result.Edges.Add(e);
+            }
         }
         return result;
     }

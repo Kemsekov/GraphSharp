@@ -4,13 +4,9 @@ using GraphSharp.Graphs;
 using QuikGraph;
 namespace GraphSharp.Adapters;
 
-// TODO: add tests for this adapter
-
 /// <summary>
 /// Adapter for <see cref="IGraph{,}"/> to work as <see cref="IBidirectionalGraph{,}"/>.
 /// </summary>
-/// <typeparam name="TVertex"></typeparam>
-/// <typeparam name="TEdge"></typeparam>
 public class ToQuikGraphAdapter<TVertex, TEdge> : IBidirectionalGraph<TVertex, EdgeAdapter<TVertex, TEdge>>
 where TVertex : INode
 where TEdge : IEdge
