@@ -1,12 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace GraphSharp.Common
+namespace GraphSharp.Common;
+public interface IFlowed
 {
-    public interface IFlowed
-    {
-        FlowData Flow{get;set;}
-    }
+    /// <summary>
+    /// Contains information about flow value, capacity and residual capacity of an edge.
+    /// </summary>
+    FlowData Flow { get; set; }
 }

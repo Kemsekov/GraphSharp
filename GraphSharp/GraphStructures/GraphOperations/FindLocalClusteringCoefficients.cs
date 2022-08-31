@@ -1,16 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
-using GraphSharp.Visitors;
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    // TODO: add tests for FindLocalClusteringCoefficients
     /// <summary>
     /// Finds local clustering coefficients
     /// </summary>
@@ -19,20 +15,20 @@ where TEdge : IEdge
     {
         var coeff = new float[Nodes.MaxNodeId+1];
         Array.Fill(coeff,-1f);
-        var neighbourhood = new byte[Nodes.MaxNodeId+1];
+        var neighborhood = new byte[Nodes.MaxNodeId+1];
         foreach(var n in Nodes){
             var edges = Edges.OutEdges(n.Id);
             var edgesCount = edges.Count();
             if(edgesCount<2) continue;
-            Array.Fill(neighbourhood,(byte)0);
-            neighbourhood[n.Id] = 1;
+            Array.Fill(neighborhood,(byte)0);
+            neighborhood[n.Id] = 1;
             int connectionsCount = edges.Count();
             foreach(var e in edges){
-                neighbourhood[e.TargetId] = 1;
+                neighborhood[e.TargetId] = 1;
             }
             foreach(var e in edges){
                 foreach(var e1 in Edges.OutEdges(e.TargetId)){
-                    if(neighbourhood[e1.TargetId]==1) connectionsCount++;
+                    if(neighborhood[e1.TargetId]==1) connectionsCount++;
                 }
             }
             coeff[n.Id] = ((float)connectionsCount)/(edgesCount*(edgesCount-1));

@@ -1,16 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-/// <summary>
+    /// <summary>
     /// Finds low link values for nodes. Can be used to get strongly connected components
     /// </summary>
     /// <returns>Array where index is node id and value is low link value. When value is -1 it means that there is not node with given index.</returns>

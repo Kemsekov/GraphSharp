@@ -1,77 +1,75 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-
 using GraphSharp.Graphs;
-
-using GraphSharp.Propagators;
-using GraphSharp.Visitors;
-
 namespace GraphSharp.Visitors;
+
 /// <summary>
-/// Visitor that finds shortest path between given node and any other node in a graph.
+/// Visitor that finds all shortest paths between given node to all other nodes in a graph.
 /// </summary>
-public class DijkstrasAlgorithm<TNode, TEdge> : IVisitor<TNode, TEdge>
+public class DijkstrasAlgorithm<TNode, TEdge> : IVisitorWithSteps<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    int[] _path;
-    /// <summary>
-    /// what is the length of path from startNode to some other node so far.  
-    /// </summary>
-    float[] _pathLength;
     private Func<TEdge, float> _getWeight;
     IGraph<TNode, TEdge> _graph;
     /// <summary>
-    /// _path[node] = parent 
+    /// Path[node] = parent 
     /// </summary>
-    public int[] Path => _path;
+    public int[] Path;
     /// <summary>
     /// what is the length of path from startNode to some other node so far.  
     /// </summary>
-    public float[] PathLength => _pathLength;
-    public bool DidSomething = true;
+    public float[] PathLength;
+    public bool DidSomething{get;set;} = true;
+    public bool Done{get;set;}
+    public int Steps{get;protected set;}
     /// <summary>
-    /// Count of steps it took to calculate Dijkstra's Algorithm
+    /// Each found path will begin from node with this id
     /// </summary>
-    public int Steps;
     public int StartNodeId;
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
+    /// <param name="graph">Algorithm will be executed on this graph</param>
     public DijkstrasAlgorithm(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge, float>? getWeight = null)
     {
         getWeight ??= e => e.Weight;
         this._getWeight = getWeight;
         this._graph = graph;
         this.StartNodeId = startNodeId;
-        _pathLength = new float[graph.Nodes.MaxNodeId + 1];
-        _path = new int[graph.Nodes.MaxNodeId + 1];
-        Array.Fill(_path, -1);
-        Array.Fill(_pathLength, -1);
-        _pathLength[startNodeId] = 0;
+        PathLength = new float[graph.Nodes.MaxNodeId + 1];
+        Path = new int[graph.Nodes.MaxNodeId + 1];
+        Array.Fill(Path, -1);
+        Array.Fill(PathLength, -1);
+        PathLength[startNodeId] = 0;
     }
+    // TODO: add test for Clear method
+
+    /// <summary>
+    /// Clears state of an algorithm and reset it's startNodeId
+    /// </summary>
     public void Clear(int startNodeId)
     {
         this.StartNodeId = startNodeId;
-        _pathLength = new float[_graph.Nodes.MaxNodeId + 1];
-        _path = new int[_graph.Nodes.MaxNodeId + 1];
-        Array.Fill(_path, -1);
-        Array.Fill(_pathLength, -1);
-        _pathLength[startNodeId] = 0;
+        PathLength = new float[_graph.Nodes.MaxNodeId + 1];
+        Path = new int[_graph.Nodes.MaxNodeId + 1];
+        Array.Fill(Path, -1);
+        Array.Fill(PathLength, -1);
+        PathLength[startNodeId] = 0;
+        Steps = 0;
+        DidSomething = true;
     }
-    public void EndVisit()
+    public void BeforeSelect()
     {
-        this.Steps++;
+        DidSomething = false;
     }
-
     public bool Select(TEdge connection)
     {
         var sourceId = connection.SourceId;
         var targetId = connection.TargetId;
-        var pathLength = _pathLength[sourceId] + _getWeight(connection);
+        var pathLength = PathLength[sourceId] + _getWeight(connection);
 
-        var pathSoFar = _pathLength[targetId];
+        var pathSoFar = PathLength[targetId];
 
         if (pathSoFar != -1)
         {
@@ -80,8 +78,8 @@ where TEdge : IEdge
                 return false;
             }
         }
-        _pathLength[targetId] = pathLength;
-        _path[targetId] = sourceId;
+        PathLength[targetId] = pathLength;
+        Path[targetId] = sourceId;
         return true;
     }
 
@@ -89,7 +87,10 @@ where TEdge : IEdge
     {
         DidSomething = true;
     }
-
+    public void EndVisit()
+    {
+        this.Steps++;
+    }
     /// <summary>
     /// Get path from start point to end point
     /// </summary>
@@ -97,10 +98,10 @@ where TEdge : IEdge
     public IList<TNode> GetPath(int endNodeId)
     {
         var path = new List<TNode>();
-        if (_path[endNodeId] == -1) return path;
+        if (Path[endNodeId] == -1) return path;
         while (true)
         {
-            var parent = _path[endNodeId];
+            var parent = Path[endNodeId];
             if (parent == -1) break;
             path.Add(_graph.Nodes[endNodeId]);
             endNodeId = parent;
@@ -109,13 +110,5 @@ where TEdge : IEdge
         path.Reverse();
         return path;
     }
-    /// <summary>
-    /// Get path length to some done. -1 means there is no path exists
-    /// </summary>
-    /// <param name="nodeId"></param>
-    /// <returns></returns>
-    public double GetPathLength(int nodeId)
-    {
-        return _pathLength[nodeId];
-    }
+
 }

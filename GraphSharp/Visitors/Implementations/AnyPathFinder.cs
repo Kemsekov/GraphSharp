@@ -1,18 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GraphSharp.Common;
-
 using GraphSharp.Graphs;
-
-using GraphSharp.Propagators;
-
 namespace GraphSharp.Visitors;
+
 /// <summary>
 /// Finds any first found path between two nodes.
 /// </summary>
-public class AnyPathFinder<TNode, TEdge> : IVisitor<TNode, TEdge>
+public class AnyPathFinder<TNode, TEdge> : IVisitorWithSteps<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -21,11 +15,22 @@ where TEdge : IEdge
     /// _path[nodeId] == -1 when parent is not set <br/>
     /// </summary>
     int[] _path;
+    /// <summary>
+    /// Algorithm executed on this graph
+    /// </summary>
     public IGraph<TNode, TEdge> Graph { get; }
+    /// <summary>
+    /// Id of first node in the path
+    /// </summary>
     public int StartNodeId { get; protected set; }
+    /// <summary>
+    /// Id of last node in the path
+    /// </summary>
     public int EndNodeId { get; protected set; }
-    public bool Done = false;
-    public bool DidSomething = true;
+    public bool Done{get;protected set;} = false;
+    public bool DidSomething{get;protected set;} = true;
+    public int Steps{get;protected set;} = 0;
+
     public AnyPathFinder(int startNodeId, int endNodeId, IGraph<TNode, TEdge> graph)
     {
         this.Graph = graph;
@@ -42,10 +47,10 @@ where TEdge : IEdge
         Array.Fill(_path, -1);
     }
 
-    public void EndVisit()
+    public void BeforeSelect()
     {
+        DidSomething = false;
     }
-
     public bool Select(TEdge edge)
     {
         if (Done) return false;
@@ -64,6 +69,10 @@ where TEdge : IEdge
     public void Visit(TNode node)
     {
         DidSomething = true;
+    }
+    public void EndVisit()
+    {
+        Steps++;
     }
     /// <summary>
     /// Builds path between given nodes.
@@ -84,5 +93,6 @@ where TEdge : IEdge
         path.Reverse();
         return path;
     }
+
 
 }

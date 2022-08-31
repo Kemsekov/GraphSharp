@@ -1,14 +1,9 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace GraphSharp.Exceptions;
 
-namespace GraphSharp.Exceptions
+public class NodeNotFoundException : KeyNotFoundException
 {
-    public class NodeNotFoundException : KeyNotFoundException
+    public NodeNotFoundException(string message) : base(message)
     {
-        public NodeNotFoundException(string message) : base(message)
-        {
-        }
     }
 }

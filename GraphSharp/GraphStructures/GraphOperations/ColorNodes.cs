@@ -2,21 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    // TODO: add Heuristic algorithms for graph nodes coloring. See https://en.wikipedia.org/wiki/Graph_coloring#Heuristic_algorithms
+    
     /// <summary>
     /// Apply greedy graph nodes coloring algorithm.<br/>
-    /// 1) Assign color to a node by excepting forbidden and neighbours colors from available.<br/>
-    /// 2) For each of this node neighbours add chosen color as forbidden.<br/>
-    /// Apply 1 and 2 steps in order set by order parameter
     /// </summary>
+    /// <param name="colors">Colors list. Will be automatically expanded if colors used will surpass count of available colors</param>
+    /// <param name="order">Order in which nodes will be colored</param>
+    /// <returns>Dictionary with key equals to color used, and value equals to count of nodes colored with this color</returns>
     public IDictionary<Color, int> GreedyColorNodes(IEnumerable<Color>? colors = null, Func<IEnumerable<TNode>, IEnumerable<TNode>>? order = null)
     {
         order ??= x => x;

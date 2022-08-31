@@ -1,14 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace GraphSharp.Exceptions;
 
-namespace GraphSharp.Exceptions
+public class GraphConverterException : Exception
 {
-    public class GraphConverterException : Exception
+    public GraphConverterException(string message) : base(message)
     {
-        public GraphConverterException(string message) : base(message)
-        {
-        }
     }
 }

@@ -1,20 +1,7 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Threading.Tasks;
-using DelaunatorSharp;
-using GraphSharp.Common;
-using GraphSharp.Exceptions;
-using GraphSharp.Graphs;
-
-using GraphSharp.Propagators;
-using GraphSharp.Visitors;
-
 namespace GraphSharp.Graphs;
+
 /// <summary>
-/// Contains algorithms to modify relationships between nodes and edges.
+/// Contains graph algorithms.
 /// </summary>
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode

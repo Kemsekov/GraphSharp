@@ -23,7 +23,6 @@ where TEdge : IEdge
         propagator.SetPosition(startNodeId);
         while (anyPathFinder.DidSomething && !anyPathFinder.Done)
         {
-            anyPathFinder.DidSomething = false;
             propagator.Propagate();
         }
         var path = anyPathFinder.GetPath();
@@ -40,11 +39,11 @@ where TEdge : IEdge
         propagator.SetPosition(startNodeId);
         while (anyPathFinder.DidSomething && !anyPathFinder.Done)
         {
-            anyPathFinder.DidSomething = false;
             propagator.Propagate();
         }
         return anyPathFinder.GetPath();
     }
+    // TODO: add tests for FindAnyPathWithCondition and FindAnyPathWithConditionParallel
     /// <summary>
     /// Finds any first found path between any two nodes. Much faster than <see cref="GraphOperation{,}.FindShortestPaths"/>
     /// </summary>
@@ -56,7 +55,6 @@ where TEdge : IEdge
         propagator.SetPosition(startNodeId);
         while (anyPathFinder.DidSomething && !anyPathFinder.Done)
         {
-            anyPathFinder.DidSomething = false;
             propagator.Propagate();
         }
         var path = anyPathFinder.GetPath();
@@ -73,7 +71,6 @@ where TEdge : IEdge
         propagator.SetPosition(startNodeId);
         while (anyPathFinder.DidSomething && !anyPathFinder.Done)
         {
-            anyPathFinder.DidSomething = false;
             propagator.Propagate();
         }
         return anyPathFinder.GetPath();

@@ -20,6 +20,11 @@ namespace GraphSharp.Tests.Models
 
         public override IPropagator<Node,Edge> Propagator{get;}
 
+        public override void BeforeSelect()
+        {
+            
+        }
+
         public override void EndVisit()
         {
         }

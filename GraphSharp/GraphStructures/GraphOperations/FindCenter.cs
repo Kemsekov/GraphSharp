@@ -1,12 +1,8 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -14,7 +10,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Finds radius and center of graph using approximation technic. In general produce very good results, but works a lot faster.<br/>
+    /// Finds radius and center of graph using approximation technic. In general produce very good results, but works very fast.<br/>
     /// </summary>
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
     public (float radius, IEnumerable<TNode> center) TryFindCenterByApproximation(Func<TEdge, float>? getWeight = null)
@@ -42,7 +38,7 @@ where TEdge : IEdge
                 {
                     break;
                 }
-                var paths = _structureBase.Do.FindShortestPathsParallel(point.Id,getWeight);
+                var paths = _structureBase.Do.FindShortestPathsParallelDijkstra(point.Id,getWeight);
 
                 var direction = paths.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
                 var path = paths.GetPath(direction.index).Where(x=>visited[x.Id]==0).ToList();
@@ -53,11 +49,11 @@ where TEdge : IEdge
                 index = Math.Max(index,0);
                 index = Math.Min(index,path.Count-1);
                 point = (path[index].Id, float.MaxValue);
-                error*=0.7f;
+                error*=0.85f;
             }
             return (radius, points.Where(x => x.eccentricity == radius).Select(x=>x.Id));
         }
-        var components = _structureBase.Do.FindStronglyConnectedComponents();
+        var components = _structureBase.Do.FindStronglyConnectedComponentsTarjan();
         var radius = float.MaxValue;
         var center = Enumerable.Empty<int>();
 

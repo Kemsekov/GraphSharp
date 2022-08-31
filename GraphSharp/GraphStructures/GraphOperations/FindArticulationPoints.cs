@@ -1,9 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -15,7 +12,7 @@ where TEdge : IEdge
     /// Thanks to https://www.geeksforgeeks.org/articulation-points-or-cut-vertices-in-a-graph/
     /// </summary>
     /// <returns>Articulation points of a graph</returns>
-    public IEnumerable<TNode> FindArticulationPoints()
+    public IEnumerable<TNode> FindArticulationPointsTarjan()
     {
         if (Nodes.Count == 0 || Edges.Count == 0)
             return Enumerable.Empty<TNode>();

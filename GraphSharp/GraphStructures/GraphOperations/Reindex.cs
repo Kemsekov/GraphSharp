@@ -1,10 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using GraphSharp.Common;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -13,7 +7,8 @@ where TEdge : IEdge
 {
 
     /// <summary>
-    /// Reindexes all nodes and edges
+    /// Reindexes all nodes and edges to minimal possible values.
+    /// Use this method if your graph node indices are out of hand.
     /// </summary>
     public GraphOperation<TNode, TEdge> Reindex()
     {

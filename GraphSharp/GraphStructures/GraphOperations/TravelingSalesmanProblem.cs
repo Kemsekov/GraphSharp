@@ -3,15 +3,13 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-using GraphSharp.Visitors;
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    // TODO: add tests for TravelingSalesmanProblemByBubbleExpansion
     /// <summary>
     /// Traveling salesman problem solver. About 1.25 longer than MST.<br/>
     /// It works like expanding bubble<br/>
@@ -21,7 +19,7 @@ where TEdge : IEdge
     /// 4) For each added edge search intersection of source edges and target edges and which target is not present in already added edges. <br/>
     /// 5) If intersection is edge A->C, B->C for given edge A->B then remove given edge A->B and add two more edges A->C and C->B so by doing this we 'expand' our cycle
     /// </summary>
-    public (IEdgeSource<TEdge> edges, IList<TNode> path) TravelingSalesmanProblem(Func<TEdge, float>? getWeight = null)
+    public (IEdgeSource<TEdge> edges, IList<TNode> path) TravelingSalesmanProblemByBubbleExpansion(Func<TEdge, float>? getWeight = null)
     {
         //if we have some data in current graph then just create an empty one with current nodes only and compute
         //all there
@@ -29,7 +27,7 @@ where TEdge : IEdge
         {
             var g = new Graph<TNode, TEdge>(_structureBase.Configuration);
             g.SetSources(Nodes, new DefaultEdgeSource<TEdge>());
-            return g.Do.TravelingSalesmanProblem(getWeight);
+            return g.Do.TravelingSalesmanProblemByBubbleExpansion(getWeight);
         }
 
         DelaunayTriangulationWithoutHull();
@@ -97,7 +95,7 @@ where TEdge : IEdge
             edgeInfo[e] = (0, intersection);
         });
 
-        var mst = FindSpanningTree(x => getWeight(x));
+        var mst = FindSpanningTreeKruskal(x => getWeight(x));
         foreach (var e in mst)
         {
             var info = edgeInfo[e];

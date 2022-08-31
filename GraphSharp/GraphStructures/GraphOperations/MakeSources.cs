@@ -1,10 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
 using GraphSharp.Visitors;
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -13,7 +9,7 @@ where TEdge : IEdge
 {
     /// <summary>
     /// Will create sources on nodes with id equal to nodeIndices. <br/>
-    /// In other words after this method used any possible path in a graph
+    /// In other words after this method used any possible path in a reversed graph
     /// will land on one of the nodes you specified. <br/>
     /// </summary>
     /// <param name="nodeIndices"></param>
@@ -37,7 +33,6 @@ where TEdge : IEdge
         sourceCreator.SetPosition(nodeIndices);
         while (sourceCreator.DidSomething)
         {
-            sourceCreator.DidSomething = false;
             sourceCreator.Propagate();
         }
         return this;

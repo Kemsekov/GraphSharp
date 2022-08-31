@@ -7,7 +7,7 @@ namespace GraphSharp.Visitors;
 /// <summary>
 /// Base implementation of <see cref="IVisitor{,}"/> and proxy of <see cref="IPropagator{,}"/> in one instance.
 /// </summary>
-public abstract class Visitor<TNode, TEdge> : IVisitor<TNode, TEdge>, IPropagator<TNode, TEdge>
+public abstract class Visitor<TNode, TEdge> : IVisitorWithSteps<TNode, TEdge>, IPropagator<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -16,9 +16,18 @@ where TEdge : IEdge
     /// </summary>
     /// <value></value>
     public abstract IPropagator<TNode, TEdge> Propagator { get; }
-    public abstract void EndVisit();
+
+    public bool Done{get;protected set;} = false;
+
+    public bool DidSomething{get;protected set;} = true;
+
+    public int Steps{get;protected set;} = 0;
+
+    public abstract void BeforeSelect();
     public abstract bool Select(TEdge edge);
     public abstract void Visit(TNode node);
+    public abstract void EndVisit();
+
     public void Propagate()
     {
         Propagator.Propagate();
@@ -58,4 +67,5 @@ where TEdge : IEdge
     {
         Propagator.ClearNodeStates(nodeId);
     }
+
 }

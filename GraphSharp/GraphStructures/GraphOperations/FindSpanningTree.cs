@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using GraphSharp.Common;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -16,7 +13,7 @@ where TEdge : IEdge
     /// </summary>
     /// <param name="getWeight">When null spanning tree is computed by sorting edges by weights. If you need to change this behavior specify this delegate, so edges will be sorted in different order.</param>
     /// <returns>List of edges that form a minimal spanning tree</returns>
-    public IList<TEdge> FindSpanningTree(Func<TEdge, float>? getWeight = null)
+    public IList<TEdge> FindSpanningTreeKruskal(Func<TEdge, float>? getWeight = null)
     {
         getWeight ??= e => e.Weight;
         var edges = Edges.OrderBy(x => getWeight(x));

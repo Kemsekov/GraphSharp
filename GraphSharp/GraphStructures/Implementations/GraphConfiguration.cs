@@ -1,11 +1,6 @@
 using System;
-using System.Drawing;
-using System.Numerics;
-using GraphSharp.Common;
-
-
-
 namespace GraphSharp.Graphs;
+
 /// <summary>
 /// Default <see cref="IGraphConfiguration{,}"/> implementation that uses default configuration.
 /// </summary>
@@ -15,8 +10,13 @@ where TEdge : IEdge
 {
     Func<TNode, TNode, TEdge> createEdge;
     Func<int, TNode> createNode;
-
     public Random Rand { get; set; }
+    /// <summary>
+    /// Initialize new graph configuration
+    /// </summary>
+    /// <param name="rand">Random that will be used to do graph algorithms</param>
+    /// <param name="createEdge">How to create edge</param>
+    /// <param name="createNode">How to create node</param>
     public GraphConfiguration(Random rand, Func<TNode, TNode, TEdge> createEdge, Func<int, TNode> createNode)
     {
         this.createEdge = createEdge;

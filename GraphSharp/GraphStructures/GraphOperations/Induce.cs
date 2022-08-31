@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Threading.Tasks;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -12,7 +6,8 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Get induced subgraph from this graph structure.
+    /// Get induced subgraph from this graph structure.<br/>
+    /// Induced graph is a subgraph of graph such that all edges connecting any pair of nodes from subgraph also in subgraph
     /// </summary>
     /// <param name="nodes">Nodes to induce</param>
     /// <returns>Induced subgraph of current graph</returns>

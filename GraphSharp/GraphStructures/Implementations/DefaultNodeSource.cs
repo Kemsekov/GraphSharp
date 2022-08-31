@@ -2,14 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Numerics;
-using System.Threading.Tasks;
-using GraphSharp.Common;
-
-
 namespace GraphSharp.Graphs;
+
 /// <summary>
 /// Default implementation of <see cref="INodeSource{}"/>
 /// </summary>

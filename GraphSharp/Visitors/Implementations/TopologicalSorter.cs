@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
 using GraphSharp.Graphs;
-
 using GraphSharp.Propagators;
-using GraphSharp.Visitors;
 namespace GraphSharp.Visitors;
+
 /// <summary>
 /// Visitor that proceed topological sort for any graph.
 /// </summary>
@@ -21,38 +18,32 @@ where TEdge : IEdge
     /// Nodes on each layer have the same X coordinate and each following layer have X coordinate bigger that previous one.
     /// </summary>
     public IList<IList<TNode>> Layers { get; }
-    /// <summary>
-    /// True when topological sort is done
-    /// </summary>
-    public bool Done { get; private set; } = false;
     public const byte Added = 4;
-    public TopologicalSorter(IGraph<TNode, TEdge> graph)
+    /// <param name="graph">Algorithm will be executed on this graph</param>
+    /// <param name="startingNodes">A set of nodes that will be used as start point for doing topological sort. If empty will be assigned to sources from a graph.</param>
+    public TopologicalSorter(IGraph<TNode, TEdge> graph, params int[] startingNodes)
     {
         Propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
-        var startingNodes = new List<int>();
+        var startingNodesList = new List<int>(startingNodes);
+        if(startingNodesList.Count==0)
         foreach(var n in graph.Nodes){
-            if(graph.Edges.InEdges(n.Id).Count()==0)
-                startingNodes.Add(n.Id);
+            if(graph.Edges.IsSource(n.Id))
+                startingNodesList.Add(n.Id);
         }
         Layers = new List<IList<TNode>>();
-        Propagator.SetPosition(startingNodes.ToArray());
+
+        if(startingNodesList.Count==0)
+            throw new ArgumentException("Cannot do topological sort because starting nodes were not given and there is no sources in a graph");
+
+        Propagator.SetPosition(startingNodesList.ToArray());
         this.EndVisit();
     }
 
-    public override void EndVisit()
-    {
-        if (Done) return;
-        if (Layers.Count > 0)
-        {
-            if (Layers[^1].Count == 0)
-            {
-                this.Done = true;
-                return;
-            }
-        }
-        Layers.Add(new List<TNode>());
-    }
 
+    public override void BeforeSelect()
+    {
+        DidSomething = false;
+    }
     public override bool Select(TEdge edge)
     {
         if (Done) return false;
@@ -70,11 +61,24 @@ where TEdge : IEdge
         lock (Layers)
             Layers[^1].Add(node);
     }
+    public override void EndVisit()
+    {
+        if (Done) return;
+        if (Layers.Count > 0)
+        {
+            if (Layers[^1].Count == 0)
+            {
+                this.Done = true;
+                return;
+            }
+        }
+        Layers.Add(new List<TNode>());
+    }
     /// <summary>
     /// After all nodes have been sorted to different layers 
     /// this method will assign corresponding X coordinate to each layer.
     /// </summary>
-    public void DoTopologicalSort()
+    public void ApplyTopologicalSort()
     {
         if (!Done) return;
         float startNodePosition = 0f;
@@ -89,4 +93,6 @@ where TEdge : IEdge
             startNodePosition += nodePositionShift;
         }
     }
+
+
 }

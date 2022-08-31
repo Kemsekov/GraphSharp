@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
 using GraphSharp.Graphs;
-
 using GraphSharp.Propagators;
-
 namespace GraphSharp.Visitors;
+
 /// <summary>
 /// This visitor will create sources on assigned points so any path in graph will ends on some of this points
 /// </summary>
@@ -17,11 +14,6 @@ where TEdge : IEdge
 {
     public const byte Proceed = 4;
     public const byte ToRemove = 8;
-    /// <summary>
-    /// This boolean will be set true on each call of <see cref="IPropagator{,}.Propagate"/> if algorithm inside of this visitor did anything at all.
-    /// Use this to determine when to stop.
-    /// </summary>
-    public bool DidSomething = true;
     public override IPropagator<TNode, TEdge> Propagator { get; }
     public IGraph<TNode, TEdge> Graph { get; }
     public SourceCreator(IGraph<TNode, TEdge> graph)
@@ -30,14 +22,10 @@ where TEdge : IEdge
         this.Graph = graph;
     }
 
-    public override void EndVisit()
+    public override void BeforeSelect()
     {
-        for (int i = 0; i < Graph.Nodes.MaxNodeId + 1; i++)
-            if (IsNodeInState(i, Proceed))
-                SetNodeState(i, ToRemove);
-
+        DidSomething = false;
     }
-
     public override bool Select(TEdge edge)
     {
         return !IsNodeInState(edge.TargetId, Proceed | ToRemove);
@@ -59,5 +47,12 @@ where TEdge : IEdge
             Graph.Edges.Remove(edge);
 
         DidSomething = true;
+    }
+    public override void EndVisit()
+    {
+        for (int i = 0; i < Graph.Nodes.MaxNodeId + 1; i++)
+            if (IsNodeInState(i, Proceed))
+                SetNodeState(i, ToRemove);
+        Steps++;
     }
 }

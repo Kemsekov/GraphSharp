@@ -1,9 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -11,7 +6,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Makes every connection between two nodes bidirectional, producing undirected graph.
+    /// Makes every connection between two nodes bidirectional by adding missing edges.
     /// </summary>
     public GraphOperation<TNode, TEdge> MakeUndirected(Action<TEdge>? onCreatedEdge = null)
     {

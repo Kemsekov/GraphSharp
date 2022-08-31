@@ -1,13 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
+namespace GraphSharp.Common;
 
-namespace GraphSharp.Common
+public interface IPositioned
 {
-    public interface IPositioned
-    {
-        Vector2 Position{get;set;}
-    }
+    Vector2 Position { get; set; }
 }

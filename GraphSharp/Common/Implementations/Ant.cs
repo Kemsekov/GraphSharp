@@ -2,21 +2,50 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using GraphSharp.Graphs;
-
 namespace GraphSharp;
 
+/// <summary>
+/// Ant class that uses in ant simulation to find hamiltonian path
+/// </summary>
 public class Ant<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    /// <summary>
+    /// Coefficient of current ant's best found path. <br/>
+    /// Numerically it equals to: (path's edges count)/(sum of path's edge weights). <br/>
+    /// The higher this coefficient the better is found path
+    /// </summary>
     public float Coefficient => Path.Count / Path.Sum(x => x.Weight);
+
     public IGraph<TNode, TEdge> Graph { get; }
+
+    /// <summary>
+    /// After execution each ant left behind itself a smell that later helps other
+    /// ants to navigate and visit/mutate best found path's to improve them
+    /// </summary>
     public IDictionary<TEdge, float> Smell { get; }
+
+    /// <summary>
+    /// This array is shared with 32 ants where each ant have unique power of 2 index <see cref="Ant{,}.AntId"/>
+    /// to store information about visited nodes. <br/>
+    /// if (Visited[nodeId] & AntId) == AntId means this node visited some node with index nodeId in the past
+    /// </summary>
+    /// <value></value>
     public uint[] Visited { get; }
+
+    /// <summary>
+    /// Unique power of 2 value. Represents a bit position in a uint used for this node
+    /// to store information about visited nodes in an array.
+    /// </summary>
     public uint AntId { get; }
+
+    /// <summary>
+    /// Best found so far path
+    /// </summary>
     public IList<TEdge> Path { get; }
+
     int nodesCount;
     Random rand = new Random();
     IEdgeSource<TEdge> Edges => Graph.Edges;
@@ -33,6 +62,11 @@ where TEdge : IEdge
         nodesCount = graph.Nodes.Count;
         Path = new List<TEdge>();
     }
+    /// <summary>
+    /// Shoots dfs with some preferable paths across it which ant will be more likely
+    /// to step into. Execution of this function ends when wether all nodes was visited in a path
+    /// or ant stuck somewhere.
+    /// </summary>
     public void Run(int nodeId)
     {
         List<(TEdge edge, float smell)> edges;
@@ -74,8 +108,9 @@ where TEdge : IEdge
             
         }
     }
+    
     /// <summary>
-    /// deprecated. let it be here awaiting for better times...
+    /// deprecated. let it be here awaiting for better times... I was hoping to improve ant's path choosing but this one seems to take too much time to execute.
     /// </summary>
     private bool AddingThisNodeWillIsolateSomeOtherNode(int targetId)
     {
@@ -96,6 +131,9 @@ where TEdge : IEdge
         UnvisitNode(targetId);
         return isolate;
     }
+    /// <summary>
+    /// Add smell on current <see cref="Ant{,}.Path"/> equals to <see cref="Ant{,}.Coefficient"/>
+    /// </summary>
     public void AddSmell()
     {
         var coefficient = Coefficient;
@@ -104,6 +142,9 @@ where TEdge : IEdge
             Smell[e] += coefficient;
         }
     }
+    /// <summary>
+    /// Subtracts <see cref="Ant{,}.Coefficient"/> smell from current <see cref="Ant{,}.Path"/>
+    /// </summary>
     public void SubtractSmell()
     {
         var coefficient = Coefficient;
@@ -113,6 +154,7 @@ where TEdge : IEdge
             if(Smell[e]<0) Smell[e] = 0;
         }
     }
+
     /// <summary>
     /// Resets all ant visited state and clear path.
     /// </summary>
@@ -125,6 +167,7 @@ where TEdge : IEdge
         Path.Clear();
     }
 
+    /// <returns>True if node currently visited this node</returns>
     public bool VisitedNode(int nodeId)
     {
         return (Visited[nodeId] & AntId) == AntId;

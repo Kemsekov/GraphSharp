@@ -1,9 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -11,7 +6,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Create some count of random edges for given node.
+    /// Create some count of random edges for given node. Help function
     /// </summary>
     private void ConnectNodeToNodes(TNode node, int startIndex, int edgesCount, IList<int> source)
     {

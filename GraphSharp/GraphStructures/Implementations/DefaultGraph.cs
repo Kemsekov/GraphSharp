@@ -1,23 +1,24 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+namespace GraphSharp.Graphs;
 
-
-
-namespace GraphSharp.Graphs
+/// <summary>
+/// Default graph implementation. Uses <see cref="Node"/> and <see cref="Edge"/> as node and edge types
+/// </summary>
+public class Graph : Graph<Node, Edge>
 {
     /// <summary>
-    /// Default graph
+    /// Initialize new graph
     /// </summary>
-    public class Graph : Graph<Node,Edge>
+    public Graph() : base(id => new(id), (n1, n2) => new(n1, n2))
     {
-        public Graph() : base(id=>new(id),(n1,n2)=>new(n1,n2))
-        {
-        }
-        public Graph(Func<int, Node> createNode, Func<Node, Node, Edge> createEdge) : base(createNode,createEdge)
-        {
+    }
+    /// <summary>
+    /// Initialize new graph
+    /// </summary>
+    /// <param name="createNode">How to create node</param>
+    /// <param name="createEdge">How to create edge</param>
+    public Graph(Func<int, Node> createNode, Func<Node, Node, Edge> createEdge) : base(createNode, createEdge)
+    {
 
-        }
     }
 }

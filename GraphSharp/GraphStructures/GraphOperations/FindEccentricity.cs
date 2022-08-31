@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -22,7 +18,6 @@ where TEdge : IEdge
         propagator.SetPosition(nodeId);
         while (pathFinder.DidSomething)
         {
-            pathFinder.DidSomething = false;
             propagator.Propagate();
         }
         var p = pathFinder.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
@@ -37,7 +32,6 @@ where TEdge : IEdge
         propagator.SetPosition(nodeId);
         while (pathFinder.DidSomething)
         {
-            pathFinder.DidSomething = false;
             propagator.Propagate();
         }
         var p = pathFinder.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);

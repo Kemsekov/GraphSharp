@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GraphSharp.Common;
-
 using GraphSharp.Exceptions;
-
-
 namespace GraphSharp.Graphs;
+
+/// <summary>
+/// Contains extensions for <see cref="IGraph{,}"/>
+/// </summary>
 public static class GraphExtensions
 {
     /// <returns>True if given graph have one single component</returns>
@@ -66,7 +65,7 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        return graph.Do.FindStronglyConnectedComponents().Count() == 1;
+        return graph.Do.FindStronglyConnectedComponentsTarjan().Count() == 1;
     }
     /// <returns>True if graph is directed, else false</returns>
     public static bool IsDirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
@@ -103,7 +102,7 @@ public static class GraphExtensions
     where TEdge : IEdge
     {
         GraphDataIntegrityChecker.CheckForEdgeIndicesIntegrity(graph);
-        GraphDataIntegrityChecker.CheckForEdgesDuplicates(graph);
+        GraphDataIntegrityChecker.CheckForEdgesIndexDuplicates(graph);
         GraphDataIntegrityChecker.CheckForNodeIndicesIntegrity(graph);
         GraphDataIntegrityChecker.CheckForNodesDuplicates(graph);
     }
@@ -268,6 +267,14 @@ public static class GraphExtensions
     {
         return graph.Nodes.Where(x => predicate(x)).Select(x => x.Id).ToArray();
     }
+    // TODO: Add tests for CloneEdgeTo and CloneNodeTo
+
+    /// <summary>
+    /// Clones <paramref name="edge"/> to <paramref name="destination"/>
+    /// </summary>
+    /// <param name="edge">Edge to clone</param>
+    /// <param name="destination">Edges source that will accept cloned edge</param>
+    /// <returns>Clone of <paramref name="edge"/></returns>
     public static TEdge CloneEdgeTo<TNode, TEdge>(this IGraph<TNode, TEdge> src, TEdge edge, IEdgeSource<TEdge> destination)
             where TNode : INode
             where TEdge : IEdge
@@ -276,7 +283,12 @@ public static class GraphExtensions
         destination.Add(clonedEdge);
         return clonedEdge;
     }
-
+    /// <summary>
+    /// Clones <paramref name="node"/> to <paramref name="destination"/>
+    /// </summary>
+    /// <param name="edge">Edge to clone</param>
+    /// <param name="destination">Nodes source that will accept cloned node</param>
+    /// <returns>Clone of <paramref name="node"/></returns>
     public static TNode CloneNodeTo<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TNode node, INodeSource<TNode> destination)
     where TNode : INode
     where TEdge : IEdge
@@ -285,6 +297,9 @@ public static class GraphExtensions
         destination.Add(newNode);
         return newNode;
     }
+    /// <summary>
+    /// Set some color to all nodes
+    /// </summary>
     public static void SetColorToAll<TNode>(this INodeSource<TNode> nodes, System.Drawing.Color color)
     where TNode : INode
     {
@@ -293,6 +308,9 @@ public static class GraphExtensions
             n.Color = color;
         }
     }
+    /// <summary>
+    /// Set some color to all edges
+    /// </summary>
     public static void SetColorToAll<TEdge>(this IEdgeSource<TEdge> edges, System.Drawing.Color color)
     where TEdge : IEdge
     {
@@ -301,12 +319,11 @@ public static class GraphExtensions
             n.Color = color;
         }
     }
+    // TODO: add tests for ConvertEdgesListToPath
     /// <summary>
     /// Converts edges list to path (nodes list)
     /// </summary>
-    /// <param name="edges"></param>
-    /// <typeparam name="TEdge"></typeparam>
-    /// <returns></returns>
+    /// <returns>Converted path</returns>
     public static IList<TNode> ConvertEdgesListToPath<TNode,TEdge>(this IGraph<TNode,TEdge> graph, IList<TEdge> edges)
     where TNode : INode
     where TEdge : IEdge

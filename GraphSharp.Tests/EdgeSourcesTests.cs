@@ -50,7 +50,7 @@ public class EdgeSourcesTests
     }
 
     [Fact]
-    public void GetSourcesId()
+    public void Check_OutEdgesInEdgesIntegrity()
     {
         foreach (var edgeSource in EdgeSources)
         {

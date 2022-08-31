@@ -1,17 +1,14 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-
+    // TODO: add test that checks that all returned cycles are simple to each other
     /// <summary>
     /// Finds fundamental cycles basis.
     /// See https://en.wikipedia.org/wiki/Cycle_basis#Fundamental_cycles
@@ -23,7 +20,7 @@ where TEdge : IEdge
         var treeGraph = new Graph<TNode, TEdge>(Configuration);
         treeGraph.SetSources(Nodes, Configuration.CreateEdgeSource());
         {
-            var tree = FindSpanningTree();
+            var tree = FindSpanningTreeKruskal();
             foreach (var e in tree)
             {
                 treeGraph.Edges.Add(e);
