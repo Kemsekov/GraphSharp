@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-// TODO: add tests that checks Steps variable
-
 namespace GraphSharp.Visitors;
 public interface IVisitorWithSteps<TNode, TEdge> : IVisitor<TNode,TEdge>
 where TNode : INode

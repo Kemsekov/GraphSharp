@@ -50,7 +50,6 @@ where TNode : INode
     /// <param name="node">Retrieved node</param>
     /// <returns>True if found, else false</returns>
     bool TryGetNode(int nodeId, out TNode? node);
-    // TODO: add Contains methods tests
     /// <returns>True if found node with given id, else false</returns>
     bool Contains(int nodeId);
     /// <returns>True if found given node, else false</returns>

@@ -7,9 +7,10 @@ using GraphSharp;
 using GraphSharp.Common;
 
 using GraphSharp.Graphs;
-
+using GraphSharp.Propagators;
 using GraphSharp.Tests.Helpers;
 using GraphSharp.Tests.Models;
+using GraphSharp.Visitors;
 using Xunit;
 
 namespace GraphSharp.Tests
@@ -42,6 +43,61 @@ namespace GraphSharp.Tests
         public void TryFindHamiltonianCycleByBubbleExpansion_Works()
         {
             throw new NotImplementedException();
+        }
+        [Fact]
+        public void TravelingSalesmanProblemByBubbleExpansion(){
+            _Graph.CreateNodes(100);
+            (var edges,var path) = _Graph.Do.TravelingSalesmanProblemByBubbleExpansion();
+            Assert.Equal(path.Count,_Graph.Nodes.Count+1);
+            Assert.Equal(edges.Count,_Graph.Nodes.Count);
+            _Graph.SetSources(_Graph.Nodes,edges);
+            _Graph.ValidateCycle(path);
+        }
+        [Fact]
+        public void TopologicalSort_Works(){
+            _Graph.CreateNodes(500);
+            _Graph.Do.ConnectRandomly(3,6)
+                     .MakeUndirected();
+            var startPositions = new int[]{1,2,3,4};
+            TestTopologicalSort(startPositions);
+            _Graph.CreateNodes(500);
+            _Graph.Do.ConnectRandomly(3,6)
+                     .MakeSources(5,6,7);
+            TestTopologicalSort();
+
+        }
+        void TestTopologicalSort(params int[] startPositions){
+
+            var t1 = _Graph.Do.TopologicalSort(startPositions);
+            foreach(var l in t1.Layers){
+                Assert.Equal(l.Count,l.Distinct().Count());
+            }
+            var diff = t1.Layers.SelectMany(x=>x).Except(_Graph.Nodes);
+            Assert.Empty(diff);
+            Assert.Equal(t1.Layers.Sum(x=>x.Count),_Graph.Nodes.Count);
+            var layer = t1.Layers.GetEnumerator();
+            int visitedCount = 0;
+            var visited = new byte[_Graph.Nodes.MaxNodeId+1];
+            var visitor = new ActionVisitor<Node,Edge>(
+                visit: node=>{
+                    Assert.True(layer.Current.Remove(node));
+                    visited[node.Id] = 1;
+                    visitedCount++;
+                },
+                select: edge=>visited[edge.TargetId]==0,
+                beforeSelect: () => layer.MoveNext()
+            );
+            var propagator = new Propagator<Node,Edge>(visitor,_Graph);
+            if(startPositions.Length!=0)
+                propagator.SetPosition(startPositions);
+            else
+                propagator.SetPosition(_Graph.GetNodesIdWhere(x=>_Graph.Edges.IsSource(x.Id)));
+            while(visitedCount!=_Graph.Nodes.Count){
+                propagator.Propagate();
+            }
+            Assert.Equal(visitedCount,_Graph.Nodes.Count);
+            Assert.True(t1.Layers.All(x=>x.Count==0));
+
         }
         [Fact]
         public void TryFindCenter_Works()

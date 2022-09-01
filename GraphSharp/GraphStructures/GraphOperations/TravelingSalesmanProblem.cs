@@ -9,7 +9,6 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    // TODO: add tests for TravelingSalesmanProblemByBubbleExpansion
     /// <summary>
     /// Traveling salesman problem solver. About 1.25 longer than MST.<br/>
     /// It works like expanding bubble<br/>
@@ -57,7 +56,8 @@ where TEdge : IEdge
 
         var edgesSource = new DefaultEdgeSource<TEdge>(edges);
 
-        var tmp = edges.First();
+        var first = edges.First();
+        var tmp = first;
         var path = new List<TNode>();
         path.Add(Nodes[tmp.SourceId]);
         while (path.First().Id != tmp.TargetId)
@@ -65,6 +65,7 @@ where TEdge : IEdge
             path.Add(Nodes[tmp.TargetId]);
             tmp = edgesSource.OutEdges(tmp.TargetId).First();
         }
+        path.Add(Nodes[first.SourceId]);
         Edges.Clear();
         return (edgesSource, path);
     }

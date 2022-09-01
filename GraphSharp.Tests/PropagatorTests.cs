@@ -90,6 +90,37 @@ namespace GraphSharp.Tests
             }
         }
         [Fact]
+        public void Propagate_RightVisitorMethodsOrderExecution(){
+            foreach (var factory in _propagatorFactories){
+                var order = new List<int>();
+                var visitor = new ActionVisitor<Node,Edge>(
+                    visit: node=>{
+                        lock(order)
+                        if(order.Last()!=2)
+                            order.Add(2);
+                    },
+                    select: edge => {
+                        lock(order)
+                        if(order.Last()!=1)
+                            order.Add(1);
+                        return true;
+                    },
+                    beforeSelect: () => order.Add(0),
+                    endVisit: ()=>order.Add(3)
+                );
+                var propagator = factory(visitor);
+                propagator.SetPosition(1,2,3);
+                propagator.Propagate();
+                Assert.False(order.Contains(1));
+                Assert.Equal(order,order.OrderBy(x=>x));
+                for(int i = 0;i<10;i++){
+                    order.Clear();
+                    propagator.Propagate();
+                    Assert.Equal(order,order.OrderBy(x=>x));
+                }
+            }
+        }
+        [Fact]
         public void Propagate_SelectWorks()
         {
             var visited = new List<INode>();

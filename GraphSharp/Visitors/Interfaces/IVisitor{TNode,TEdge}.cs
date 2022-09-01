@@ -1,6 +1,4 @@
 namespace GraphSharp.Visitors;
-// TODO: add tests for BeforeSelect
-
 /// <summary>
 /// Contains method to control execution of algorithms on a graph.
 /// </summary>

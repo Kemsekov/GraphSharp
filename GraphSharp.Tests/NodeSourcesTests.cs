@@ -172,5 +172,21 @@ namespace GraphSharp.Tests
 
             }
         }
+        [Fact]
+        public void Contains_Works(){
+            foreach(var nodeSource in NodeSources){
+                Fill(nodeSource,1000);
+                foreach(var n in nodeSource){
+                    Assert.True(nodeSource.Contains(n));
+                    Assert.True(nodeSource.Contains(n.Id));
+                }
+                Assert.False(nodeSource.Contains(1200));
+                Assert.True(nodeSource.Contains(new Node(900)));
+                nodeSource.Remove(200);
+                nodeSource.Remove(nodeSource[300]);
+                Assert.False(nodeSource.Contains(200));
+                Assert.False(nodeSource.Contains(300));
+            }
+        }
     }
 }

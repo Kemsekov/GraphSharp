@@ -23,7 +23,6 @@ where TEdge : IEdge
     /// Graph operations object that required to perform operations on a graph. Contains a lot of methods to do various tasks.
     /// </summary>
     GraphOperation<TNode, TEdge> Do { get; }
-    // TODO: add ToQuikGraph adapter for Converter class
     /// <summary>
     /// Graph converter. If you need to convert current graph to different representations or initialize current graph from different representations then look at this objects methods.
     /// </summary>

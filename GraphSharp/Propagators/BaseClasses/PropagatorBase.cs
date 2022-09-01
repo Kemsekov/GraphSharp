@@ -78,8 +78,6 @@ where TEdge : IEdge
     {
         _nodeFlags[nodeId] &= (byte)~state;
     }
-    // TODO: add test that checks right order of visitor's methods execution
-    
     /// <summary>
     /// Propagate nodes. In general it is just modifiable BFS.<br/>
     /// 1) Call <see cref="IVisitor{,}.BeforeSelect"/> to prepare algorithm for next iteration <br/>

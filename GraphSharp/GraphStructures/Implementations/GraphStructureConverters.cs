@@ -218,7 +218,6 @@ where TEdge : IEdge
         _structureBase.Do.RemoveIsolatedNodes();
         return this;
     }
-    // TODO: add tests for ToQuikGraph
     /// <summary>
     /// Uses <see cref="ToQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="QuikGraph.IBidirectionalGraph{TVertex, TEdge}"/> <br/>
     /// This conversation does not simply copy graph but passes execution of methods from <paramref name="QuikGraph"/> to <paramref name="GraphSharp"/>. <br/>

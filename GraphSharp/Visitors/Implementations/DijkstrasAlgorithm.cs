@@ -43,8 +43,6 @@ where TEdge : IEdge
         Array.Fill(PathLength, -1);
         PathLength[startNodeId] = 0;
     }
-    // TODO: add test for Clear method
-
     /// <summary>
     /// Clears state of an algorithm and reset it's startNodeId
     /// </summary>

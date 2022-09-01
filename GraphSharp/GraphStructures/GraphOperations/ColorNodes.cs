@@ -8,8 +8,6 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    // TODO: add Heuristic algorithms for graph nodes coloring. See https://en.wikipedia.org/wiki/Graph_coloring#Heuristic_algorithms
-    
     /// <summary>
     /// Apply greedy graph nodes coloring algorithm.<br/>
     /// </summary>

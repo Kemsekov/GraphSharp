@@ -34,8 +34,10 @@ where TEdge : IEdge
 
         if(startingNodesList.Count==0)
             throw new ArgumentException("Cannot do topological sort because starting nodes were not given and there is no sources in a graph");
-
-        Propagator.SetPosition(startingNodesList.ToArray());
+        var pos = startingNodesList.ToArray();
+        Propagator.SetPosition(pos);
+        foreach(var n in pos)
+            SetNodeState(n,Added);
         this.EndVisit();
     }
 

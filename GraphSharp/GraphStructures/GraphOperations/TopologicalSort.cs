@@ -5,7 +5,6 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    // TODO: add tests for TopologicalSort
     /// <summary>
     /// Do topological sort on the graph.
     /// </summary>
