@@ -9,7 +9,8 @@ public class Propagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    public Propagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph) : base(visitor, graph)
+    /// <inheritdoc />
+    public Propagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph, bool reverseOrder=false) : base(visitor, graph,reverseOrder)
     {
     }
     protected override void PropagateNodes()

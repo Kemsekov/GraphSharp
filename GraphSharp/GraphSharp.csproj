@@ -9,8 +9,10 @@
     <PackageVersion>$(Version)</PackageVersion>
     <Authors>Kemsekov</Authors>
     <PackageProjectUrl>https://github.com/Kemsekov/GraphSharp</PackageProjectUrl>
+    <WarningLevel>6</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
     <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="Delaunator" Version="1.0.9" />

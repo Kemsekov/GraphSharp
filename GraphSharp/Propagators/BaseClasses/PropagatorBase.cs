@@ -18,6 +18,11 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
+    /// Determines how does we iterate trough graph. <paramref name="false"/> means we iterating by out edges, <paramref name="true"/> means we iterating by in edges
+    /// </summary>
+    /// <value></value>
+    public bool ReverseOrder { get; }
+    /// <summary>
     /// Current working visitor in this propagator. On each call of <see cref="IPropagator{,}.Propagate"/>
     /// this visitor will be used to implement algorithm logic
     /// </summary>
@@ -42,8 +47,10 @@ where TEdge : IEdge
     protected byte[] _nodeFlags;
     /// <param name="visitor">Visitor to use</param>
     /// <param name="graph">Graph to use</param>
-    public PropagatorBase(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph)
+    /// <param name="reverseOrder">You can apply propagator in straight order by iterating BFS on out edges of each node, or do reverse order iteration by doing BFS on in edges of each node</param>
+    public PropagatorBase(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph, bool reverseOrder=false)
     {
+        ReverseOrder = reverseOrder;
         Visitor = visitor;
         Graph = graph;
         _nodeFlags = new byte[Graph.Nodes.MaxNodeId + 1];
@@ -107,9 +114,13 @@ where TEdge : IEdge
     /// This method implements how to call <see cref="PropagatorBase{,}.PropagateNode"/> on nodes.
     /// </summary>
     protected abstract void PropagateNodes();
+    /// <summary>
+    /// Iterates trough
+    /// </summary>
+    /// <param name="nodeId"></param>
     protected void PropagateNode(int nodeId)
     {
-        var edges = Graph.Edges.OutEdges(nodeId);
+        var edges = ReverseOrder ? Graph.Edges.InEdges(nodeId) : Graph.Edges.OutEdges(nodeId);
         foreach (var edge in edges)
         {
             if (!Visitor.Select(edge)) continue;
