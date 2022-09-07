@@ -8,7 +8,7 @@ namespace GraphSharp.Visitors;
 /// <summary>
 /// Visitor that proceed topological sort for any graph.
 /// </summary>
-public class TopologicalSorter<TNode,TEdge> : Visitor<TNode, TEdge>
+public class TopologicalSorter<TNode,TEdge> : VisitorWithPropagator<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -38,17 +38,11 @@ where TEdge : IEdge
         Propagator.SetPosition(pos);
         foreach(var n in pos)
             SetNodeState(n,Added);
-        this.EndVisit();
+        this.End();
     }
 
-
-    public override void BeforeSelect()
+    public override bool SelectImpl(TEdge edge)
     {
-        DidSomething = false;
-    }
-    public override bool Select(TEdge edge)
-    {
-        if (Done) return false;
         if (Propagator.IsNodeInState(edge.TargetId, Added))
         {
             return false;
@@ -57,13 +51,12 @@ where TEdge : IEdge
         return true;
     }
 
-    public override void Visit(TNode node)
+    public override void VisitImpl(TNode node)
     {
-        if (Done) return;
         lock (Layers)
             Layers[^1].Add(node);
     }
-    public override void EndVisit()
+    public override void EndImpl()
     {
         if (Done) return;
         if (Layers.Count > 0)

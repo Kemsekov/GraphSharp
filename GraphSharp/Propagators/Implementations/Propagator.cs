@@ -3,7 +3,8 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Propagators;
 
 /// <summary>
-/// Single threaded <see cref="PropagatorBase{,}"/> implementation.
+/// Single threaded <see cref="PropagatorBase{,}"/> implementation.<br/>
+/// <inheritdoc />
 /// </summary>
 public class Propagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
 where TNode : INode

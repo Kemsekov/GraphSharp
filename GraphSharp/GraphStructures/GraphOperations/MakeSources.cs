@@ -31,7 +31,7 @@ where TEdge : IEdge
         }
 
         sourceCreator.SetPosition(nodeIndices);
-        while (sourceCreator.DidSomething)
+        while (!sourceCreator.Done)
         {
             sourceCreator.Propagate();
         }

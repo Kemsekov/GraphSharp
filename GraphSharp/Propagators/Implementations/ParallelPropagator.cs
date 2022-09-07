@@ -7,6 +7,7 @@ namespace GraphSharp.Propagators;
 /// Concurrent <see cref="PropagatorBase{,}"/> implementation.<br/> 
 /// Every <see cref="IVisitor{,}"/> that accompany this propagator must be implemented
 /// as thread-safe one.
+/// <inheritdoc />
 /// </summary>
 public class ParallelPropagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
 where TNode : INode

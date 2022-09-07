@@ -10,21 +10,14 @@ where TEdge : IEdge
     /// </summary>
     public GraphOperation<TNode, TEdge> ReverseEdges()
     {
-        var toSwap =
-            Edges.Where(x => !Edges.TryGetEdge(x.TargetId, x.SourceId, out var _))
-            .Select(x => (x.SourceId, x.TargetId))
-            .ToArray();
-
-        foreach (var e in toSwap)
+        foreach (var e in Edges.ToList())
         {
-            var edge = Edges[e.Item1, e.Item2];
-            Edges.Remove(e.Item1, e.Item2);
-            var tmp = edge.SourceId;
-            edge.SourceId = edge.TargetId;
-            edge.TargetId = tmp;
-            Edges.Add(edge);
+            Edges.Remove(e);
+            var tmp = e.SourceId;
+            e.SourceId = e.TargetId;
+            e.TargetId = tmp;
+            Edges.Add(e);
         }
-
         return this;
     }
 }

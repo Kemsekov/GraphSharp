@@ -15,14 +15,10 @@ where TEdge : IEdge
     /// <returns>DijkstrasAlgorithm instance that can be used to get path to any other node and length of this path</returns>
     public DijkstrasAlgorithm<TNode, TEdge> FindShortestPathsDijkstra(int nodeId, Func<TEdge, float>? getWeight = null)
     {
-        var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(nodeId, _structureBase, getWeight);
-        var propagator = new Propagator<TNode, TEdge>(pathFinder, _structureBase);
-        propagator.SetPosition(nodeId);
-        while (pathFinder.DidSomething)
-        {
-            propagator.Propagate();
-        }
-        return pathFinder;
+        return FindShortestPathsDijkstraBase(
+            nodeId,
+            pathFinder=>GetPropagator(pathFinder),
+            getWeight);
     }
     /// <summary>
     /// Concurrently Finds a shortest path from given node to all other nodes using Dijkstra's Algorithm and edge weights.
@@ -32,13 +28,21 @@ where TEdge : IEdge
     /// <returns>DijkstrasAlgorithm instance that can be used to get path to any other node and length of this path</returns>
     public DijkstrasAlgorithm<TNode, TEdge> FindShortestPathsParallelDijkstra(int nodeId, Func<TEdge, float>? getWeight = null)
     {
+        return FindShortestPathsDijkstraBase(
+            nodeId,
+            pathFinder=>GetParallelPropagator(pathFinder),
+            getWeight);
+    }
+    DijkstrasAlgorithm<TNode, TEdge> FindShortestPathsDijkstraBase(int nodeId,Func<DijkstrasAlgorithm<TNode, TEdge>,IPropagator<TNode,TEdge>> createPropagator, Func<TEdge, float>? getWeight = null)
+    {
         var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(nodeId, _structureBase, getWeight);
-        var propagator = new ParallelPropagator<TNode, TEdge>(pathFinder, _structureBase);
+        var propagator = createPropagator(pathFinder);
         propagator.SetPosition(nodeId);
-        while (pathFinder.DidSomething)
+        while (!pathFinder.Done)
         {
             propagator.Propagate();
         }
+        ReturnPropagator(propagator);
         return pathFinder;
     }
 }

@@ -4,29 +4,20 @@ namespace GraphSharp.Visitors;
 /// <summary>
 /// <see cref="IVisitor{,}"/> implementation that uses lambda functions.
 /// </summary>
-public class ActionVisitor<TNode, TEdge> : IVisitor<TNode, TEdge>
+public class ActionVisitor<TNode, TEdge> : VisitorBase<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    private Action<TNode> visit;
-    private Predicate<TEdge> select;
-    private Action endVisit;
-    private Action beforeSelect;
 
     /// <param name="visit"><see cref="IVisitor{,}.Visit"/> function</param>
     /// <param name="select"><see cref="IVisitor{,}.Select"/> function</param>
-    /// <param name="endVisit"><see cref="IVisitor{,}.EndVisit"/> function. You can let it be null.</param>
-    /// <param name="beforeSelect"><see cref="IVisitor{,}.BeforeSelect"/> function. You can let it be null.</param>
-    public ActionVisitor(Action<TNode> visit, Predicate<TEdge> select,  Action? endVisit = null, Action? beforeSelect = null)
+    /// <param name="end"><see cref="IVisitor{,}.End"/> function.</param>
+    /// <param name="start"><see cref="IVisitor{,}.Start"/> function.</param>
+    public ActionVisitor(Action<TNode>? visit = null, Predicate<TEdge>? select = null, Action? end = null, Action? start = null)
     {
-        this.visit = visit;
-        this.select = select;
-        this.endVisit = endVisit ?? new Action(() => { });
-        this.beforeSelect = beforeSelect ?? new Action(() => { });
+        this.VisitEvent += visit ?? new Action<TNode>(node => { });
+        this.Condition = select ?? new Predicate<TEdge>(edge => true);
+        this.EndEvent += end ?? new Action(() => { });
+        this.StartEvent += start ?? new Action(() => { });
     }
-    public void BeforeSelect() => beforeSelect();
-    public bool Select(TEdge edge) => select(edge);
-    public void Visit(TNode node) => visit(node);
-    public void EndVisit() => endVisit();
-
 }

@@ -16,62 +16,83 @@ where TEdge : IEdge
     /// Finds any first found path between any two nodes. Much faster than <see cref="GraphOperation{,}.FindShortestPaths"/>
     /// </summary>
     /// <returns>Path between two nodes. Empty list if path is not found.</returns>
-    public IList<TNode> FindAnyPath(int startNodeId, int endNodeId)
+    /// <param name="startNodeId">Start point</param>
+    /// <param name="endNodeId">End point</param>
+    /// <param name="condition">
+    /// If path's edges need to follow some condition
+    /// (for example avoid forbidden nodes/edges) then specify this argument. 
+    /// If this condition falls then edge will not be used in resulting path
+    /// By default passes all edges.
+    /// </param>
+    public IList<TNode> FindAnyPath(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
     {
-        var anyPathFinder = new AnyPathFinder<TNode, TEdge>(startNodeId, endNodeId, _structureBase);
-        var propagator = new Propagator<TNode, TEdge>(anyPathFinder, _structureBase);
-        propagator.SetPosition(startNodeId);
-        while (anyPathFinder.DidSomething && !anyPathFinder.Done)
-        {
-            propagator.Propagate();
-        }
-        var path = anyPathFinder.GetPath();
+        var path = FindPathWithFirstEncounter(
+            startNodeId,
+            endNodeId,
+            v => GetPropagator(v),
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, _structureBase),
+            condition)
+        .GetPath(startNodeId, endNodeId);
         return path;
     }
     /// <summary>
     /// Concurrently finds any first found path between any two nodes. Much faster than <see cref="GraphOperation{,}.FindShortestPaths"/>
     /// </summary>
     /// <returns>Path between two nodes. Empty list if path is not found.</returns>
-    public IList<TNode> FindAnyPathParallel(int startNodeId, int endNodeId)
+
+    public IList<TNode> FindAnyPathParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
     {
-        var anyPathFinder = new AnyPathFinder<TNode, TEdge>(startNodeId, endNodeId, _structureBase);
-        var propagator = new ParallelPropagator<TNode, TEdge>(anyPathFinder, _structureBase);
-        propagator.SetPosition(startNodeId);
-        while (anyPathFinder.DidSomething && !anyPathFinder.Done)
-        {
-            propagator.Propagate();
-        }
-        return anyPathFinder.GetPath();
-    }
-    /// <summary>
-    /// Finds any first found path between any two nodes. Much faster than <see cref="GraphOperation{,}.FindShortestPaths"/>
-    /// </summary>
-    /// <returns>Path between two nodes. Empty list if path is not found.</returns>
-    public IList<TNode> FindAnyPathWithCondition(int startNodeId, int endNodeId, Predicate<TEdge> condition)
-    {
-        var anyPathFinder = new AnyPathFinderWithCondition<TNode, TEdge>(startNodeId, endNodeId, _structureBase,condition);
-        var propagator = new Propagator<TNode, TEdge>(anyPathFinder, _structureBase);
-        propagator.SetPosition(startNodeId);
-        while (anyPathFinder.DidSomething && !anyPathFinder.Done)
-        {
-            propagator.Propagate();
-        }
-        var path = anyPathFinder.GetPath();
+        var path = 
+        FindPathWithFirstEncounter(
+            startNodeId,
+            endNodeId,
+            v => GetParallelPropagator(v),
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, _structureBase),
+            condition)
+        .GetPath(startNodeId, endNodeId);
         return path;
     }
+    
     /// <summary>
-    /// Concurrently finds any first found path between any two nodes. Much faster than <see cref="GraphOperation{,}.FindShortestPaths"/>
+    /// Using any <see cref="PathFinderBase{,}"/> to find path between two nodes by stopping search 
+    /// at first encounter of <paramref name="endNodeId"/>
     /// </summary>
-    /// <returns>Path between two nodes. Empty list if path is not found.</returns>
-    public IList<TNode> FindAnyPathWithConditionParallel(int startNodeId, int endNodeId, Predicate<TEdge> condition)
+    /// <param name="startNodeId">Start point</param>
+    /// <param name="endNodeId">End point</param>
+    /// <param name="condition">
+    /// If path's edges need to follow some condition
+    /// (for example avoid forbidden nodes/edges) then specify this argument. 
+    /// If this condition falls then edge will not be used in resulting path.
+    /// By default passes all edges.
+    /// </param>
+    /// <param name="createPropagator">What propagator to use</param>
+    /// <param name="createPathFinder">What path finder to use</param>
+    /// <returns><paramref name="PathFinderBase"/> that was used to find path.</returns>
+    public PathFinderBase<TNode, TEdge> FindPathWithFirstEncounter(
+            int startNodeId,
+            int endNodeId,
+            Func<PathFinderBase<TNode, TEdge>, IPropagator<TNode, TEdge>> createPropagator,
+            Func<PathFinderBase<TNode, TEdge>> createPathFinder,
+            Predicate<TEdge>? condition = null)
     {
-        var anyPathFinder = new AnyPathFinderWithCondition<TNode, TEdge>(startNodeId, endNodeId, _structureBase,condition);
-        var propagator = new ParallelPropagator<TNode, TEdge>(anyPathFinder, _structureBase);
+        condition ??= edge => true;
+        var pathFinder = createPathFinder();
+
+        pathFinder.Condition = condition;
+        pathFinder.StartNodeId = startNodeId;
+
+        pathFinder.SelectEvent += edge =>
+        {
+            if (edge.TargetId == endNodeId) 
+                pathFinder.Done = true;
+        };
+        var propagator = createPropagator(pathFinder);
         propagator.SetPosition(startNodeId);
-        while (anyPathFinder.DidSomething && !anyPathFinder.Done)
+        while (!pathFinder.Done)
         {
             propagator.Propagate();
         }
-        return anyPathFinder.GetPath();
+        ReturnPropagator(propagator);
+        return pathFinder;
     }
 }

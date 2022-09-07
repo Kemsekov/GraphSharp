@@ -75,7 +75,13 @@ where TEdge : IEdge
             (radius, center) = ApproximateCenter(Nodes.First().Id);
         
         center = center.Distinct();
-        return (radius, center.Select(id=>Nodes[id]));
+        var result = new List<int>(center);
+        foreach(var n in center.ToArray()){
+            result.AddRange(
+                Edges.Neighbors(n).Where(x=>FindEccentricity(x,getWeight).length==radius)
+            );
+        }
+        return (radius, result.Distinct().Select(id=>Nodes[id]));
     }
     /// <summary>
     /// Finds radius and center of graph using Dijkstras Algorithm to brute force eccentricity of all nodes and select minimum of them.<br/>
@@ -87,15 +93,15 @@ where TEdge : IEdge
         var radius = float.MaxValue;
         var center = new List<TNode>();
         var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(0, _structureBase, getWeight);
-        var propagator = new ParallelPropagator<TNode, TEdge>(pathFinder, _structureBase);
+        var propagator = GetParallelPropagator(pathFinder);
+        int count = 0;
         foreach (var n in Nodes)
         {
+            count++;
             pathFinder.Clear(n.Id);
             propagator.SetPosition(n.Id);
-            pathFinder.DidSomething = true;
-            while (pathFinder.DidSomething)
+            while (!pathFinder.Done)
             {
-                pathFinder.DidSomething = false;
                 propagator.Propagate();
             }
             // pathFinder = _structureBase.Do.FindShortestPathsParallel(n.Id);
@@ -110,6 +116,7 @@ where TEdge : IEdge
                 center.Add(Nodes[n.Id]);
 
         }
+        ReturnPropagator(propagator);
         return (radius, center);
 
     }

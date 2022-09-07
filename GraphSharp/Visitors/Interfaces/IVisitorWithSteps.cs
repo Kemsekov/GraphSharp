@@ -8,12 +8,12 @@ where TEdge : IEdge
     /// </summary>
     bool Done {get;}
     /// <summary>
-    /// Indicates if algorithm done anything in last it's step.
-    /// </summary>
-    bool DidSomething{get;}
-    /// <summary>
     /// Count of how many steps executed so far
     /// </summary>
     /// <value></value>
     int Steps{get;}
+    /// <summary>
+    /// Whatever given algorithm did anything in last iteration
+    /// </summary>
+    public bool DidSomething{get;set;}
 }

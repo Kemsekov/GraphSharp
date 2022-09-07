@@ -85,7 +85,7 @@ namespace GraphSharp.Tests
                     visitedCount++;
                 },
                 select: edge=>visited[edge.TargetId]==0,
-                beforeSelect: () => layer.MoveNext()
+                start: () => layer.MoveNext()
             );
             var propagator = new Propagator<Node,Edge>(visitor,_Graph);
             if(startPositions.Length!=0)
@@ -108,7 +108,7 @@ namespace GraphSharp.Tests
             (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1);
             Assert.NotEmpty(c1);
             Assert.NotEmpty(c2);
-            Assert.Subset(c2.ToHashSet(), c1.ToHashSet());
+            Assert.Equal(c2.ToHashSet(), c1.ToHashSet());
             foreach (var c in c1.Concat(c2))
             {
                 var ecc = _Graph.Do.FindEccentricity(c.Id, x => 1).length;
@@ -209,13 +209,13 @@ namespace GraphSharp.Tests
         [Fact]
         public void FindAnyPathWithCondition_Works()
         {
-            FindPath((graph, n1, n2) =>graph.Do.FindAnyPathWithCondition(n1, n2, x => true));
-            FindPath((graph, n1, n2) =>graph.Do.FindAnyPathWithConditionParallel(n1, n2, x => true));
+            FindPath((graph, n1, n2) =>graph.Do.FindAnyPath(n1, n2, x => true));
+            FindPath((graph, n1, n2) =>graph.Do.FindAnyPathParallel(n1, n2, x => true));
             _Graph.Do.DelaunayTriangulation();
             for(int i = 0;i<10;i++){
                 var p = Random.Shared.Next(999)+1;
-                var path1 = _Graph.Do.FindAnyPathWithCondition(0, p, x => x.TargetId%5!=0);
-                var path2 = _Graph.Do.FindAnyPathWithConditionParallel(0, p, x => x.TargetId%5!=0);
+                var path1 = _Graph.Do.FindAnyPath(0, p, x => x.TargetId%5!=0);
+                var path2 = _Graph.Do.FindAnyPathParallel(0, p, x => x.TargetId%5!=0);
                 if(path1.Count==0){
                     Assert.Empty(path2);
                     continue;

@@ -29,6 +29,7 @@ where TEdge : IEdge
         Configuration = configuration;
         Nodes = configuration.CreateNodeSource();
         Edges = configuration.CreateEdgeSource();
+        Do = new GraphOperation<TNode, TEdge>(this);
     }
 
     /// <summary>
@@ -39,6 +40,7 @@ where TEdge : IEdge
         Nodes = Graph.Nodes;
         Edges = Graph.Edges;
         Configuration = Graph.Configuration;
+        Do = new GraphOperation<TNode, TEdge>(this);
     }
 
     public Graph<TNode, TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges)
@@ -47,7 +49,7 @@ where TEdge : IEdge
         Edges = edges;
         return this;
     }
-    public GraphOperation<TNode, TEdge> Do => new GraphOperation<TNode, TEdge>(this);
+    public GraphOperation<TNode, TEdge> Do{get;}
     public GraphConverters<TNode, TEdge> Converter => new(this);
 
 }

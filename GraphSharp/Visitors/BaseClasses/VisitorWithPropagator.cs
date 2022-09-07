@@ -1,33 +1,19 @@
 using System;
-
 using GraphSharp.Graphs;
-
 using GraphSharp.Propagators;
 namespace GraphSharp.Visitors;
+
 /// <summary>
 /// Base implementation of <see cref="IVisitor{,}"/> and proxy of <see cref="IPropagator{,}"/> in one instance.
 /// </summary>
-public abstract class Visitor<TNode, TEdge> : IVisitorWithSteps<TNode, TEdge>, IPropagator<TNode, TEdge>
+public abstract class VisitorWithPropagator<TNode, TEdge> : VisitorBase<TNode, TEdge>, IPropagator<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
     /// <see cref="IPropagator{,}"/> implementation that used for this proxy class
     /// </summary>
-    /// <value></value>
     public abstract IPropagator<TNode, TEdge> Propagator { get; }
-
-    public bool Done{get;protected set;} = false;
-
-    public bool DidSomething{get;protected set;} = true;
-
-    public int Steps{get;protected set;} = 0;
-
-    public abstract void BeforeSelect();
-    public abstract bool Select(TEdge edge);
-    public abstract void Visit(TNode node);
-    public abstract void EndVisit();
-
     public void Propagate()
     {
         Propagator.Propagate();
@@ -38,9 +24,9 @@ where TEdge : IEdge
         Propagator.SetPosition(nodeIndices);
     }
 
-    public void SetGraph(IGraph<TNode, TEdge> nodes)
+    public void Reset(IGraph<TNode, TEdge> graph, IVisitor<TNode,TEdge> visitor)
     {
-        Propagator.SetGraph(nodes);
+        Propagator.Reset(graph,visitor);
     }
 
     public bool IsNodeInState(int nodeId, byte state)

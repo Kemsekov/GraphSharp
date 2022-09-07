@@ -10,32 +10,13 @@ using GraphSharp.Visitors;
 
 namespace GraphSharp.Tests.Models
 {
-    public class TestVisitor : Visitor<Node, Edge>
+    public class TestVisitor : VisitorWithPropagator<Node, Edge>
     {
         
+        public override IPropagator<Node, Edge> Propagator{get;}
         public TestVisitor(IGraph<Node, Edge> graph)
         {
             this.Propagator = new ParallelPropagator<Node,Edge>(this,graph);
-        }
-
-        public override IPropagator<Node,Edge> Propagator{get;}
-
-        public override void BeforeSelect()
-        {
-            
-        }
-
-        public override void EndVisit()
-        {
-        }
-
-        public override bool Select(Edge edge)
-        {
-            return true;
-        }
-        public override void Visit(Node node)
-        {
-
         }
     }
 }

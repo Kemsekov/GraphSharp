@@ -74,7 +74,7 @@ where TEdge : IEdge
             {
                 if (invalidEdges.TryGetValue(e, out var eInfo) && eInfo > 0) continue;
                 Edges.Remove(e);
-                var path = FindAnyPathWithConditionParallel(e.SourceId, e.TargetId, edge => addedNodes[edge.TargetId] == 0 || edge.TargetId == e.TargetId);
+                var path = FindAnyPath(e.SourceId, e.TargetId, edge => addedNodes[edge.TargetId] == 0 || edge.TargetId == e.TargetId);
                 Edges.Add(e);
                 if (path.Count == 0)
                 {

@@ -9,7 +9,7 @@ where TEdge : IEdge
     /// <summary>
     /// First function to call in each algorithm step.
     /// </summary>
-    void BeforeSelect();
+    void Start();
     /// <summary>
     /// Method to process and filter edges that will be passed forward for execution
     /// </summary>
@@ -25,5 +25,5 @@ where TEdge : IEdge
     /// After each select and visit iterations are done this method will do clean-up
     /// or states changes or any specific task at the end of algorithm step
     /// </summary>
-    void EndVisit();
+    void End();
 }

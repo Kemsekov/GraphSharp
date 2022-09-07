@@ -118,8 +118,8 @@ namespace GraphSharp.Tests
                                     order.Add(1);
                             return true;
                         },
-                        beforeSelect: () => order.Add(0),
-                        endVisit: () => order.Add(3)
+                        start: () => order.Add(0),
+                        end: () => order.Add(3)
                     );
                     var propagator = factory(visitor, reversed);
                     propagator.SetPosition(1, 2, 3);
@@ -275,9 +275,9 @@ namespace GraphSharp.Tests
                     {
                         var propagator = factory(visitor,reversed);
                         if(reversed) 
-                            propagator.SetGraph(reversedGraph);
-                        else 
-                            propagator.SetGraph(graph);
+                            propagator.Reset(reversedGraph,visitor);
+                        else
+                            propagator.Reset(graph,visitor);
                         propagator.SetPosition(expectedValues[0]);
                         for (int i = 0; i < expectedValues.Length; i++)
                         {
@@ -287,6 +287,45 @@ namespace GraphSharp.Tests
                             Assert.Equal(expectedValues[i], actualValues);
                         }
                     }
+        }
+        [Fact]
+        public void ReverseOrder_HaveRightVisitOrder(){
+            
+            _graph.CreateNodes(1000).Do.ConnectRandomly(2,10);
+            foreach (var factory in _propagatorFactories)
+            {
+                var v = new ActionVisitor<Node,Edge>();
+                var p1 = factory(v,false);
+                var p2 = factory(v,true);
+
+                p1.SetPosition(1,2);
+                p2.SetPosition(1,2);
+
+                var order = new List<List<int>>();
+                v.VisitEvent += node=>{
+                    var list = order.Last();
+                    lock(list)
+                        list.Add(node.Id);
+                };
+                v.StartEvent += ()=>order.Add(new List<int>());
+                v.EndEvent += ()=>order.Last().Sort();
+
+                for(int i = 0;i<10;i++){
+                    p1.Propagate();
+                }
+                var straightOrder = order.ToList();
+                order.Clear();
+                _graph.Do.ReverseEdges();
+                for(int i = 0;i<10;i++){
+                    p2.Propagate();
+                }
+                
+                var reverseOrder = order.ToList();
+                Assert.Equal(straightOrder.Count,reverseOrder.Count);
+                foreach(var u in straightOrder.Zip(reverseOrder)){
+                    Assert.Equal(u.First,u.Second);
+                }
+            }
         }
     }
 }

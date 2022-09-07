@@ -20,10 +20,10 @@ where TEdge : IEdge
     /// </summary>
     void SetPosition(params int[] nodeIndices);
     /// <summary>
-    /// Sets new graph.
+    /// Sets new graph and visitor.
     /// Clears all node states for current propagator,
     /// </summary>
-    void SetGraph(IGraph<TNode, TEdge> graph);
+    void Reset(IGraph<TNode, TEdge> graph, IVisitor<TNode,TEdge> visitor);
     /// <summary>
     /// Checks if node is in some state for current propagator. 
     /// </summary>
