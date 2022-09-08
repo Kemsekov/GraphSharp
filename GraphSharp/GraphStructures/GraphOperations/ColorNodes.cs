@@ -23,8 +23,6 @@ where TEdge : IEdge
             usedColors[c] = 0;
 
         var _colors = new List<Color>(colors);
-        var Edges = _structureBase.Edges;
-        var Nodes = _structureBase.Nodes;
         var forbidden_colors = new Dictionary<int, IList<Color>>(Nodes.Count);
 
         //Helper function (does step 1 and step 2)

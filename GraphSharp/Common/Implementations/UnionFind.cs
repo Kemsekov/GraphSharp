@@ -4,14 +4,18 @@ namespace GraphSharp.Common;
 /// Disjoint-set data structure
 /// https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 /// </summary>
-public struct UnionFind
+public class UnionFind
 {
     int[] parent;
     int[] rank;
     public UnionFind(int maxSetSize)
     {
-        parent = new int[maxSetSize];
-        rank = new int[maxSetSize];
+        parent = ArrayPoolStorage.IntArrayPool.Rent(maxSetSize);
+        rank = ArrayPoolStorage.IntArrayPool.Rent(maxSetSize);
+    }
+    ~UnionFind(){
+        ArrayPoolStorage.IntArrayPool.Return(parent);
+        ArrayPoolStorage.IntArrayPool.Return(rank);
     }
     public void MakeSet(int v)
     {

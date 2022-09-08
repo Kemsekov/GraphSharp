@@ -42,7 +42,12 @@ namespace GraphSharp.Tests
         [Fact]
         public void TryFindHamiltonianCycleByBubbleExpansion_Works()
         {
-            throw new NotImplementedException();
+            _Graph.CreateNodes(1000);
+            _Graph.Do.DelaunayTriangulation();
+            _Graph.Do.MakeUndirected();
+            var result = _Graph.Do.TryFindHamiltonianCycleByBubbleExpansion();
+            var path = _Graph.ConvertEdgesListToPath(result);
+            _Graph.ValidateCycle(path);
         }
         [Fact]
         public void TravelingSalesmanProblemByBubbleExpansion(){
@@ -130,14 +135,22 @@ namespace GraphSharp.Tests
             }
         }
         [Fact]
-        public void FindLowLinkValues_Works()
-        {
-            throw new NotImplementedException();
-        }
-        [Fact]
         public void FindStronglyConnectedComponents_Works()
         {
-            throw new NotImplementedException();
+            _Graph.CreateNodes(1000);
+            _Graph.Do.ConnectToClosest(2,5);
+            var ssc = _Graph.Do.FindStronglyConnectedComponentsTarjan();
+            Assert.NotEmpty(ssc);
+            foreach(var c in ssc){
+                Assert.NotEmpty(c.nodes);
+                foreach(var n1 in c.nodes){
+                    foreach(var n2 in c.nodes){
+                        if(n1.Equals(n2)) continue;
+                        var path = _Graph.Do.FindAnyPath(n1.Id,n2.Id);
+                        Assert.NotEmpty(path);
+                    }
+                }
+            }
         }
         [Fact]
         public void FindEccentricity_Works()

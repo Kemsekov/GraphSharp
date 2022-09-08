@@ -24,7 +24,7 @@ where TEdge : IEdge
         //all there
         if (Edges.Count != 0)
         {
-            var g = new Graph<TNode, TEdge>(_structureBase.Configuration);
+            var g = new Graph<TNode, TEdge>(Configuration);
             g.SetSources(Nodes, new DefaultEdgeSource<TEdge>());
             return g.Do.TravelingSalesmanProblemByBubbleExpansion(getWeight);
         }

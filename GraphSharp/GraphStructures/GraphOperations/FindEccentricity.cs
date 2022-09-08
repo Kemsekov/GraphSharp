@@ -30,7 +30,7 @@ where TEdge : IEdge
         );
     }
     public (float length, TNode farthestNode) FindEccentricityBase(int nodeId,Func<ShortestPathsLengthFinderAlgorithms<TNode, TEdge>,IPropagator<TNode,TEdge>> createPropagator, Func<TEdge, float>? getWeight = null){
-        var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(nodeId, _structureBase, getWeight);
+        var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(nodeId, StructureBase, getWeight);
         var propagator = createPropagator(pathFinder);
         propagator.SetPosition(nodeId);
         while (!pathFinder.Done)

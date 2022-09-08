@@ -2,6 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using GraphSharp.Common;
+
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -21,7 +23,7 @@ where TEdge : IEdge
         foreach (var e in Edges)
             smell[e] = startSmell;
 
-        var colony = new AntColony<TNode, TEdge>(_structureBase, smell, colonySize);
+        var colony = new AntColony<TNode, TEdge>(StructureBase, smell, colonySize);
         int counter = 0;
         while (true)
         {
@@ -40,8 +42,10 @@ where TEdge : IEdge
         return (path,counter);
     }
     /// <summary>
-    /// Tries to find hamiltonian cycle by 'bubble expansion' technic. Results wary and can be exact hamiltonian cycle or just a very long cycle in a graph.<br/>
-    /// If it found hamiltonian cycle then it's performance is about 1.2-1.3 times higher than minimal spanning tree weight
+    /// Tries to find hamiltonian cycle by 'bubble expansion' technique. Works only on undirected graphs. 
+    /// Results wary and can be exact hamiltonian cycle or just a very long cycle in a graph.<br/>
+    /// If it found hamiltonian cycle then it's performance is about 1.2-1.3 
+    /// times higher than minimal spanning tree weight.
     /// </summary>
     /// <param name="getWeight"></param>
     public IList<TEdge> TryFindHamiltonianCycleByBubbleExpansion(Func<TEdge, float>? getWeight = null)
@@ -49,7 +53,7 @@ where TEdge : IEdge
         getWeight ??= x => x.Weight;
         var start = Edges.MinBy(getWeight);
         var edges = new List<TEdge>();
-        var addedNodes = new byte[Nodes.MaxNodeId + 1];
+        var addedNodes = ArrayPoolStorage.ByteArrayPool.Rent(Nodes.MaxNodeId + 1);
         if (start is null) return edges;
         edges.Add(start);
 
@@ -108,7 +112,7 @@ where TEdge : IEdge
             }
         }
 
-
+        ArrayPoolStorage.ByteArrayPool.Return(addedNodes);
         return edges;
     }
 }

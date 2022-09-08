@@ -12,7 +12,7 @@ where TEdge : IEdge
     /// <returns>Object that contains List of layers where each layer is a list of nodes at a certain layer of topological sort. Use <see cref="TopologicalSorter{,}.DoTopologicalSort"/> to change X coordinates to a certain value.</returns>
     public TopologicalSorter<TNode,TEdge> TopologicalSort(params int[] startNodes)
     {
-        var alg = new TopologicalSorter<TNode, TEdge>(_structureBase,startNodes);
+        var alg = new TopologicalSorter<TNode, TEdge>(StructureBase,startNodes);
         while (!alg.Done)
         {
             alg.Propagate();

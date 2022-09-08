@@ -23,7 +23,7 @@ where TEdge : IEdge
                 }
                 var target = Nodes[targetId];
 
-                _structureBase.Edges.Add(Configuration.CreateEdge(node, target));
+                Edges.Add(Configuration.CreateEdge(node, target));
             }
     }
 }

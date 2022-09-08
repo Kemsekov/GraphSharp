@@ -1,7 +1,9 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 
 namespace GraphSharp.Visitors;
@@ -41,8 +43,11 @@ where TEdge : IEdge
     {
         this.Condition = edge=>true;
         this.Graph = graph;
-        Path = new int[graph.Nodes.MaxNodeId+1];
+        Path = ArrayPoolStorage.IntArrayPool.Rent(graph.Nodes.MaxNodeId+1);
         Array.Fill(Path, -1);
+    }
+    ~PathFinderBase(){
+        ArrayPoolStorage.IntArrayPool.Return(Path);
     }
     /// <summary>
     /// Sets all values of <see cref="Path"/> to -1, 

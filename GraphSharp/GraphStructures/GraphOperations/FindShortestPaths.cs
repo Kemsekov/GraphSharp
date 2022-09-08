@@ -35,7 +35,7 @@ where TEdge : IEdge
     }
     DijkstrasAlgorithm<TNode, TEdge> FindShortestPathsDijkstraBase(int nodeId,Func<DijkstrasAlgorithm<TNode, TEdge>,IPropagator<TNode,TEdge>> createPropagator, Func<TEdge, float>? getWeight = null)
     {
-        var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(nodeId, _structureBase, getWeight);
+        var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(nodeId, StructureBase, getWeight);
         var propagator = createPropagator(pathFinder);
         propagator.SetPosition(nodeId);
         while (!pathFinder.Done)

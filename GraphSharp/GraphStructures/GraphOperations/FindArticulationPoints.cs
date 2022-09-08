@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GraphSharp.Common;
+
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -16,8 +18,8 @@ where TEdge : IEdge
     {
         if (Nodes.Count == 0 || Edges.Count == 0)
             return Enumerable.Empty<TNode>();
-        var disc = new int[Nodes.MaxNodeId + 1];
-        var low = new int[Nodes.MaxNodeId + 1];
+        var disc = ArrayPoolStorage.IntArrayPool.Rent(Nodes.MaxNodeId + 1);
+        var low =  ArrayPoolStorage.IntArrayPool.Rent(Nodes.MaxNodeId + 1);
         var flags = new byte[Nodes.MaxNodeId + 1];
         int time = 0, parent = -1;
         const byte visitedFlag = 1;
@@ -41,6 +43,8 @@ where TEdge : IEdge
                 result.Add(Nodes[i]);
             }
         }
+        ArrayPoolStorage.IntArrayPool.Return(disc);
+        ArrayPoolStorage.IntArrayPool.Return(low);
         return result;
     }
     void ArticulationPointsFinder(IEdgeSource<TEdge> adj, int u, byte[] flags, int[] disc, int[] low, ref int time, int parent)

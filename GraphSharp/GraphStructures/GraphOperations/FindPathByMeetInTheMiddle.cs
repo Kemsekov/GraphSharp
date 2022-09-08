@@ -19,7 +19,7 @@ where TEdge : IEdge
             startNodeId,
             endNodeId,
             visitor => GetPropagator(visitor),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, _structureBase),
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
             condition);
     }
     /// <summary>
@@ -32,7 +32,7 @@ where TEdge : IEdge
             startNodeId,
             endNodeId,
             visitor => GetParallelPropagator(visitor),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, _structureBase),
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
             condition);
     }
     /// <summary>
@@ -118,13 +118,13 @@ where TEdge : IEdge
             startNodeId,
             meetId,
             createPropagator,
-            ()=>new AnyPathFinder<TNode,TEdge>(startNodeId,_structureBase),
+            ()=>new AnyPathFinder<TNode,TEdge>(startNodeId,StructureBase),
             condition).GetPath(startNodeId,meetId);
         var path2 = FindPathWithFirstEncounter(
             meetId,
             endNodeId,
             createPropagator,
-            ()=>new AnyPathFinder<TNode,TEdge>(startNodeId,_structureBase),
+            ()=>new AnyPathFinder<TNode,TEdge>(startNodeId,StructureBase),
             condition).GetPath(meetId,endNodeId);
         
         return path1.Concat(path2.Skip(1)).ToList();

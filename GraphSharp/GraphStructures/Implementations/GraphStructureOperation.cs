@@ -11,19 +11,18 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    IGraph<TNode, TEdge> StructureBase => _structureBase;
-    IGraph<TNode, TEdge> _structureBase;
-    INodeSource<TNode> Nodes => _structureBase.Nodes;
-    IEdgeSource<TEdge> Edges => _structureBase.Edges;
-    IGraphConfiguration<TNode, TEdge> Configuration => _structureBase.Configuration;
+    IGraph<TNode, TEdge> StructureBase{get;}
+    INodeSource<TNode> Nodes => StructureBase.Nodes;
+    IEdgeSource<TEdge> Edges => StructureBase.Edges;
+    IGraphConfiguration<TNode, TEdge> Configuration => StructureBase.Configuration;
     ObjectPool<Propagator<TNode, TEdge>> PropagatorPool;
     ObjectPool<ParallelPropagator<TNode, TEdge>> ParallelPropagatorPool;
     public GraphOperation(IGraph<TNode, TEdge> structureBase)
     {
-        _structureBase = structureBase;
+        StructureBase = structureBase;
         var tmpVisitor = new ActionVisitor<TNode, TEdge>();
-        PropagatorPool = new(() => new Propagator<TNode, TEdge>(tmpVisitor, _structureBase));
-        ParallelPropagatorPool = new(() => new ParallelPropagator<TNode, TEdge>(tmpVisitor, _structureBase));
+        PropagatorPool = new(() => new Propagator<TNode, TEdge>(tmpVisitor, StructureBase));
+        ParallelPropagatorPool = new(() => new ParallelPropagator<TNode, TEdge>(tmpVisitor, StructureBase));
     }
     /// <summary>
     /// Get propagator from pool
@@ -31,7 +30,7 @@ where TEdge : IEdge
     public Propagator<TNode, TEdge> GetPropagator(IVisitor<TNode, TEdge> visitor)
     {
         var p = PropagatorPool.Get();
-        p.Reset(_structureBase, visitor);
+        p.Reset(StructureBase, visitor);
         return p;
     }
     /// <summary>
@@ -40,7 +39,7 @@ where TEdge : IEdge
     public ParallelPropagator<TNode, TEdge> GetParallelPropagator(IVisitor<TNode, TEdge> visitor)
     {
         var p = ParallelPropagatorPool.Get();
-        p.Reset(_structureBase, visitor);
+        p.Reset(StructureBase, visitor);
         return p;
     }
     /// <summary>

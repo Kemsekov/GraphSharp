@@ -341,7 +341,9 @@ public static class GraphExtensions
                 sink = e.SourceId;
             }
         }
-        if(sink==-1) throw new ArgumentException("Given edges list is not a path. There is no sink");
+        if(sink==-1){
+            sink = edges.First().SourceId;
+        }
         var result = new List<int>(expectedNodesCount);
         result.Add(sink);
         
@@ -355,6 +357,7 @@ public static class GraphExtensions
                 throw new ArgumentException("Given edges list is not a path. Some edges touch the same node twice");
 
             result.Add(toAdd);
+            if(result.Count==edges.Count+1) break;
         }
         if(result.Count!=expectedNodesCount)
             throw new ArgumentException("Given edges list is not a path");

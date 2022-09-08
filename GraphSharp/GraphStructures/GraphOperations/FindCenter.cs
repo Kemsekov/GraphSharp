@@ -38,7 +38,7 @@ where TEdge : IEdge
                 {
                     break;
                 }
-                var paths = _structureBase.Do.FindShortestPathsParallelDijkstra(point.Id,getWeight);
+                var paths = FindShortestPathsParallelDijkstra(point.Id,getWeight);
 
                 var direction = paths.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
                 var path = paths.GetPath(direction.index).Where(x=>visited[x.Id]==0).ToList();
@@ -53,7 +53,7 @@ where TEdge : IEdge
             }
             return (radius, points.Where(x => x.eccentricity == radius).Select(x=>x.Id));
         }
-        var components = _structureBase.Do.FindStronglyConnectedComponentsTarjan();
+        var components = FindStronglyConnectedComponentsTarjan();
         var radius = float.MaxValue;
         var center = Enumerable.Empty<int>();
 
@@ -92,7 +92,7 @@ where TEdge : IEdge
     {
         var radius = float.MaxValue;
         var center = new List<TNode>();
-        var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(0, _structureBase, getWeight);
+        var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(0, StructureBase, getWeight);
         var propagator = GetParallelPropagator(pathFinder);
         int count = 0;
         foreach (var n in Nodes)

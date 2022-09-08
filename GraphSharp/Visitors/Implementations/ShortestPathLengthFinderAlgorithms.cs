@@ -1,4 +1,5 @@
 using System;
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 namespace GraphSharp.Visitors;
 
@@ -27,18 +28,19 @@ where TEdge : IEdge
         this._getWeight = getWeight;
         this.Graph = graph;
         this.StartNodeId = startNodeId;
-        PathLength = new float[graph.Nodes.MaxNodeId + 1];
+        PathLength = ArrayPoolStorage.FloatArrayPool.Rent(graph.Nodes.MaxNodeId + 1);
         Array.Fill(PathLength, -1);
         PathLength[startNodeId] = 0;
     }
-    
+    ~ShortestPathsLengthFinderAlgorithms(){
+        ArrayPoolStorage.FloatArrayPool.Return(PathLength);
+    }
     /// <summary>
     /// Clears state of an algorithm and reset it's startNodeId
     /// </summary>
     public void Clear(int startNodeId)
     {
         this.StartNodeId = startNodeId;
-        PathLength = new float[Graph.Nodes.MaxNodeId + 1];
         Array.Fill(PathLength, -1);
         PathLength[startNodeId] = 0;
         Steps = 0;

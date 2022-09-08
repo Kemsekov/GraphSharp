@@ -20,7 +20,7 @@ where TEdge : IEdge
         foreach (var i in nodeIndices)
             if (i > Nodes.MaxNodeId)
                 throw new ArgumentException("nodeIndex is out of range");
-        var sourceCreator = new SourceCreator<TNode, TEdge>(_structureBase);
+        var sourceCreator = new SourceCreator<TNode, TEdge>(StructureBase);
 
         foreach (var n in nodeIndices)
         {

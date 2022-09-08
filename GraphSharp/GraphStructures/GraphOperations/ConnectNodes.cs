@@ -11,7 +11,7 @@ where TEdge : IEdge
     /// <param name="edgesCount">How much edges each node need</param>
     public GraphOperation<TNode, TEdge> ConnectNodes(int edgesCount)
     {
-        _structureBase.Edges.Clear();
+        Edges.Clear();
         var availableNodes = Nodes.Select(x => x.Id).ToList();
         edgesCount = edgesCount > Nodes.Count ? Nodes.Count : edgesCount;
 

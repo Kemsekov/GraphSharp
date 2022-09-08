@@ -30,7 +30,7 @@ where TEdge : IEdge
             startNodeId,
             endNodeId,
             v => GetPropagator(v),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, _structureBase),
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
             condition)
         .GetPath(startNodeId, endNodeId);
         return path;
@@ -47,7 +47,7 @@ where TEdge : IEdge
             startNodeId,
             endNodeId,
             v => GetParallelPropagator(v),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, _structureBase),
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
             condition)
         .GetPath(startNodeId, endNodeId);
         return path;

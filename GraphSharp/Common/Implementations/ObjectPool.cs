@@ -7,7 +7,6 @@ public class ObjectPool<T>
 {
     private readonly ConcurrentBag<T> _objects;
     private readonly Func<T> _objectGenerator;
-
     public ObjectPool(Func<T> objectGenerator)
     {
         _objectGenerator = objectGenerator ?? throw new ArgumentNullException(nameof(objectGenerator));

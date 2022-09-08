@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-
+using GraphSharp.Common;
 
 namespace GraphSharp.Graphs;
 
@@ -22,11 +22,8 @@ where TEdge : IEdge
     {
         if (maxEdgesCount == 0) return this;
         distance ??= (n1, n2) => (n1.Position - n2.Position).Length();
-        var Nodes = _structureBase.Nodes;
-        var Edges = _structureBase.Edges;
         Edges.Clear();
-        var Configuration = _structureBase.Configuration;
-        var edgesCountMap = new int[Nodes.MaxNodeId + 1];
+        var edgesCountMap = ArrayPoolStorage.IntArrayPool.Rent(Nodes.MaxNodeId + 1);
         foreach (var node in Nodes)
             edgesCountMap[node.Id] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 
@@ -47,6 +44,7 @@ where TEdge : IEdge
                 }
             }
         });
+        ArrayPoolStorage.IntArrayPool.Return(edgesCountMap);
         return this;
     }
 }

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using GraphSharp.Common;
+
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -15,7 +17,7 @@ where TEdge : IEdge
         //thanks to https://www.youtube.com/watch?v=wUgWX0nc4NY
         var UNVISITED = -1;
         //we assign new local id to each node so we can find low link values
-        var ids = new int[Nodes.MaxNodeId + 1];
+        var ids = ArrayPoolStorage.IntArrayPool.Rent(Nodes.MaxNodeId + 1);
         //here we store low link values
         var low = new int[Nodes.MaxNodeId + 1];
         //if value > 0 then on a stack
@@ -54,6 +56,7 @@ where TEdge : IEdge
             if (ids[i] == UNVISITED)
                 dfs(i);
         }
+        ArrayPoolStorage.IntArrayPool.Return(ids);
         return low;
     }
 }

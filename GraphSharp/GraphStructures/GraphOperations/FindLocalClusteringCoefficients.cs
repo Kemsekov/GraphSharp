@@ -28,7 +28,7 @@ where TEdge : IEdge
                 coeff[n.Id] = 0;
                 return;
             }
-            var induced = _structureBase.Do.Induce(toInduce);
+            var induced = Induce(toInduce);
             float N = toInduce.Length;
             float K = induced.Edges.Count;
             coeff[n.Id] = K/(N*(N-1));

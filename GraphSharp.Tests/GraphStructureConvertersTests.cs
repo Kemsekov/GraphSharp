@@ -245,7 +245,22 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void ConvertEdgesListToPath(){
-            throw new NotImplementedException();
+            _Graph.CreateNodes(1000);
+            _Graph.Do.DelaunayTriangulation();
+            for(int i = 0;i<100;i++){
+                var n1 = Random.Shared.Next(1000);
+                var n2 = (n1+1)%1000;
+                var expected = _Graph.Do.FindAnyPath(n1,n2);
+                if(expected.Count==0) continue;
+                var edges = new List<Edge>(); 
+                expected.Aggregate((x1,x2)=>{
+                    edges.Add(_Graph.Edges[x1,x2]);
+                    return x2;
+                });
+                edges.Shuffle();
+                var actual = _Graph.ConvertEdgesListToPath(edges);
+                Assert.Equal(expected,actual);
+            }
         }
     }
 }

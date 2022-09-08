@@ -3,6 +3,8 @@ using GraphSharp.Visitors;
 using System.Linq;
 using GraphSharp.Graphs;
 using Microsoft.Toolkit.HighPerformance;
+using GraphSharp.Common;
+
 namespace GraphSharp.Propagators;
 
 /// <summary>
@@ -63,11 +65,15 @@ where TEdge : IEdge
         ReverseOrder = reverseOrder;
         Visitor = visitor;
         Graph = graph;
-        _nodeFlags = new byte[Graph.Nodes.MaxNodeId + 1];
+        _nodeFlags = ArrayPoolStorage.ByteArrayPool.Rent(Graph.Nodes.MaxNodeId + 1);
+        Array.Fill(_nodeFlags,(byte)0);
+    }
+    ~PropagatorBase(){
+        ArrayPoolStorage.ByteArrayPool.Return(_nodeFlags);
     }
     public void SetPosition(params int[] nodeIndices)
     {
-        int nodesCount = Graph.Nodes.MaxNodeId + 1;
+        int nodesCount = _nodeFlags.Length;
         Array.Clear(_nodeFlags, 0, _nodeFlags.Length);
         for (int i = 0; i < nodeIndices.Count(); i++)
         {
@@ -83,7 +89,9 @@ where TEdge : IEdge
             Array.Clear(_nodeFlags, 0, _nodeFlags.Length);
             return;
         }
-        _nodeFlags = new byte[Graph.Nodes.MaxNodeId + 1];
+        ArrayPoolStorage.ByteArrayPool.Return(_nodeFlags);
+
+        _nodeFlags = ArrayPoolStorage.ByteArrayPool.Rent(Graph.Nodes.MaxNodeId + 1);
     }
 
 
