@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GraphSharp.Common;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 namespace GraphSharp.Graphs;
@@ -15,7 +16,8 @@ where TEdge : IEdge
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
     public (float radius, IEnumerable<TNode> center) TryFindCenterByApproximation(Func<TEdge, float>? getWeight = null)
     {
-        var visited = new byte[Nodes.MaxNodeId + 1];
+        using var visited = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
+
         //this method do following:
         //1) take node A and find all shortest paths to all other nodes
         //2) find longest among them (direction to eccentricity)

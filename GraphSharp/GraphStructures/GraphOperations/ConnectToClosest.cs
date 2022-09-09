@@ -23,14 +23,15 @@ where TEdge : IEdge
         if (maxEdgesCount == 0) return this;
         distance ??= (n1, n2) => (n1.Position - n2.Position).Length();
         Edges.Clear();
-        var edgesCountMap = ArrayPoolStorage.IntArrayPool.Rent(Nodes.MaxNodeId + 1);
+        
+        using var edgesCountMap = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
         foreach (var node in Nodes)
             edgesCountMap[node.Id] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 
         var locker = new object();
         Parallel.ForEach(Nodes, source =>
         {
-            ref var edgesCount = ref edgesCountMap[source.Id];
+            ref var edgesCount = ref edgesCountMap.At(source.Id);
             var targets = Nodes.OrderBy(x => distance(source, x));
             foreach (var target in targets.DistinctBy(x => x.Id))
             {
@@ -44,7 +45,6 @@ where TEdge : IEdge
                 }
             }
         });
-        ArrayPoolStorage.IntArrayPool.Return(edgesCountMap);
         return this;
     }
 }

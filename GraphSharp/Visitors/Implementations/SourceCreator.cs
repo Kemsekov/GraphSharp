@@ -12,8 +12,8 @@ public class SourceCreator<TNode, TEdge> : VisitorWithPropagator<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    public const byte Proceed = 4;
-    public const byte ToRemove = 8;
+    public const byte Proceed = 8;
+    public const byte ToRemove = 16;
     public override IPropagator<TNode, TEdge> Propagator { get; }
     public IGraph<TNode, TEdge> Graph { get; }
 

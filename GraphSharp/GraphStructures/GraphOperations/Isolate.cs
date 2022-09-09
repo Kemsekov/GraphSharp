@@ -1,5 +1,5 @@
 using System.Linq;
-
+using GraphSharp.Common;
 
 namespace GraphSharp.Graphs;
 
@@ -12,7 +12,7 @@ where TEdge : IEdge
     /// </summary>
     public GraphOperation<TNode, TEdge> Isolate(params int[] nodes)
     {
-        var toIsolate = new byte[Nodes.MaxNodeId + 1];
+        using var toIsolate = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
         foreach (var n in nodes)
             toIsolate[n] = 1;
         var toRemove =

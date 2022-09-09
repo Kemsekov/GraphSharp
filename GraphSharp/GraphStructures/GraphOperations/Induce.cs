@@ -1,4 +1,6 @@
 using System.Linq;
+using GraphSharp.Common;
+
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -13,7 +15,7 @@ where TEdge : IEdge
     /// <returns>Induced subgraph of current graph</returns>
     public Graph<TNode,TEdge> Induce(params int[] nodes){
         var result = new Graph<TNode,TEdge>(Configuration);
-        var toInduce = new byte[Nodes.MaxNodeId+1];
+        using var toInduce = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId+1);
         foreach(var n in nodes){
             toInduce[n] = 1;
             result.Nodes.Add(Nodes[n]);

@@ -19,14 +19,13 @@ where TEdge : IEdge
     public void Clear(int startNodeId, int endNodeId)
     {
         this.StartNodeId = startNodeId;
-        Array.Fill(Path, -1);
+        Path.Fill(-1);
         Done = false;
     }
 
     public override bool SelectImpl(TEdge edge)
     {
-        var sourceId = edge.SourceId;
-        var targetId = edge.TargetId;
+        (var sourceId,var targetId) = GetEdgeDirection(edge);
         if (Path[targetId] == -1)
         {
             Path[targetId] = sourceId;

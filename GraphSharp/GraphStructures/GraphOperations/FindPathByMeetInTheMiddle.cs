@@ -23,6 +23,32 @@ where TEdge : IEdge
             condition);
     }
     /// <summary>
+    /// Finds shortest path between two points using Dijkstra algorithm and meet in the middle technique.
+    /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
+    /// </summary>
+    public IList<TNode> FindPathByMeetInTheMiddleDijkstra(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    {
+        return FindPathByMeetInTheMiddleBase(
+            startNodeId,
+            endNodeId,
+            visitor => GetPropagator(visitor),
+            () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase),
+            condition);
+    }
+    /// <summary>
+    /// Concurrently finds shortest path between two points using Dijkstra algorithm and meet in the middle technique.
+    /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
+    /// </summary>
+    public IList<TNode> FindPathByMeetInTheMiddleDijkstraParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    {
+        return FindPathByMeetInTheMiddleBase(
+            startNodeId,
+            endNodeId,
+            visitor => GetParallelPropagator(visitor),
+            () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase),
+            condition);
+    }
+    /// <summary>
     /// Concurrent path finder <br/>
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     /// </summary>
@@ -34,69 +60,6 @@ where TEdge : IEdge
             visitor => GetParallelPropagator(visitor),
             () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
             condition);
-    }
-    /// <summary>
-    /// Finds meet point between two nodes such that path nodes count of <br/>
-    /// <paramref name="startNodeId"/> -> <paramref name="meetPoint"/> is equal to <br/>
-    /// <paramref name="meetPoint"/> -> <paramref name="endNodeId"/>
-    /// </summary>
-    /// <param name="createPropagator">What propagator to use to find meet point</param>
-    /// <param name="condition">What edges do we need to avoid in a path?</param>
-    /// <returns>Id of node between <paramref name="startNodeId"/> and <paramref name="endNodeId"/>.
-    /// If not found returns -1.</returns>
-    public int FindMeetPoint(
-        int startNodeId,
-        int endNodeId,
-        Func<IVisitor<TNode, TEdge>, PropagatorBase<TNode, TEdge>> createPropagator,
-        Predicate<TEdge>? condition = null)
-    {
-        condition ??= new(edge => true);
-        int meet = -1;
-        byte Added = 4;
-        var outMeetPointFinder = new ActionVisitor<TNode, TEdge>();
-        var inMeetPointFinder = new ActionVisitor<TNode, TEdge>();
-
-        var outPropagator = createPropagator(outMeetPointFinder);
-        var inPropagator = createPropagator(inMeetPointFinder);
-        outPropagator.SetPosition(startNodeId);
-        inPropagator.SetPosition(endNodeId);
-
-        inPropagator.ReverseOrder = true;
-
-        outMeetPointFinder.Condition = edge=>{
-            if(outPropagator.IsNodeInState(edge.TargetId,Added)) return false;
-            return condition(edge);
-        };
-        inMeetPointFinder.Condition = edge=>{
-            if(outPropagator.IsNodeInState(edge.SourceId,Added)) return false;
-            return condition(edge);
-        };
-
-        outMeetPointFinder.VisitEvent += node =>
-        {
-            outPropagator.SetNodeState(node.Id, Added);
-            if (inPropagator.IsNodeInState(node.Id, Added))
-            {
-                meet = node.Id;
-            }
-        };
-
-        inMeetPointFinder.VisitEvent += node =>
-        {
-            inPropagator.SetNodeState(node.Id, Added);
-            if (outPropagator.IsNodeInState(node.Id, Added))
-            {
-                meet = node.Id;
-            }
-        };
-
-        while(meet==-1 && !outMeetPointFinder.Done && !inMeetPointFinder.Done){
-            outPropagator.Propagate();
-            inPropagator.Propagate();
-        }
-        ReturnPropagator(outPropagator);
-        ReturnPropagator(inPropagator);
-        return meet;
     }
     /// <summary>
     /// Finds any first found path between any two nodes using meet in the middle technique<br/>
@@ -112,22 +75,46 @@ where TEdge : IEdge
         Predicate<TEdge>? condition = null)
     {
         condition ??= new(edge => true);
-        int meetId = FindMeetPoint(startNodeId,endNodeId,createPropagator,condition);
-        if(meetId==-1) return new List<TNode>();
-        var path1 = FindPathWithFirstEncounter(
-            startNodeId,
-            meetId,
-            createPropagator,
-            ()=>new AnyPathFinder<TNode,TEdge>(startNodeId,StructureBase),
-            condition).GetPath(startNodeId,meetId);
-        var path2 = FindPathWithFirstEncounter(
-            meetId,
-            endNodeId,
-            createPropagator,
-            ()=>new AnyPathFinder<TNode,TEdge>(startNodeId,StructureBase),
-            condition).GetPath(meetId,endNodeId);
+        const byte IterateByInEdges = PropagatorBase<TNode, TEdge>.IterateByInEdges;
+        int meetNodeId = -1;
+        var outPathFinder = createPathFinder();
+        var inPathFinder = createPathFinder();
+
+        outPathFinder.StartNodeId = startNodeId;
+        inPathFinder.StartNodeId = endNodeId;
+
+        inPathFinder.GetEdgeDirection = edge=>(edge.TargetId,edge.SourceId);
+
+        var meetInTheMiddlePathFinder = new ActionVisitor<TNode,TEdge>();
+
+        var propagator = createPropagator(meetInTheMiddlePathFinder);
+
+        propagator.SetPosition(startNodeId,endNodeId);
+
+        propagator.SetNodeState(endNodeId,IterateByInEdges);
+
+        meetInTheMiddlePathFinder.Condition = edge=>{
+            if(!condition(edge)) return false;
+            if(propagator.IsNodeInState(edge.TargetId,IterateByInEdges)){
+                if(inPathFinder.Select(edge)){
+                    propagator.SetNodeState(edge.SourceId,IterateByInEdges);
+                    return true;
+                }
+                return false;
+            }
+            return outPathFinder.Select(edge);
+        };
+        meetInTheMiddlePathFinder.VisitEvent += node=>{
+            if(outPathFinder.Path[node.Id]!=-1 && inPathFinder.Path[node.Id]!=-1){
+                meetNodeId = node.Id;
+            }
+        };
+        while(meetNodeId==-1) 
+            propagator.Propagate();
         
-        return path1.Concat(path2.Skip(1)).ToList();
+        var p1 = outPathFinder.GetPath(startNodeId,meetNodeId);
+        var p2 = inPathFinder.GetPath(endNodeId,meetNodeId);
+        return p1.Concat(p2.Reverse().Skip(1)).ToList();
     }
 
 }

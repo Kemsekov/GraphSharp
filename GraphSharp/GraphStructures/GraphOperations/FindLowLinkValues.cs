@@ -14,14 +14,15 @@ where TEdge : IEdge
     /// <returns>Array where index is node id and value is low link value. When value is -1 it means that there is not node with given index.</returns>
     public int[] FindLowLinkValues()
     {
+        using var ids = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        using var onStack = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
         //thanks to https://www.youtube.com/watch?v=wUgWX0nc4NY
         var UNVISITED = -1;
         //we assign new local id to each node so we can find low link values
-        var ids = ArrayPoolStorage.IntArrayPool.Rent(Nodes.MaxNodeId + 1);
         //here we store low link values
         var low = new int[Nodes.MaxNodeId + 1];
         //if value > 0 then on a stack
-        var onStack = new byte[Nodes.MaxNodeId + 1];
+
         var stack = new Stack<int>();
         //id counter
         var id = 0;
@@ -56,7 +57,6 @@ where TEdge : IEdge
             if (ids[i] == UNVISITED)
                 dfs(i);
         }
-        ArrayPoolStorage.IntArrayPool.Return(ids);
         return low;
     }
 }

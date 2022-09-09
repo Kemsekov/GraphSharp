@@ -53,7 +53,7 @@ where TEdge : IEdge
         getWeight ??= x => x.Weight;
         var start = Edges.MinBy(getWeight);
         var edges = new List<TEdge>();
-        var addedNodes = ArrayPoolStorage.ByteArrayPool.Rent(Nodes.MaxNodeId + 1);
+        using var addedNodes = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
         if (start is null) return edges;
         edges.Add(start);
 
@@ -112,7 +112,6 @@ where TEdge : IEdge
             }
         }
 
-        ArrayPoolStorage.ByteArrayPool.Return(addedNodes);
         return edges;
     }
 }

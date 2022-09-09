@@ -14,7 +14,7 @@ where TEdge : IEdge
     /// <summary>
     /// what is the length of path from startNode to some other node so far.  
     /// </summary>
-    public float[] PathLength;
+    public RentedArray<float> PathLength;
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
@@ -24,8 +24,8 @@ where TEdge : IEdge
         getWeight ??= e => e.Weight;
         this._getWeight = getWeight;
         this.StartNodeId = startNodeId;
-        PathLength = new float[graph.Nodes.MaxNodeId + 1];
-        Array.Fill(PathLength, -1);
+        PathLength = ArrayPoolStorage.RentFloatArray(graph.Nodes.MaxNodeId + 1);
+        PathLength.Fill(-1);
         PathLength[startNodeId] = 0;
     }
     /// <summary>
@@ -34,15 +34,13 @@ where TEdge : IEdge
     public void Clear(int startNodeId)
     {
         this.StartNodeId = startNodeId;
-        PathLength = new float[Graph.Nodes.MaxNodeId + 1];
-        Array.Fill(PathLength, -1);
+        PathLength.Fill(-1);
         PathLength[startNodeId] = 0;
         ClearPaths();
     }
     public override bool SelectImpl(TEdge edge)
     {
-        var sourceId = edge.SourceId;
-        var targetId = edge.TargetId;
+        (var sourceId,var targetId) = GetEdgeDirection(edge);
         var pathLength = PathLength[sourceId] + _getWeight(edge);
 
         var pathSoFar = PathLength[targetId];

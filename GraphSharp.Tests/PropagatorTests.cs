@@ -27,8 +27,20 @@ namespace GraphSharp.Tests
             _graph.Do.ConnectNodes(10);
 
             _propagatorFactories = new Func<IVisitor<Node, Edge>, bool, PropagatorBase<Node, Edge>>[2];
-            _propagatorFactories[0] = (visitor, reversed) => new Propagator<Node, Edge>(visitor, _graph, reversed);
-            _propagatorFactories[1] = (visitor, reversed) => new ParallelPropagator<Node, Edge>(visitor, _graph, reversed);
+            _propagatorFactories[0] = (visitor, reversed) =>
+            {
+                var p = new Propagator<Node, Edge>(visitor, _graph);
+                if (reversed)
+                    p.SetAllNodesState(PropagatorBase<Node, Edge>.IterateByInEdges);
+                return p;
+            };
+            _propagatorFactories[1] = (visitor, reversed) =>
+            {
+                var p = new ParallelPropagator<Node, Edge>(visitor, _graph);
+                if (reversed)
+                    p.SetAllNodesState(PropagatorBase<Node, Edge>.IterateByInEdges);
+                return p;
+            };
         }
 
         [Fact]
@@ -49,53 +61,53 @@ namespace GraphSharp.Tests
                 states[n.Id] = (byte)Math.Pow(2, (Random.Shared.Next(6) + 2));
             }
             for (bool reversed = false; !reversed; reversed = true)
-            foreach (var factory in _propagatorFactories)
-            {
-                var visitor = new ActionVisitor<Node, Edge>(
-                    n => { },
-                    e => true);
-                var propagator = factory(visitor,reversed);
-                propagator.SetPosition(0, 1, 2, 3, 4, 5);
-                foreach (var state in states)
+                foreach (var factory in _propagatorFactories)
                 {
-                    propagator.SetNodeState(state.Key, state.Value);
+                    var visitor = new ActionVisitor<Node, Edge>(
+                        n => { },
+                        e => true);
+                    var propagator = factory(visitor, reversed);
+                    propagator.SetPosition(0, 1, 2, 3, 4, 5);
+                    foreach (var state in states)
+                    {
+                        propagator.SetNodeState(state.Key, state.Value);
+                    }
+                    checkStates(propagator);
+                    for (int i = 0; i < 50; i++)
+                        propagator.Propagate();
+                    checkStates(propagator);
                 }
-                checkStates(propagator);
-                for (int i = 0; i < 50; i++)
-                    propagator.Propagate();
-                checkStates(propagator);
-            }
         }
 
         [Fact]
         public void SetPosition_SetGraph_Works()
         {
             for (bool reversed = false; !reversed; reversed = true)
-            foreach (var factory in _propagatorFactories)
-            {
-                var visitedNodes = new List<INode>();
-                var visitor = new ActionVisitor<Node, Edge>(
-                    (node) =>
-                    {
-                        lock (visitedNodes)
-                            visitedNodes.Add(node);
-                    },
-                    (edge) => true,
-                    () => visitedNodes.Sort());
-                var propagator = factory(visitor,reversed);
-                propagator.SetPosition(1, 2);
+                foreach (var factory in _propagatorFactories)
+                {
+                    var visitedNodes = new List<INode>();
+                    var visitor = new ActionVisitor<Node, Edge>(
+                        (node) =>
+                        {
+                            lock (visitedNodes)
+                                visitedNodes.Add(node);
+                        },
+                        (edge) => true,
+                        () => visitedNodes.Sort());
+                    var propagator = factory(visitor, reversed);
+                    propagator.SetPosition(1, 2);
 
-                if(reversed) _graph.Do.ReverseEdges();
-                propagator.Propagate();
+                    if (reversed) _graph.Do.ReverseEdges();
+                    propagator.Propagate();
 
-                Assert.Equal(visitedNodes, new[] { _graph.Nodes[1], _graph.Nodes[2] });
-                visitedNodes.Clear();
-                propagator.SetPosition(5, 6);
+                    Assert.Equal(visitedNodes, new[] { _graph.Nodes[1], _graph.Nodes[2] });
+                    visitedNodes.Clear();
+                    propagator.SetPosition(5, 6);
 
-                propagator.Propagate();
-                Assert.Equal(visitedNodes, new[] { _graph.Nodes[5], _graph.Nodes[6] });
-                visitedNodes.Clear();
-            }
+                    propagator.Propagate();
+                    Assert.Equal(visitedNodes, new[] { _graph.Nodes[5], _graph.Nodes[6] });
+                    visitedNodes.Clear();
+                }
         }
         [Fact]
         public void Propagate_RightVisitorMethodsOrderExecution()
@@ -140,27 +152,27 @@ namespace GraphSharp.Tests
         {
             var visited = new List<INode>();
             for (bool reversed = false; !reversed; reversed = true)
-            foreach (var factory in _propagatorFactories)
-            {
-                visited.Clear();
-                var visitor = new ActionVisitor<Node, Edge>(
-                    n => visited.Add(n),
-                    e => e.TargetId % 2 == 0);
-                var propagator = factory(visitor,reversed);
-                propagator.SetPosition(0, 1, 2, 3, 4, 5);
-                if(reversed) _graph.Do.ReverseEdges();
-                propagator.Propagate();
-                visited.Sort();
-                Assert.Equal(new[] { 0, 1, 2, 3, 4, 5 }, visited.Select(x => x.Id));
-                for (int i = 0; i < 5; i++)
+                foreach (var factory in _propagatorFactories)
                 {
                     visited.Clear();
+                    var visitor = new ActionVisitor<Node, Edge>(
+                        n => visited.Add(n),
+                        e => e.TargetId % 2 == 0);
+                    var propagator = factory(visitor, reversed);
+                    propagator.SetPosition(0, 1, 2, 3, 4, 5);
+                    if (reversed) _graph.Do.ReverseEdges();
                     propagator.Propagate();
-                    foreach (var a in visited)
-                        Assert.True(a.Id % 2 == 0);
-                }
+                    visited.Sort();
+                    Assert.Equal(new[] { 0, 1, 2, 3, 4, 5 }, visited.Select(x => x.Id));
+                    for (int i = 0; i < 5; i++)
+                    {
+                        visited.Clear();
+                        propagator.Propagate();
+                        foreach (var a in visited)
+                            Assert.True(a.Id % 2 == 0);
+                    }
 
-            }
+                }
         }
         [Fact]
         public void Propagate_DoesNotVisitTwice()
@@ -169,30 +181,30 @@ namespace GraphSharp.Tests
             var rand = new Random();
             var randNodeId = () => rand.Next(_graph.Nodes.Count());
             for (bool reversed = false; !reversed; reversed = true)
-            foreach (var factory in _propagatorFactories)
-            {
-
-                var visitor = new ActionVisitor<Node, Edge>(
-                    n =>
-                    {
-                        lock (visited)
-                            visited.Add(n);
-                    },
-                    e =>
-                    {
-                        return true;
-                    });
-                var propagator = factory(visitor,reversed);
-                propagator.SetPosition(randNodeId(), randNodeId(), randNodeId());
-                if(reversed) _graph.Do.ReverseEdges();
-
-                for (int i = 0; i < 10; i++)
+                foreach (var factory in _propagatorFactories)
                 {
-                    visited.Clear();
-                    propagator.Propagate();
-                    Assert.Equal(visited, visited.Distinct(new NodeEqualityComparer()));
+
+                    var visitor = new ActionVisitor<Node, Edge>(
+                        n =>
+                        {
+                            lock (visited)
+                                visited.Add(n);
+                        },
+                        e =>
+                        {
+                            return true;
+                        });
+                    var propagator = factory(visitor, reversed);
+                    propagator.SetPosition(randNodeId(), randNodeId(), randNodeId());
+                    if (reversed) _graph.Do.ReverseEdges();
+
+                    for (int i = 0; i < 10; i++)
+                    {
+                        visited.Clear();
+                        propagator.Propagate();
+                        Assert.Equal(visited, visited.Distinct(new NodeEqualityComparer()));
+                    }
                 }
-            }
         }
         [Fact]
         public void Propagate_HaveRightNodesVisitOrder()
@@ -202,50 +214,50 @@ namespace GraphSharp.Tests
             var rand = new Random();
             var randNode = () => _graph.Nodes[rand.Next(_graph.Nodes.Count())];
             for (bool reversed = false; !reversed; reversed = true)
-            foreach (var factory in _propagatorFactories)
-            {
-
-                var visitor = new ActionVisitor<Node, Edge>(
-                    n =>
-                    {
-                        lock (visited)
-                            visited.Add(n);
-                    },
-                    e =>
-                    {
-                        lock (expected)
-                            foreach (var n in _graph.Edges.OutEdges(e.TargetId))
-                                expected.Add(_graph.Nodes[n.TargetId]);
-                        return true;
-                    });
-                var propagator = factory(visitor,reversed);
-                if(reversed) _graph.Do.ReverseEdges();
-                for (int i = 0; i < 5; i++)
+                foreach (var factory in _propagatorFactories)
                 {
-                    expected.Add(randNode());
-                }
-                propagator.SetPosition(expected.Select(x => x.Id).ToArray());
 
-                List<INode> buf;
-                for (int i = 0; i < 20; i++)
-                {
-                    buf = expected.ToList();
-                    expected.Clear();
-                    propagator.Propagate();
-                    //first time when we call Propagate it will not call Select
-                    //on visitor so in order to keep track of called nodes we will do it
-                    //manually
-                    if (i == 0)
+                    var visitor = new ActionVisitor<Node, Edge>(
+                        n =>
+                        {
+                            lock (visited)
+                                visited.Add(n);
+                        },
+                        e =>
+                        {
+                            lock (expected)
+                                foreach (var n in _graph.Edges.OutEdges(e.TargetId))
+                                    expected.Add(_graph.Nodes[n.TargetId]);
+                            return true;
+                        });
+                    var propagator = factory(visitor, reversed);
+                    if (reversed) _graph.Do.ReverseEdges();
+                    for (int i = 0; i < 5; i++)
                     {
-                        foreach (var e in buf)
-                            visitor.Select(new Edge(new Node(-1), e as Node));
+                        expected.Add(randNode());
                     }
-                    visited.Sort();
-                    Assert.Equal(buf.Count, visited.Count);
-                    Assert.Equal(buf.Select(x => x.Id), visited.Select(x => x.Id));
-                    visited.Clear();
+                    propagator.SetPosition(expected.Select(x => x.Id).ToArray());
+
+                    List<INode> buf;
+                    for (int i = 0; i < 20; i++)
+                    {
+                        buf = expected.ToList();
+                        expected.Clear();
+                        propagator.Propagate();
+                        //first time when we call Propagate it will not call Select
+                        //on visitor so in order to keep track of called nodes we will do it
+                        //manually
+                        if (i == 0)
+                        {
+                            foreach (var e in buf)
+                                visitor.Select(new Edge(new Node(-1), e as Node));
+                        }
+                        visited.Sort();
+                        Assert.Equal(buf.Count, visited.Count);
+                        Assert.Equal(buf.Select(x => x.Id), visited.Select(x => x.Id));
+                        visited.Clear();
+                    }
                 }
-            }
         }
         [Fact]
         public void Propagate_HaveRightNodesVisitOrderWithManualData()
@@ -270,60 +282,68 @@ namespace GraphSharp.Tests
 
             for (int c = 0; c < 10; c++)
                 foreach (var expectedValues in ManualTestData.ExpectedOrder)
-                for (bool reversed = false; !reversed; reversed = true)
-                    foreach (var factory in _propagatorFactories)
-                    {
-                        var propagator = factory(visitor,reversed);
-                        if(reversed) 
-                            propagator.Reset(reversedGraph,visitor);
-                        else
-                            propagator.Reset(graph,visitor);
-                        propagator.SetPosition(expectedValues[0]);
-                        for (int i = 0; i < expectedValues.Length; i++)
+                    for (bool reversed = false; !reversed; reversed = true)
+                        foreach (var factory in _propagatorFactories)
                         {
-                            actualValues.Clear();
-                            propagator.Propagate();
-                            actualValues.Sort();
-                            Assert.Equal(expectedValues[i], actualValues);
+                            var propagator = factory(visitor, reversed);
+                            if (reversed)
+                                propagator.Reset(reversedGraph, visitor);
+                            else
+                                propagator.Reset(graph, visitor);
+                            propagator.SetPosition(expectedValues[0]);
+                            for (int i = 0; i < expectedValues.Length; i++)
+                            {
+                                actualValues.Clear();
+                                propagator.Propagate();
+                                actualValues.Sort();
+                                Assert.Equal(expectedValues[i], actualValues);
+                            }
                         }
-                    }
         }
         [Fact]
-        public void ReverseOrder_HaveRightVisitOrder(){
-            
-            _graph.CreateNodes(1000).Do.ConnectRandomly(2,10);
+        public void ReverseOrder_HaveRightVisitOrder()
+        {
+
+            _graph.CreateNodes(1000).Do.ConnectRandomly(2, 10);
             foreach (var factory in _propagatorFactories)
             {
-                var v = new ActionVisitor<Node,Edge>();
-                var p1 = factory(v,false);
-                var p2 = factory(v,true);
+                var v = new ActionVisitor<Node, Edge>();
+                var p1 = factory(v, false);
+                var p2 = factory(v, true);
 
-                p1.SetPosition(1,2);
-                p2.SetPosition(1,2);
+                p1.SetPosition(1, 2);
+                p2.SetPosition(1, 2);
+                p2.SetAllNodesState(PropagatorBase<Node,Edge>.IterateByInEdges);
 
                 var order = new List<List<int>>();
-                v.VisitEvent += node=>{
+                v.VisitEvent += node =>
+                {
                     var list = order.Last();
-                    lock(list)
+                    lock (list)
                         list.Add(node.Id);
                 };
-                v.StartEvent += ()=>order.Add(new List<int>());
-                v.EndEvent += ()=>order.Last().Sort();
+                v.StartEvent += () => order.Add(new List<int>());
+                v.EndEvent += () => order.Last().Sort();
 
-                for(int i = 0;i<10;i++){
+                for (int i = 0; i < 10; i++)
+                {
                     p1.Propagate();
                 }
                 var straightOrder = order.ToList();
                 order.Clear();
                 _graph.Do.ReverseEdges();
-                for(int i = 0;i<10;i++){
+                for (int i = 0; i < 10; i++)
+                {
                     p2.Propagate();
                 }
-                
+
                 var reverseOrder = order.ToList();
-                Assert.Equal(straightOrder.Count,reverseOrder.Count);
-                foreach(var u in straightOrder.Zip(reverseOrder)){
-                    Assert.Equal(u.First,u.Second);
+                Assert.Equal(straightOrder.Count, reverseOrder.Count);
+                foreach (var u in straightOrder.Zip(reverseOrder))
+                {
+                    u.First.Sort();
+                    u.Second.Sort();
+                    Assert.Equal(u.First, u.Second);
                 }
             }
         }

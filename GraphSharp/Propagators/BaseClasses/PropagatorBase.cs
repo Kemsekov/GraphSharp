@@ -9,8 +9,13 @@ namespace GraphSharp.Propagators;
 
 /// <summary>
 /// By default this implementation assign a state to each node as <see cref="byte"/> with value of power of 2. 
-/// There is 3 states that already used: <paramref name="None"/> = 0, <paramref name="ToVisit"/> = 1, <paramref name="Visited"/> = 2. They available as static members of this class.<br/>
-/// So there is only 6 states left for your disposal: 4, 8, 16, 32, 64, 128.<br/>
+/// There is 3 states that already used: <br/>
+/// <paramref name="None"/> = 0, <br/>
+/// <paramref name="ToVisit"/> = 1, <br/>
+/// <paramref name="Visited"/> = 2, <br/>
+/// <paramref name="IterateByInEdges"/> = 4. <br/>
+/// They available as static members of this class.<br/>
+/// So there is only 5 states left for your disposal: 8, 16, 32, 64, 128.<br/>
 /// WARNING: if you using to assign or to check states(bytes) which values is not power of 2
 /// then you may get unexpected behavior.
 /// </summary>
@@ -18,15 +23,7 @@ public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    /// <summary>
-    /// Determines how we iterate trough graph. <br/>
-    /// <paramref name="false"/> means we iterating by out edges. <br/>
-    /// <paramref name="true"/> means we iterating by in edges (aka in reverse order). <br/>
-    /// By default this value is set to <paramref name="false"/> <br/>
-    /// Fell free to change in it between calls of <see cref="IPropagator{,}.Propagate"/>. <br/>
-    /// Changing it while processing <paramref name="Propagate"/> method will lead to unexpected behavior.
-    /// </summary>
-    public bool ReverseOrder { get; set; } = false;
+
     /// <summary>
     /// Current working visitor in this propagator. On each call of <see cref="IPropagator{,}.Propagate"/>
     /// this visitor will be used to implement algorithm logic
@@ -50,31 +47,33 @@ where TEdge : IEdge
     /// </summary>
     public const byte Visited = 2;
     /// <summary>
+    /// In this state on each iteration in edges of node is chosen as next generation
+    /// </summary>
+    public const byte IterateByInEdges = 4;
+    /// <summary>
     /// Represents an array of states of each node.<br/>
     /// Index to this array is node <paramref name="Id"/>, value is <see cref="byte"/> that contains all bit flags (states) 
     /// this node have.
     /// </summary>
-    public byte[] NodeFlags => _nodeFlags;
-    protected byte[] _nodeFlags;
+    public RentedArray<byte> NodeFlags => _nodeFlags;
+    protected RentedArray<byte> _nodeFlags;
     
     /// <param name="visitor">Visitor to use</param>
     /// <param name="graph">Graph to use</param>
-    /// <param name="reverseOrder">You can apply propagator in straight order by iterating BFS on out edges of each node, or do reverse order iteration by doing BFS on in edges of each node</param>
-    public PropagatorBase(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph, bool reverseOrder = false)
+    public PropagatorBase(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph)
     {
-        ReverseOrder = reverseOrder;
         Visitor = visitor;
         Graph = graph;
-        _nodeFlags = ArrayPoolStorage.ByteArrayPool.Rent(Graph.Nodes.MaxNodeId + 1);
-        Array.Fill(_nodeFlags,(byte)0);
+        _nodeFlags = ArrayPoolStorage.RentByteArray(Graph.Nodes.MaxNodeId + 1);
+        _nodeFlags.Fill((byte)0);
     }
     ~PropagatorBase(){
-        ArrayPoolStorage.ByteArrayPool.Return(_nodeFlags);
+        _nodeFlags.Dispose();
     }
     public void SetPosition(params int[] nodeIndices)
     {
         int nodesCount = _nodeFlags.Length;
-        Array.Clear(_nodeFlags, 0, _nodeFlags.Length);
+        _nodeFlags.Fill(0);
         for (int i = 0; i < nodeIndices.Count(); i++)
         {
             _nodeFlags[nodeIndices[i] % nodesCount] |= Visited;
@@ -84,17 +83,20 @@ where TEdge : IEdge
     {
         Graph = graph;
         Visitor = visitor;
-        ReverseOrder = false;
         if(graph.Nodes.MaxNodeId+1<=_nodeFlags.Length){
-            Array.Clear(_nodeFlags, 0, _nodeFlags.Length);
+            _nodeFlags.Fill(0);
             return;
         }
-        ArrayPoolStorage.ByteArrayPool.Return(_nodeFlags);
-
-        _nodeFlags = ArrayPoolStorage.ByteArrayPool.Rent(Graph.Nodes.MaxNodeId + 1);
+        _nodeFlags.Dispose();
+        _nodeFlags = ArrayPoolStorage.RentByteArray(Graph.Nodes.MaxNodeId + 1);
     }
-
-
+    /// <summary>
+    /// Adds <paramref name="state"/> to all nodes
+    /// </summary>
+    public void SetAllNodesState(byte state){
+        for(int i = 0;i<_nodeFlags.Length;i++)
+            _nodeFlags[i] |= state;
+    }
     public bool IsNodeInState(int nodeId, byte state)
     {
         return (_nodeFlags[nodeId] & state) == state;
@@ -145,17 +147,17 @@ where TEdge : IEdge
     /// <param name="nodeId"></param>
     protected void PropagateNode(int nodeId)
     {
-        if (ReverseOrder)
+        if (IsNodeInState(nodeId,IterateByInEdges))
             foreach (var edge in Graph.Edges.InEdges(nodeId))
             {
                 if (!Visitor.Select(edge)) continue;
-                _nodeFlags.DangerousGetReferenceAt(edge.SourceId) |= Visited;
+                _nodeFlags.At(edge.SourceId) |= Visited;
             }
         else
             foreach (var edge in Graph.Edges.OutEdges(nodeId))
             {
                 if (!Visitor.Select(edge)) continue;
-                _nodeFlags.DangerousGetReferenceAt(edge.TargetId) |= Visited;
+                _nodeFlags.At(edge.TargetId) |= Visited;
             }
     }
 

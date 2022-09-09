@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 namespace GraphSharp;
 
@@ -37,7 +38,7 @@ where TEdge : IEdge
     /// modified/updated concurrently.
     /// </summary>
     /// <value></value>
-    public IList<uint[]> Visited { get; }
+    public IList<RentedArray<uint>> Visited { get; }
     /// <summary>
     /// Best found path so far. When colony run the path selector on each it's iteration
     /// to choose best found path and save it.
@@ -55,17 +56,21 @@ where TEdge : IEdge
         ColonySize = colonySize;
         Smell = smell;
         Graph = graph;
-        Visited = new List<uint[]>(colonySize / 32);
+        Visited = new List<RentedArray<uint>>(colonySize / 32);
         Ants = new List<Ant<TNode, TEdge>>(colonySize);
         for (int i = 0; i < colonySize; i++)
         {
             if (i % 32 == 0)
             {
-                Visited.Add(new uint[graph.Nodes.MaxNodeId + 1]);
+                Visited.Add(ArrayPoolStorage.RentUintArray(graph.Nodes.MaxNodeId + 1));
             }
             var ant = new Ant<TNode, TEdge>(graph, smell, Visited.Last(), (uint)Math.Pow(2, i % 32));
             Ants.Add(ant);
         }
+    }
+    ~AntColony(){
+        foreach(var arr in Visited)
+            arr.Dispose();
     }
     /// <summary>
     /// Run's each node to try find better path on a graph
@@ -162,7 +167,7 @@ where TEdge : IEdge
         foreach (var ant in Ants)
             ant.Path.Clear();
         foreach (var visited in Visited)
-            Array.Fill(visited, (uint)0);
+            visited.Fill((uint)0);
     }
     /// <summary>
     /// Merges current colony with <paramref name="other"/> colony changing current one to be the best of two.<br/>

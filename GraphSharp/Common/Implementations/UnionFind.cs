@@ -6,16 +6,16 @@ namespace GraphSharp.Common;
 /// </summary>
 public class UnionFind
 {
-    int[] parent;
-    int[] rank;
+    RentedArray<int> parent;
+    RentedArray<int> rank;
     public UnionFind(int maxSetSize)
     {
-        parent = ArrayPoolStorage.IntArrayPool.Rent(maxSetSize);
-        rank = ArrayPoolStorage.IntArrayPool.Rent(maxSetSize);
+        parent = ArrayPoolStorage.RentIntArray(maxSetSize);
+        rank = ArrayPoolStorage.RentIntArray(maxSetSize);
     }
     ~UnionFind(){
-        ArrayPoolStorage.IntArrayPool.Return(parent);
-        ArrayPoolStorage.IntArrayPool.Return(rank);
+        parent.Dispose();
+        rank.Dispose();
     }
     public void MakeSet(int v)
     {

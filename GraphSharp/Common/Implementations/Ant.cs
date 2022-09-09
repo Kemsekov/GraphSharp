@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 namespace GraphSharp;
 
@@ -33,7 +34,7 @@ where TEdge : IEdge
     /// if (Visited[nodeId] & AntId) == AntId means this node visited some node with index nodeId in the past
     /// </summary>
     /// <value></value>
-    public uint[] Visited { get; }
+    public RentedArray<uint> Visited { get; }
 
     /// <summary>
     /// Unique power of 2 value. Represents a bit position in a uint used for this node
@@ -52,7 +53,7 @@ where TEdge : IEdge
     /// <param name="smell">Index is node id. Contains a smell that ants left after they found some path</param>
     /// <param name="visited">Index is node id. Contains a bits for ants to determine if they visited a node in their path finding. By bit operations, each value from this array can have states for up to 32 ants.</param>
     /// <param name="antId">A power of 2 integer. Indicates which bit assigned to this ant in a visited integer array</param>
-    public Ant(IGraph<TNode, TEdge> graph, IDictionary<TEdge, float> smell, uint[] visited, uint antId)
+    public Ant(IGraph<TNode, TEdge> graph, IDictionary<TEdge, float> smell, RentedArray<uint> visited, uint antId)
     {
         if (!isPowerOfTwo(antId) || antId == 0) throw new ArgumentException("antId must be a power of 2 non-zero unsigned integer.");
         Graph = graph;
@@ -174,10 +175,10 @@ where TEdge : IEdge
     }
     public void VisitNode(int nodeId)
     {
-        Interlocked.Or(ref Visited[nodeId],AntId);
+        Interlocked.Or(ref Visited.At(nodeId),AntId);
     }
     public void UnvisitNode(int nodeId){
-        Interlocked.And(ref Visited[nodeId],~AntId);
+        Interlocked.And(ref Visited.At(nodeId),~AntId);
     }
     bool isPowerOfTwo(uint n)
     {

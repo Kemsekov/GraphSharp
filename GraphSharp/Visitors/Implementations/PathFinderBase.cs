@@ -28,7 +28,11 @@ where TEdge : IEdge
     /// Depending on implementation <br/>
     /// Path[nodeId] = -1 if algorithm did not found any ancestor for this node.
     /// </summary>
-    public int[] Path{get;init;}
+    public RentedArray<int> Path{get;init;}
+    /// <summary>
+    /// Function that used to determine direction of edge
+    /// </summary>
+    public Func<TEdge,(int sourceId,int targetId)> GetEdgeDirection;
     /// <summary>
     /// Id of first node in the path
     /// </summary>
@@ -43,11 +47,12 @@ where TEdge : IEdge
     {
         this.Condition = edge=>true;
         this.Graph = graph;
-        Path = ArrayPoolStorage.IntArrayPool.Rent(graph.Nodes.MaxNodeId+1);
-        Array.Fill(Path, -1);
+        Path = ArrayPoolStorage.RentIntArray(graph.Nodes.MaxNodeId+1);
+        Path.Fill(-1);
+        GetEdgeDirection = edge=>(edge.SourceId,edge.TargetId);
     }
     ~PathFinderBase(){
-        ArrayPoolStorage.IntArrayPool.Return(Path);
+        Path.Dispose();
     }
     /// <summary>
     /// Sets all values of <see cref="Path"/> to -1, 
@@ -55,9 +60,10 @@ where TEdge : IEdge
     /// <paramref name="Steps"/> to 0.
     /// </summary>
     public void ClearPaths(){
-        Array.Fill(Path, -1);
+        Path.Fill(-1);
         Done = false;
         Steps = 0;
+        GetEdgeDirection = edge=>(edge.SourceId,edge.TargetId);
     }
     public override void StartImpl(){
         DidSomething = false;

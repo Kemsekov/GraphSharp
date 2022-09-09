@@ -18,9 +18,11 @@ where TEdge : IEdge
     {
         if (Nodes.Count == 0 || Edges.Count == 0)
             return Enumerable.Empty<TNode>();
-        var disc = ArrayPoolStorage.IntArrayPool.Rent(Nodes.MaxNodeId + 1);
-        var low =  ArrayPoolStorage.IntArrayPool.Rent(Nodes.MaxNodeId + 1);
-        var flags = new byte[Nodes.MaxNodeId + 1];
+        
+        using var disc = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        using var low = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        using var flags = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
+
         int time = 0, parent = -1;
         const byte visitedFlag = 1;
         const byte isApFlag = 2;
@@ -43,11 +45,9 @@ where TEdge : IEdge
                 result.Add(Nodes[i]);
             }
         }
-        ArrayPoolStorage.IntArrayPool.Return(disc);
-        ArrayPoolStorage.IntArrayPool.Return(low);
         return result;
     }
-    void ArticulationPointsFinder(IEdgeSource<TEdge> adj, int u, byte[] flags, int[] disc, int[] low, ref int time, int parent)
+    void ArticulationPointsFinder(IEdgeSource<TEdge> adj, int u, RentedArray<byte> flags, RentedArray<int> disc, RentedArray<int> low, ref int time, int parent)
     {
         const byte visitedFlag = 1;
         const byte isApFlag = 2;

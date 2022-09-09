@@ -332,7 +332,7 @@ public static class GraphExtensions
         if(edges.Count==0) return new List<TNode>();
         var m = edges.MaxBy(x=>Math.Max(x.SourceId,x.TargetId)) ?? throw new Exception();
         var nodesCount = Math.Max(m.SourceId,m.TargetId);
-        var addedNodes = new byte[nodesCount+1];
+        using var addedNodes = ArrayPoolStorage.RentByteArray(nodesCount+1);
         var edgesSource = new DefaultEdgeSource<TEdge>(edges);
         var expectedNodesCount = edges.Count+1;
         int sink = -1;

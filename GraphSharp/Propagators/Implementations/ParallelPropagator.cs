@@ -14,7 +14,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <inheritdoc />
-    public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph, bool reverseOrder=false) : base(visitor, graph,reverseOrder)
+    public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph) : base(visitor, graph)
     {
     }
     protected override void PropagateNodes()

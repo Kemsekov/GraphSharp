@@ -32,7 +32,8 @@ where TEdge : IEdge
         DelaunayTriangulationWithoutHull();
         MakeUndirected();
         (var edges, var addedNodes) = FindHamiltonianCycleDelaunayTriangulationWithoutHull(getWeight);
-
+        using var _ = addedNodes;
+        
         for (int i = 0; i < addedNodes.Length; i++)
         {
             if (addedNodes[i] == 0)
@@ -69,12 +70,12 @@ where TEdge : IEdge
         Edges.Clear();
         return (edgesSource, path);
     }
-    (IList<TEdge> edges, byte[] addedNodes) FindHamiltonianCycleDelaunayTriangulationWithoutHull(Func<TEdge, float>? getWeight = null)
+    (IList<TEdge> edges, RentedArray<byte> addedNodes) FindHamiltonianCycleDelaunayTriangulationWithoutHull(Func<TEdge, float>? getWeight = null)
     {
         getWeight ??= x => x.Weight;
         var start = Edges.MaxBy(getWeight);
         var edges = new List<TEdge>();
-        var addedNodes = new byte[Nodes.MaxNodeId + 1];
+        var addedNodes =  ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
         if (start is null) return (edges, addedNodes);
         edges.Add(start);
 

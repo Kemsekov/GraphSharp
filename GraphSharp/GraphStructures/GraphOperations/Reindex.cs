@@ -40,7 +40,7 @@ where TEdge : IEdge
     protected IDictionary<int, int> ReindexNodes()
     {
         var idMap = new Dictionary<int, int>();
-        var nodeIdsMap = new byte[Nodes.MaxNodeId + 1];
+        using var nodeIdsMap =  ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
         foreach (var n in Nodes)
         {
             nodeIdsMap[n.Id] = 1;

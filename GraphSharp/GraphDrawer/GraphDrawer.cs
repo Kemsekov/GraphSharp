@@ -98,14 +98,14 @@ where TEdge : IEdge
         var pos = ShiftVector(node.Position);
         var size = Size;
         var point = new Vector2((float)(pos.X - fontSize / 2) * size, (float)(pos.Y - fontSize / 2) * size);
-        Drawer.DrawText(node.Id.ToString(), point, color, fontSize*size);
+        Drawer.DrawText(node.Id.ToString(), point, color, fontSize*windowSize);
     }
     public void DrawNode(TNode node, float nodeSize)
     {
         var pos = ShiftVector(node.Position);
         var color = node.Color;
         var point = pos*Size;
-        Drawer.FillEllipse(point, nodeSize*this.Size, nodeSize*this.Size, color);
+        Drawer.FillEllipse(point, nodeSize*windowSize, nodeSize*windowSize, color);
     }
     public void DrawEdge(TEdge edge, float lineThickness, Color color = default)
     {
@@ -118,7 +118,7 @@ where TEdge : IEdge
         var size = Size;
         var point1 = sourcePos*size;
         var point2 = targetPos*size;
-        Drawer.DrawLine(point1, point2, color, lineThickness*size);
+        Drawer.DrawLine(point1, point2, color, lineThickness*windowSize);
         DrawnEdgesCache[(n1,n2)] = 1;
     }
     public void DrawDirection(TEdge edge, float lineThickness, float directionLength, Color color)
@@ -143,7 +143,7 @@ where TEdge : IEdge
         else
         {
             var sourcePoint = new Vector2((sourcePos.X + targetPos.X) / 2 * size, (sourcePos.Y + targetPos.Y) / 2 * size);
-            Drawer.DrawLine(sourcePoint, point2, color, lineThickness*size);
+            Drawer.DrawLine(sourcePoint, point2, color, lineThickness*windowSize);
         }
     }
     Vector2 ShiftVector(Vector2 v){

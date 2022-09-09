@@ -18,7 +18,7 @@ where TEdge : IEdge
     /// Nodes on each layer have the same X coordinate and each following layer have X coordinate bigger that previous one.
     /// </summary>
     public IList<IList<TNode>> Layers { get; }
-    public const byte Added = 4;
+    public const byte Added = 8;
     /// <param name="graph">Algorithm will be executed on this graph</param>
     /// <param name="startingNodes">A set of nodes that will be used as start point for doing topological sort. If empty will be assigned to sources from a graph.</param>
     public TopologicalSorter(IGraph<TNode, TEdge> graph, params int[] startingNodes)
@@ -40,7 +40,6 @@ where TEdge : IEdge
             SetNodeState(n,Added);
         this.End();
     }
-
     public override bool SelectImpl(TEdge edge)
     {
         if (Propagator.IsNodeInState(edge.TargetId, Added))
@@ -50,7 +49,6 @@ where TEdge : IEdge
         Propagator.SetNodeState(edge.TargetId, Added);
         return true;
     }
-
     public override void VisitImpl(TNode node)
     {
         lock (Layers)

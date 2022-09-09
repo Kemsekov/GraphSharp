@@ -14,7 +14,7 @@ where TEdge : IEdge
     /// <summary>
     /// What is the length of path from startNode to some other node so far.  
     /// </summary>
-    public float[] PathLength{get;protected set;}
+    public RentedArray<float> PathLength{get;protected set;}
     private Func<TEdge, float> _getWeight;
     IGraph<TNode, TEdge> Graph{get;}
     public int StartNodeId{get;protected set;}
@@ -28,12 +28,12 @@ where TEdge : IEdge
         this._getWeight = getWeight;
         this.Graph = graph;
         this.StartNodeId = startNodeId;
-        PathLength = ArrayPoolStorage.FloatArrayPool.Rent(graph.Nodes.MaxNodeId + 1);
-        Array.Fill(PathLength, -1);
+        PathLength = ArrayPoolStorage.RentFloatArray(graph.Nodes.MaxNodeId + 1);
+        PathLength.Fill(-1);
         PathLength[startNodeId] = 0;
     }
     ~ShortestPathsLengthFinderAlgorithms(){
-        ArrayPoolStorage.FloatArrayPool.Return(PathLength);
+        PathLength.Dispose();
     }
     /// <summary>
     /// Clears state of an algorithm and reset it's startNodeId
@@ -41,7 +41,7 @@ where TEdge : IEdge
     public void Clear(int startNodeId)
     {
         this.StartNodeId = startNodeId;
-        Array.Fill(PathLength, -1);
+        PathLength.Fill(-1);
         PathLength[startNodeId] = 0;
         Steps = 0;
         DidSomething = true;
