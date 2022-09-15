@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using GraphSharp.Common;
 using GraphSharp.Exceptions;
 namespace GraphSharp.Graphs;
@@ -320,6 +321,14 @@ public static class GraphExtensions
         {
             n.Color = color;
         }
+    }
+    public static void SetPositionsToAll<TNode>(this INodeSource<TNode> nodes, Func<TNode,Vector2>? choosePos = null)
+    where TNode : INode
+    {
+        var r = new Random();
+        choosePos ??= node=> new(r.NextSingle(),r.NextSingle());
+        foreach(var n in nodes)
+            n.Position = choosePos(n);
     }
     /// <summary>
     /// Converts edges list to path (nodes list)

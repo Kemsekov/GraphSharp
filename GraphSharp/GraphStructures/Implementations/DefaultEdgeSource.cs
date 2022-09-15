@@ -14,6 +14,9 @@ where TEdge : IEdge
 {
     IDictionary<int, (List<TEdge> outEdges,List<TEdge> inEdges)> Edges;
     public int Count { get; protected set; }
+
+    public bool IsReadOnly => false;
+
     public TEdge this[INode source, INode target] => this[source.Id, target.Id];
     public DefaultEdgeSource()
     {
@@ -173,5 +176,13 @@ where TEdge : IEdge
         var outNeighbors = OutEdges(nodeId).Select(x=>x.TargetId);
         var inNeighbors = InEdges(nodeId).Select(x=>x.SourceId);
         return outNeighbors.Union(inNeighbors);
+    }
+
+    public void CopyTo(TEdge[] array, int arrayIndex)
+    {
+        foreach(var e in this){
+            array[arrayIndex] = e;
+            arrayIndex++;
+        }
     }
 }

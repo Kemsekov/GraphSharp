@@ -71,7 +71,7 @@ where TEdge : IEdge
     public PathFinderBase<TNode, TEdge> FindPathWithFirstEncounter(
             int startNodeId,
             int endNodeId,
-            Func<PathFinderBase<TNode, TEdge>, IPropagator<TNode, TEdge>> createPropagator,
+            Func<PathFinderBase<TNode, TEdge>, PropagatorBase<TNode, TEdge>> createPropagator,
             Func<PathFinderBase<TNode, TEdge>> createPathFinder,
             Predicate<TEdge>? condition = null)
     {

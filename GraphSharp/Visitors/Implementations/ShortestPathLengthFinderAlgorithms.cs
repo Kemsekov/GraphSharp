@@ -74,4 +74,9 @@ where TEdge : IEdge
     {
         if(!DidSomething) Done = true;
     }
+
+    public override void StartImpl()
+    {
+
+    }
 }

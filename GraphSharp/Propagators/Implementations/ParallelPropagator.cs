@@ -13,7 +13,7 @@ public class ParallelPropagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    /// <inheritdoc />
+    /// <inheritdoc cref="ParallelPropagator{,}" />
     public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph) : base(visitor, graph)
     {
     }

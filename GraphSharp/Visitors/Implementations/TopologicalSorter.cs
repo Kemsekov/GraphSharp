@@ -12,13 +12,13 @@ public class TopologicalSorter<TNode,TEdge> : VisitorWithPropagator<TNode, TEdge
 where TNode : INode
 where TEdge : IEdge
 {
-    public override IPropagator<TNode, TEdge> Propagator { get; }
+    public override PropagatorBase<TNode, TEdge> Propagator { get; }
     /// <summary>
     /// After topological sort is done all nodes will be sorted out to different layers.
     /// Nodes on each layer have the same X coordinate and each following layer have X coordinate bigger that previous one.
     /// </summary>
     public IList<IList<TNode>> Layers { get; }
-    public const byte Added = 8;
+    public const byte Added = 16;
     /// <param name="graph">Algorithm will be executed on this graph</param>
     /// <param name="startingNodes">A set of nodes that will be used as start point for doing topological sort. If empty will be assigned to sources from a graph.</param>
     public TopologicalSorter(IGraph<TNode, TEdge> graph, params int[] startingNodes)
@@ -37,7 +37,7 @@ where TEdge : IEdge
         var pos = startingNodesList.ToArray();
         Propagator.SetPosition(pos);
         foreach(var n in pos)
-            SetNodeState(n,Added);
+            AddNodeState(n,Added);
         this.End();
     }
     public override bool SelectImpl(TEdge edge)
@@ -46,7 +46,7 @@ where TEdge : IEdge
         {
             return false;
         }
-        Propagator.SetNodeState(edge.TargetId, Added);
+        Propagator.AddNodeState(edge.TargetId, Added);
         return true;
     }
     public override void VisitImpl(TNode node)
@@ -87,5 +87,7 @@ where TEdge : IEdge
         }
     }
 
-
+    public override void StartImpl()
+    {
+    }
 }

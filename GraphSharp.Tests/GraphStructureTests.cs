@@ -759,19 +759,6 @@ namespace GraphSharp.Tests
             Assert.Equal(usedColors.Sum(x => x.Value), _Graph.Nodes.Count);
         }
         [Fact]
-        public void ColorNodes_WithParams_Works()
-        {
-            var colors = new[] { Color.AntiqueWhite, Color.Beige, Color.Blue };
-            var usedColors = _Graph.Do
-                .ConnectRandomly(2, 10)
-                .GreedyColorNodes(
-                    colors,
-                    x => x.OrderBy(m => _Graph.Edges.OutEdges(m.Id).Count()));
-            _Graph.EnsureRightColoring();
-            Assert.Equal(usedColors.Sum(x => x.Value), _Graph.Nodes.Count);
-            Assert.Subset(usedColors.Select(x => x.Key).ToHashSet(), colors.ToHashSet());
-        }
-        [Fact]
         public void SetSources_Works()
         {
             var nodes = new DefaultNodeSource<Node>();

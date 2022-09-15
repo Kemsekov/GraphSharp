@@ -11,9 +11,9 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// <see cref="IPropagator{,}"/> implementation that used for this proxy class
+    /// <see cref="PropagatorBase{,}"/> implementation that used for this proxy class
     /// </summary>
-    public abstract IPropagator<TNode, TEdge> Propagator { get; }
+    public abstract PropagatorBase<TNode, TEdge> Propagator { get; }
     public void Propagate()
     {
         Propagator.Propagate();
@@ -34,9 +34,9 @@ where TEdge : IEdge
         return Propagator.IsNodeInState(nodeId, state);
     }
 
-    public void SetNodeState(int nodeId, byte state)
+    public void AddNodeState(int nodeId, byte state)
     {
-        Propagator.SetNodeState(nodeId, state);
+        Propagator.AddNodeState(nodeId, state);
     }
 
     public void RemoveNodeState(int nodeId, byte state)
@@ -53,5 +53,4 @@ where TEdge : IEdge
     {
         Propagator.ClearNodeStates(nodeId);
     }
-
 }

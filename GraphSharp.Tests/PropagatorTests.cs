@@ -31,14 +31,18 @@ namespace GraphSharp.Tests
             {
                 var p = new Propagator<Node, Edge>(visitor, _graph);
                 if (reversed)
-                    p.SetAllNodesState(PropagatorBase<Node, Edge>.IterateByInEdges);
+                {
+                    p.SetToIterateByInEdges();
+                }
                 return p;
             };
             _propagatorFactories[1] = (visitor, reversed) =>
             {
                 var p = new ParallelPropagator<Node, Edge>(visitor, _graph);
                 if (reversed)
-                    p.SetAllNodesState(PropagatorBase<Node, Edge>.IterateByInEdges);
+                {
+                    p.SetToIterateByInEdges();
+                }
                 return p;
             };
         }
@@ -70,7 +74,7 @@ namespace GraphSharp.Tests
                     propagator.SetPosition(0, 1, 2, 3, 4, 5);
                     foreach (var state in states)
                     {
-                        propagator.SetNodeState(state.Key, state.Value);
+                        propagator.AddNodeState(state.Key, state.Value);
                     }
                     checkStates(propagator);
                     for (int i = 0; i < 50; i++)
@@ -313,7 +317,8 @@ namespace GraphSharp.Tests
 
                 p1.SetPosition(1, 2);
                 p2.SetPosition(1, 2);
-                p2.SetAllNodesState(PropagatorBase<Node,Edge>.IterateByInEdges);
+                p2.SetToIterateByInEdges();
+
 
                 var order = new List<List<int>>();
                 v.VisitEvent += node =>
@@ -346,6 +351,18 @@ namespace GraphSharp.Tests
                     Assert.Equal(u.First, u.Second);
                 }
             }
+        }
+        [Fact]
+        public void StateSetters_Works(){
+            //AddStateToNodes
+            //RemoveStateFromNodes
+            //SetToIterateByInEdges
+            //SetToIterateByOutEdges
+            //SetToIterateByBothEdges
+            //Reset
+            //SetPosition
+            //All these methods affects node states make test for them
+            throw new NotImplementedException();
         }
     }
 }

@@ -65,26 +65,17 @@ where TEdge : IEdge
     /// <summary>
     /// <see cref="Start"/> function implementation
     /// </summary>
-    public virtual void StartImpl(){
-
-    }
+    public abstract void StartImpl();
     /// <summary>
     /// <see cref="Select"/> function implementation
     /// </summary>
-    public virtual bool SelectImpl(TEdge edge){
-        return true;
-    }
+    public abstract bool SelectImpl(TEdge edge);
     /// <summary>
     /// <see cref="Visit"/> function implementation
     /// </summary>
-    public virtual void VisitImpl(TNode node){
-
-    }
+    public abstract void VisitImpl(TNode node);
     /// <summary>
     /// <see cref="End"/> function implementation
     /// </summary>
-    public virtual void EndImpl(){
-
-    }
-
+    public abstract void EndImpl();
 }

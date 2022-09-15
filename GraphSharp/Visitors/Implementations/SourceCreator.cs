@@ -12,9 +12,9 @@ public class SourceCreator<TNode, TEdge> : VisitorWithPropagator<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    public const byte Proceed = 8;
-    public const byte ToRemove = 16;
-    public override IPropagator<TNode, TEdge> Propagator { get; }
+    public const byte Proceed = 16;
+    public const byte ToRemove = 32;
+    public override PropagatorBase<TNode, TEdge> Propagator { get; }
     public IGraph<TNode, TEdge> Graph { get; }
 
     public SourceCreator(IGraph<TNode, TEdge> graph)
@@ -34,7 +34,7 @@ where TEdge : IEdge
 
     public override void VisitImpl(TNode node)
     {
-        SetNodeState(node.Id, Proceed);
+        AddNodeState(node.Id, Proceed);
 
         var edges = Graph.Edges.OutEdges(node.Id);
         var toRemove = new List<TEdge>(edges.Count());
@@ -53,7 +53,7 @@ where TEdge : IEdge
     {
         for (int i = 0; i < Graph.Nodes.MaxNodeId + 1; i++)
             if (IsNodeInState(i, Proceed))
-                SetNodeState(i, ToRemove);
+                AddNodeState(i, ToRemove);
         Steps++;
         if(!DidSomething) Done=true;
     }

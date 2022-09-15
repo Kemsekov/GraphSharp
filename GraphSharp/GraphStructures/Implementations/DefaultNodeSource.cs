@@ -16,6 +16,9 @@ where TNode : INode
     public int Count => Nodes.Count;
     public int MaxNodeId { get; protected set; }
     public int MinNodeId { get; protected set; }
+
+    public bool IsReadOnly => false;
+
     public DefaultNodeSource()
     {
         MaxNodeId = -1;
@@ -108,5 +111,13 @@ where TNode : INode
     public bool Contains(TNode node)
     {
         return Contains(node.Id);
+    }
+
+    public void CopyTo(TNode[] array, int arrayIndex)
+    {
+        foreach(var n in Nodes){
+            array[arrayIndex] = n.Value;
+            arrayIndex++;
+        }
     }
 }

@@ -4,24 +4,17 @@ namespace GraphSharp.Graphs;
 /// <summary>
 /// Represents edges storage object
 /// </summary>
-public interface IEdgeSource<TEdge> : IEnumerable<TEdge>
+public interface IEdgeSource<TEdge> : ICollection<TEdge>
 where TEdge : IEdge
 {
-    /// <summary>
-    /// Count of edges
-    /// </summary>
-    int Count { get; }
-    /// <summary>
-    /// Adds new edge
-    /// </summary>
-    void Add(TEdge edge);
     /// <summary>
     /// Removes all edges that equals to <paramref name="edge"/> by <paramref name="Equals"/>. 
     /// This method of removal allows to remove some of parallel edges, which
     /// are not equal to each other.
     /// Meanwhile other Remove methods will remove all parallel edges.
     /// </summary>
-    bool Remove(TEdge edge);
+    new bool Remove(TEdge edge);
+    bool ICollection<TEdge>.Remove(TEdge item) => Remove(item);
     /// <summary>
     /// Removes all edges that directs sourceId -> targetId (including parallel edges)
     /// </summary>
@@ -50,13 +43,13 @@ where TEdge : IEdge
     /// Tries to find a edge by default equality comparer
     /// </summary>
     /// <returns>True if found, else false</returns>
-    bool Contains(TEdge edge);
+    new bool Contains(TEdge edge);
+    bool ICollection<TEdge>.Contains(TEdge item) => Contains(item);
     /// <summary>
     /// Tries to find edge with given source id and target id
     /// </summary>
     /// <returns>True if found, else false</returns>
     bool Contains(int sourceId, int targetId);
-    void Clear();
     /// <returns>True if given node don't have any out edges</returns>
     bool IsSink(int nodeId);
     /// <returns>True if given node don't have any in edges</returns>

@@ -20,4 +20,21 @@ where TEdge : IEdge
         this.EndEvent += end ?? new Action(() => { });
         this.StartEvent += start ?? new Action(() => { });
     }
+
+    public override void EndImpl()
+    {
+    }
+
+    public override bool SelectImpl(TEdge edge)
+    {
+        return true;
+    }
+
+    public override void StartImpl()
+    {
+    }
+
+    public override void VisitImpl(TNode node)
+    {
+    }
 }

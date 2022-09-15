@@ -91,13 +91,13 @@ where TEdge : IEdge
 
         propagator.SetPosition(startNodeId,endNodeId);
 
-        propagator.SetNodeState(endNodeId,IterateByInEdges);
+        propagator.SetToIterateByInEdges(endNodeId);
 
         meetInTheMiddlePathFinder.Condition = edge=>{
             if(!condition(edge)) return false;
             if(propagator.IsNodeInState(edge.TargetId,IterateByInEdges)){
                 if(inPathFinder.Select(edge)){
-                    propagator.SetNodeState(edge.SourceId,IterateByInEdges);
+                    propagator.SetToIterateByInEdges(edge.SourceId);
                     return true;
                 }
                 return false;

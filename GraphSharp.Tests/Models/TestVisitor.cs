@@ -18,5 +18,22 @@ namespace GraphSharp.Tests.Models
         {
             this.Propagator = new ParallelPropagator<Node,Edge>(this,graph);
         }
+
+        public override void StartImpl()
+        {
+        }
+
+        public override bool SelectImpl(Edge edge)
+        {
+            return true;
+        }
+
+        public override void VisitImpl(Node node)
+        {
+        }
+
+        public override void EndImpl()
+        {
+        }
     }
 }

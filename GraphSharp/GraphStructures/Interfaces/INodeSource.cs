@@ -1,12 +1,9 @@
 using System.Collections.Generic;
 namespace GraphSharp.Graphs;
-public interface INodeSource<TNode> : IEnumerable<TNode>
+public interface INodeSource<TNode> : ICollection<TNode>
 where TNode : INode
 {
-    /// <summary>
-    /// Count of nodes
-    /// </summary>
-    int Count { get; }
+
     /// <summary>
     /// Max id value of all nodes. If there is no nodes, returns -1.
     /// </summary>
@@ -15,15 +12,6 @@ where TNode : INode
     /// Min id value of all nodes. If there is no nodes, returns -1.
     /// </summary>
     int MinNodeId { get; }
-    /// <summary>
-    /// Adds new node
-    /// </summary>
-    void Add(TNode node);
-    /// <summary>
-    /// Removes node by it's id
-    /// </summary>
-    /// <returns>True if removed, else false</returns>
-    bool Remove(TNode node);
     /// <summary>
     /// Removes node by it's id
     /// </summary>
@@ -52,10 +40,4 @@ where TNode : INode
     bool TryGetNode(int nodeId, out TNode? node);
     /// <returns>True if found node with given id, else false</returns>
     bool Contains(int nodeId);
-    /// <returns>True if found given node, else false</returns>
-    bool Contains(TNode node);
-    /// <summary>
-    /// Removes all nodes
-    /// </summary>
-    void Clear();
 }

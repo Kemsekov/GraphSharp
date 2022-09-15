@@ -1,4 +1,6 @@
 using System.Buffers;
+using System.Drawing;
+
 namespace GraphSharp;
 
 /// <summary>
@@ -19,6 +21,7 @@ public static class ArrayPoolStorage
     static readonly ArrayPool<uint> UintArrayPool = ArrayPool<uint>.Create(MaxArrayLength,MaxArraysPerBucket);
     static readonly ArrayPool<float> FloatArrayPool = ArrayPool<float>.Create(MaxArrayLength,MaxArraysPerBucket);
     static readonly ArrayPool<byte> ByteArrayPool = ArrayPool<byte>.Create(MaxArrayLength,MaxArraysPerBucket);
+    static readonly ArrayPool<Color> ColorArrayPool = ArrayPool<Color>.Create(MaxArrayLength,MaxArraysPerBucket);
     public static RentedArray<int> RentIntArray(int length){
         return new(IntArrayPool.Rent(length),length,IntArrayPool);
     }
@@ -30,5 +33,8 @@ public static class ArrayPoolStorage
     }
     public static RentedArray<byte> RentByteArray(int length){
         return new(ByteArrayPool.Rent(length),length,ByteArrayPool);
+    }
+    public static RentedArray<Color> RentColorArray(int length){
+        return new(ColorArrayPool.Rent(length),length,ColorArrayPool);
     }
 }
