@@ -9,7 +9,7 @@ For samples see https://github.com/Kemsekov/GraphSharp.Samples
 
 [Dijkstra algorithm](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/Dijkstra's%20algorithm)
 ![example](https://user-images.githubusercontent.com/57869319/149961444-a0afc184-7119-4a8c-99de-4d15f587559f.jpg)
-[Graph coloring](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/GraphColoring)
+[Graph coloring (Greedy, DSatur, RLF)](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/GraphColoring)
 ![example](https://user-images.githubusercontent.com/57869319/161608380-1e82a976-16bc-4fca-a249-c5aa0efdb948.jpg)
 [Delaunay triangulation](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/DelaunayTriangulation)
 ![example](https://user-images.githubusercontent.com/57869319/174455462-f0a7b769-33b8-47b9-b6a6-2936c02f4cbb.jpg)
