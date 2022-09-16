@@ -13,7 +13,7 @@ namespace GraphSharp.Tests.Models
     public class TestVisitor : VisitorWithPropagator<Node, Edge>
     {
         
-        public override IPropagator<Node, Edge> Propagator{get;}
+        public override PropagatorBase<Node, Edge> Propagator{get;}
         public TestVisitor(IGraph<Node, Edge> graph)
         {
             this.Propagator = new ParallelPropagator<Node,Edge>(this,graph);

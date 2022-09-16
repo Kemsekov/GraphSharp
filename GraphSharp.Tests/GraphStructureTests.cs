@@ -759,6 +759,25 @@ namespace GraphSharp.Tests
             Assert.Equal(usedColors.Sum(x => x.Value), _Graph.Nodes.Count);
         }
         [Fact]
+        public void DSaturColoring_Works(){
+            var usedColors = _Graph.Do.ConnectRandomly(1, 5).DSaturColorNodes();
+            _Graph.EnsureRightColoring();
+            Assert.Equal(usedColors.Sum(x => x.Value), _Graph.Nodes.Count);
+        }
+        [Fact]
+        public void RLFColoring_Works(){
+            _Graph.Do.ConnectRandomly(1, 5);
+            var usedColors1 = _Graph.Do.GreedyColorNodes();
+            _Graph.EnsureRightColoring();
+            var usedColors2 = _Graph.Do.DSaturColorNodes();
+            _Graph.EnsureRightColoring();
+            var usedColors3 = _Graph.Do.RLFColorNodes();
+            var count1 = usedColors1.Where(x => x.Value != 0).Count();
+            var count2 = usedColors2.Where(x => x.Value != 0).Count();
+            var count3 = usedColors3.Where(x => x.Value != 0).Count();
+            Assert.True(count3<count2 && count2<count1);
+        }
+        [Fact]
         public void SetSources_Works()
         {
             var nodes = new DefaultNodeSource<Node>();
