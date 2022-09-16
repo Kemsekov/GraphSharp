@@ -91,7 +91,7 @@ where TEdge : IEdge
                 colorsList.Add(Color.FromArgb(rand.Next(256),rand.Next(256),rand.Next(256)));
             }
             var color = colorsList[colorIndex];
-            var S = FindMaxIndependentSet(x=>x.Color==Color.Empty);
+            var S = FindMaximalIndependentSet(x=>x.Color==Color.Empty);
             var count = S.Count();
             usedColors[color] = count;
             coloredNodesCount += count;

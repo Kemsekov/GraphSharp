@@ -11,14 +11,14 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Finds maximum independent set
+    /// Finds maximal independent set
     /// </summary>
     /// <param name="condition">
     /// You may need to find independent set from some subset of nodes. Use this to control it.
     /// Only nodes that pass a condition can be added to independent set
     /// </param>
     /// <returns>Nodes from max independent set</returns>
-    public IEnumerable<TNode> FindMaxIndependentSet(Predicate<TNode> condition)
+    public IEnumerable<TNode> FindMaximalIndependentSet(Predicate<TNode> condition)
     {
         const byte Added = 1;
         const byte AroundAdded = 2;
@@ -37,37 +37,36 @@ where TEdge : IEdge
             if (!condition(n))
                 nodeState[n.Id] |= Forbidden;
         }
-        var toAdd = Nodes.Where(x => !IsForbidden(x.Id)).MaxBy(x => Edges.Neighbors(x.Id).Count());
+        var toAdd = Nodes.Where(x => !IsForbidden(x.Id)).MaxBy(x => Edges.Neighbors(x.Id).Count()).Id;
         using var freeNeighbors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        bool found;
+        int bestScore;
+        IEnumerable<int> neighbors;
         while (true)
             unchecked
             {
-                if (toAdd is null) break;
-                if (IsAdded(toAdd.Id)) break;
-                nodeState[toAdd.Id] |= Added;
+                if (IsAdded(toAdd)) break;
+                nodeState[toAdd] |= Added;
 
-                var neighbors = Edges.Neighbors(toAdd.Id);
-                foreach (var n in neighbors)
+                neighbors = Edges.Neighbors(toAdd);
+                Parallel.ForEach(neighbors.ToList(),n=>
                 {
-                    if (IsForbidden(n)) continue;
+                    if (nodeState[n]!=0) return;
                     nodeState[n] |= AroundAdded;
                     foreach(var l in Edges.Neighbors(n))
                         freeNeighbors[l]--;
-                }
+                });
 
-                bool found = false;
-                int bestScore = 0;
-                Parallel.ForEach(Nodes, x =>
+                bestScore = 1;
+                Parallel.For(0,freeNeighbors.Length,index=>
                 {
-                    if (nodeState[x.Id]!=0) return;
-                    found = true;
-                    var neighbors = Edges.Neighbors(x.Id);
-                    var score = freeNeighbors[x.Id];
+                    if (nodeState[index]!=0) return;
+                    var score = freeNeighbors[index];
                     lock (nodeState)
                         if (score <= bestScore)
-                            (bestScore, toAdd) = (score, x);
+                            (bestScore, toAdd) = (score, index);
                 });
-                if (!found)
+                if (bestScore==1)
                     break;
             }
         var result = new List<TNode>(Nodes.Count / 3);
