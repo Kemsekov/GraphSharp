@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 
 using GraphSharp.Propagators;
@@ -56,7 +56,7 @@ namespace GraphSharp.Tests
             {
                 foreach (var state in states)
                 {
-                    Assert.True(propagator.IsNodeInState(state.Key, state.Value));
+                    Assert.True(propagator.NodeStates.IsInState(state.Value, state.Key));
                 }
             }
 
@@ -74,7 +74,7 @@ namespace GraphSharp.Tests
                     propagator.SetPosition(0, 1, 2, 3, 4, 5);
                     foreach (var state in states)
                     {
-                        propagator.AddNodeState(state.Key, state.Value);
+                        propagator.NodeStates.AddState(state.Value, state.Key);
                     }
                     checkStates(propagator);
                     for (int i = 0; i < 50; i++)
@@ -84,7 +84,7 @@ namespace GraphSharp.Tests
         }
 
         [Fact]
-        public void SetPosition_SetGraph_Works()
+        public void SetPosition_Works()
         {
             for (bool reversed = false; !reversed; reversed = true)
                 foreach (var factory in _propagatorFactories)
@@ -99,6 +99,11 @@ namespace GraphSharp.Tests
                         (edge) => true,
                         () => visitedNodes.Sort());
                     var propagator = factory(visitor, reversed);
+                    foreach (var n in _graph.Nodes)
+                    {
+                        if (n.Id % 3 == 0)
+                            propagator.NodeStates.AddState(32, n.Id);
+                    }
                     propagator.SetPosition(1, 2);
 
                     if (reversed) _graph.Do.ReverseEdges();
@@ -111,6 +116,7 @@ namespace GraphSharp.Tests
                     propagator.Propagate();
                     Assert.Equal(visitedNodes, new[] { _graph.Nodes[5], _graph.Nodes[6] });
                     visitedNodes.Clear();
+                    Assert.True(_graph.Nodes.Where(x => x.Id % 3 == 0).All(x => propagator.NodeStates.IsInState(32, x.Id)));
                 }
         }
         [Fact]
@@ -353,16 +359,45 @@ namespace GraphSharp.Tests
             }
         }
         [Fact]
-        public void StateSetters_Works(){
-            //AddStateToNodes
-            //RemoveStateFromNodes
-            //SetToIterateByInEdges
-            //SetToIterateByOutEdges
-            //SetToIterateByBothEdges
-            //Reset
-            //SetPosition
-            //All these methods affects node states make test for them
-            throw new NotImplementedException();
+        public void Reset_Works()
+        {
+
+            foreach (var factory in _propagatorFactories)
+            {
+                var visitor1 = new ActionVisitor<Node, Edge>();
+                var visitor2 = new ActionVisitor<Node, Edge>();
+                var propagator = factory.Invoke(visitor1, false);
+                Assert.True(_graph.Nodes.All(x => propagator.NodeStates.GetState(x.Id) == UsedNodeStates.IterateByOutEdges));
+                propagator.SetToIterateByBothEdges();
+                Assert.True(_graph.Nodes.All(x => propagator.NodeStates.GetState(x.Id) == (UsedNodeStates.IterateByOutEdges | UsedNodeStates.IterateByInEdges)));
+                propagator.Reset(_graph, visitor2);
+                Assert.Equal(propagator.Visitor, visitor2);
+                Assert.True(_graph.Nodes.All(x => propagator.NodeStates.GetState(x.Id) == UsedNodeStates.IterateByOutEdges));
+            }
+        }
+        [Fact]
+        public void IterationChangeFunctions_Works()
+        {
+            foreach (var factory in _propagatorFactories)
+            {
+                var visitor = new ActionVisitor<Node, Edge>();
+
+                var propagator = factory.Invoke(visitor, false);
+                Assert.True(_graph.Nodes.All(x => propagator.NodeStates.GetState(x.Id) == UsedNodeStates.IterateByOutEdges));
+                foreach (var n in _graph.Nodes)
+                {
+                    if (n.Id % 3 == 0)
+                        propagator.NodeStates.AddState(32, n.Id);
+                }
+                Assert.True(_graph.Nodes.All(x => propagator.NodeStates.IsInState(UsedNodeStates.IterateByOutEdges, x.Id)));
+                propagator.SetToIterateByInEdges();
+                Assert.True(_graph.Nodes.All(x => propagator.NodeStates.IsInState(UsedNodeStates.IterateByInEdges, x.Id)));
+                propagator.SetToIterateByOutEdges();
+                Assert.True(_graph.Nodes.All(x => propagator.NodeStates.IsInState(UsedNodeStates.IterateByOutEdges, x.Id)));
+                propagator.SetToIterateByBothEdges();
+                Assert.True(_graph.Nodes.All(x => propagator.NodeStates.IsInState((UsedNodeStates.IterateByOutEdges | UsedNodeStates.IterateByInEdges), x.Id)));
+                Assert.True(_graph.Nodes.Where(x => x.Id % 3 == 0).All(x => propagator.NodeStates.IsInState(32, x.Id)));
+            }
         }
     }
 }

@@ -28,29 +28,4 @@ where TEdge : IEdge
     {
         Propagator.Reset(graph,visitor);
     }
-
-    public bool IsNodeInState(int nodeId, byte state)
-    {
-        return Propagator.IsNodeInState(nodeId, state);
-    }
-
-    public void AddNodeState(int nodeId, byte state)
-    {
-        Propagator.AddNodeState(nodeId, state);
-    }
-
-    public void RemoveNodeState(int nodeId, byte state)
-    {
-        Propagator.RemoveNodeState(nodeId, state);
-    }
-
-    public byte GetNodeStates(int nodeId)
-    {
-        return Propagator.GetNodeStates(nodeId);
-    }
-
-    public void ClearNodeStates(int nodeId)
-    {
-        Propagator.ClearNodeStates(nodeId);
-    }
 }

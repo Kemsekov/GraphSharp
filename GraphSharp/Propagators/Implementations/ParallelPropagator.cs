@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 using GraphSharp.Visitors;
 namespace GraphSharp.Propagators;
@@ -20,14 +21,14 @@ where TEdge : IEdge
     protected override void PropagateNodes()
     {
         var nodes = Graph.Nodes;
-        Parallel.For(0, _nodeFlags.Length, nodeId =>
+        Parallel.For(0, NodeStates.Length, nodeId =>
         {
-            if ((_nodeFlags[nodeId] & ToVisit) == ToVisit)
+            if (NodeStates.IsInState(UsedNodeStates.ToVisit,nodeId))
                 PropagateNode(nodeId);
         });
-        Parallel.For(0, _nodeFlags.Length, nodeId =>
+        Parallel.For(0, NodeStates.Length, nodeId =>
         {
-            if ((_nodeFlags[nodeId] & Visited) == Visited)
+            if (NodeStates.IsInState(UsedNodeStates.Visited,nodeId))
                 Visitor.Visit(nodes[nodeId]);
         });
     }

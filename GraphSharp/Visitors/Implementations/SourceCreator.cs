@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 using GraphSharp.Propagators;
 namespace GraphSharp.Visitors;
@@ -14,6 +15,7 @@ where TEdge : IEdge
 {
     public const byte Proceed = 16;
     public const byte ToRemove = 32;
+    ByteNodeStatesHandler NodeStates => Propagator.NodeStates;
     public override PropagatorBase<TNode, TEdge> Propagator { get; }
     public IGraph<TNode, TEdge> Graph { get; }
 
@@ -29,18 +31,18 @@ where TEdge : IEdge
     }
     public override bool SelectImpl(TEdge edge)
     {
-        return !IsNodeInState(edge.TargetId, Proceed | ToRemove);
+        return !NodeStates.IsInState(Proceed | ToRemove,edge.TargetId);
     }
 
     public override void VisitImpl(TNode node)
     {
-        AddNodeState(node.Id, Proceed);
+        NodeStates.AddState(Proceed,node.Id);
 
         var edges = Graph.Edges.OutEdges(node.Id);
         var toRemove = new List<TEdge>(edges.Count());
         foreach (var edge in edges)
         {
-            if (IsNodeInState(edge.TargetId, ToRemove))
+            if (NodeStates.IsInState(ToRemove,edge.TargetId))
                 toRemove.Add(edge);
         }
         lock(Graph)
@@ -52,8 +54,8 @@ where TEdge : IEdge
     public override void EndImpl()
     {
         for (int i = 0; i < Graph.Nodes.MaxNodeId + 1; i++)
-            if (IsNodeInState(i, Proceed))
-                AddNodeState(i, ToRemove);
+            if (NodeStates.IsInState(Proceed,i))
+                NodeStates.AddState(ToRemove,i);
         Steps++;
         if(!DidSomething) Done=true;
     }

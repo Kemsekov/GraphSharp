@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using GraphSharp.Common;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 
@@ -75,7 +75,6 @@ where TEdge : IEdge
         Predicate<TEdge>? condition = null)
     {
         condition ??= new(edge => true);
-        const byte IterateByInEdges = PropagatorBase<TNode, TEdge>.IterateByInEdges;
         int meetNodeId = -1;
         var outPathFinder = createPathFinder();
         var inPathFinder = createPathFinder();
@@ -92,10 +91,11 @@ where TEdge : IEdge
         propagator.SetPosition(startNodeId,endNodeId);
 
         propagator.SetToIterateByInEdges(endNodeId);
+        var nodeStates = propagator.NodeStates;
 
         meetInTheMiddlePathFinder.Condition = edge=>{
             if(!condition(edge)) return false;
-            if(propagator.IsNodeInState(edge.TargetId,IterateByInEdges)){
+            if(nodeStates.IsInState(UsedNodeStates.IterateByInEdges,edge.TargetId)){
                 if(inPathFinder.Select(edge)){
                     propagator.SetToIterateByInEdges(edge.SourceId);
                     return true;
@@ -104,14 +104,18 @@ where TEdge : IEdge
             }
             return outPathFinder.Select(edge);
         };
+        var DidSomething = true;
         meetInTheMiddlePathFinder.VisitEvent += node=>{
+            DidSomething = true;
             if(outPathFinder.Path[node.Id]!=-1 && inPathFinder.Path[node.Id]!=-1){
                 meetNodeId = node.Id;
             }
         };
-        while(meetNodeId==-1) 
+        while(meetNodeId==-1 && DidSomething){
+            DidSomething = false;
             propagator.Propagate();
-        
+        }
+        if(meetNodeId==-1) return new List<TNode>();
         var p1 = outPathFinder.GetPath(startNodeId,meetNodeId);
         var p2 = inPathFinder.GetPath(endNodeId,meetNodeId);
         return p1.Concat(p2.Reverse().Skip(1)).ToList();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 using GraphSharp.Propagators;
 namespace GraphSharp.Visitors;
@@ -13,6 +14,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     public override PropagatorBase<TNode, TEdge> Propagator { get; }
+    ByteNodeStatesHandler NodeStates => Propagator.NodeStates;
     /// <summary>
     /// After topological sort is done all nodes will be sorted out to different layers.
     /// Nodes on each layer have the same X coordinate and each following layer have X coordinate bigger that previous one.
@@ -37,16 +39,17 @@ where TEdge : IEdge
         var pos = startingNodesList.ToArray();
         Propagator.SetPosition(pos);
         foreach(var n in pos)
-            AddNodeState(n,Added);
+            NodeStates.AddState(Added,n);
         this.End();
     }
     public override bool SelectImpl(TEdge edge)
     {
-        if (Propagator.IsNodeInState(edge.TargetId, Added))
+        
+        if (NodeStates.IsInState(Added,edge.TargetId))
         {
             return false;
         }
-        Propagator.AddNodeState(edge.TargetId, Added);
+        NodeStates.AddState(Added,edge.TargetId);
         return true;
     }
     public override void VisitImpl(TNode node)

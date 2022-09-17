@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using GraphSharp.Exceptions;
 
 namespace GraphSharp.Graphs;
 
@@ -31,10 +29,10 @@ where TEdge : IEdge
         bool IsAdded(int nodeId) => (nodeState[nodeId] & Added) == Added;
         bool IsForbidden(int nodeId) => (nodeState[nodeId] & Forbidden) == Forbidden;
         bool IsAroundAdded(int nodeId) => (nodeState[nodeId] & AroundAdded) == AroundAdded;
-        int CountFreeNeighborsOfSecondDegree(int nodeId){
+        int CountOfUncoloredNeighbors(int nodeId){
             int result = 0;
             foreach(var n in Edges.Neighbors(nodeId))
-                result+=freeNeighbors[n];
+                if(nodeState[n]==0) result++;
             return result;
         }
 #pragma warning enable
@@ -46,7 +44,6 @@ where TEdge : IEdge
                 nodeState[n.Id] |= Forbidden;
         }
         var toAdd = Nodes.Where(x => !IsForbidden(x.Id)).MaxBy(x => Edges.Neighbors(x.Id).Count()).Id;
-        var toAddList = new List<int>();
         bool found;
         int bestScore;
         IEnumerable<int> neighbors;
@@ -55,7 +52,6 @@ where TEdge : IEdge
             {
                 if (IsAdded(toAdd)) break;
                 nodeState[toAdd] |= Added;
-                toAddList.Clear();
 
                 neighbors = Edges.Neighbors(toAdd);
                 foreach(var n in neighbors)
@@ -73,17 +69,11 @@ where TEdge : IEdge
                     var score = freeNeighbors[index];
                     if (score <= bestScore){
                         bestScore = score;
-                        toAddList.Clear();
-                    }
-                    if(score==bestScore){
-                        toAddList.Add(index);
+                        toAdd = index;
                     }
                 };
                 if (bestScore == 1)
                     break;
-                if(toAddList.Count>1)
-                    toAdd = toAddList.MinBy(x=>CountFreeNeighborsOfSecondDegree(x));
-                else toAdd = toAddList.First();
             }
         var result = new List<TNode>(Nodes.Count / 3);
         foreach (var n in Nodes)

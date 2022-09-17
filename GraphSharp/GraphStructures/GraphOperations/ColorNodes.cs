@@ -69,7 +69,6 @@ where TEdge : IEdge
         }
         return usedColors;
     }
-    // TODO: add tests for DSatur and RLF coloring algorithms
     /// <summary>
     /// Recursive largest first algorithm. The most efficient in colors used algorithm,
     /// but the slowest one.
