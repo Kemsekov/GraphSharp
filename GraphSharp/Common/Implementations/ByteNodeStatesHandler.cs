@@ -64,4 +64,7 @@ public class ByteNodeStatesHandler : IStatesHandler<int, byte>, IDisposable
         for (int i = 0; i < states.Length; i++)
             states[i] &= (byte)~state;
     }
+    public static bool IsInState(byte state, byte nodeState){
+        return (nodeState & state) == state;
+    }
 }

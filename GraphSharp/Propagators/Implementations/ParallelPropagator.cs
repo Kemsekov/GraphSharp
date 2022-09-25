@@ -23,8 +23,9 @@ where TEdge : IEdge
         var nodes = Graph.Nodes;
         Parallel.For(0, NodeStates.Length, nodeId =>
         {
-            if (NodeStates.IsInState(UsedNodeStates.ToVisit,nodeId))
-                PropagateNode(nodeId);
+            var state = NodeStates.GetState(nodeId);
+            if (ByteNodeStatesHandler.IsInState(UsedNodeStates.ToVisit,state))
+                PropagateNode(nodeId,state);
         });
         Parallel.For(0, NodeStates.Length, nodeId =>
         {

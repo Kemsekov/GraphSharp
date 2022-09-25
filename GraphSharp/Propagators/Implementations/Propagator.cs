@@ -18,10 +18,12 @@ where TEdge : IEdge
     protected override void PropagateNodes()
     {
         var nodes = Graph.Nodes;
+        byte state = 0;
         for (int nodeId = 0; nodeId < NodeStates.Length; ++nodeId)
         {
-            if (NodeStates.IsInState(UsedNodeStates.ToVisit,nodeId))
-                PropagateNode(nodeId);
+            state = NodeStates.GetState(nodeId);
+            if (ByteNodeStatesHandler.IsInState(UsedNodeStates.ToVisit,state))
+                PropagateNode(nodeId,state);
         };
         for (int nodeId = 0; nodeId < NodeStates.Length; ++nodeId)
         {

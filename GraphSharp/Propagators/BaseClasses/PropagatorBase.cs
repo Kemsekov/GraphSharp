@@ -154,15 +154,15 @@ where TEdge : IEdge
     /// Iterates trough
     /// </summary>
     /// <param name="nodeId"></param>
-    protected void PropagateNode(int nodeId)
+    protected void PropagateNode(int nodeId, byte state)
     {
-        if (NodeStates.IsInState(UsedNodeStates.IterateByInEdges, nodeId))
+        if (ByteNodeStatesHandler.IsInState(UsedNodeStates.IterateByInEdges,state))
             foreach (var edge in Graph.Edges.InEdges(nodeId))
             {
                 if (!Visitor.Select(edge)) continue;
                 NodeStates.AddState(UsedNodeStates.Visited, edge.SourceId);
             }
-        if (NodeStates.IsInState(UsedNodeStates.IterateByOutEdges, nodeId))
+        if (ByteNodeStatesHandler.IsInState(UsedNodeStates.IterateByOutEdges,state))
             foreach (var edge in Graph.Edges.OutEdges(nodeId))
             {
                 if (!Visitor.Select(edge)) continue;
