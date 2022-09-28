@@ -94,6 +94,21 @@ public static class GraphExtensions
         }
         return true;
     }
+
+    /// <summary>
+    /// Determine whatever given graph is a directed tree
+    /// </summary>
+    /// <param name="graph"></param>
+    /// <returns>True if directed tree</returns>
+    public static bool IsDirectedTree<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        if(graph.IsConnected()){
+            return graph.Edges.Count+1==graph.Nodes.Count;
+        }
+        return false;
+    }
     /// <summary>
     /// Checks for data integrity for Nodes and Edges for the case when current graph is simple. <br/>
     /// </summary>

@@ -27,7 +27,7 @@ where TEdge : IEdge
     /// <param name="edges">Spanning tree edges</param>
     void KruskalAlgorithm(IEnumerable<TEdge> edges, IList<TEdge> outputEdges)
     {
-        UnionFind unionFind = new(Nodes.MaxNodeId + 1);
+        using UnionFind unionFind = new(Nodes.MaxNodeId + 1);
         foreach (var n in Nodes)
             unionFind.MakeSet(n.Id);
         int SourceId = 0, targetId = 0;

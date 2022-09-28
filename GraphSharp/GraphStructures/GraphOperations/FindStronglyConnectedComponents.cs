@@ -14,7 +14,7 @@ where TEdge : IEdge
     /// <returns>List of tuples, where first value is a list of nodes in a certain component and second value is this component id.</returns>
     public IEnumerable<(IEnumerable<TNode> nodes, int componentId)> FindStronglyConnectedComponentsTarjan()
     {
-        var low = FindLowLinkValues();
+        using var low = FindLowLinkValues();
         var result = low
             .Select((componentId, index) => (componentId, index))
             .Where(x=>Nodes.TryGetNode(x.index,out var _))

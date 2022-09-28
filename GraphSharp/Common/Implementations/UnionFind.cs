@@ -1,10 +1,12 @@
+using System;
+
 namespace GraphSharp.Common;
 
 /// <summary>
 /// Disjoint-set data structure
 /// https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 /// </summary>
-public class UnionFind
+public class UnionFind : IDisposable
 {
     RentedArray<int> parent;
     RentedArray<int> rank;
@@ -13,7 +15,7 @@ public class UnionFind
         parent = ArrayPoolStorage.RentIntArray(maxSetSize);
         rank = ArrayPoolStorage.RentIntArray(maxSetSize);
     }
-    ~UnionFind(){
+    public void Dispose(){
         parent.Dispose();
         rank.Dispose();
     }
