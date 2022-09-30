@@ -140,6 +140,23 @@ public class GraphTests
         }
     }
     [Fact]
+    public void GetComplement_Works()
+    {
+        var complement = _Graph
+            .CreateNodes(100).Do
+            .ConnectRandomly(1, 5)
+            .GetComplement();
+        foreach (var c in complement)
+        {
+            bool contains = _Graph.Edges.Contains(c.SourceId, c.TargetId);
+            Assert.False(contains);
+        }
+        var n = _Graph.Nodes.Count;
+        var e1 = _Graph.Edges.Count;
+        var e2 = complement.Count-n;
+        Assert.Equal(n*(n-1),e1+e2);
+    }
+    [Fact]
     public void FindStronglyConnectedComponents_Works()
     {
         _Graph.CreateNodes(1000);
