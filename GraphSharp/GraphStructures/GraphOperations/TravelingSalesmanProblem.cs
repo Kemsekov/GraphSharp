@@ -13,7 +13,7 @@ where TEdge : IEdge
     /// Traveling salesman problem solver. About 1.25 longer than MST.<br/>
     /// It works like expanding bubble<br/>
     /// 1) Find delaunay triangulation of current nodes in a graph.<br/>
-    /// 2) Make graph undirected.<br/>
+    /// 2) Make graph bidirected.<br/>
     /// 3) Create another edge source which contains information about added edges.<br/>
     /// 4) For each added edge search intersection of source edges and target edges and which target is not present in already added edges. <br/>
     /// 5) If intersection is edge A->C, B->C for given edge A->B then remove given edge A->B and add two more edges A->C and C->B so by doing this we 'expand' our cycle
@@ -30,7 +30,7 @@ where TEdge : IEdge
         }
 
         DelaunayTriangulationWithoutHull();
-        MakeUndirected();
+        MakeBidirected();
         (var edges, var addedNodes) = FindHamiltonianCycleDelaunayTriangulationWithoutHull(getWeight);
         using var _ = addedNodes;
         

@@ -82,8 +82,8 @@ public static class GraphExtensions
         }
         return true;
     }
-    /// <returns>True if graph is undirected, else false</returns>
-    public static bool IsUndirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    /// <returns>True if graph is bidirected, else false</returns>
+    public static bool IsBidirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {

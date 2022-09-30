@@ -49,7 +49,7 @@ public static class ManualTestData
             {16,new[]{17}}
         };
     /// <summary>
-    /// Values, that expected after calling method MakeSources(1,14) on graph builded on top of TestConnectionsList and made undirected
+    /// Values, that expected after calling method MakeSources(1,14) on graph builded on top of TestConnectionsList and made bidirected
     /// </summary>
     public static IEnumerable<(int sourceId, int[] targetren)> AfterMakeSourcesExpected = 
         new[]{

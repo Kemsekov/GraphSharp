@@ -35,10 +35,10 @@ namespace GraphSharp.Tests.Operations
                 Assert.True(edgesCount >= minEdges && edgesCount < maxEdges, $"{edgesCount} >= {minEdges} && {edgesCount} < {maxEdges}");
             }
         }
-        public void ensureDirected(IGraph<Node, Edge> directed, IGraph<Node, Edge> undirected)
+        public void ensureDirected(IGraph<Node, Edge> directed, IGraph<Node, Edge> bidirected)
         {
 
-            Assert.Equal(directed.Nodes, undirected.Nodes);
+            Assert.Equal(directed.Nodes, bidirected.Nodes);
 
             //make sure each target have no connection to source
             foreach (var edge in directed.Edges)
@@ -47,17 +47,17 @@ namespace GraphSharp.Tests.Operations
             }
 
             //make sure we did not remove anything that is not connected to node
-            foreach (var sources in directed.Nodes.Zip(undirected.Nodes))
+            foreach (var sources in directed.Nodes.Zip(bidirected.Nodes))
             {
                 //ensure they are the facto different objects in memory
                 Assert.False(sources.First.GetHashCode() == sources.Second.GetHashCode());
                 var directedEdges = directed.Edges.OutEdges(sources.First.Id).Select(x => directed.Nodes[x.TargetId]);
-                var undirectedEdges = undirected.Edges.OutEdges(sources.Second.Id).Select(x => undirected.Nodes[x.TargetId]);
-                var diff = undirectedEdges.Except(directedEdges, new NodeEqualityComparer());
+                var bidirectedEdges = bidirected.Edges.OutEdges(sources.Second.Id).Select(x => bidirected.Nodes[x.TargetId]);
+                var diff = bidirectedEdges.Except(directedEdges, new NodeEqualityComparer());
 
                 foreach (var n in diff.Select(x => x as Node))
                 {
-                    Assert.True(directed.Edges.OutEdges(n.Id).Any(x => x.TargetId == sources.First.Id) || undirected.Edges.OutEdges(n.Id).Any(x => x.TargetId == sources.First.Id));
+                    Assert.True(directed.Edges.OutEdges(n.Id).Any(x => x.TargetId == sources.First.Id) || bidirected.Edges.OutEdges(n.Id).Any(x => x.TargetId == sources.First.Id));
                 }
             }
         }
@@ -74,13 +74,13 @@ namespace GraphSharp.Tests.Operations
                 .ConnectNodes(20)
                 .MakeDirected();
 
-            var undirected =
+            var bidirected =
                 new Graph<Node, Edge>(new TestGraphConfiguration(new(seed)))
                     .CreateNodes(2000);
-            undirected
+            bidirected
                 .Do
                 .ConnectNodes(20);
-            ensureDirected(directed, undirected);
+            ensureDirected(directed, bidirected);
             directed.CheckForIntegrityOfSimpleGraph();
         }
         [Fact]
@@ -89,7 +89,7 @@ namespace GraphSharp.Tests.Operations
             var graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()));
             graph.Converter.FromConnectionsList(ManualTestData.TestConnectionsList);
             Assert.Equal(graph.Converter.ToConnectionsList(), ManualTestData.TestConnectionsList);
-            graph.Do.MakeUndirected();
+            graph.Do.MakeBidirected();
 
             graph.Do.MakeSources(1, 14);
             var expected = ManualTestData.AfterMakeSourcesExpected;
@@ -108,7 +108,7 @@ namespace GraphSharp.Tests.Operations
             graph.CheckForIntegrityOfSimpleGraph();
 
             _Graph.Do.ConnectRandomly(4, 20);
-            _Graph.Do.MakeUndirected();
+            _Graph.Do.MakeBidirected();
             var sourcesList = new[] { 4, 5, 10, 12, 55 };
             _Graph.Do.MakeSources(sourcesList);
             var sources = _Graph.Nodes.Where(x => _Graph.Edges.IsSource(x.Id)).Select(x => x.Id).OrderBy(x => x);
@@ -116,13 +116,13 @@ namespace GraphSharp.Tests.Operations
             _Graph.CheckForIntegrityOfSimpleGraph();
         }
         [Fact]
-        public void RemoveUndirectedEdgesWorks()
+        public void RemoveBidirectedEdgesWorks()
         {
             var graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()));
             graph.CreateNodes(500);
             graph.Do.ConnectRandomly(0, 8);
             var before_removal = graph.Converter.ToConnectionsList().ToList();
-            graph.Do.RemoveUndirectedEdges();
+            graph.Do.RemoveBidirectedEdges();
             graph.CheckForIntegrityOfSimpleGraph();
             var after_removal = graph.Converter.ToConnectionsList().ToList();
             for (int sourceId = 0; sourceId < 500; sourceId++)
@@ -148,7 +148,7 @@ namespace GraphSharp.Tests.Operations
                     {5,new []{0,4}}
                 }
             );
-            graph.Do.RemoveUndirectedEdges();
+            graph.Do.RemoveBidirectedEdges();
             var expected = new[]{
                 (0,new[]{2,3}),
                 (2,new[]{5}),
@@ -158,57 +158,76 @@ namespace GraphSharp.Tests.Operations
             Assert.Equal(expected, actual);
         }
         [Fact]
-        public void MakeUndirectedWorks()
+        public void MakeBidirectedWorks()
         {
             var seed = new Random().Next();
-            var maybeUndirected =
+            var maybeBidirected =
                 new Graph<Node, Edge>(new TestGraphConfiguration(new()) { Rand = new(seed) })
                 .CreateNodes(2000);
-            maybeUndirected
+            maybeBidirected
                 .Do
                 .ConnectNodes(20);
 
-            var undirected =
+            var bidirected =
                 new Graph<Node, Edge>(new TestGraphConfiguration(new()) { Rand = new(seed) })
                 .CreateNodes(2000);
-            undirected
+            bidirected
                 .Do
                 .ConnectNodes(20)
-                //one of them make 100% undirected
-                .MakeUndirected();
-            undirected.CheckForIntegrityOfSimpleGraph();
+                //one of them make 100% bidirected
+                .MakeBidirected();
+            bidirected.CheckForIntegrityOfSimpleGraph();
             //ensure they are the same
-            Assert.Equal(maybeUndirected.Nodes, undirected.Nodes);
+            Assert.Equal(maybeBidirected.Nodes, bidirected.Nodes);
 
             //make sure each target have connection to source
-            foreach (var source in undirected.Nodes)
+            foreach (var source in bidirected.Nodes)
             {
-                foreach (var target in undirected.Edges.OutEdges(source.Id))
+                foreach (var target in bidirected.Edges.OutEdges(source.Id))
                 {
-                    Assert.True(undirected.Edges.OutEdges(target.TargetId).Any(c => c.TargetId == source.Id));
+                    Assert.True(bidirected.Edges.OutEdges(target.TargetId).Any(c => c.TargetId == source.Id));
                 }
             }
 
             //make sure we did not add anything redundant
-            foreach (var sources in undirected.Nodes.Zip(maybeUndirected.Nodes))
+            foreach (var sources in bidirected.Nodes.Zip(maybeBidirected.Nodes))
             {
                 //ensure they are the facto different objects in memory
                 Assert.False(sources.First.GetHashCode() == sources.Second.GetHashCode());
 
-                var undirectedEdges = undirected.Edges.OutEdges(sources.First.Id).Select(x => undirected.Nodes[x.TargetId]);
-                var maybeUndirectedEdges = maybeUndirected.Edges.OutEdges(sources.Second.Id).Select(x => maybeUndirected.Nodes[x.TargetId]);
+                var bidirectedEdges = bidirected.Edges.OutEdges(sources.First.Id).Select(x => bidirected.Nodes[x.TargetId]);
+                var maybeBidirectedEdges = maybeBidirected.Edges.OutEdges(sources.Second.Id).Select(x => maybeBidirected.Nodes[x.TargetId]);
 
-                var diff = maybeUndirectedEdges.Except(undirectedEdges, new NodeEqualityComparer());
+                var diff = maybeBidirectedEdges.Except(bidirectedEdges, new NodeEqualityComparer());
                 Assert.Empty(diff);
 
-                diff = undirectedEdges.Except(maybeUndirectedEdges, new NodeEqualityComparer());
+                diff = bidirectedEdges.Except(maybeBidirectedEdges, new NodeEqualityComparer());
 
                 foreach (var n in diff)
                 {
-                    Assert.True(maybeUndirected.Edges.OutEdges(n.Id).Any(x => x.TargetId == sources.First.Id));
+                    Assert.True(maybeBidirected.Edges.OutEdges(n.Id).Any(x => x.TargetId == sources.First.Id));
                 }
             }
-            validateThereIsNoCopiesAndSourcesInEdges(undirected.Nodes, undirected.Edges);
+            validateThereIsNoCopiesAndSourcesInEdges(bidirected.Nodes, bidirected.Edges);
+        }
+        [Fact]
+        public void MakeComplete_Works(){
+            _Graph.CreateNodes(100).Do.ConnectNodes(5);
+            _Graph.Do.MakeComplete();
+            foreach(var n1 in _Graph.Nodes){
+                foreach(var n2 in _Graph.Nodes){
+                    bool contains = _Graph.Edges.Contains(n1.Id,n2.Id);
+                    if(n1.Id==n2.Id)
+                        Assert.False(contains);
+                    else
+                        Assert.True(contains);
+                }
+            }
+            Assert.True(_Graph.IsBidirected());
+            _Graph.CheckForIntegrityOfSimpleGraph();
+            var e = _Graph.Edges.Count;
+            var n = _Graph.Nodes.Count;
+            Assert.Equal(e,n*(n-1));
         }
         [Fact]
         public void ConnectNodesWorks()

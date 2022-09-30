@@ -42,7 +42,7 @@ where TEdge : IEdge
         return (path,counter);
     }
     /// <summary>
-    /// Tries to find hamiltonian cycle by 'bubble expansion' technique. Works only on undirected graphs. 
+    /// Tries to find hamiltonian cycle by 'bubble expansion' technique. Works only on bidirected graphs. 
     /// Results wary and can be exact hamiltonian cycle or just a very long cycle in a graph.<br/>
     /// If it found hamiltonian cycle then it's performance is about 1.2-1.3 
     /// times higher than minimal spanning tree weight.

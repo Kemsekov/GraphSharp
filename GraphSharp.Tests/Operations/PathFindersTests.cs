@@ -17,7 +17,7 @@ namespace GraphSharp.Tests.Operations
             for (int i = 0; i < 100; i++)
             {
                 _Graph.Do.ConnectRandomly(0, 7);
-                _Graph.Do.MakeUndirected();
+                _Graph.Do.MakeBidirected();
                 (var components, var setFinder) = _Graph.Do.FindComponents();
                 if (components.Count() >= 2)
                 {

@@ -8,7 +8,7 @@ where TEdge : IEdge
     /// <summary>
     /// Makes every connection between two nodes bidirectional by adding missing edges.
     /// </summary>
-    public GraphOperation<TNode, TEdge> MakeUndirected(Action<TEdge>? onCreatedEdge = null)
+    public GraphOperation<TNode, TEdge> MakeBidirected(Action<TEdge>? onCreatedEdge = null)
     {
         onCreatedEdge ??= (edge) => { };
         foreach (var source in Nodes)

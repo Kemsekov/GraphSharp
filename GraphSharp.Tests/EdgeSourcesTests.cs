@@ -225,7 +225,7 @@ public class EdgeSourcesTests
         {
             _Graph.SetSources(Nodes, edgeSource);
             FillEdges(Nodes, edgeSource, 1000);
-            _Graph.Do.MakeUndirected();
+            _Graph.Do.MakeBidirected();
             _Graph.Do.MakeSources(1,2,3,4);
             
             Assert.True(edgeSource.IsSource(1));

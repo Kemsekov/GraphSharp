@@ -6,9 +6,9 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Removes undirected edges.
+    /// Removes bidirected edges.
     /// </summary>
-    public GraphOperation<TNode, TEdge> RemoveUndirectedEdges()
+    public GraphOperation<TNode, TEdge> RemoveBidirectedEdges()
     {
         foreach (var n in Nodes)
         {

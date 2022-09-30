@@ -28,7 +28,7 @@ public class GraphTests
     {
         _Graph.CreateNodes(50);
         _Graph.Do.DelaunayTriangulation();
-        _Graph.Do.MakeUndirected();
+        _Graph.Do.MakeBidirected();
         //It works very good at small graphs<200 nodes, especially on
         //triangulated graphs, so I am expecting it to return exact solution here.
         var result = _Graph.Do.TryFindHamiltonianPathByAntSimulation();
@@ -41,7 +41,7 @@ public class GraphTests
     {
         _Graph.CreateNodes(1000);
         _Graph.Do.DelaunayTriangulation();
-        _Graph.Do.MakeUndirected();
+        _Graph.Do.MakeBidirected();
         var result = _Graph.Do.TryFindHamiltonianCycleByBubbleExpansion();
         var path = _Graph.ConvertEdgesListToPath(result);
         _Graph.ValidateCycle(path);
@@ -61,7 +61,7 @@ public class GraphTests
     {
         _Graph.CreateNodes(500);
         _Graph.Do.ConnectRandomly(3, 6)
-                 .MakeUndirected();
+                 .MakeBidirected();
         var startPositions = new int[] { 1, 2, 3, 4 };
         TestTopologicalSort(startPositions);
         _Graph.CreateNodes(500);
@@ -299,15 +299,15 @@ public class GraphTests
     }
 
     [Fact]
-    public void IsUndirected_Works()
+    public void IsBidirected_Works()
     {
         var seed = new Random().Next();
         var directed = _Graph.CreateNodes(1000);
         directed
             .Do
             .ConnectNodes(20)
-            .MakeUndirected();
-        Assert.True(directed.IsUndirected());
+            .MakeBidirected();
+        Assert.True(directed.IsBidirected());
     }
 
     [Fact]

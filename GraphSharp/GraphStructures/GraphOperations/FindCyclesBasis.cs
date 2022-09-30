@@ -23,10 +23,10 @@ where TEdge : IEdge
             foreach (var e in tree)
             {
                 treeGraph.Edges.Add(e);
-                if (Edges.TryGetEdge(e.TargetId, e.SourceId, out var undirected))
+                if (Edges.TryGetEdge(e.TargetId, e.SourceId, out var bidirected))
                 {
-                    if (undirected is not null)
-                        treeGraph.Edges.Add(undirected);
+                    if (bidirected is not null)
+                        treeGraph.Edges.Add(bidirected);
                 }
             }
         }
