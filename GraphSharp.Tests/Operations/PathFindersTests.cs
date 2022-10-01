@@ -13,7 +13,7 @@ namespace GraphSharp.Tests.Operations
     {
         public void FindPath(Func<IGraph<Node, Edge>, int, int, IList<Node>> getPath)
         {
-            _Graph.CreateNodes(1000);
+            _Graph.Do.CreateNodes(1000);
             for (int i = 0; i < 100; i++)
             {
                 _Graph.Do.ConnectRandomly(0, 7);

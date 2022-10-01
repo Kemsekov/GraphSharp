@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using GraphSharp.Exceptions;
+
 namespace GraphSharp.Graphs;
 
 /// <summary>
@@ -12,7 +14,15 @@ public class DefaultNodeSource<TNode> : INodeSource<TNode>
 where TNode : INode
 {
     IDictionary<int, TNode> Nodes;
-    public TNode this[int nodeId] { get => Nodes[nodeId]; set => Nodes[nodeId] = value; }
+    public TNode this[int nodeId]
+    {
+        get => Nodes[nodeId]; 
+        set
+        {
+            if(value.Id!=nodeId) throw new WrongNodeSetException($"{value} have Id {value.Id} which is not equal to {nodeId}. Cannot set it.");
+            Nodes[nodeId] = value;
+        }
+    }
     public int Count => Nodes.Count;
     public int MaxNodeId { get; protected set; }
     public int MinNodeId { get; protected set; }
@@ -23,15 +33,19 @@ where TNode : INode
     {
         MaxNodeId = -1;
         MinNodeId = -1;
-        Nodes = new ConcurrentDictionary<int, TNode>(Environment.ProcessorCount,0);
+        Nodes = new ConcurrentDictionary<int, TNode>(Environment.ProcessorCount, 0);
+    }
+    void UpdateMaxMinNodeId(int nodeId)
+    {
+        if (nodeId > MaxNodeId)
+            MaxNodeId = nodeId;
+        if (nodeId < MinNodeId || MinNodeId == -1)
+            MinNodeId = nodeId;
     }
     public void Add(TNode node)
     {
         Nodes[node.Id] = node;
-        if (node.Id > MaxNodeId)
-            MaxNodeId = node.Id;
-        if (node.Id < MinNodeId || MinNodeId == -1)
-            MinNodeId = node.Id;
+        UpdateMaxMinNodeId(node.Id);
     }
 
     public IEnumerator<TNode> GetEnumerator()
@@ -89,8 +103,8 @@ where TNode : INode
 
     public bool Move(TNode node, int newId)
     {
-        if(TryGetNode(newId,out var _)) return false;
-        if(!Remove(node)) return false;
+        if (TryGetNode(newId, out var _)) return false;
+        if (!Remove(node)) return false;
         node.Id = newId;
         Add(node);
         return true;
@@ -98,14 +112,14 @@ where TNode : INode
 
     public bool Move(int nodeId, int newId)
     {
-        if(TryGetNode(nodeId,out var n) && n is not null)
-            return Move(n,newId);
+        if (TryGetNode(nodeId, out var n) && n is not null)
+            return Move(n, newId);
         return false;
     }
 
     public bool Contains(int nodeId)
     {
-        return TryGetNode(nodeId,out var _);
+        return TryGetNode(nodeId, out var _);
     }
 
     public bool Contains(TNode node)
@@ -115,7 +129,8 @@ where TNode : INode
 
     public void CopyTo(TNode[] array, int arrayIndex)
     {
-        foreach(var n in Nodes){
+        foreach (var n in Nodes)
+        {
             array[arrayIndex] = n.Value;
             arrayIndex++;
         }

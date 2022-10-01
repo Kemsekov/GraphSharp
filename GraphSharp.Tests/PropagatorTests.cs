@@ -23,7 +23,8 @@ namespace GraphSharp.Tests
 
         public PropagatorTests()
         {
-            _graph = new Graph<Node, Edge>(new TestGraphConfiguration(new())).CreateNodes(1000);
+            _graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()));
+            _graph.Do.CreateNodes(1000);
             _graph.Do.ConnectNodes(10);
 
             _propagatorFactories = new Func<IVisitor<Node, Edge>, bool, PropagatorBase<Node, Edge>>[2];
@@ -272,8 +273,8 @@ namespace GraphSharp.Tests
         [Fact]
         public void Propagate_HaveRightNodesVisitOrderWithManualData()
         {
-            var graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()))
-                .CreateNodes(10);
+            var graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()));
+            graph.Do.CreateNodes(10);
             foreach (var pair in ManualTestData.NodesConnections)
             {
                 graph.Edges.Add(new Edge(graph.Nodes[pair[0]], graph.Nodes[pair[1]]));
@@ -313,8 +314,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void ReverseOrder_HaveRightVisitOrder()
         {
-
-            _graph.CreateNodes(1000).Do.ConnectRandomly(2, 10);
+            _graph.Do.CreateNodes(1000).ConnectRandomly(2, 10);
             foreach (var factory in _propagatorFactories)
             {
                 var v = new ActionVisitor<Node, Edge>();

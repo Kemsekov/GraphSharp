@@ -16,7 +16,8 @@ namespace GraphSharp.Tests.Operations
 
         public BaseTest()
         {
-            this._Graph = new Graph<Node, Edge>(new TestGraphConfiguration(new Random())).CreateNodes(1000);
+            this._Graph = new Graph<Node, Edge>(new TestGraphConfiguration(new Random()));
+            _Graph.Do.CreateNodes(1000);
         }
     }
 }

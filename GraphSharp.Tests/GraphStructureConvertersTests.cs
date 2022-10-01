@@ -193,8 +193,9 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FromConnectionsList1_Works(){
-            _Graph.CreateNodes(100)
-            .Do.ConnectRandomly(5,20);
+            _Graph.Do
+                .CreateNodes(100)
+                .ConnectRandomly(5,20);
             var expected = _Graph.Converter.ToConnectionsList();
             var actual = _Graph.Converter.FromConnectionsList(expected).ToConnectionsList();
             Assert.NotEmpty(actual);
@@ -216,8 +217,9 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void FromConnectionsList2_Works(){
-            _Graph.CreateNodes(500)
-            .Do.ConnectRandomly(5,20);
+            _Graph.Do
+                .CreateNodes(500)
+                .ConnectRandomly(5,20);
             var expected = _Graph.Edges.Select(x=>(x.SourceId,x.TargetId));
             var newGraph = _Graph.Clone();
             newGraph.Converter.FromConnectionsList(expected.ToArray());
@@ -227,7 +229,7 @@ namespace GraphSharp.Tests
 
         [Fact]
         public void ToQuikGraph_Works(){
-            _Graph.CreateNodes(1000).Do.ConnectRandomly(2,10);
+            _Graph.Do.CreateNodes(1000).ConnectRandomly(2,10);
             var converted = _Graph.Converter.ToQuikGraph();
             _Graph.Do.ConnectRandomly(2,3);
             foreach(var n in _Graph.Nodes){
@@ -245,7 +247,7 @@ namespace GraphSharp.Tests
         }
         [Fact]
         public void ConvertEdgesListToPath(){
-            _Graph.CreateNodes(1000);
+            _Graph.Do.CreateNodes(1000);
             _Graph.Do.DelaunayTriangulation();
             for(int i = 0;i<100;i++){
                 var n1 = Random.Shared.Next(1000);

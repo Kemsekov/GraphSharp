@@ -67,16 +67,18 @@ namespace GraphSharp.Tests.Operations
             //create two identical nodes list
             var seed = new Random().Next();
             var directed =
-                new Graph<Node, Edge>(new TestGraphConfiguration(new(seed)))
-                    .CreateNodes(2000);
+                new Graph<Node, Edge>(new TestGraphConfiguration(new(seed)));
+            directed.Do
+                .CreateNodes(2000);
             directed
                 .Do
                 .ConnectNodes(20)
                 .MakeDirected();
 
             var bidirected =
-                new Graph<Node, Edge>(new TestGraphConfiguration(new(seed)))
-                    .CreateNodes(2000);
+                new Graph<Node, Edge>(new TestGraphConfiguration(new(seed)));
+            bidirected.Do
+                .CreateNodes(2000);
             bidirected
                 .Do
                 .ConnectNodes(20);
@@ -119,7 +121,7 @@ namespace GraphSharp.Tests.Operations
         public void RemoveBidirectedEdgesWorks()
         {
             var graph = new Graph<Node, Edge>(new TestGraphConfiguration(new()));
-            graph.CreateNodes(500);
+            graph.Do.CreateNodes(500);
             graph.Do.ConnectRandomly(0, 8);
             var before_removal = graph.Converter.ToConnectionsList().ToList();
             graph.Do.RemoveBidirectedEdges();
@@ -162,17 +164,17 @@ namespace GraphSharp.Tests.Operations
         {
             var seed = new Random().Next();
             var maybeBidirected =
-                new Graph<Node, Edge>(new TestGraphConfiguration(new()) { Rand = new(seed) })
-                .CreateNodes(2000);
+                new Graph<Node, Edge>(new TestGraphConfiguration(new()) { Rand = new(seed) });
             maybeBidirected
                 .Do
+                .CreateNodes(2000)
                 .ConnectNodes(20);
 
             var bidirected =
-                new Graph<Node, Edge>(new TestGraphConfiguration(new()) { Rand = new(seed) })
-                .CreateNodes(2000);
+                new Graph<Node, Edge>(new TestGraphConfiguration(new()) { Rand = new(seed) });
             bidirected
                 .Do
+                .CreateNodes(2000)
                 .ConnectNodes(20)
                 //one of them make 100% bidirected
                 .MakeBidirected();
@@ -212,7 +214,7 @@ namespace GraphSharp.Tests.Operations
         }
         [Fact]
         public void MakeComplete_Works(){
-            _Graph.CreateNodes(100).Do.ConnectNodes(5);
+            _Graph.Do.CreateNodes(100).ConnectNodes(5);
             _Graph.Do.MakeComplete();
             foreach(var n1 in _Graph.Nodes){
                 foreach(var n2 in _Graph.Nodes){
@@ -265,7 +267,7 @@ namespace GraphSharp.Tests.Operations
         [Fact]
         public void Create_RightCountOfNodes()
         {
-            _Graph.CreateNodes(100);
+            _Graph.Do.CreateNodes(100);
             Assert.Equal(_Graph.Nodes.Count, 100);
             Assert.Equal(_Graph.Nodes.MaxNodeId, 99);
             Assert.Equal(_Graph.Nodes.MinNodeId, 0);
@@ -274,7 +276,7 @@ namespace GraphSharp.Tests.Operations
         [Fact]
         public void RemoveNodes_Works()
         {
-            _Graph.CreateNodes(1000);
+            _Graph.Do.CreateNodes(1000);
             var nodes_before_removal = _Graph.Nodes.Select(x => x.Id).ToArray();
             var edges_before_removal = _Graph.Edges.Select(x => (x.SourceId, x.TargetId)).ToArray();
             _Graph.Do.RemoveNodes(_Graph.GetNodesIdWhere(x => x.Id % 3 == 0));
@@ -310,7 +312,7 @@ namespace GraphSharp.Tests.Operations
         {
             for (int i = 0; i < 100; i++)
             {
-                _Graph.CreateNodes(1000);
+                _Graph.Do.CreateNodes(1000);
                 _Graph.Do.ConnectRandomly(0, 7);
                 var index = Random.Shared.Next(_Graph.Edges.Count);
                 var e1 = _Graph.Edges.ElementAt(index);
@@ -426,7 +428,7 @@ namespace GraphSharp.Tests.Operations
         [Fact]
         public void Reindex_Works()
         {
-            _Graph.CreateNodes(1000);
+            _Graph.Do.CreateNodes(1000);
             var toRemove = _Graph.Nodes.Where(x => x.Id % 3 == 0).Select(x => x.Id).ToArray();
             _Graph.Do.RemoveNodes(toRemove);
             foreach (var n in _Graph.Nodes)

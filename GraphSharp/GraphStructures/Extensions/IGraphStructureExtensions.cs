@@ -19,23 +19,6 @@ public static class GraphExtensions
         return graph.Do.FindComponents().components.Count() == 1;
     }
     /// <summary>
-    /// Clears graph and creates some count of nodes.
-    /// </summary>
-    /// <param name="count">Count of nodes to create</param>
-    public static IGraph<TNode, TEdge> CreateNodes<TNode, TEdge>(this IGraph<TNode, TEdge> graph, int nodesCount)
-    where TNode : INode
-    where TEdge : IEdge
-    {
-        graph.Clear();
-        //create nodes
-        for (int i = 0; i < nodesCount; i++)
-        {
-            var node = graph.Configuration.CreateNode(i);
-            graph.Nodes.Add(node);
-        }
-        return graph;
-    }
-    /// <summary>
     /// Clears current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
     /// </summary>
     public static IGraph<TNode, TEdge> Clear<TNode, TEdge>(this IGraph<TNode, TEdge> graph)

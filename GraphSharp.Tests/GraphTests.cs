@@ -21,12 +21,13 @@ public class GraphTests
 
     public GraphTests()
     {
-        this._Graph = new Graph<Node, Edge>(new TestGraphConfiguration(new Random())).CreateNodes(1000);
+        this._Graph = new Graph<Node, Edge>(new TestGraphConfiguration(new Random()));
+        _Graph.Do.CreateNodes(1000);
     }
     [Fact]
     public void TryFindHamiltonianPathByAntSimulation_Works()
     {
-        _Graph.CreateNodes(50);
+        _Graph.Do.CreateNodes(50);
         _Graph.Do.DelaunayTriangulation();
         _Graph.Do.MakeBidirected();
         //It works very good at small graphs<200 nodes, especially on
@@ -39,7 +40,7 @@ public class GraphTests
     [Fact]
     public void TryFindHamiltonianCycleByBubbleExpansion_Works()
     {
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.DelaunayTriangulation();
         _Graph.Do.MakeBidirected();
         var result = _Graph.Do.TryFindHamiltonianCycleByBubbleExpansion();
@@ -49,7 +50,7 @@ public class GraphTests
     [Fact]
     public void TravelingSalesmanProblemByBubbleExpansion()
     {
-        _Graph.CreateNodes(100);
+        _Graph.Do.CreateNodes(100);
         (var edges, var path) = _Graph.Do.TravelingSalesmanProblemByBubbleExpansion();
         Assert.Equal(path.Count, _Graph.Nodes.Count + 1);
         Assert.Equal(edges.Count, _Graph.Nodes.Count);
@@ -59,12 +60,12 @@ public class GraphTests
     [Fact]
     public void TopologicalSort_Works()
     {
-        _Graph.CreateNodes(500);
+        _Graph.Do.CreateNodes(500);
         _Graph.Do.ConnectRandomly(3, 6)
                  .MakeBidirected();
         var startPositions = new int[] { 1, 2, 3, 4 };
         TestTopologicalSort(startPositions);
-        _Graph.CreateNodes(500);
+        _Graph.Do.CreateNodes(500);
         _Graph.Do.ConnectRandomly(3, 6)
                  .MakeSources(5, 6, 7);
         TestTopologicalSort();
@@ -110,7 +111,7 @@ public class GraphTests
     [Fact]
     public void TryFindCenter_Works()
     {
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.DelaunayTriangulation();
         (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1);
         (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1);
@@ -126,7 +127,7 @@ public class GraphTests
     [Fact]
     public void FindLocalClusteringCoefficients_Works()
     {
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(2, 10);
         var coeffs = _Graph.Do.FindLocalClusteringCoefficients();
         Assert.True(coeffs.All(x => x <= 1f && x >= 0f));
@@ -143,7 +144,7 @@ public class GraphTests
     public void GetComplement_Works()
     {
         var complement = _Graph
-            .CreateNodes(100).Do
+            .Do.CreateNodes(100)
             .ConnectRandomly(1, 5)
             .GetComplement();
         foreach (var c in complement)
@@ -159,7 +160,7 @@ public class GraphTests
     [Fact]
     public void FindStronglyConnectedComponents_Works()
     {
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectToClosest(2, 5);
         var ssc = _Graph.Do.FindStronglyConnectedComponentsTarjan();
         Assert.NotEmpty(ssc);
@@ -180,7 +181,7 @@ public class GraphTests
     [Fact]
     public void FindEccentricity_Works()
     {
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.DelaunayTriangulation();
         var node = _Graph.Nodes[Random.Shared.Next(1000)];
         var ecc = _Graph.Do.FindEccentricity(node.Id);
@@ -191,7 +192,7 @@ public class GraphTests
     [Fact]
     public void FindCycleBasis_Works()
     {
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
         var tree = _Graph.Do.FindSpanningTreeKruskal();
         var cycles = _Graph.Do.FindCyclesBasis();
@@ -217,7 +218,7 @@ public class GraphTests
     [Fact]
     public void FindSpanningTree_Works()
     {
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
         (var components, var setFinder) = _Graph.Do.FindComponents();
         var tree = _Graph.Do.FindSpanningTreeKruskal();
@@ -249,7 +250,7 @@ public class GraphTests
     [Fact]
     public void FindArticulationPoints_Works()
     {
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
         var before = _Graph.Do.FindComponents().components.Count();
         var after = 0;
@@ -295,9 +296,10 @@ public class GraphTests
     public void IsDirected_Works()
     {
         var seed = new Random().Next();
-        var directed = _Graph.CreateNodes(1000);
-        directed
-            .Do
+        var directed = _Graph;
+
+        directed.Do
+            .CreateNodes(1000)
             .ConnectNodes(20)
             .MakeDirected();
         Assert.True(directed.IsDirected());
@@ -306,7 +308,7 @@ public class GraphTests
     [Fact]
     public void IsDirectedTree_Works()
     {
-        _Graph.CreateNodes(1000).Do.ConnectNodes(10);
+        _Graph.Do.CreateNodes(1000).ConnectNodes(10);
         var tree = _Graph.Do.FindSpanningTreeKruskal();
         Assert.False(_Graph.IsDirectedTree());
         _Graph.SetSources(_Graph.Nodes, new DefaultEdgeSource<Edge>(tree));
@@ -319,9 +321,9 @@ public class GraphTests
     public void IsBidirected_Works()
     {
         var seed = new Random().Next();
-        var directed = _Graph.CreateNodes(1000);
-        directed
-            .Do
+        var directed = _Graph;
+        directed.Do
+            .CreateNodes(1000)
             .ConnectNodes(20)
             .MakeBidirected();
         Assert.True(directed.IsBidirected());
@@ -396,7 +398,7 @@ public class GraphTests
             var cycle2 = new Node[] { new(3), new(2), new(9), new(7), new(6), new(5), new(4), new(3) };
             Assert.False(_Graph.CombineCycles(cycle1, cycle2, out var combined));
         }
-        _Graph.CreateNodes(1000);
+        _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectNodes(10);
         var cycles = _Graph.Do.FindCyclesBasis();
         var accumulator = new List<(IList<Node> cycle1, IList<Node> cycle2)>();

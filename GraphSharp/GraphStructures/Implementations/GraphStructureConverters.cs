@@ -105,7 +105,7 @@ where TEdge : IEdge
         _structureBase.Clear();
         int width = adjacencyMatrix.RowCount;
 
-        _structureBase.CreateNodes(width);
+        _structureBase.Do.CreateNodes(width);
 
         for (int i = 0; i < width; i++)
             for (int b = 0; b < width; b++)
@@ -128,7 +128,7 @@ where TEdge : IEdge
         _structureBase.Clear();
         int nodesCount = incidenceMatrix.RowCount;
         var edgesCount = incidenceMatrix.ColumnCount;
-        _structureBase.CreateNodes(nodesCount);
+        _structureBase.Do.CreateNodes(nodesCount);
 
         for (int col = 0; col < edgesCount; ++col)
         {
@@ -199,7 +199,7 @@ where TEdge : IEdge
     {
         _structureBase.Clear();
         var nodesCount = connectionsList.SelectMany(x => new[] { x.source, x.target }).Max();
-        _structureBase.CreateNodes(nodesCount + 1);
+        _structureBase.Do.CreateNodes(nodesCount + 1);
         foreach (var c in connectionsList)
         {
             if (!Nodes.TryGetNode(c.source, out var _))
