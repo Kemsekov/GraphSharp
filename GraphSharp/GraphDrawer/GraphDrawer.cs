@@ -112,8 +112,8 @@ where TEdge : IEdge
         var n1 = Math.Min(edge.SourceId,edge.TargetId);
         var n2 = Math.Max(edge.SourceId,edge.TargetId);
         if(DrawnEdgesCache.TryGetValue((n1,n2),out var _)) return;
-        var sourcePos = ShiftVector(Nodes[edge.SourceId].Position);
-        var targetPos = ShiftVector(Nodes[edge.TargetId].Position);
+        var sourcePos = ShiftVector(Graph.GetSource(edge).Position);
+        var targetPos = ShiftVector(Graph.GetTarget(edge).Position);
         color = color == default ? edge.Color : color;
         var size = Size;
         var point1 = sourcePos*size;
@@ -123,8 +123,8 @@ where TEdge : IEdge
     }
     public void DrawDirection(TEdge edge, float lineThickness, float directionLength, Color color)
     {
-        var sourcePos = ShiftVector(Nodes[edge.SourceId].Position);
-        var targetPos = ShiftVector(Nodes[edge.TargetId].Position);
+        var sourcePos = ShiftVector(Graph.GetSource(edge).Position);
+        var targetPos = ShiftVector(Graph.GetTarget(edge).Position);
 
         var distance = Vector2.Distance(sourcePos, targetPos);
 

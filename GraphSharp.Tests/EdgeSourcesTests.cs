@@ -21,6 +21,7 @@ public class EdgeSourcesTests
         Fill(Nodes, NodesCount);
         EdgeSources = new List<IEdgeSource<Edge>>()
             {
+                // new AdjacencyEdgeSource<Edge>(NodesCount),
                 new DefaultEdgeSource<Edge>()
             };
     }
@@ -177,6 +178,7 @@ public class EdgeSourcesTests
     {
         foreach (var edgeSource in EdgeSources)
         {
+            if(!edgeSource.AllowParallelEdges) continue;
             var e1 = new Edge(Nodes[0], Nodes[5]) { Weight = 1 };
             var e2 = new Edge(Nodes[0], Nodes[5]) { Weight = 2 };
             var e3 = new Edge(Nodes[0], Nodes[5]) { Weight = 3 };

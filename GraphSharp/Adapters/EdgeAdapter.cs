@@ -1,3 +1,6 @@
+using System;
+using GraphSharp.Graphs;
+
 namespace GraphSharp.Adapters;
 
 /// <summary>
@@ -7,16 +10,16 @@ public struct EdgeAdapter<TVertex, TEdge> : QuikGraph.IEdge<TVertex>
 where TVertex : INode
 where TEdge : IEdge
 {
-    public TVertex Source { get; }
-    public TVertex Target { get; }
+    public TVertex Source => source.Value;
+    public TVertex Target => target.Value;
+    Lazy<TVertex> source;
+    Lazy<TVertex> target;
     public TEdge GraphSharpEdge { get; }
-    public GraphSharp.Graphs.IGraph<TVertex, TEdge> Graph { get; }
     public EdgeAdapter(TEdge edge, GraphSharp.Graphs.IGraph<TVertex, TEdge> graph)
     {
+        source = new Lazy<TVertex>(()=>graph.GetSource(edge));
+        target = new Lazy<TVertex>(()=>graph.GetTarget(edge));
         GraphSharpEdge = edge;
-        Graph = graph;
-        Source = graph.Nodes[edge.SourceId];
-        Target = graph.Nodes[GraphSharpEdge.TargetId];
     }
     public override bool Equals(object? obj)
     {

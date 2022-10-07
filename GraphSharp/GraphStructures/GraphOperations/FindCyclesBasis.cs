@@ -38,7 +38,8 @@ where TEdge : IEdge
             var path = treeGraph.Do.FindAnyPath(e.TargetId, e.SourceId);
             if (path.Count != 0)
             {
-                result.Add(path.Prepend(Nodes[e.SourceId]).ToList());
+                
+                result.Add(path.Prepend(StructureBase.GetSource(e)).ToList());
             }
         });
         return result;

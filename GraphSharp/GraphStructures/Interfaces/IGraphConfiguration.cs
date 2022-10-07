@@ -28,4 +28,18 @@ where TEdge : IEdge
     /// Method that used to create new <paramref name="TEdge"/> from two nodes of type <paramref name="TNode"/>
     /// </summary>
     TEdge CreateEdge(TNode source, TNode target);
+    /// <summary>
+    /// Method to get source of the edge
+    /// </summary>
+    /// <param name="edge">Edge to get source node from</param>
+    /// <param name="nodes">Nodes source linked to given edge</param>
+    /// <returns>Source node</returns>
+    TNode GetSource(TEdge edge,INodeSource<TNode> nodes);
+    /// <summary>
+    /// Method to get target of the edge
+    /// </summary>
+    /// <param name="edge">Edge to get target node from</param>
+    /// <param name="nodes">Nodes source linked to given edge</param>
+    /// <returns>Target node</returns>
+    TNode GetTarget(TEdge edge, INodeSource<TNode> nodes);
 }

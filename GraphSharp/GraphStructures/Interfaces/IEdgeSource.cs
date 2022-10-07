@@ -8,6 +8,10 @@ public interface IEdgeSource<TEdge> : ICollection<TEdge>
 where TEdge : IEdge
 {
     /// <summary>
+    /// Whatever parallel edges allowed
+    /// </summary>
+    bool AllowParallelEdges{get;}
+    /// <summary>
     /// Removes all edges that equals to <paramref name="edge"/> by <paramref name="Equals"/>. 
     /// This method of removal allows to remove some of parallel edges, which
     /// are not equal to each other.

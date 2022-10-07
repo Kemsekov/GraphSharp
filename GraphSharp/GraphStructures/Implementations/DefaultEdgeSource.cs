@@ -15,6 +15,7 @@ where TEdge : IEdge
     public DefaultEdgeSource()
     {
         Edges = new ConcurrentDictionary<int, (List<TEdge> outEdges,List<TEdge> inEdges)>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
+        AllowParallelEdges = true;
     }
 
     public DefaultEdgeSource(IEnumerable<TEdge> edges) : this()
@@ -58,9 +59,7 @@ where TEdge : IEdge
 
     public override IEnumerator<TEdge> GetEnumerator()
     {
-        foreach (var e in Edges)
-            foreach (var m in e.Value.outEdges)
-                yield return m;
+        return Edges.Values.SelectMany(x=>x.outEdges).GetEnumerator();
     }
 
     public override bool Remove(TEdge edge)

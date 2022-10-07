@@ -87,8 +87,9 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        if(graph.IsConnected()){
-            return graph.Edges.Count+1==graph.Nodes.Count;
+        if (graph.IsConnected())
+        {
+            return graph.Edges.Count + 1 == graph.Nodes.Count;
         }
         return false;
     }
@@ -320,54 +321,77 @@ public static class GraphExtensions
             n.Color = color;
         }
     }
-    public static void SetPositionsToAll<TNode>(this INodeSource<TNode> nodes, Func<TNode,Vector2>? choosePos = null)
+    public static void SetPositionsToAll<TNode>(this INodeSource<TNode> nodes, Func<TNode, Vector2>? choosePos = null)
     where TNode : INode
     {
         var r = new Random();
-        choosePos ??= node=> new(r.NextSingle(),r.NextSingle());
-        foreach(var n in nodes)
+        choosePos ??= node => new(r.NextSingle(), r.NextSingle());
+        foreach (var n in nodes)
             n.Position = choosePos(n);
     }
     /// <summary>
     /// Converts edges list to path (nodes list)
     /// </summary>
     /// <returns>Converted path</returns>
-    public static IList<TNode> ConvertEdgesListToPath<TNode,TEdge>(this IGraph<TNode,TEdge> graph, IList<TEdge> edges)
+    public static IList<TNode> ConvertEdgesListToPath<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TEdge> edges)
     where TNode : INode
     where TEdge : IEdge
     {
-        if(edges.Count==0) return new List<TNode>();
-        var m = edges.MaxBy(x=>Math.Max(x.SourceId,x.TargetId)) ?? throw new Exception();
-        var nodesCount = Math.Max(m.SourceId,m.TargetId);
-        using var addedNodes = ArrayPoolStorage.RentByteArray(nodesCount+1);
+        if (edges.Count == 0) return new List<TNode>();
+        var m = edges.MaxBy(x => Math.Max(x.SourceId, x.TargetId)) ?? throw new Exception();
+        var nodesCount = Math.Max(m.SourceId, m.TargetId);
+        using var addedNodes = ArrayPoolStorage.RentByteArray(nodesCount + 1);
         var edgesSource = new DefaultEdgeSource<TEdge>(edges);
-        var expectedNodesCount = edges.Count+1;
+        var expectedNodesCount = edges.Count + 1;
         int sink = -1;
-        foreach(var e in edges){
-            if(edgesSource.InEdges(e.SourceId).Count()==0){
+        foreach (var e in edges)
+        {
+            if (edgesSource.InEdges(e.SourceId).Count() == 0)
+            {
                 sink = e.SourceId;
             }
         }
-        if(sink==-1){
+        if (sink == -1)
+        {
             sink = edges.First().SourceId;
         }
         var result = new List<int>(expectedNodesCount);
         result.Add(sink);
-        
+
         var next = edgesSource.OutEdges(result.Last());
-        while(true){
+        while (true)
+        {
             next = edgesSource.OutEdges(result.Last());
-            if(next.Count()!=1) break;
+            if (next.Count() != 1) break;
             var toAdd = next.First().TargetId;
             addedNodes[toAdd] += 1;
-            if(addedNodes[toAdd]>1)
+            if (addedNodes[toAdd] > 1)
                 throw new ArgumentException("Given edges list is not a path. Some edges touch the same node twice");
 
             result.Add(toAdd);
-            if(result.Count==edges.Count+1) break;
+            if (result.Count == edges.Count + 1) break;
         }
-        if(result.Count!=expectedNodesCount)
+        if (result.Count != expectedNodesCount)
             throw new ArgumentException("Given edges list is not a path");
-        return result.Select(x=>graph.Nodes[x]).ToList();
+        return result.Select(x => graph.Nodes[x]).ToList();
+    }
+
+    /// <summary>
+    /// Method to get source of the edge
+    /// </summary>
+    public static TNode GetSource<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TEdge edge)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        return graph.Configuration.GetSource(edge, graph.Nodes);
+    }
+    /// <summary>
+    /// Method to get target of the edge
+    /// </summary>
+    public static TNode GetTarget<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TEdge edge)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        return graph.Configuration.GetTarget(edge, graph.Nodes);
     }
 }

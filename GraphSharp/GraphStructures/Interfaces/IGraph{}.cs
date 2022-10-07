@@ -26,7 +26,6 @@ where TEdge : IEdge
     /// <summary>
     /// Graph converter. If you need to convert current graph to different representations or initialize current graph from different representations then look at this objects methods.
     /// </summary>
-    /// <value></value>
     GraphConverters<TNode, TEdge> Converter { get; }
     /// <summary>
     /// Set current graph's Nodes and Edges

@@ -7,9 +7,13 @@ using GraphSharp.Exceptions;
 
 namespace GraphSharp.Graphs;
 
+/// <summary>
+/// Base class for edge source. Implement basic functionality by abstract methods.
+/// </summary>
 public abstract class BaseEdgeSource<TEdge> : IEdgeSource<TEdge>
 where TEdge : IEdge
 {
+    public bool AllowParallelEdges{get;init;}
     public int Count { get; protected set; }
     public bool IsReadOnly => false;
     public TEdge this[int sourceId, int targetId]

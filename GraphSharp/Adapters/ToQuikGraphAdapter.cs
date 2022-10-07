@@ -43,7 +43,7 @@ where TEdge : IEdge
 
     public bool IsDirected => Graph.IsDirected();
 
-    public bool AllowParallelEdges => true;
+    public bool AllowParallelEdges => Graph.Edges.AllowParallelEdges;
 
     public bool ContainsEdge(EdgeAdapter<TVertex, TEdge> edge) => Graph.Edges.Contains(edge.GraphSharpEdge);
 

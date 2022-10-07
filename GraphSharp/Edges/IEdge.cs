@@ -24,4 +24,5 @@ public interface IEdge : IComparable<IEdge>, ICloneable<IEdge>, IFlowed, IWeight
         if (d1 == 0) return d2;
         return d1;
     }
+    
 }

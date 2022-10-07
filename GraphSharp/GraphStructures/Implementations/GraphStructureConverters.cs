@@ -38,11 +38,11 @@ where TEdge : IEdge
         return result;
     }
     /// <summary>
-    /// Converts current <see cref="IGraph.Nodes"/> to sparse adjacency matrix.
+    /// Converts current <see cref="Nodes"/> to sparse adjacency matrix.
     /// </summary>
-    public Matrix ToAdjacencyMatrix()
+    public SparseMatrix ToAdjacencyMatrix()
     {
-        Matrix adjacencyMatrix;
+        SparseMatrix adjacencyMatrix;
         int size = Nodes.MaxNodeId + 1;
         adjacencyMatrix = SparseMatrix.Create(size, size, 0);
         foreach (var e in Edges)

@@ -50,8 +50,7 @@ where TNode : INode
 
     public IEnumerator<TNode> GetEnumerator()
     {
-        foreach (var n in Nodes)
-            yield return n.Value;
+        return Nodes.Values.GetEnumerator();
     }
 
     public bool Remove(TNode node)
