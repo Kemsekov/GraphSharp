@@ -19,7 +19,7 @@ where TEdge : IEdge
         var treeGraph = new Graph<TNode, TEdge>(Configuration);
         treeGraph.SetSources(Nodes, Configuration.CreateEdgeSource());
         {
-            var tree = FindSpanningTreeKruskal();
+            var tree = FindSpanningForestKruskal();
             foreach (var e in tree)
             {
                 treeGraph.Edges.Add(e);

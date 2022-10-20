@@ -2,8 +2,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading.Tasks;
 using GraphSharp.Adapters;
+using Satsuma;
 
 namespace GraphSharp.Graphs;
 
@@ -12,139 +14,49 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Traveling salesman problem solver. About 1.25 longer than MST.<br/>
-    /// It works like expanding bubble<br/>
-    /// 1) Find delaunay triangulation of current nodes in a graph.<br/>
-    /// 2) Make graph bidirected.<br/>
-    /// 3) Create another edge source which contains information about added edges.<br/>
-    /// 4) For each added edge search intersection of source edges and target edges and which target is not present in already added edges. <br/>
-    /// 5) If intersection is edge A->C, B->C for given edge A->B then remove given edge A->B and add two more edges A->C and C->B so by doing this we 'expand' our cycle
+    /// Improves a solution for the computed TSP. <br/>
+	/// It starts from a precomputed tour (e.g. one returned by TSPBubbleExpansion) and gradually improves it by 
+	/// repeatedly swapping two edges.
     /// </summary>
-    public (IEdgeSource<TEdge> edges, IList<TNode> path) TravelingSalesmanProblemByBubbleExpansion(Func<TEdge, float>? getWeight = null)
+    public (IEnumerable<TNode> tour, double tourCost) TspOpt2(IEnumerable<TNode> tour, double tourCost)
     {
-        //if we have some data in current graph then just create an empty one with current nodes only and compute
-        //all there
-        if (Edges.Count != 0)
-        {
-            var g = new Graph<TNode, TEdge>(Configuration);
-            g.SetSources(Nodes, new DefaultEdgeSource<TEdge>());
-            return g.Do.TravelingSalesmanProblemByBubbleExpansion(getWeight);
-        }
-
-        DelaunayTriangulationWithoutHull();
-        MakeBidirected();
-        (var edges, var addedNodes) = FindHamiltonianCycleDelaunayTriangulationWithoutHull(getWeight);
-        using var _ = addedNodes;
-        
-        for (int i = 0; i < addedNodes.Length; i++)
-        {
-            if (addedNodes[i] == 0)
-            {
-                var pos = Nodes[i].Position;
-                var e = edges.MinBy(x =>
-                {
-                    var p1 = Nodes[x.SourceId].Position;
-                    var p2 = Nodes[x.TargetId].Position;
-                    return (pos - p2).Length() + (pos - p1).Length() - x.Weight;
-                });
-                if (e is null) break;
-                edges.Remove(e);
-                var toAdd1 = Configuration.CreateEdge(Nodes[e.SourceId], Nodes[i]);
-                var toAdd2 = Configuration.CreateEdge(Nodes[i], Nodes[e.TargetId]);
-                edges.Add(toAdd1);
-                edges.Add(toAdd2);
-                addedNodes[i] = 1;
-            }
-        }
-
-        var edgesSource = new DefaultEdgeSource<TEdge>(edges);
-
-        var first = edges.First();
-        var tmp = first;
-        var path = new List<TNode>();
-        path.Add(Nodes[tmp.SourceId]);
-        while (path.First().Id != tmp.TargetId)
-        {
-            path.Add(Nodes[tmp.TargetId]);
-            tmp = edgesSource.OutEdges(tmp.TargetId).First();
-        }
-        path.Add(Nodes[first.SourceId]);
-        Edges.Clear();
-        return (edgesSource, path);
+        var tsp = new Satsuma.Opt2Tsp<TNode>((n1, n2) => (n1.Position - n2.Position).Length(), tour, tourCost);
+        tsp.Run();
+        return (tsp.Tour, tsp.TourCost);
     }
-    (IList<TEdge> edges, RentedArray<byte> addedNodes) FindHamiltonianCycleDelaunayTriangulationWithoutHull(Func<TEdge, float>? getWeight = null)
+    public (IEnumerable<TNode> tour, double tourCost) TspCheapestLinkOnPositions()
     {
-        getWeight ??= x => x.Weight;
-        var start = Edges.MaxBy(getWeight);
-        var edges = new List<TEdge>();
-        var addedNodes =  ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
-        if (start is null) return (edges, addedNodes);
-        edges.Add(start);
-
-        var edgeInfo = new ConcurrentDictionary<TEdge, (byte isInvalid, List<int> intersection)>();
-
-        addedNodes[start.SourceId] = 1;
-        addedNodes[start.TargetId] = 1;
-
-        Parallel.ForEach(Edges, e =>
-        {
-            var e1 = Edges.OutEdges(e.SourceId).Select(x => x.TargetId);
-            var e2 = Edges.OutEdges(e.TargetId).Select(x => x.TargetId);
-
-            var pos1 = Nodes[e.SourceId].Position;
-            var pos2 = Nodes[e.TargetId].Position;
-
-            var intersection = e1.Intersect(e2).ToList();
-
-            edgeInfo[e] = (0, intersection);
+        var xOrder = Nodes.OrderBy(x=>x.Position.X);
+        var yOrder = Nodes.OrderBy(x=>x.Position.Y);
+        xOrder.Aggregate((n1,n2)=>{
+            var e = Configuration.CreateEdge(n1,n2);
+            Edges.Add(e);
+            return n2;
         });
-
-        var mst = FindSpanningTreeKruskal(x => getWeight(x));
-        foreach (var e in mst)
-        {
-            var info = edgeInfo[e];
-            edgeInfo[e] = (1, info.intersection);
-        }
-
-        var didSomething = true;
-        float minWeight = float.MaxValue;
-
-        Func<TEdge, float> order = x =>
-        {
-            return -getWeight(x);
-        };
-
-        while (didSomething)
-        {
-            didSomething = false;
-            minWeight = float.MaxValue;
-            foreach (var e in edges.OrderBy(order).ToList())
-            {
-                if (edgeInfo.TryGetValue(e, out var eInfo) && eInfo.isInvalid > 0) continue;
-                var intersection = eInfo.intersection.Where(x => addedNodes[x] == 0).ToList();
-                if (intersection.Count == 0)
-                {
-                    edgeInfo[e] = (1, eInfo.intersection);
-                    continue;
-                }
-                var toConnect = intersection.First();
-                var toAdd1 = Edges[e.SourceId, toConnect];
-                var toAdd2 = Edges[toConnect, e.TargetId];
-
-                var weight = toAdd1.Weight + toAdd2.Weight - e.Weight;
-                if (weight > minWeight) continue;
-
-                minWeight = weight;
-                edges.Remove(e);
-                edges.Add(toAdd1);
-                edges.Add(toAdd2);
-                addedNodes[toConnect] = 1;
-                didSomething = true;
-            }
-        }
-
-        edges.Add(Edges[start.TargetId, start.SourceId]);
-
-        return (edges, addedNodes);
+        yOrder.Aggregate((n1,n2)=>{
+            var e = Configuration.CreateEdge(n1,n2);
+            Edges.Add(e);
+            return n2;
+        });
+        // TODO: implement it
+        return (Enumerable.Empty<TNode>(),0);
+        throw new NotImplementedException();
+    }
+    public (IEnumerable<TNode> tour, double tourCost) TspCheapestLink(Func<TNode, TNode, double> cost)
+    {
+        var tsp = new Satsuma.CheapestLinkTsp<TNode>(Nodes.ToList(), cost);
+        return (tsp.Tour, tsp.TourCost);
+    }
+    public (IEnumerable<TNode> tour, double tourCost) TspInsertionFarthest(Func<TNode, TNode, double> cost)
+    {
+        var tsp = new Satsuma.InsertionTsp<INode>(Nodes.Cast<INode>(), (n1, n2) => cost((TNode)n1, (TNode)n2), Satsuma.TspSelectionRule.Farthest);
+        tsp.Run();
+        return (tsp.Tour.Cast<TNode>(), tsp.TourCost);
+    }
+    public (IEnumerable<TNode> tour, double tourCost) TspInsertionNearest(Func<TNode, TNode, double> cost)
+    {
+        var tsp = new Satsuma.InsertionTsp<INode>(Nodes.Cast<INode>(), (n1, n2) => cost((TNode)n1, (TNode)n2), Satsuma.TspSelectionRule.Nearest);
+        tsp.Run();
+        return (tsp.Tour.Cast<TNode>(), tsp.TourCost);
     }
 }

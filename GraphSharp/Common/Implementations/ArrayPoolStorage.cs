@@ -1,5 +1,6 @@
 using System.Buffers;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace GraphSharp;
 
@@ -17,24 +18,20 @@ public static class ArrayPoolStorage
     /// Parameter to how much similar size arrays will be close to fetch in created array pool.<br/>
     /// </summary>
     public const int MaxArraysPerBucket = 128;
-    static readonly ArrayPool<int> IntArrayPool = ArrayPool<int>.Create(MaxArrayLength,MaxArraysPerBucket);
-    static readonly ArrayPool<uint> UintArrayPool = ArrayPool<uint>.Create(MaxArrayLength,MaxArraysPerBucket);
-    static readonly ArrayPool<float> FloatArrayPool = ArrayPool<float>.Create(MaxArrayLength,MaxArraysPerBucket);
     static readonly ArrayPool<byte> ByteArrayPool = ArrayPool<byte>.Create(MaxArrayLength,MaxArraysPerBucket);
-    static readonly ArrayPool<Color> ColorArrayPool = ArrayPool<Color>.Create(MaxArrayLength,MaxArraysPerBucket);
     public static RentedArray<int> RentIntArray(int length){
-        return new(IntArrayPool.Rent(length),length,IntArrayPool);
+        return new(length,ByteArrayPool);
     }
     public static RentedArray<uint> RentUintArray(int length){
-        return new(UintArrayPool.Rent(length),length,UintArrayPool);
+        return new(length,ByteArrayPool);
     }
     public static RentedArray<float> RentFloatArray(int length){
-        return new(FloatArrayPool.Rent(length),length,FloatArrayPool);
+        return new(length,ByteArrayPool);
     }
     public static RentedArray<byte> RentByteArray(int length){
-        return new(ByteArrayPool.Rent(length),length,ByteArrayPool);
+        return new(length,ByteArrayPool);
     }
-    public static RentedArray<Color> RentColorArray(int length){
-        return new(ColorArrayPool.Rent(length),length,ColorArrayPool);
+    public static RentedArray<UnmanagedColor> RentColorArray(int length){
+        return new(length,ByteArrayPool);
     }
 }

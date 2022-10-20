@@ -28,7 +28,7 @@ where TEdge : IEdge
     /// </summary>
     GraphConverters<TNode, TEdge> Converter { get; }
     /// <summary>
-    /// Set current graph's Nodes and Edges
+    /// Set current graph's Nodes and Edges. When left null will do nothing.
     /// </summary>
-    public Graph<TNode, TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges);
+    public Graph<TNode, TEdge> SetSources(INodeSource<TNode>? nodes = null, IEdgeSource<TEdge>? edges = null);
 }

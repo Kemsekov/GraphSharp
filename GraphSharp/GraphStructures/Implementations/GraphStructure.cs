@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+
 namespace GraphSharp.Graphs;
 
 /// <summary>
@@ -43,12 +45,13 @@ where TEdge : IEdge
         Do = new GraphOperation<TNode, TEdge>(this);
     }
 
-    public Graph<TNode, TEdge> SetSources(INodeSource<TNode> nodes, IEdgeSource<TEdge> edges)
+    public Graph<TNode, TEdge> SetSources(INodeSource<TNode>? nodes = null, IEdgeSource<TEdge>? edges = null)
     {
-        Nodes = nodes;
-        Edges = edges;
+        Nodes = nodes ?? Nodes;
+        Edges = edges ?? Edges;
         return this;
     }
+
     public GraphOperation<TNode, TEdge> Do{get;}
     public GraphConverters<TNode, TEdge> Converter => new(this);
 

@@ -18,4 +18,19 @@ where TEdge : IEdge
         }
         return this;
     }
+    // TODO: add tests for MakeComplete(nodes)
+    /// <summary>
+    /// Ensures that subgraph containing given nodes is a complete graph. Creates a clique out of given nodes.
+    /// </summary>
+    public GraphOperation<TNode,TEdge> MakeComplete(params int[] nodes){
+        foreach(var n1 in nodes){
+            foreach(var n2 in nodes){
+                if(n1==n2) continue;
+                if(Edges.Contains(n1,n2)) continue;
+                var toAdd = Configuration.CreateEdge(Nodes[n1],Nodes[n2]);
+                Edges.Add(toAdd);
+            }
+        }
+        return this;
+    }
 }

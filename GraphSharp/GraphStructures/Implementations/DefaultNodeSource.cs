@@ -29,6 +29,12 @@ where TNode : INode
 
     public bool IsReadOnly => false;
 
+    public DefaultNodeSource(IEnumerable<TNode> nodes) : this()
+    {
+        foreach(var n in nodes)
+            Add(n);
+    }
+
     public DefaultNodeSource()
     {
         MaxNodeId = -1;

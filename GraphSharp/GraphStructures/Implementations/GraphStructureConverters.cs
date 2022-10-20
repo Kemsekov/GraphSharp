@@ -221,11 +221,19 @@ where TEdge : IEdge
     /// <summary>
     /// Uses <see cref="ToQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="QuikGraph.IBidirectionalGraph{TVertex, TEdge}"/> <br/>
     /// This conversation does not simply copy graph but passes execution of methods from <paramref name="QuikGraph"/> to <paramref name="GraphSharp"/>. <br/>
-    /// Any change to resulting adapter will affect original graph as well. Beware.
+    /// Any change to underlying graph will affect adapter as well. Beware.
     /// </summary>
     /// <returns>Graph adapter</returns>
     public ToQuikGraphAdapter<TNode,TEdge> ToQuikGraph(){
         return new ToQuikGraphAdapter<TNode, TEdge>(this._structureBase);
     }
-    
+    /// <summary>
+    /// Uses <see cref="SatsumaGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="Satsuma.IGraph"/> <br/>
+    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="Satsuma"/> to <paramref name="GraphSharp"/>. <br/>
+    /// Any change to underlying graph will affect adapter as well. Beware.
+    /// </summary>
+    /// <returns>Graph adapter</returns>
+    public SatsumaGraphAdapter<TNode,TEdge> ToSatsumaGraph(){
+        return new SatsumaGraphAdapter<TNode, TEdge>(this._structureBase);
+    }
 }

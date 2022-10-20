@@ -7,6 +7,7 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    // TODO: fix return docs
     /// <summary>
     /// Finds all unconnected components of a graph
     /// <example>
@@ -15,8 +16,8 @@ where TEdge : IEdge
     /// </code>
     /// </example>
     /// </summary>
-    /// <returns>List of lists of nodes where each of them represents different component and <see cref="UnionFind"/> that can be used to determine whatever two points in the same components or not.<br/></returns>
-    public (IEnumerable<IEnumerable<TNode>> components, UnionFind setFinder) FindComponents()
+    /// <returns>Array of lists of nodes where each of them represents different component and <see cref="UnionFind"/> that can be used to determine whatever two points in the same components or not.<br/></returns>
+    public Components<TNode> FindComponents()
     {
         UnionFind u = new(Nodes.MaxNodeId + 1);
         foreach (var n in Nodes)
@@ -26,6 +27,6 @@ where TEdge : IEdge
 
         var totalSets = Nodes.Select(x => u.FindSet(x.Id)).Distinct();
         var result = totalSets.Select(setId => Nodes.Where(n => u.FindSet(n.Id) == setId));
-        return (result.ToArray(), u);
+        return new (result.ToArray(), u);
     }
 }

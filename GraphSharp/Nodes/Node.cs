@@ -34,4 +34,9 @@ public class Node : INode
     }
 
     INode ICloneable<INode>.Clone() => Clone();
+
+    public bool Equals(INode? other)
+    {
+        return other?.Id == Id;
+    }
 }

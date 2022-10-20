@@ -103,4 +103,9 @@ where TEdge : IEdge
             arrayIndex++;
         }
     }
+
+    public IEnumerable<TEdge> InOutEdges(int nodeId)
+    {
+        return InEdges(nodeId).Concat(OutEdges(nodeId));
+    }
 }

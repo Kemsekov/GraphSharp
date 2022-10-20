@@ -5,7 +5,7 @@ namespace GraphSharp;
 /// <summary>
 /// Node interface. Each node used with graph and must be inherited from this interface.
 /// </summary>
-public interface INode : IComparable<INode>, ICloneable<INode>, IPositioned, IColored, IWeighted
+public interface INode : IComparable<INode>, ICloneable<INode>, IPositioned, IColored, IWeighted, System.IEquatable<INode>
 {
     /// <summary>
     /// Unique identifier for node

@@ -81,6 +81,16 @@ public class EdgeSourcesTests
             FillEdges(Nodes, edgeSource, 1000);
             Assert.Equal(1000, edgeSource.Count);
             _Graph.CheckForIntegrityOfSimpleGraph();
+            edgeSource.Clear();
+            edgeSource.Add(new Edge(Nodes[100],Nodes[200]){Weight = 1});
+            edgeSource.Add(new Edge(Nodes[100],Nodes[200]){Weight = 2});
+            Assert.True(edgeSource.Count==2);
+            var r = new Edge(Nodes[101],Nodes[200]);
+            edgeSource.Add(r);
+            Assert.True(edgeSource.Count==3);
+            edgeSource.Add(r);
+            edgeSource.Add(r);
+            Assert.True(edgeSource.Count==3);
         }
     }
 
@@ -151,7 +161,8 @@ public class EdgeSourcesTests
             edgeSource.Add(e1);
             edgeSource.Add(e1);
             edgeSource.Add(e1);
-            Assert.Equal(edgeSource.GetParallelEdges(0, 5).Count(), 3);
+            Assert.Equal(edgeSource.GetParallelEdges(0, 5).Count(), 1);
+            edgeSource.Remove(e1);
             edgeSource.Remove(e1);
             Assert.Equal(edgeSource.GetParallelEdges(0, 5).Count(), 0);
 

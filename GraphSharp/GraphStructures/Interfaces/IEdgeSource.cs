@@ -33,6 +33,8 @@ where TEdge : IEdge
     IEnumerable<TEdge> InEdges(int targetId);
     /// <returns>Both in and out edges. If you need to get both of edges this method will be faster.</returns>
     (IEnumerable<TEdge> OutEdges, IEnumerable<TEdge> InEdges) BothEdges(int nodeId);
+    /// <returns>A list of combined in and out edges</returns>
+    IEnumerable<TEdge> InOutEdges(int nodeId);
     /// <summary>
     /// Finds neighbors of given node. Nodes A and B are neighbors when there is an edge A->B or B->A
     /// </summary>

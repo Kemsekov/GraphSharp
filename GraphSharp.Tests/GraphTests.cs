@@ -48,16 +48,6 @@ public class GraphTests
         _Graph.ValidateCycle(path);
     }
     [Fact]
-    public void TravelingSalesmanProblemByBubbleExpansion()
-    {
-        _Graph.Do.CreateNodes(100);
-        (var edges, var path) = _Graph.Do.TravelingSalesmanProblemByBubbleExpansion();
-        Assert.Equal(path.Count, _Graph.Nodes.Count + 1);
-        Assert.Equal(edges.Count, _Graph.Nodes.Count);
-        _Graph.SetSources(_Graph.Nodes, edges);
-        _Graph.ValidateCycle(path);
-    }
-    [Fact]
     public void TopologicalSort_Works()
     {
         _Graph.Do.CreateNodes(500);
@@ -194,7 +184,7 @@ public class GraphTests
     {
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
-        var tree = _Graph.Do.FindSpanningTreeKruskal();
+        var tree = _Graph.Do.FindSpanningForestKruskal();
         var cycles = _Graph.Do.FindCyclesBasis();
         foreach (var c in cycles)
         {
@@ -221,7 +211,7 @@ public class GraphTests
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
         (var components, var setFinder) = _Graph.Do.FindComponents();
-        var tree = _Graph.Do.FindSpanningTreeKruskal();
+        var tree = _Graph.Do.FindSpanningForestKruskal();
 
         UnionFind u = new(_Graph.Nodes.MaxNodeId + 1);
         foreach (var n in _Graph.Nodes)
@@ -309,7 +299,7 @@ public class GraphTests
     public void IsDirectedTree_Works()
     {
         _Graph.Do.CreateNodes(1000).ConnectNodes(10);
-        var tree = _Graph.Do.FindSpanningTreeKruskal();
+        var tree = _Graph.Do.FindSpanningForestKruskal();
         Assert.False(_Graph.IsDirectedTree());
         _Graph.SetSources(_Graph.Nodes, new DefaultEdgeSource<Edge>(tree));
         Assert.True(_Graph.IsDirectedTree());

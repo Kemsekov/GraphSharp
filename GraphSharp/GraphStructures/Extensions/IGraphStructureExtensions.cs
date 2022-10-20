@@ -11,12 +11,31 @@ namespace GraphSharp.Graphs;
 /// </summary>
 public static class GraphExtensions
 {
+    /// <returns>
+    /// Other part of the edge.<br/> 
+    /// If <paramref name="nodeId"/> equals to 
+    /// <paramref name="SourceId"/> then returns <paramref name="TargetId"/>.<br/>
+    /// If <paramref name="nodeId"/> equals to 
+    /// <paramref name="TargetId"/> then returns <paramref name="SourceId"/>.<br/>
+    /// If none returns -1
+    /// </returns>
+    public static int Other<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TEdge edge, int nodeId)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        if(edge.SourceId==nodeId)
+            return edge.TargetId;
+        if(edge.TargetId==nodeId)
+            return edge.SourceId;
+        return -1;
+    }
     /// <returns>True if given graph have one single component</returns>
     public static bool IsConnected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
-        return graph.Do.FindComponents().components.Count() == 1;
+        using var c = graph.Do.FindComponents();
+        return c.Components_.Length == 1;
     }
     /// <summary>
     /// Clears current Nodes and Edges with new ones. Does not clear old Nodes and Edges.
@@ -37,11 +56,23 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        var result = new Graph<TNode, TEdge>(graph.Configuration);
+        var result = graph.CloneJustConfiguration();
         foreach (var n in graph.Nodes)
             graph.CloneNodeTo(n, result.Nodes);
         foreach (var e in graph.Edges)
             graph.CloneEdgeTo(e, result.Edges);
+        return result;
+    }
+    /// <summary>
+    /// Creates a graph structure of same configuration that that currently used. 
+    /// Do not clone any nodes or edges.
+    /// </summary>
+    /// <returns>Cloned by config graph structure</returns>
+    public static IGraph<TNode, TEdge> CloneJustConfiguration<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        var result = new Graph<TNode, TEdge>(graph.Configuration);
         return result;
     }
     /// <returns>True if given graph have one single strongly connected component</returns>
@@ -298,6 +329,18 @@ public static class GraphExtensions
         var newNode = (TNode)node.Clone();
         destination.Add(newNode);
         return newNode;
+    }
+    /// <summary>
+    /// Sets new nodes and edges to a graph
+    /// </summary>
+    public static IGraph<TNode, TEdge> SetSources<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IEnumerable<TNode>? nodes = null, IEnumerable<TEdge>? edges = null)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        nodes ??= graph.Nodes;
+        edges ??= graph.Edges;
+        graph.SetSources(new DefaultNodeSource<TNode>(nodes),new DefaultEdgeSource<TEdge>(edges));
+        return graph;
     }
     /// <summary>
     /// Set some color to all nodes
