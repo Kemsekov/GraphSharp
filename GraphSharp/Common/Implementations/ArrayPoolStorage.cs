@@ -34,4 +34,9 @@ public static class ArrayPoolStorage
     public static RentedArray<UnmanagedColor> RentColorArray(int length){
         return new(length,ByteArrayPool);
     }
+    public static RentedArray<T> RentArray<T>(int length)
+    where T : unmanaged
+    {
+        return new(length,ByteArrayPool);
+    }
 }

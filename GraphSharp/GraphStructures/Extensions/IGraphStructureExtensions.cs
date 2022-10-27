@@ -331,7 +331,7 @@ public static class GraphExtensions
         return newNode;
     }
     /// <summary>
-    /// Sets new nodes and edges to a graph
+    /// Sets new nodes and edges to a graph. Will enumerate every enumerable and add it's values to a graph.
     /// </summary>
     public static IGraph<TNode, TEdge> SetSources<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IEnumerable<TNode>? nodes = null, IEnumerable<TEdge>? edges = null)
     where TNode : INode

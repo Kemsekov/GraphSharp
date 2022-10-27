@@ -24,10 +24,10 @@ where TEdge : IEdge
         forest.Dispose();
         return result;
     }
-    KruskalForest<TEdge> FindForestDegree1(IGraph<TNode, TEdge> graph, Func<TEdge,float> getWeight)
+    public KruskalForest<TEdge> FindKruskalForest(IEnumerable<TEdge> edges, Func<TEdge,float> getWeight,Func<TNode,int> maxDegree)
     {
-        var edges = graph.Edges.OrderBy(x => getWeight(x));
-        return graph.Do.KruskalAlgorithm(edges, x => 1);
+        edges = edges.OrderBy(x => getWeight(x));
+        return KruskalAlgorithm(edges, maxDegree);
     }
     /// <summary>
     /// Constructs spanning tree degree 2 out of nodes positions only. 
@@ -80,7 +80,7 @@ where TEdge : IEdge
                     tmpGraph.Edges.Remove(e.SourceId, e.TargetId);
                 }
             }
-            using var forest = FindForestDegree1(tmpGraph,getWeight);
+            using var forest = FindKruskalForest(tmpGraph.Edges,getWeight,x=>1);
             var setFinder = components.SetFinder;
             foreach (var e in forest.Forest.OrderBy(x =>getWeight(x)))
             {

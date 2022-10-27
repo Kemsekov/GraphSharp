@@ -114,4 +114,34 @@ where TEdge : IEdge
 
         return edges;
     }
+    public IList<TEdge> FindHamiltonianPath(Func<TEdge, float>? getWeight = null){
+        using UnionFind unionFind = new(Nodes.MaxNodeId + 1);
+        foreach (var n in Nodes)
+            unionFind.MakeSet(n.Id);
+        using var degree = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        
+        var result = new List<TEdge>();
+        getWeight ??= x=>x.Weight;
+        var sortedEdges = Edges.OrderBy(x=>getWeight(x)).ToList();
+
+        int sourceId = 0, targetId = 0;
+        int maxDegree = 2;
+        bool didSomething = true;
+        while(didSomething){
+            didSomething = false;
+            foreach(var e in sortedEdges){  
+                sourceId = e.SourceId;
+                targetId = e.TargetId;
+                if(unionFind.SameSet(sourceId,targetId)) continue;
+                if(degree[sourceId]+1>maxDegree || degree[targetId]+1>maxDegree)
+                    continue;
+                result.Add(e);
+                degree[sourceId]++;
+                degree[targetId]++;
+                didSomething = true;
+                unionFind.UnionSet(sourceId,targetId);
+            }
+        }
+        return result;
+    }
 }

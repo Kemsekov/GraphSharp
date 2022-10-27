@@ -31,7 +31,8 @@ public class UnionFind : IDisposable
             return v;
         return parent[v] = FindSet(parent[v]);
     }
-
+    public bool SameSet(int a, int b) =>
+        FindSet(a)==FindSet(b);
     public void UnionSet(int a, int b)
     {
         a = FindSet(a);

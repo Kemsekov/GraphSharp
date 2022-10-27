@@ -80,26 +80,29 @@ where TEdge : IEdge
         var usedColors = new Dictionary<Color, int>();
         foreach (var c in colors)
             usedColors[c] = 0;
-        
+
         var colorsList = new List<Color>(colors);
         int coloredNodesCount = 0;
         int colorIndex = 0;
-        while(coloredNodesCount!=Nodes.Count){
-            if(colorIndex>=colorsList.Count){
+        while (coloredNodesCount != Nodes.Count)
+        {
+            if (colorIndex >= colorsList.Count)
+            {
                 var rand = Configuration.Rand;
-                colorsList.Add(Color.FromArgb(rand.Next(256),rand.Next(256),rand.Next(256)));
+                colorsList.Add(Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256)));
             }
             var color = colorsList[colorIndex];
-            var S = FindMaximalIndependentSet(x=>x.Color==Color.Empty);
+            var S = FindMaximalIndependentSet(x => x.Color == Color.Empty);
             var count = S.Count();
             usedColors[color] = count;
             coloredNodesCount += count;
-            foreach(var node in S)
+            foreach (var node in S)
                 node.Color = color;
             colorIndex++;
         }
         return usedColors;
     }
+
     int DegreeOfSaturation(int nodeId)
     {
         return Edges.Neighbors(nodeId).DistinctBy(x => Nodes[x].Color).Count();

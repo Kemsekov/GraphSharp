@@ -17,6 +17,10 @@ public class KruskalForest<TEdge> : IDisposable
     public RentedArray<int> Degree { get; }
     public IList<TEdge> Forest { get; }
 
+    public bool InOneComponent(int nodeId1, int nodeId2){
+        return TreeFinder.FindSet(nodeId1) == TreeFinder.FindSet(nodeId2);
+    }
+
     public void Dispose()
     {
         TreeFinder.Dispose();
