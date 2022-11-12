@@ -80,7 +80,8 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        return graph.Do.FindStronglyConnectedComponentsTarjan().Count() == 1;
+        using var componentsResult = graph.Do.FindStronglyConnectedComponentsTarjan();
+        return componentsResult.Components.Count() == 1;
     }
     /// <returns>True if graph is directed, else false</returns>
     public static bool IsDirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)

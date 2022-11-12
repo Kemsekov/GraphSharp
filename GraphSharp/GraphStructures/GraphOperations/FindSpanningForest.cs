@@ -33,10 +33,10 @@ where TEdge : IEdge
     /// Guarantee to return a tree which connects all nodes in a hamiltonian path.
     /// </summary>
     /// <returns></returns>
-    public IList<TEdge> FindSpanningTreeDegree2OnNodes(Func<TNode,Vector2> getPos, Func<TEdge, double>? getWeight = null)
+    (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TNode,Vector2> getPos, Func<TEdge, double>? getWeight = null)
     {
         getWeight ??= x=>x.Weight;
-        return FindSpanningTreeDegree2OnNodes(getWeight,graph=>graph.Do.DelaunayTriangulation(getPos)).tree;
+        return FindSpanningTreeDegree2OnNodes(getWeight,graph=>graph.Do.DelaunayTriangulation(getPos));
     }
     /// <summary>
     /// Constructs a spanning tree degree 2 on nodes only by repeatedly applying delaunay triangulation

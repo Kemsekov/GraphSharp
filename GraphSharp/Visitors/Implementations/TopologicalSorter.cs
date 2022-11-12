@@ -75,7 +75,7 @@ where TEdge : IEdge
     /// After all nodes have been sorted to different layers 
     /// this method will assign corresponding X coordinate to each layer.
     /// </summary>
-    public void ApplyTopologicalSort(Action<TNode,Vector2> setPos)
+    public void ApplyTopologicalSort(Action<TNode,Vector2> setPos, Func<TNode,double> getYPos)
     {
         if (!Done) return;
         float startNodePosition = 0f;
@@ -83,12 +83,9 @@ where TEdge : IEdge
 
         foreach (var layer in Layers)
         {
-            var yStep = 1.0f/layer.Count;
-            var y = 0f;
             foreach (var node in layer)
             {
-                setPos(node,new(startNodePosition, y));
-                y+=yStep;
+                setPos(node,new(startNodePosition, ((float)getYPos(node))));
             }
             startNodePosition += nodePositionShift;
         }

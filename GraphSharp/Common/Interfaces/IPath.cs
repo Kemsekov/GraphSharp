@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 namespace GraphSharp.Common;
 public interface IPath<TNode>
 {
-    IEnumerable<TNode> Path{get;}
+    IList<TNode> Path{get;}
     double Cost{get;}
 }

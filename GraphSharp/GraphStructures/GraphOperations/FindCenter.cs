@@ -56,7 +56,8 @@ where TEdge : IEdge
             }
             return (radius, points.Where(x => x.eccentricity == radius).Select(x=>x.Id));
         }
-        var components = FindStronglyConnectedComponentsTarjan();
+        using var componentsResult = FindStronglyConnectedComponentsTarjan();
+        var components = componentsResult.Components;
         var radius = double.MaxValue;
         var center = Enumerable.Empty<int>();
 

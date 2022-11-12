@@ -1,7 +1,31 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 namespace GraphSharp.Graphs;
 
+public class StronglyConnectedComponents<TNode> : IDisposable
+{
+    public IEnumerable<(IEnumerable<TNode> nodes, int componentId)> Components { get; }
+    private RentedArray<int> low;
+    public StronglyConnectedComponents(RentedArray<int> lowLinkValues, INodeSource<TNode> Nodes)
+    {
+        Components = lowLinkValues
+        .Select((componentId, index) => (componentId, index))
+        .Where(x => Nodes.TryGetNode(x.index, out var _))
+        .GroupBy(x => x.componentId)
+        .Select(x => (x.Select(x => Nodes[x.index]), x.Key)).ToList();
+        this.low = lowLinkValues;
+    }
+    public bool InOneComponent(int nodeId1, int nodeId2)
+    {
+        return low[nodeId1] == low[nodeId2];
+    }
+
+    public void Dispose()
+    {
+        low.Dispose();
+    }
+}
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
@@ -12,15 +36,9 @@ where TEdge : IEdge
     /// then these nodes are strongly connected and in the same strongly connected component. 
     /// </summary>
     /// <returns>List of tuples, where first value is a list of nodes in a certain component and second value is this component id.</returns>
-    public IEnumerable<(IEnumerable<TNode> nodes, int componentId)> FindStronglyConnectedComponentsTarjan()
+    public StronglyConnectedComponents<TNode> FindStronglyConnectedComponentsTarjan()
     {
-        using var low = FindLowLinkValues();
-        var result = low
-            .Select((componentId, index) => (componentId, index))
-            .Where(x=>Nodes.TryGetNode(x.index,out var _))
-            .GroupBy(x => x.componentId)
-            .Select(x => (x.Select(x => Nodes[x.index]), x.Key)).ToList();
-
-        return result;
+        var low = FindLowLinkValues();
+        return new StronglyConnectedComponents<TNode>(low, Nodes);
     }
 }
