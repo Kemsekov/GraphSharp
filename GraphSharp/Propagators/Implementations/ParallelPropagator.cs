@@ -24,7 +24,7 @@ where TEdge : IEdge
         Parallel.For(0, NodeStates.Length, nodeId =>
         {
             var state = NodeStates.GetState(nodeId);
-            if (ByteNodeStatesHandler.IsInState(UsedNodeStates.ToVisit,state))
+            if (ByteStatesHandler.IsInState(UsedNodeStates.ToVisit,state))
                 PropagateNode(nodeId,state);
         });
         Parallel.For(0, NodeStates.Length, nodeId =>

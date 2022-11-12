@@ -15,7 +15,7 @@ where TEdge : IEdge
 {
     public const byte Proceed = 16;
     public const byte ToRemove = 32;
-    ByteNodeStatesHandler NodeStates => Propagator.NodeStates;
+    ByteStatesHandler NodeStates => Propagator.NodeStates;
     public override PropagatorBase<TNode, TEdge> Propagator { get; }
     public IGraph<TNode, TEdge> Graph { get; }
 

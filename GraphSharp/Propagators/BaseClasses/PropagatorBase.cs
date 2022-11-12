@@ -9,7 +9,7 @@ namespace GraphSharp.Propagators;
 
 /// <summary>
 /// Advanced graph explorer. <br/> 
-/// Uses <see cref="ByteNodeStatesHandler"/> to store node states.<br/> 
+/// Uses <see cref="ByteStatesHandler"/> to store node states.<br/> 
 /// See <see cref="UsedNodeStates"/> 
 /// to access used node states. <br/>
 /// By default proceed exploration by out edges. <br/>
@@ -31,7 +31,7 @@ where TEdge : IEdge
     /// </summary>
     /// <value></value>
     public IGraph<TNode, TEdge> Graph { get; protected set; }
-    public ByteNodeStatesHandler NodeStates { get;protected set; }
+    public ByteStatesHandler NodeStates { get;protected set; }
 
     /// <param name="visitor">Visitor to use</param>
     /// <param name="graph">Graph to use</param>
@@ -39,7 +39,7 @@ where TEdge : IEdge
     {
         Visitor = visitor;
         Graph = graph;
-        this.NodeStates = new ByteNodeStatesHandler(Graph.Nodes.MaxNodeId+1);
+        this.NodeStates = new ByteStatesHandler(Graph.Nodes.MaxNodeId+1);
         NodeStates.SetStateToAll(UsedNodeStates.IterateByOutEdges);
         NodeStates.DefaultState = UsedNodeStates.IterateByOutEdges;
     }
@@ -53,7 +53,7 @@ where TEdge : IEdge
         Graph = graph;
         Visitor = visitor;
         NodeStates.Dispose();
-        NodeStates = new ByteNodeStatesHandler(Graph.Nodes.MaxNodeId+1);
+        NodeStates = new ByteStatesHandler(Graph.Nodes.MaxNodeId+1);
         NodeStates.SetStateToAll(UsedNodeStates.IterateByOutEdges);
         NodeStates.DefaultState = UsedNodeStates.IterateByOutEdges;
     }
@@ -156,13 +156,13 @@ where TEdge : IEdge
     /// <param name="nodeId"></param>
     protected void PropagateNode(int nodeId, byte state)
     {
-        if (ByteNodeStatesHandler.IsInState(UsedNodeStates.IterateByInEdges,state))
+        if (ByteStatesHandler.IsInState(UsedNodeStates.IterateByInEdges,state))
             foreach (var edge in Graph.Edges.InEdges(nodeId))
             {
                 if (!Visitor.Select(edge)) continue;
                 NodeStates.AddState(UsedNodeStates.Visited, edge.SourceId);
             }
-        if (ByteNodeStatesHandler.IsInState(UsedNodeStates.IterateByOutEdges,state))
+        if (ByteStatesHandler.IsInState(UsedNodeStates.IterateByOutEdges,state))
             foreach (var edge in Graph.Edges.OutEdges(nodeId))
             {
                 if (!Visitor.Select(edge)) continue;

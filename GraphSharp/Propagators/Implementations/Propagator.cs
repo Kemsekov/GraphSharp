@@ -22,7 +22,7 @@ where TEdge : IEdge
         for (int nodeId = 0; nodeId < NodeStates.Length; ++nodeId)
         {
             state = NodeStates.GetState(nodeId);
-            if (ByteNodeStatesHandler.IsInState(UsedNodeStates.ToVisit,state))
+            if (ByteStatesHandler.IsInState(UsedNodeStates.ToVisit,state))
                 PropagateNode(nodeId,state);
         };
         for (int nodeId = 0; nodeId < NodeStates.Length; ++nodeId)

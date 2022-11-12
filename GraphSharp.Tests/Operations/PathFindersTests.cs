@@ -18,20 +18,20 @@ namespace GraphSharp.Tests.Operations
             {
                 _Graph.Do.ConnectRandomly(0, 7);
                 _Graph.Do.MakeBidirected();
-                (var components, var setFinder) = _Graph.Do.FindComponents();
-                if (components.Count() >= 2)
+                var components = _Graph.Do.FindComponents();
+                if (components.Components.Count() >= 2)
                 {
-                    var c1 = components.First();
-                    var c2 = components.ElementAt(1);
+                    var c1 = components.Components.First();
+                    var c2 = components.Components.ElementAt(1);
                     var n1 = c1.First();
                     var n2 = c2.First();
                     var path1 = getPath(_Graph, n1.Id, n2.Id);
                     Assert.Empty(path1);
                 }
-                var first = components.First();
+                var first = components.Components.First();
                 if (first.Count() < 2) continue;
-                var d1 = components.First().First();
-                var d2 = components.First().Last();
+                var d1 = components.Components.First().First();
+                var d2 = components.Components.First().Last();
                 var path2 = getPath(_Graph, d1.Id, d2.Id);
                 Assert.NotEmpty(path2);
                 _Graph.ValidatePath(path2);

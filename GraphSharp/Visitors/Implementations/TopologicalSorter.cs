@@ -14,7 +14,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     public override PropagatorBase<TNode, TEdge> Propagator { get; }
-    ByteNodeStatesHandler NodeStates => Propagator.NodeStates;
+    ByteStatesHandler NodeStates => Propagator.NodeStates;
     /// <summary>
     /// After topological sort is done all nodes will be sorted out to different layers.
     /// Nodes on each layer have the same X coordinate and each following layer have X coordinate bigger that previous one.

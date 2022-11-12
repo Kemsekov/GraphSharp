@@ -210,7 +210,7 @@ public class GraphTests
     {
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
-        (var components, var setFinder) = _Graph.Do.FindComponents();
+        var result = _Graph.Do.FindComponents();
         var tree = _Graph.Do.FindSpanningForestKruskal();
 
         UnionFind u = new(_Graph.Nodes.MaxNodeId + 1);
@@ -225,7 +225,7 @@ public class GraphTests
         {
             foreach (var n2 in _Graph.Nodes)
             {
-                if (setFinder.FindSet(n1.Id) == setFinder.FindSet(n2.Id))
+                if (result.SetFinder.FindSet(n1.Id) == result.SetFinder.FindSet(n2.Id))
                     Assert.Equal(u.FindSet(n1.Id), u.FindSet(n2.Id));
             }
         }
@@ -242,14 +242,14 @@ public class GraphTests
     {
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
-        var before = _Graph.Do.FindComponents().components.Count();
+        var before = _Graph.Do.FindComponents().Components.Count();
         var after = 0;
         var points = _Graph.Do.FindArticulationPointsTarjan().Select(x => x.Id);
         Assert.Equal(points, points.Distinct());
         foreach (var p in points)
         {
             _Graph.Do.RemoveNodes(p);
-            after = _Graph.Do.FindComponents().components.Count();
+            after = _Graph.Do.FindComponents().Components.Count();
             Assert.True(after >= before, $"{after}>{before}");
             before = after;
         }
@@ -260,8 +260,8 @@ public class GraphTests
     {
         _Graph.Do.ConnectRandomly(0, 6);
         int indexer = 0;
-        (var components, var setFinder) = _Graph.Do.FindComponents();
-        var indexedComponents = components.Select(x => (indexer++, x)).ToArray();
+        var result = _Graph.Do.FindComponents();
+        var indexedComponents = result.Components.Select(x => (indexer++, x)).ToArray();
         var paired = new Dictionary<(int, int), int>();
         foreach (var c1 in indexedComponents)
         {
@@ -276,7 +276,7 @@ public class GraphTests
                     {
                         var path = _Graph.Do.FindAnyPath(n1.Id, n2.Id);
                         Assert.Empty(path);
-                        Assert.NotEqual(setFinder.FindSet(n1.Id), setFinder.FindSet(n2.Id));
+                        Assert.NotEqual(result.SetFinder.FindSet(n1.Id), result.SetFinder.FindSet(n2.Id));
                     }
             }
         }

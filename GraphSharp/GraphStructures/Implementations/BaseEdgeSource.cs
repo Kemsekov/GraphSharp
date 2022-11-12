@@ -104,8 +104,33 @@ where TEdge : IEdge
         }
     }
 
+    public IEnumerable<TEdge> InducedEdges(IEnumerable<int> nodeIndices){
+        var length = nodeIndices.Max()+1;
+        using var map = ArrayPoolStorage.RentByteArray(length);
+        foreach(var node in nodeIndices){
+            map[node] = 1;
+        }
+        foreach(var node in nodeIndices)
+        foreach(var edge in OutEdges(node)){
+            if(edge.SourceId < length && edge.TargetId < length)
+            if(map[edge.SourceId]==1 && map[edge.TargetId] == 1)
+            yield return edge;
+        }
+    }
+
     public IEnumerable<TEdge> InOutEdges(int nodeId)
     {
         return InEdges(nodeId).Concat(OutEdges(nodeId));
+    }
+    // TODO: you have two impl of isolate and induce. Remove one of them
+    public void Isolate(params int[] nodes)
+    {
+        foreach(var nodeId in nodes){
+            var candidates = InducedEdges(Neighbors(nodeId).Concat(new[]{nodeId})).ToList();
+            foreach(var candidate in candidates){
+                if(candidate.SourceId==nodeId || candidate.TargetId==nodeId)
+                Remove(candidate);
+            }
+        }
     }
 }

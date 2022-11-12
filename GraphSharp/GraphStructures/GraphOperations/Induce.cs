@@ -15,17 +15,7 @@ where TEdge : IEdge
     /// <returns>Induced subgraph of current graph</returns>
     public Graph<TNode,TEdge> Induce(params int[] nodes){
         var result = new Graph<TNode,TEdge>(Configuration);
-        using var toInduce = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId+1);
-        foreach(var n in nodes){
-            toInduce[n] = 1;
-            result.Nodes.Add(Nodes[n]);
-        }
-        foreach(var nodeId in nodes){
-            var edges = Edges.OutEdges(nodeId).Where(x=>toInduce[x.SourceId]==1 && toInduce[x.TargetId]==1);
-            foreach(var e in edges){
-                result.Edges.Add(e);
-            }
-        }
+        result.SetSources(nodes: nodes.Select(id=>Nodes[id]),edges:Edges.InducedEdges(nodes));
         return result;
     }
 }

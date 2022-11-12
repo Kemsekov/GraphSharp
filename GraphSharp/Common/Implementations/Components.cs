@@ -4,14 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace GraphSharp.Common;
-public class Components<TNode> : IDisposable
+public class ComponentsResult<TNode> : IDisposable
 {
-    public Components(IEnumerable<TNode>[] components, UnionFind setFinder)
+    public ComponentsResult(IEnumerable<TNode>[] components, UnionFind setFinder)
     {
-        this.Components_ = components;
+        this.Components = components;
         this.SetFinder = setFinder;
     }
-    public IEnumerable<TNode>[] Components_ { get; }
+    public IEnumerable<TNode>[] Components { get; }
     public UnionFind SetFinder { get; }
 
     public void Dispose()

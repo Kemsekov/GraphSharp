@@ -17,7 +17,7 @@ where TEdge : IEdge
     /// </example>
     /// </summary>
     /// <returns>Array of lists of nodes where each of them represents different component and <see cref="UnionFind"/> that can be used to determine whatever two points in the same components or not.<br/></returns>
-    public Components<TNode> FindComponents()
+    public ComponentsResult<TNode> FindComponents()
     {
         UnionFind u = new(Nodes.MaxNodeId + 1);
         foreach (var n in Nodes)

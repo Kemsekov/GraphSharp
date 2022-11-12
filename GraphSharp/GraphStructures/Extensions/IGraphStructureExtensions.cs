@@ -35,7 +35,7 @@ public static class GraphExtensions
     where TEdge : IEdge
     {
         using var c = graph.Do.FindComponents();
-        return c.Components_.Length == 1;
+        return c.Components.Length == 1;
     }
     /// <summary>
     /// Clears current Nodes and Edges with new ones. Does not clear old Nodes and Edges.

@@ -5,8 +5,6 @@ namespace GraphSharp.Graphs;
 /// A set of methods and properties that used in graph
 /// </summary>
 public interface IGraphConfiguration<TNode, TEdge>
-where TNode : INode
-where TEdge : IEdge
 {
     /// <summary>
     /// <see cref="Random"/> that used to implement's any logic when some algorithm requires random values
