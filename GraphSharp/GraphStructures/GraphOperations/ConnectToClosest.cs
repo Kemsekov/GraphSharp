@@ -18,12 +18,10 @@ where TEdge : IEdge
     /// <param name="minEdgesCount">minimum edges count</param>
     /// <param name="maxEdgesCount">maximum edges count</param>
     /// <param name="distance">distance function</param>
-    public GraphOperation<TNode, TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<TNode, TNode, float>? distance = null)
+    public GraphOperation<TNode, TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<TNode, TNode, double> distance)
     {
         if (maxEdgesCount == 0) return this;
-        distance ??= (n1, n2) => (n1.Position - n2.Position).Length();
         Edges.Clear();
-        
         using var edgesCountMap = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
         foreach (var node in Nodes)
             edgesCountMap[node.Id] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);

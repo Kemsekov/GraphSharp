@@ -288,7 +288,7 @@ public class EdgeSourcesTests
         foreach (var edgeSource in EdgeSources)
         {
             _Graph.SetSources(Nodes, edgeSource);
-            _Graph.Do.ConnectToClosest(0, 3);
+            _Graph.Do.ConnectToClosest(0, 3,(n1,n2)=>(n1.Position-n2.Position).Length());
             var isolated = _Graph.GetNodesIdWhere(x => edgeSource.Degree(x.Id) == 0);
             var nonIsolated = Nodes.Select(x => x.Id).Except(isolated);
             foreach (var i in isolated)

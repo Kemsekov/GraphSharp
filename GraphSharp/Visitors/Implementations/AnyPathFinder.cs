@@ -23,7 +23,7 @@ where TEdge : IEdge
         Done = false;
     }
 
-    public override bool SelectImpl(TEdge edge)
+    protected override bool SelectImpl(TEdge edge)
     {
         (var sourceId,var targetId) = GetEdgeDirection(edge);
         if (Path[targetId] == -1)
@@ -33,7 +33,7 @@ where TEdge : IEdge
         }
         return false;
     }
-    public override void VisitImpl(TNode node)
+    protected override void VisitImpl(TNode node)
     {
         DidSomething = true;
     }

@@ -270,6 +270,37 @@ public static class GraphExtensions
             System.Console.WriteLine(p);
         }
     }
+    public static double ComputePathCost<TNode,TEdge>(this IGraph<TNode,TEdge> graph,IEnumerable<int> path,Func<TEdge,double>? getWeight = null)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        getWeight ??= edge=>edge.Weight;
+        var cost = 0d;
+        path.Aggregate((n1,n2)=>{
+            cost += getWeight(graph.Edges[n1,n2]);
+            return n2;
+        });
+        return cost;
+    }
+    public static double ComputePathCost<TNode,TEdge>(this IGraph<TNode,TEdge> graph,IEnumerable<TNode> path,Func<TEdge,double>? getWeight = null)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        getWeight ??= edge=>edge.Weight;
+        var cost = 0d;
+        path.Aggregate((n1,n2)=>{
+            cost += getWeight(graph.Edges[n1.Id,n2.Id]);
+            return n2;
+        });
+        return cost;
+    }
+    public static double ComputePathCost<TNode,TEdge>(this IGraph<TNode,TEdge> graph,IEnumerable<TEdge> path,Func<TEdge,double>? getWeight = null)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        getWeight ??= edge=>edge.Weight;
+        return path.Sum(x=>getWeight(x));
+    }
     /// <summary>
     /// Checks if graph colored in a right way. Throws an exception if there is a case when some node is not colored in a right way.
     /// </summary>
@@ -288,10 +319,10 @@ public static class GraphExtensions
             }
         }
     }
-    public static float MeanNodeEdgesCount<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static double MeanNodeEdgesCount<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
-        => (float)(graph.Edges.Count) / (graph.Nodes.Count == 0 ? 1 : graph.Nodes.Count);
+        => (double)(graph.Edges.Count) / (graph.Nodes.Count == 0 ? 1 : graph.Nodes.Count);
 
     /// <summary>
     /// Apply predicate on nodes and returns selected nodes Id as int array. Just a shortcut for convenience.
@@ -363,14 +394,6 @@ public static class GraphExtensions
         {
             n.Color = color;
         }
-    }
-    public static void SetPositionsToAll<TNode>(this INodeSource<TNode> nodes, Func<TNode, Vector2>? choosePos = null)
-    where TNode : INode
-    {
-        var r = new Random();
-        choosePos ??= node => new(r.NextSingle(), r.NextSingle());
-        foreach (var n in nodes)
-            n.Position = choosePos(n);
     }
     /// <summary>
     /// Converts edges list to path (nodes list)

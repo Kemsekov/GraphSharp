@@ -25,16 +25,16 @@ where TEdge : IEdge
         this.Graph = graph;
     }
 
-    public override void StartImpl()
+    protected override void StartImpl()
     {
         DidSomething = false;
     }
-    public override bool SelectImpl(TEdge edge)
+    protected override bool SelectImpl(TEdge edge)
     {
         return !NodeStates.IsInState(Proceed | ToRemove,edge.TargetId);
     }
 
-    public override void VisitImpl(TNode node)
+    protected override void VisitImpl(TNode node)
     {
         NodeStates.AddState(Proceed,node.Id);
 
@@ -51,7 +51,7 @@ where TEdge : IEdge
 
         DidSomething = true;
     }
-    public override void EndImpl()
+    protected override void EndImpl()
     {
         for (int i = 0; i < Graph.Nodes.MaxNodeId + 1; i++)
             if (NodeStates.IsInState(Proceed,i))

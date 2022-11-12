@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using GraphSharp.Common;
 using GraphSharp.Graphs;
 using GraphSharp.Propagators;
@@ -42,7 +43,7 @@ where TEdge : IEdge
             NodeStates.AddState(Added,n);
         this.End();
     }
-    public override bool SelectImpl(TEdge edge)
+    protected override bool SelectImpl(TEdge edge)
     {
         
         if (NodeStates.IsInState(Added,edge.TargetId))
@@ -52,12 +53,12 @@ where TEdge : IEdge
         NodeStates.AddState(Added,edge.TargetId);
         return true;
     }
-    public override void VisitImpl(TNode node)
+    protected override void VisitImpl(TNode node)
     {
         lock (Layers)
             Layers[^1].Add(node);
     }
-    public override void EndImpl()
+    protected override void EndImpl()
     {
         if (Done) return;
         if (Layers.Count > 0)
@@ -74,7 +75,7 @@ where TEdge : IEdge
     /// After all nodes have been sorted to different layers 
     /// this method will assign corresponding X coordinate to each layer.
     /// </summary>
-    public void ApplyTopologicalSort()
+    public void ApplyTopologicalSort(Action<TNode,Vector2> setPos)
     {
         if (!Done) return;
         float startNodePosition = 0f;
@@ -82,15 +83,18 @@ where TEdge : IEdge
 
         foreach (var layer in Layers)
         {
+            var yStep = 1.0f/layer.Count;
+            var y = 0f;
             foreach (var node in layer)
             {
-                node.Position = new(startNodePosition, node.Position.Y);
+                setPos(node,new(startNodePosition, y));
+                y+=yStep;
             }
             startNodePosition += nodePositionShift;
         }
     }
 
-    public override void StartImpl()
+    protected override void StartImpl()
     {
     }
 }

@@ -12,7 +12,7 @@ public class Node : INode
     public int Id { get; set; }
     public Vector2 Position { get; set; }
     public Color Color { get; set; } = DefaultColor;
-    public float Weight { get; set; }
+    public double Weight { get; set; }
 
     public Node(int id)
     {

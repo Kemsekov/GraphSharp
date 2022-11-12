@@ -19,8 +19,8 @@ where TEdge : IEdge
         var treeGraph = new Graph<TNode, TEdge>(Configuration);
         treeGraph.SetSources(Nodes, Configuration.CreateEdgeSource());
         {
-            var tree = FindSpanningForestKruskal();
-            foreach (var e in tree)
+            using var tree = FindSpanningForestKruskal();
+            foreach (var e in tree.Forest)
             {
                 treeGraph.Edges.Add(e);
                 if (Edges.TryGetEdge(e.TargetId, e.SourceId, out var bidirected))
@@ -35,10 +35,9 @@ where TEdge : IEdge
         var result = new ConcurrentBag<IList<TNode>>();
         Parallel.ForEach(outsideEdges, e =>
         {
-            var path = treeGraph.Do.FindAnyPath(e.TargetId, e.SourceId);
-            if (path.Count != 0)
+            var path = treeGraph.Do.FindAnyPath(e.TargetId, e.SourceId).Path;
+            if (path.Count() != 0)
             {
-                
                 result.Add(path.Prepend(StructureBase.GetSource(e)).ToList());
             }
         });

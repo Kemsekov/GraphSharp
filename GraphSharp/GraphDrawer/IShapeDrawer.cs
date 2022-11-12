@@ -9,9 +9,9 @@ namespace GraphSharp.GraphDrawer;
 /// </summary>
 public interface IShapeDrawer
 {
-    void DrawText(string text, Vector2 position, Color color, float size);
-    void FillEllipse(Vector2 position, float width, float height, Color color);
-    void DrawLine(Vector2 start, Vector2 end, Color color, float thickness);
+    void DrawText(string text, Vector2 position, Color color, double size);
+    void FillEllipse(Vector2 position, double width, double height, Color color);
+    void DrawLine(Vector2 start, Vector2 end, Color color, double thickness);
     /// <summary>
     /// Clears whole window with <paramref name="color"/>
     /// </summary>

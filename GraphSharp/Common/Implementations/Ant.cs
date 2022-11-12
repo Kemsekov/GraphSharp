@@ -18,7 +18,7 @@ where TEdge : IEdge
     /// Numerically it equals to: (path's edges count)/(sum of path's edge weights). <br/>
     /// The higher this coefficient the better is found path
     /// </summary>
-    public float Coefficient => Path.Count / Path.Sum(x => x.Weight);
+    public double Coefficient => Path.Count / Path.Sum(x => x.Weight);
 
     public IGraph<TNode, TEdge> Graph { get; }
 
@@ -26,7 +26,7 @@ where TEdge : IEdge
     /// After execution each ant left behind itself a smell that later helps other
     /// ants to navigate and visit/mutate best found path's to improve them
     /// </summary>
-    public IDictionary<TEdge, float> Smell { get; }
+    public IDictionary<TEdge, double> Smell { get; }
 
     /// <summary>
     /// This array is shared with 32 ants where each ant have unique power of 2 index <see cref="Ant{,}.AntId"/>
@@ -53,7 +53,7 @@ where TEdge : IEdge
     /// <param name="smell">Index is node id. Contains a smell that ants left after they found some path</param>
     /// <param name="visited">Index is node id. Contains a bits for ants to determine if they visited a node in their path finding. By bit operations, each value from this array can have states for up to 32 ants.</param>
     /// <param name="antId">A power of 2 integer. Indicates which bit assigned to this ant in a visited integer array</param>
-    public Ant(IGraph<TNode, TEdge> graph, IDictionary<TEdge, float> smell, RentedArray<uint> visited, uint antId)
+    public Ant(IGraph<TNode, TEdge> graph, IDictionary<TEdge, double> smell, RentedArray<uint> visited, uint antId)
     {
         if (!isPowerOfTwo(antId) || antId == 0) throw new ArgumentException("antId must be a power of 2 non-zero unsigned integer.");
         Graph = graph;
@@ -70,11 +70,11 @@ where TEdge : IEdge
     /// </summary>
     public void Run(int nodeId)
     {
-        List<(TEdge edge, float smell)> edges;
+        List<(TEdge edge, double smell)> edges;
         int count = 0;
-        float smellSum = 0;
-        float destination = 0;
-        float smellAccumulator = 0;
+        double smellSum = 0;
+        double destination = 0;
+        double smellAccumulator = 0;
         while(true){
             if(nodeId<0) return;
             VisitNode(nodeId);

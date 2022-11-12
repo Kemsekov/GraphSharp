@@ -11,7 +11,7 @@ where TEdge : IEdge
 
     /// <param name="getWeight">Determine how to find a eccentricity of a node. By default it uses edges weights, but you can change it.</param>
     /// <returns>Length of a longest shortest path for a given node and endpoint of that path.</returns>
-    public (float length, TNode farthestNode) FindEccentricity(int nodeId, Func<TEdge, float>? getWeight = null)
+    public (double length, TNode farthestNode) FindEccentricity(int nodeId, Func<TEdge, double>? getWeight = null)
     {
         return FindEccentricityBase(
             nodeId,
@@ -21,7 +21,7 @@ where TEdge : IEdge
     }
     /// <param name="getWeight">Determine how to find a eccentricity of a node. By default it uses edges weights, but you can change it.</param>
     /// <returns>Length of a longest shortest path for a given node and endpoint of that path.</returns>
-    public (float length, TNode farthestNode) FindEccentricityParallel(int nodeId, Func<TEdge, float>? getWeight = null)
+    public (double length, TNode farthestNode) FindEccentricityParallel(int nodeId, Func<TEdge, double>? getWeight = null)
     {
         return FindEccentricityBase(
             nodeId,
@@ -29,7 +29,7 @@ where TEdge : IEdge
             getWeight
         );
     }
-    public (float length, TNode farthestNode) FindEccentricityBase(int nodeId,Func<ShortestPathsLengthFinderAlgorithms<TNode, TEdge>,IPropagator<TNode,TEdge>> createPropagator, Func<TEdge, float>? getWeight = null){
+    public (double length, TNode farthestNode) FindEccentricityBase(int nodeId,Func<ShortestPathsLengthFinderAlgorithms<TNode, TEdge>,IPropagator<TNode,TEdge>> createPropagator, Func<TEdge, double>? getWeight = null){
         var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(nodeId, StructureBase, getWeight);
         var propagator = createPropagator(pathFinder);
         propagator.SetPosition(nodeId);

@@ -19,7 +19,7 @@ where TEdge : IEdge
             .Select((componentId, index) => (componentId, index))
             .Where(x=>Nodes.TryGetNode(x.index,out var _))
             .GroupBy(x => x.componentId)
-            .Select(x => (x.Select(x => Nodes[x.index]), x.Key));
+            .Select(x => (x.Select(x => Nodes[x.index]), x.Key)).ToList();
 
         return result;
     }

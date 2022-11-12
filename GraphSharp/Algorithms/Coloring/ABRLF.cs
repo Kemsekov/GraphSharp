@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -79,7 +80,7 @@ where TEdge : IEdge
     const byte Invalid = 1;
     const byte CloseToColored = 2;
     const byte Colored = 3;
-    public ABRLF(BaseEdgeSource<TEdge> edges, int nodesCount)
+    public ABRLF(IImmutableEdgeSource<TEdge> edges, int nodesCount)
     {
         Colors = ArrayPoolStorage.RentIntArray(nodesCount);
         UncoloredNeighborsCount = ArrayPoolStorage.RentIntArray(nodesCount);
@@ -129,10 +130,13 @@ where TEdge : IEdge
                 .OrderBy(x => -UncoloredNeighborsCount[x])
                 .Take(classesToBuild)
                 .ToList();
+            
             if (group.Count == 0) 
                 break;
             var classes = group.Select(x => BuildColorClass(x)).ToList();
+            
             var bestClass = classes.MinBy(x => CountColorClassEdgesUsed(x.ColorClass));
+            // var bestClass = classes.MinBy(x => x.ColoredCount);
             if(bestClass is null) throw new ApplicationException("Not possible");
             ApplyColorClass(bestClass.ColorClass);
             colored += bestClass.ColoredCount;
@@ -185,14 +189,14 @@ where TEdge : IEdge
         }
 
     }
-    void ChooseBestNodesOnCloseToColoredNeighbors(IList<int> chosenNodes, RentedArray<byte> state, RentedArray<int> closeToColoredFreezed)
+    void ChooseBestNodesOnCloseToColoredNeighbors(IList<int> chosenNodes, RentedArray<byte> state, RentedArray<int> closeToColored)
     {
         var copy = chosenNodes.ToList();
         var bestCoefficient = 0;
         chosenNodes.Clear();
         foreach (var i in copy)
         {
-            var coefficient = CountCloseToColoredNeighbors(i,state,closeToColoredFreezed);
+            var coefficient = CountCloseToColoredNeighbors(i,state,closeToColored);
             if (coefficient > bestCoefficient)
             {
                 bestCoefficient = coefficient;
@@ -201,7 +205,6 @@ where TEdge : IEdge
             if (coefficient == bestCoefficient)
                 chosenNodes.Add(i);
         }
-
     }
     int CountColorClassEdgesUsed(RentedArray<byte> colorClass)
     {
@@ -211,14 +214,13 @@ where TEdge : IEdge
     {
         return Edges.Neighbors(nodeId).Where(x => state[x] == CloseToColored);
     }
-    int CountCloseToColoredNeighbors(int nodeId, RentedArray<byte> state, RentedArray<int> closeToColoredFreezed)
+    int CountCloseToColoredNeighbors(int nodeId, RentedArray<byte> state, RentedArray<int> closeToColored)
     {
-        if (state[nodeId] == CloseToColored) return closeToColoredFreezed[nodeId];
-        return CloseToColoredNeighbors(nodeId, state).Count();
+        return Math.Abs(closeToColored[nodeId]);
     }
-    void Freeze(int nodeId, RentedArray<byte> states, RentedArray<int> closeToColoredFreezed)
+    void Freeze(int nodeId, RentedArray<byte> states, RentedArray<int> closeToColored)
     {
-        closeToColoredFreezed[nodeId] = CountCloseToColoredNeighbors(nodeId, states, closeToColoredFreezed);
+        closeToColored[nodeId] *= -1;
     }
     /// <param name="coloredNodes">coloredNodes[nodeId] != 0 if node is colored</param>
     /// <returns>A color class. If colorClass[nodeId] == Colored it means nodeId is in built color class</returns>
@@ -229,7 +231,7 @@ where TEdge : IEdge
         //every strongly connected component can be colored all at once.
 
         var state = ArrayPoolStorage.RentByteArray(NodesCount);
-        using var closeToColoredFreezed = ArrayPoolStorage.RentIntArray(NodesCount);
+        using var closeToColored = ArrayPoolStorage.RentIntArray(NodesCount);
         int count = 0;
 
         void ColorNode(int nodeId)
@@ -238,16 +240,20 @@ where TEdge : IEdge
             state[nodeId] = Colored;
             foreach (var n in Edges.Neighbors(nodeId))
             {
-                // TODO: try also 1) freeze values for all neigh, 2) set all neigh as CloseToColored
                 ref var s = ref state[n];
                 if(s!=Initial) continue;
-                Freeze(n, state, closeToColoredFreezed);
+                Freeze(n, state, closeToColored);
                 s = CloseToColored;
+                foreach(var n2 in Edges.Neighbors(n)){
+                    ref var close = ref closeToColored[n2];
+                    if(close>=0)
+                        close++;
+                }
             }
         }
         int Coefficient(int uncoloredNode)
         {
-            return CloseToColoredNeighbors(uncoloredNode, state).Sum(x => UncoloredNeighborsCount[x] + CountCloseToColoredNeighbors(x, state, closeToColoredFreezed));
+            return CloseToColoredNeighbors(uncoloredNode, state).Sum(x => UncoloredNeighborsCount[x] + CountCloseToColoredNeighbors(x, state, closeToColored));
         }
 
         state.Fill(Initial);
@@ -257,25 +263,43 @@ where TEdge : IEdge
                 state[i] = Invalid;
             }
         ColorNode(startNode);
-
-        using var coefficients = ArrayPoolStorage.RentIntArray(NodesCount);
         var chosenNodes = new List<int>();
         while (true)
         {
-            coefficients.Fill(-1);
             var added = 0;
-            for (int i = 0; i < NodesCount; i++)
-            {
-                // if(!states.IsInState(CanBeColored,i)) continue;
-                if (state[i] != Initial) continue;
-                var coef = Coefficient(i);
-                coefficients[i] = coef;
-                Interlocked.Increment(ref added);
+            bool useLimiter = true;
+            int bestCoefficient = -1;
+            while(true){
+                Parallel.For(0,NodesCount,i=>
+                {
+                    if(useLimiter && closeToColored[i]==0) return;
+                    if(state[i] != Initial) return;
+                    var coef = Coefficient(i);
+                    Interlocked.Increment(ref added);
+                    lock(chosenNodes){
+                        if (coef > bestCoefficient)
+                        {
+                            bestCoefficient = coef;
+                            chosenNodes.Clear();
+                        }
+                        if (coef == bestCoefficient)
+                            chosenNodes.Add(i);
+                    }
+                });
+                if (added == 0 && useLimiter){
+                    useLimiter = false;
+                    continue;
+                }
+                break;
             }
             if (added == 0) break;
-            ChooseBestNodesOnCoefficients(chosenNodes, coefficients);
-            ChooseBestNodesOnCloseToColoredNeighbors(chosenNodes, state,closeToColoredFreezed);
+            if(chosenNodes.Count==1){
+                ColorNode(chosenNodes[0]);
+                continue;
+            }
             if (chosenNodes.Count == 0) break;
+
+            ChooseBestNodesOnCloseToColoredNeighbors(chosenNodes, state,closeToColored);
             if(chosenNodes[0]==-1) break;
             var toColor = chosenNodes.MinBy(x => UncoloredNeighborsCountOnFly(x, state));
             ColorNode(toColor);

@@ -19,20 +19,20 @@ namespace GraphSharp.Tests.Models
             this.Propagator = new ParallelPropagator<Node,Edge>(this,graph);
         }
 
-        public override void StartImpl()
+        protected override void StartImpl()
         {
         }
 
-        public override bool SelectImpl(Edge edge)
+        protected override bool SelectImpl(Edge edge)
         {
             return true;
         }
 
-        public override void VisitImpl(Node node)
+        protected override void VisitImpl(Node node)
         {
         }
 
-        public override void EndImpl()
+        protected override void EndImpl()
         {
         }
     }

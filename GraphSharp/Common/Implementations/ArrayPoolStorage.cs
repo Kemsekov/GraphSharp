@@ -25,7 +25,7 @@ public static class ArrayPoolStorage
     public static RentedArray<uint> RentUintArray(int length){
         return new(length,ByteArrayPool);
     }
-    public static RentedArray<float> RentFloatArray(int length){
+    public static RentedArray<double> RentFloatArray(int length){
         return new(length,ByteArrayPool);
     }
     public static RentedArray<byte> RentByteArray(int length){

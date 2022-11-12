@@ -14,15 +14,15 @@ where TEdge : IEdge
     /// <summary>
     /// What is the length of path from startNode to some other node so far.  
     /// </summary>
-    public RentedArray<float> PathLength{get;protected set;}
-    private Func<TEdge, float> _getWeight;
+    public RentedArray<double> PathLength{get;protected set;}
+    private Func<TEdge, double> _getWeight;
     IGraph<TNode, TEdge> Graph{get;}
     public int StartNodeId{get;protected set;}
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
     /// <param name="graph">Algorithm will be executed on this graph</param>
-    public ShortestPathsLengthFinderAlgorithms(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge, float>? getWeight = null)
+    public ShortestPathsLengthFinderAlgorithms(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge, double>? getWeight = null)
     {
         getWeight ??= e => e.Weight;
         this._getWeight = getWeight;
@@ -47,7 +47,7 @@ where TEdge : IEdge
         DidSomething = true;
         Done = false;
     }
-    public override bool SelectImpl(TEdge connection)
+    protected override bool SelectImpl(TEdge connection)
     {
         var sourceId = connection.SourceId;
         var targetId = connection.TargetId;
@@ -66,16 +66,16 @@ where TEdge : IEdge
         return true;
     }
 
-    public override void VisitImpl(TNode node)
+    protected override void VisitImpl(TNode node)
     {
         DidSomething = true;
     }
-    public override void EndImpl()
+    protected override void EndImpl()
     {
         if(!DidSomething) Done = true;
     }
 
-    public override void StartImpl()
+    protected override void StartImpl()
     {
 
     }

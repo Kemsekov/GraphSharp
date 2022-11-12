@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using GraphSharp.Adapters;
 using GraphSharp.Exceptions;
-using MathNet.Numerics.LinearAlgebra.Single;
+using MathNet.Numerics.LinearAlgebra.Double;
 namespace GraphSharp.Graphs;
 
 /// <summary>
@@ -132,7 +132,7 @@ where TEdge : IEdge
 
         for (int col = 0; col < edgesCount; ++col)
         {
-            (int nodeId, float Value) n1 = (-1, 0), n2 = (-1, 0);
+            (int nodeId, double Value) n1 = (-1, 0), n2 = (-1, 0);
             for (int row = 0; row < nodesCount; ++row)
             {
                 var value = incidenceMatrix[row, col];

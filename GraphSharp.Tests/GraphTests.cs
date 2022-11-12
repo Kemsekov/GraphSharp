@@ -28,7 +28,7 @@ public class GraphTests
     public void TryFindHamiltonianPathByAntSimulation_Works()
     {
         _Graph.Do.CreateNodes(50);
-        _Graph.Do.DelaunayTriangulation();
+        _Graph.Do.DelaunayTriangulation(x=>x.Position);
         _Graph.Do.MakeBidirected();
         //It works very good at small graphs<200 nodes, especially on
         //triangulated graphs, so I am expecting it to return exact solution here.
@@ -41,7 +41,7 @@ public class GraphTests
     public void TryFindHamiltonianCycleByBubbleExpansion_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation();
+        _Graph.Do.DelaunayTriangulation(x=>x.Position);
         _Graph.Do.MakeBidirected();
         var result = _Graph.Do.TryFindHamiltonianCycleByBubbleExpansion();
         var path = _Graph.ConvertEdgesListToPath(result);
@@ -102,7 +102,7 @@ public class GraphTests
     public void TryFindCenter_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation();
+        _Graph.Do.DelaunayTriangulation(x=>x.Position);
         (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1);
         (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1);
         Assert.NotEmpty(c1);
@@ -125,7 +125,7 @@ public class GraphTests
         {
             var neighbors = _Graph.Edges.Neighbors(n.Id).ToArray();
             var degree = _Graph.Edges.Degree(n.Id);
-            float inducedEdgesCount = _Graph.Do.Induce(neighbors).Edges.Count + degree;
+            double inducedEdgesCount = _Graph.Do.Induce(neighbors).Edges.Count + degree;
             var nodesCount = 1 + neighbors.Count();
             Assert.Equal(coeffs[n.Id], inducedEdgesCount / (nodesCount * (nodesCount - 1)));
         }
@@ -151,7 +151,7 @@ public class GraphTests
     public void FindStronglyConnectedComponents_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.ConnectToClosest(2, 5);
+        _Graph.Do.ConnectToClosest(2, 5,(n1,n2)=>(n1.Position-n2.Position).Length());
         var ssc = _Graph.Do.FindStronglyConnectedComponentsTarjan();
         Assert.NotEmpty(ssc);
         foreach (var c in ssc)
@@ -162,7 +162,7 @@ public class GraphTests
                 foreach (var n2 in c.nodes)
                 {
                     if (n1.Equals(n2)) continue;
-                    var path = _Graph.Do.FindAnyPath(n1.Id, n2.Id);
+                    var path = _Graph.Do.FindAnyPath(n1.Id, n2.Id).Path;
                     Assert.NotEmpty(path);
                 }
             }
@@ -172,7 +172,7 @@ public class GraphTests
     public void FindEccentricity_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation();
+        _Graph.Do.DelaunayTriangulation(x=>x.Position);
         var node = _Graph.Nodes[Random.Shared.Next(1000)];
         var ecc = _Graph.Do.FindEccentricity(node.Id);
         var paths = _Graph.Do.FindShortestPathsDijkstra(node.Id);
@@ -184,7 +184,7 @@ public class GraphTests
     {
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
-        var tree = _Graph.Do.FindSpanningForestKruskal();
+        var tree = _Graph.Do.FindSpanningForestKruskal().Forest;
         var cycles = _Graph.Do.FindCyclesBasis();
         foreach (var c in cycles)
         {
@@ -211,7 +211,7 @@ public class GraphTests
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.ConnectRandomly(0, 7);
         var result = _Graph.Do.FindComponents();
-        var tree = _Graph.Do.FindSpanningForestKruskal();
+        var tree = _Graph.Do.FindSpanningForestKruskal().Forest;
 
         UnionFind u = new(_Graph.Nodes.MaxNodeId + 1);
         foreach (var n in _Graph.Nodes)
@@ -274,7 +274,7 @@ public class GraphTests
                 foreach (var n1 in c1.x)
                     foreach (var n2 in c2.x)
                     {
-                        var path = _Graph.Do.FindAnyPath(n1.Id, n2.Id);
+                        var path = _Graph.Do.FindAnyPath(n1.Id, n2.Id).Path;
                         Assert.Empty(path);
                         Assert.NotEqual(result.SetFinder.FindSet(n1.Id), result.SetFinder.FindSet(n2.Id));
                     }
@@ -301,7 +301,7 @@ public class GraphTests
         _Graph.Do.CreateNodes(1000).ConnectNodes(10);
         var tree = _Graph.Do.FindSpanningForestKruskal();
         Assert.False(_Graph.IsDirectedTree());
-        _Graph.SetSources(_Graph.Nodes, new DefaultEdgeSource<Edge>(tree));
+        _Graph.SetSources(_Graph.Nodes, new DefaultEdgeSource<Edge>(tree.Forest));
         Assert.True(_Graph.IsDirectedTree());
         _Graph.Edges.Remove(_Graph.Edges.First());
         Assert.False(_Graph.IsDirectedTree());
@@ -323,9 +323,9 @@ public class GraphTests
     public void MeanNodeEdgesCount_Works()
     {
         _Graph.Do.ConnectRandomly(0, 5);
-        float expected = (float)(_Graph.Edges.Count) / _Graph.Nodes.Count;
-        float actual = _Graph.MeanNodeEdgesCount();
-        Assert.Equal(expected, actual);
+        double expected = (double)(_Graph.Edges.Count) / _Graph.Nodes.Count;
+        double actual = _Graph.MeanNodeEdgesCount();
+        Assert.Equal(Math.Round(expected,5),Math.Round(actual,5));
     }
 
     [Fact]

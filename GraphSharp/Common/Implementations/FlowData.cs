@@ -6,12 +6,12 @@ namespace GraphSharp.Common;
 /// </summary>
 public struct FlowData
 {
-    public FlowData(float flow, float capacity)
+    public FlowData(double flow, double capacity)
     {
         Capacity = capacity;
         Flow = flow;
     }
-    public float Capacity { get; set; }
-    public float Flow { get; set; }
-    public float ResidualCapacity => Capacity-Flow;
+    public double Capacity { get; set; }
+    public double Flow { get; set; }
+    public double ResidualCapacity => Capacity-Flow;
 }

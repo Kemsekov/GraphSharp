@@ -43,8 +43,14 @@ where TEdge : IEdge
         edge = OutEdges(sourceId).FirstOrDefault(e => e.TargetId == targetId);
         return edge is not null;
     }
-
-
+    public bool Contains(TEdge edge)
+    {
+        return OutEdges(edge.SourceId).Contains(edge);
+    }
+    public bool Contains(int sourceId, int targetId)
+    {
+        return TryGetEdge(sourceId,targetId,out var _);
+    }
     public bool IsSink(int nodeId)
     {
         return OutEdges(nodeId).Count() == 0;
@@ -73,19 +79,11 @@ where TEdge : IEdge
         Add(edge);
         return true;
     }
-
     public bool Move(int oldSourceId, int oldTargetId, int newSourceId, int newTargetId)
     {
         return Move(this[oldSourceId, oldTargetId], newSourceId, newTargetId);
     }
-    public bool Contains(TEdge edge)
-    {
-        return OutEdges(edge.SourceId).Contains(edge);
-    }
-    public bool Contains(int sourceId, int targetId)
-    {
-        return TryGetEdge(sourceId,targetId,out var _);
-    }
+
     public IEnumerable<TEdge> GetParallelEdges(int sourceId, int targetId)
     {
         return OutEdges(sourceId).Where(x=>x.TargetId==targetId);

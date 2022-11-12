@@ -17,9 +17,9 @@ where TEdge : IEdge
     /// <param name="startNodeId">Start points that used for searching hamiltonian path</param>
     /// <param name="maxIterations">Because this algorithm works in non-deterministic time it can just blew up to infinity so this parameter can limit count of algorithm iterations</param>
     /// <returns>Hamiltonian path, if found before hit maxIterationsLimit. Else some random very long path. And as seconds parameter count of iterations it took to compute path.</returns>
-    public (IList<TEdge> path, int steps) TryFindHamiltonianPathByAntSimulation(int colonySize = 256,int startNodeId=0, int maxIterations=1000, float startSmell = 0.5f, float minSmell = 0.0001f)
+    public (IList<TEdge> path, int steps) TryFindHamiltonianPathByAntSimulation(int colonySize = 256,int startNodeId=0, int maxIterations=1000, double startSmell = 0.5f, double minSmell = 0.0001f)
     {
-        var smell = new ConcurrentDictionary<TEdge, float>();
+        var smell = new ConcurrentDictionary<TEdge, double>();
         foreach (var e in Edges)
             smell[e] = startSmell;
 
@@ -48,7 +48,7 @@ where TEdge : IEdge
     /// times higher than minimal spanning tree weight.
     /// </summary>
     /// <param name="getWeight"></param>
-    public IList<TEdge> TryFindHamiltonianCycleByBubbleExpansion(Func<TEdge, float>? getWeight = null)
+    public IList<TEdge> TryFindHamiltonianCycleByBubbleExpansion(Func<TEdge, double>? getWeight = null)
     {
         getWeight ??= x => x.Weight;
         var start = Edges.MinBy(getWeight);
@@ -63,9 +63,9 @@ where TEdge : IEdge
         addedNodes[start.TargetId] = 1;
 
         var didSomething = true;
-        float minWeight = float.MaxValue;
+        double minWeight = double.MaxValue;
 
-        Func<TEdge, float> order = x =>
+        Func<TEdge, double> order = x =>
         {
             return -getWeight(x);
         };
@@ -73,14 +73,14 @@ where TEdge : IEdge
         while (didSomething)
         {
             didSomething = false;
-            minWeight = float.MaxValue;
+            minWeight = double.MaxValue;
             foreach (var e in edges.OrderBy(order).ToList())
             {
                 if (invalidEdges.TryGetValue(e, out var eInfo) && eInfo > 0) continue;
                 Edges.Remove(e);
-                var path = FindAnyPath(e.SourceId, e.TargetId, edge => addedNodes[edge.TargetId] == 0 || edge.TargetId == e.TargetId);
+                var path = FindAnyPath(e.SourceId, e.TargetId, edge => addedNodes[edge.TargetId] == 0 || edge.TargetId == e.TargetId).Path;
                 Edges.Add(e);
-                if (path.Count == 0)
+                if (path.Count() == 0)
                 {
                     invalidEdges[e] = 1;
                     continue;
@@ -113,35 +113,5 @@ where TEdge : IEdge
         }
 
         return edges;
-    }
-    public IList<TEdge> FindHamiltonianPath(Func<TEdge, float>? getWeight = null){
-        using UnionFind unionFind = new(Nodes.MaxNodeId + 1);
-        foreach (var n in Nodes)
-            unionFind.MakeSet(n.Id);
-        using var degree = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
-        
-        var result = new List<TEdge>();
-        getWeight ??= x=>x.Weight;
-        var sortedEdges = Edges.OrderBy(x=>getWeight(x)).ToList();
-
-        int sourceId = 0, targetId = 0;
-        int maxDegree = 2;
-        bool didSomething = true;
-        while(didSomething){
-            didSomething = false;
-            foreach(var e in sortedEdges){  
-                sourceId = e.SourceId;
-                targetId = e.TargetId;
-                if(unionFind.SameSet(sourceId,targetId)) continue;
-                if(degree[sourceId]+1>maxDegree || degree[targetId]+1>maxDegree)
-                    continue;
-                result.Add(e);
-                degree[sourceId]++;
-                degree[targetId]++;
-                didSomething = true;
-                unionFind.UnionSet(sourceId,targetId);
-            }
-        }
-        return result;
     }
 }

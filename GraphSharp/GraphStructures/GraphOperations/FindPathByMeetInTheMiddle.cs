@@ -13,53 +13,57 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
-    public IList<TNode> FindPathByMeetInTheMiddle(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    public IPath<TNode> FindPathByMeetInTheMiddle(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
     {
-        return FindPathByMeetInTheMiddleBase(
+        var path = FindPathByMeetInTheMiddleBase(
             startNodeId,
             endNodeId,
             visitor => GetPropagator(visitor),
             () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
             condition);
+        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p),path);
     }
     /// <summary>
     /// Finds shortest path between two points using Dijkstra algorithm and meet in the middle technique.
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     /// </summary>
-    public IList<TNode> FindPathByMeetInTheMiddleDijkstra(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    public IPath<TNode> FindPathByMeetInTheMiddleDijkstra(int startNodeId, int endNodeId,Func<TEdge,double>? getWeight = null, Predicate<TEdge>? condition = null)
     {
-        return FindPathByMeetInTheMiddleBase(
+        var path = FindPathByMeetInTheMiddleBase(
             startNodeId,
             endNodeId,
             visitor => GetPropagator(visitor),
-            () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase),
+            () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase,getWeight),
             condition);
+        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p),path);
     }
     /// <summary>
     /// Concurrently finds shortest path between two points using Dijkstra algorithm and meet in the middle technique.
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     /// </summary>
-    public IList<TNode> FindPathByMeetInTheMiddleDijkstraParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    public IPath<TNode> FindPathByMeetInTheMiddleDijkstraParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
     {
-        return FindPathByMeetInTheMiddleBase(
+        var path = FindPathByMeetInTheMiddleBase(
             startNodeId,
             endNodeId,
             visitor => GetParallelPropagator(visitor),
             () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase),
             condition);
+        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p),path);
     }
     /// <summary>
     /// Concurrent path finder <br/>
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     /// </summary>
-    public IList<TNode> FindPathByMeetInTheMiddleParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    public IPath<TNode> FindPathByMeetInTheMiddleParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
     {
-        return FindPathByMeetInTheMiddleBase(
+        var path = FindPathByMeetInTheMiddleBase(
             startNodeId,
             endNodeId,
             visitor => GetParallelPropagator(visitor),
             () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
             condition);
+        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p),path);
     }
     /// <summary>
     /// Finds any first found path between any two nodes using meet in the middle technique<br/>

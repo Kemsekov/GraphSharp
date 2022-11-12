@@ -10,21 +10,21 @@ public class DijkstrasAlgorithm<TNode, TEdge> : PathFinderBase<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    private Func<TEdge, float> _getWeight;
+    private Func<TEdge, double> _getWeight;
     /// <summary>
     /// what is the length of path from startNode to some other node so far.  
     /// </summary>
-    public RentedArray<float> PathLength;
+    public RentedArray<double> PathLength;
 
     /// <param name="startNode">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
     /// <param name="graph">Algorithm will be executed on this graph</param>
-    public DijkstrasAlgorithm(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge, float>? getWeight = null) : base(graph)
+    public DijkstrasAlgorithm(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge, double>? getWeight = null) : base(graph)
     {
         getWeight ??= e => e.Weight;
         this._getWeight = getWeight;
         this.StartNodeId = startNodeId;
-        PathLength = ArrayPoolStorage.RentFloatArray(graph.Nodes.MaxNodeId + 1);
+        PathLength = ArrayPoolStorage.RentArray<double>(graph.Nodes.MaxNodeId + 1);
         PathLength.Fill(-1);
         PathLength[startNodeId] = 0;
     }
@@ -38,7 +38,7 @@ where TEdge : IEdge
         PathLength[startNodeId] = 0;
         ClearPaths();
     }
-    public override bool SelectImpl(TEdge edge)
+    protected override bool SelectImpl(TEdge edge)
     {
         (var sourceId,var targetId) = GetEdgeDirection(edge);
         var pathLength = PathLength[sourceId] + _getWeight(edge);
@@ -56,7 +56,7 @@ where TEdge : IEdge
         Path[targetId] = sourceId;
         return true;
     }
-    public override void VisitImpl(TNode node)
+    protected override void VisitImpl(TNode node)
     {
         DidSomething = true;
     }

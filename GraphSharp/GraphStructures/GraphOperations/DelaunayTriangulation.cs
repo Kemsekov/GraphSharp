@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Numerics;
 using DelaunatorSharp;
 namespace GraphSharp.Graphs;
 
@@ -11,14 +12,14 @@ where TEdge : IEdge
     /// Removes all edges from graph then
     /// preforms delaunay triangulation. See https://en.wikipedia.org/wiki/Delaunay_triangulation <br/>
     /// </summary>
-    public GraphOperation<TNode, TEdge> DelaunayTriangulation()
+    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,Vector2> getPos)
     {
         Edges.Clear();
 
         var points = Nodes.ToDictionary(
             x =>
             {
-                var pos = x.Position;
+                var pos = getPos(x);
                 var point = new DelaunatorSharp.Point(pos.X, pos.Y);
                 return point as IPoint;
             }
@@ -33,7 +34,11 @@ where TEdge : IEdge
         }
         return this;
     }
-    public GraphOperation<TNode, TEdge> DelaunayTriangulationWithoutHull()
+    /// <summary>
+    /// Removes all edges from graph then
+    /// preforms delaunay triangulation, but removes hull. See https://en.wikipedia.org/wiki/Delaunay_triangulation <br/>
+    /// </summary>
+    public GraphOperation<TNode, TEdge> DelaunayTriangulationWithoutHull(Func<TNode,Vector2> getPos)
     {
         Edges.Clear();
 
@@ -47,7 +52,7 @@ where TEdge : IEdge
         var points = Nodes.ToDictionary(
             x =>
             {
-                var pos = x.Position;
+                var pos = getPos(x);
                 var point = new DelaunatorSharp.Point(pos.X, pos.Y);
                 maxX = Math.Max(pos.X,maxX);
                 maxY = Math.Max(pos.Y,maxY);

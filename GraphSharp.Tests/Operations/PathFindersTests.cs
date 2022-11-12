@@ -11,7 +11,7 @@ namespace GraphSharp.Tests.Operations
 {
     public class PathFindersTests : BaseTest
     {
-        public void FindPath(Func<IGraph<Node, Edge>, int, int, IList<Node>> getPath)
+        public void FindPath(Func<IGraph<Node, Edge>, int, int, IEnumerable<Node>> getPath)
         {
             _Graph.Do.CreateNodes(1000);
             for (int i = 0; i < 100; i++)
@@ -34,27 +34,27 @@ namespace GraphSharp.Tests.Operations
                 var d2 = components.Components.First().Last();
                 var path2 = getPath(_Graph, d1.Id, d2.Id);
                 Assert.NotEmpty(path2);
-                _Graph.ValidatePath(path2);
+                _Graph.ValidatePath(path2.ToList());
             }
         }
         [Fact]
         public void FindAnyPath_Works()
         {
-            FindPath((graph, n1, n2) => graph.Do.FindAnyPath(n1, n2));
-            FindPath((graph, n1, n2) => graph.Do.FindAnyPathParallel(n1, n2));
+            FindPath((graph, n1, n2) => graph.Do.FindAnyPath(n1, n2).Path);
+            FindPath((graph, n1, n2) => graph.Do.FindAnyPathParallel(n1, n2).Path);
         }
         [Fact]
         public void FindAnyPathWithCondition_Works()
         {
-            FindPath((graph, n1, n2) => graph.Do.FindAnyPath(n1, n2, x => true));
-            FindPath((graph, n1, n2) => graph.Do.FindAnyPathParallel(n1, n2, x => true));
-            _Graph.Do.DelaunayTriangulation();
+            FindPath((graph, n1, n2) => graph.Do.FindAnyPath(n1, n2, x => true).Path);
+            FindPath((graph, n1, n2) => graph.Do.FindAnyPathParallel(n1, n2, x => true).Path);
+            _Graph.Do.DelaunayTriangulation(x=>x.Position);
             for (int i = 0; i < 10; i++)
             {
                 var p = Random.Shared.Next(999) + 1;
-                var path1 = _Graph.Do.FindAnyPath(0, p, x => x.TargetId % 5 != 0);
-                var path2 = _Graph.Do.FindAnyPathParallel(0, p, x => x.TargetId % 5 != 0);
-                if (path1.Count == 0)
+                var path1 = _Graph.Do.FindAnyPath(0, p, x => x.TargetId % 5 != 0).Path;
+                var path2 = _Graph.Do.FindAnyPathParallel(0, p, x => x.TargetId % 5 != 0).Path;
+                if (path1.Count() == 0)
                 {
                     Assert.Empty(path2);
                     continue;
@@ -73,10 +73,10 @@ namespace GraphSharp.Tests.Operations
         }
         [Fact]
         public void FindPathByMeetInTheMiddle_Works(){
-            FindPath((graph, n1, n2) => graph.Do.FindPathByMeetInTheMiddleDijkstra(n1,n2));
-            FindPath((graph, n1, n2) => graph.Do.FindPathByMeetInTheMiddle(n1,n2));
-            FindPath((graph, n1, n2) => graph.Do.FindPathByMeetInTheMiddleParallel(n1,n2));
-            FindPath((graph, n1, n2) => graph.Do.FindPathByMeetInTheMiddleDijkstraParallel(n1,n2));
+            FindPath((graph, n1, n2) => graph.Do.FindPathByMeetInTheMiddleDijkstra(n1,n2).Path);
+            FindPath((graph, n1, n2) => graph.Do.FindPathByMeetInTheMiddle(n1,n2).Path);
+            FindPath((graph, n1, n2) => graph.Do.FindPathByMeetInTheMiddleParallel(n1,n2).Path);
+            FindPath((graph, n1, n2) => graph.Do.FindPathByMeetInTheMiddleDijkstraParallel(n1,n2).Path);
         }
 
     }

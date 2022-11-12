@@ -7,7 +7,7 @@ using GraphSharp.Exceptions;
 using GraphSharp.Graphs;
 
 using GraphSharp.Tests.Models;
-using MathNet.Numerics.LinearAlgebra.Single;
+using MathNet.Numerics.LinearAlgebra.Double;
 using Xunit;
 
 namespace GraphSharp.Tests
@@ -119,8 +119,8 @@ namespace GraphSharp.Tests
             Assert.Equal(nodesCount,nodes.Count);
 
             for(int col = 0;col<incidenceMatrix.ColumnCount;col++){
-                (int row,float value) n1 = (-1,-1);
-                (int row,float value) n2 = (-1,-1);
+                (int row,double value) n1 = (-1,-1);
+                (int row,double value) n2 = (-1,-1);
 
                 for(int row = 0;row<nodesCount;row++){
                     var value = incidenceMatrix[row,col];
@@ -161,17 +161,17 @@ namespace GraphSharp.Tests
 
             Assert.Equal(adjacencyMatrix, result);
         }
-        public Matrix CreateSquareMatrix(int size, Func<int, int, float> createElement)
+        public Matrix CreateSquareMatrix(int size, Func<int, int, double> createElement)
         {
-            var result = new float[size, size];
+            var result = new double[size, size];
             for (int i = 0; i < size; i++)
                 for (int b = 0; b < size; b++)
                     result[i, b] = createElement(i, b);
             return DenseMatrix.OfArray(result);
         }
-        public Matrix CreateRandomIncidenceMatrix(Random rand, int nodesCount, int edgesCount, Func<int, int, float> createElement)
+        public Matrix CreateRandomIncidenceMatrix(Random rand, int nodesCount, int edgesCount, Func<int, int, double> createElement)
         {
-            var result = new float[nodesCount, edgesCount];
+            var result = new double[nodesCount, edgesCount];
             for (int e = 0; e < edgesCount; e++)
             {
                 int randPoint1 = rand.Next(nodesCount);
@@ -248,12 +248,12 @@ namespace GraphSharp.Tests
         [Fact]
         public void ConvertEdgesListToPath(){
             _Graph.Do.CreateNodes(1000);
-            _Graph.Do.DelaunayTriangulation();
+            _Graph.Do.DelaunayTriangulation(x=>x.Position);
             for(int i = 0;i<100;i++){
                 var n1 = Random.Shared.Next(1000);
                 var n2 = (n1+1)%1000;
-                var expected = _Graph.Do.FindAnyPath(n1,n2);
-                if(expected.Count==0) continue;
+                var expected = _Graph.Do.FindAnyPath(n1,n2).Path;
+                if(expected.Count()==0) continue;
                 var edges = new List<Edge>(); 
                 expected.Aggregate((x1,x2)=>{
                     edges.Add(_Graph.Edges[x1,x2]);

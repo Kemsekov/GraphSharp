@@ -10,11 +10,12 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    public record CenterFinderResult(double radius, IEnumerable<TNode> center);
     /// <summary>
     /// Finds radius and center of graph using approximation technic. In general produce very good results, but works very fast.<br/>
     /// </summary>
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
-    public (float radius, IEnumerable<TNode> center) TryFindCenterByApproximation(Func<TEdge, float>? getWeight = null)
+    public CenterFinderResult TryFindCenterByApproximation(Func<TEdge, double>? getWeight = null)
     {
         using var visited = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
 
@@ -27,12 +28,12 @@ where TEdge : IEdge
         //5) Repeat process with node we did step into until we step twice in the same node
         //6) When we step twice in the same node it means that direction of center is accelerating
         //   and we found a center of a graph. 
-        (float radius, IEnumerable<int> center) ApproximateCenter(int startNodeId)
+        (double radius, IEnumerable<int> center) ApproximateCenter(int startNodeId)
         {
-            (int Id, float eccentricity) point = (startNodeId, 0);
-            var points = new List<(int Id, float eccentricity)>();
-            float radius = float.MaxValue;
-            float error = 1f;
+            (int Id, double eccentricity) point = (startNodeId, 0);
+            var points = new List<(int Id, double eccentricity)>();
+            double radius = double.MaxValue;
+            double error = 1f;
             while (true)
             {
                 visited[point.Id] += 1;
@@ -50,13 +51,13 @@ where TEdge : IEdge
                 var index = (int)(1+error*(path.Count-2));
                 index = Math.Max(index,0);
                 index = Math.Min(index,path.Count-1);
-                point = (path[index].Id, float.MaxValue);
+                point = (path[index].Id, double.MaxValue);
                 error*=0.85f;
             }
             return (radius, points.Where(x => x.eccentricity == radius).Select(x=>x.Id));
         }
         var components = FindStronglyConnectedComponentsTarjan();
-        var radius = float.MaxValue;
+        var radius = double.MaxValue;
         var center = Enumerable.Empty<int>();
 
         //we use ApproximateCenter on each of SSC so we can cover
@@ -83,16 +84,16 @@ where TEdge : IEdge
                 Edges.Neighbors(n).Where(x=>FindEccentricity(x,getWeight).length==radius)
             );
         }
-        return (radius, result.Distinct().Select(id=>Nodes[id]));
+        return new(radius, result.Distinct().Select(id=>Nodes[id]));
     }
     /// <summary>
     /// Finds radius and center of graph using Dijkstras Algorithm to brute force eccentricity of all nodes and select minimum of them.<br/>
     /// Operates in O(V^2 * logV + EV) time where V is a count of nodes and E is a count of edges
     /// </summary>
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
-    public (float radius, IEnumerable<TNode> center) FindCenterByDijkstras(Func<TEdge, float>? getWeight = null)
+    public CenterFinderResult FindCenterByDijkstras(Func<TEdge, double>? getWeight = null)
     {
-        var radius = float.MaxValue;
+        var radius = double.MaxValue;
         var center = new List<TNode>();
         var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(0, StructureBase, getWeight);
         var propagator = GetParallelPropagator(pathFinder);
@@ -114,12 +115,11 @@ where TEdge : IEdge
                     radius = p.length;
                     center.Clear();
                 }
-            if (Math.Abs(p.length - radius) < float.Epsilon)
+            if (Math.Abs(p.length - radius) < double.Epsilon)
                 center.Add(Nodes[n.Id]);
 
         }
         ReturnPropagator(propagator);
-        return (radius, center);
-
+        return new(radius, center);
     }
 }

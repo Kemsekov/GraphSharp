@@ -27,7 +27,7 @@ where TEdge : IEdge
     /// Dictionary containing smell left on edges. Ants prefer
     /// paths with strongest smell.
     /// </summary>
-    public IDictionary<TEdge, float> Smell { get; }
+    public IDictionary<TEdge, double> Smell { get; }
     /// <summary>
     /// Each ant need to store information about it's visited nodes so on it's run
     /// it wouldn't run in the same node twice. This information stored here.<br/> 
@@ -47,11 +47,11 @@ where TEdge : IEdge
     /// <summary>
     /// Coefficient of best found path so far.
     /// </summary>
-    public float BestPathCoefficient = 0;
+    public double BestPathCoefficient = 0;
     /// <param name="graph">Graph to run ant simulation on</param>
     /// <param name="smell">Smell dict that will be shared among all ants in this ant simulation.</param>
     /// <param name="colonySize">How many ants need to be in this colony. For better memory usage use multiple of 32 values (like 32, 64, 96 etc)</param>
-    public AntColony(IGraph<TNode, TEdge> graph, IDictionary<TEdge, float> smell, int colonySize)
+    public AntColony(IGraph<TNode, TEdge> graph, IDictionary<TEdge, double> smell, int colonySize)
     {
         ColonySize = colonySize;
         Smell = smell;

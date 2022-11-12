@@ -12,7 +12,7 @@ public class Edge : IEdge
     public int SourceId { get; set; }
     public int TargetId { get; set; }
     public FlowData Flow { get; set; }
-    public float Weight { get; set; }
+    public double Weight { get; set; }
     public Color Color { get; set; } = DefaultColor;
 
     public Edge(INode source, INode target)

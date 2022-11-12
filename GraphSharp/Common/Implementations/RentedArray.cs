@@ -29,7 +29,6 @@ where T : unmanaged
         }
     }
     ArrayPool<byte> pool;
-    bool returned = false;
     GCHandle handle;
     T* arrayPtr;
     readonly byte[] array;
@@ -60,6 +59,7 @@ where T : unmanaged
     ~RentedArray(){
         Dispose();
     }
+    bool returned = false;
     public void Dispose()
     {
         if(returned) return;
@@ -67,8 +67,8 @@ where T : unmanaged
         //don't forget to free pinned object so GC can move it a bit,
         //do memory defragmentation and so on...
         handle.Free();
-        returned = true;
         arrayPtr = (T*)IntPtr.Zero;
+        returned = true;
     }
     /// <summary>
     /// Fills whole array with given value

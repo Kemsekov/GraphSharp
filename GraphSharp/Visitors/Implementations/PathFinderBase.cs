@@ -9,8 +9,8 @@ using GraphSharp.Graphs;
 namespace GraphSharp.Visitors;
 /// <summary>
 /// Base class for path finding algorithms, that search for all paths from <see cref="StartNodeId"/> to all other nodes. <br/> 
-/// Between each consequent calls of <see cref="StartImpl"/> and 
-/// <see cref="EndImpl"/> parameter <paramref name="DidSomething"/> 
+/// Between each consequent calls of <see cref="Start"/> and 
+/// <see cref="End"/> parameter <paramref name="DidSomething"/> 
 /// must be set to <paremref name="true"/> in order for path finder to continue it's working.
 /// Logic is that if in the iteration execution of algorithm we did nothing at all
 /// that means we are done and algorithm must stop. In that case <paramref name="Done"/>
@@ -65,10 +65,10 @@ where TEdge : IEdge
         Steps = 0;
         GetEdgeDirection = edge=>(edge.SourceId,edge.TargetId);
     }
-    public override void StartImpl(){
+    protected override void StartImpl(){
         DidSomething = false;
     }
-    public override void EndImpl(){
+    protected override void EndImpl(){
         Steps++;
         if(!DidSomething) Done = true;
     }

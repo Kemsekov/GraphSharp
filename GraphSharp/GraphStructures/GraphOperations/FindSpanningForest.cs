@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using GraphSharp.Common;
 namespace GraphSharp.Graphs;
 
@@ -14,17 +15,15 @@ where TEdge : IEdge
     /// <param name="getWeight">When null spanning forest is computed by sorting edges by weights. If you need to change this behavior specify this delegate, so edges will be sorted in different order.</param>
     /// <param name="maxDegree">Constraint to given node degree in resulting forest.</param>
     /// <returns>List of edges that form a minimal spanning forest</returns>
-    public IList<TEdge> FindSpanningForestKruskal(Func<TEdge, float>? getWeight = null, Func<TNode, int>? maxDegree = null)
+    public KruskalForest<TEdge> FindSpanningForestKruskal(Func<TEdge, double>? getWeight = null, Func<TNode, int>? maxDegree = null)
     {
         maxDegree ??= n => Int32.MaxValue;
         getWeight ??= e => e.Weight;
         var edges = Edges.OrderBy(x => getWeight(x));
         var forest = KruskalAlgorithm(edges, maxDegree);
-        var result = forest.Forest;
-        forest.Dispose();
-        return result;
+        return forest;
     }
-    public KruskalForest<TEdge> FindKruskalForest(IEnumerable<TEdge> edges, Func<TEdge,float> getWeight,Func<TNode,int> maxDegree)
+    public KruskalForest<TEdge> FindKruskalForest(IEnumerable<TEdge> edges, Func<TEdge,double> getWeight,Func<TNode,int> maxDegree)
     {
         edges = edges.OrderBy(x => getWeight(x));
         return KruskalAlgorithm(edges, maxDegree);
@@ -34,10 +33,10 @@ where TEdge : IEdge
     /// Guarantee to return a tree which connects all nodes in a hamiltonian path.
     /// </summary>
     /// <returns></returns>
-    public IList<TEdge> FindSpanningTreeDegree2OnNodes(Func<TEdge, float>? getWeight = null)
+    public IList<TEdge> FindSpanningTreeDegree2OnNodes(Func<TNode,Vector2> getPos, Func<TEdge, double>? getWeight = null)
     {
         getWeight ??= x=>x.Weight;
-        return FindSpanningTreeDegree2OnNodes(getWeight,graph=>graph.Do.DelaunayTriangulation()).tree;
+        return FindSpanningTreeDegree2OnNodes(getWeight,graph=>graph.Do.DelaunayTriangulation(getPos)).tree;
     }
     /// <summary>
     /// Constructs a spanning tree degree 2 on nodes only by repeatedly applying delaunay triangulation
@@ -51,14 +50,14 @@ where TEdge : IEdge
     /// <param name="getWeight">Function to take weight from edge</param>
     /// <param name="doDelaunayTriangulation">Function to do delaunay triangulation</param>
     /// <returns>Tree as edges list and tree ends as nodes array. Node is end if it's degree = 1</returns>
-    (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TEdge, float> getWeight, Action<IGraph<TNode,TEdge>> doDelaunayTriangulation)
+    (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TEdge, double> getWeight, Action<IGraph<TNode,TEdge>> doDelaunayTriangulation)
     {
         var graph = StructureBase;
         var clone = graph.CloneJustConfiguration();
         clone.SetSources(graph.Nodes);
         doDelaunayTriangulation(clone);
-        var startEdges = clone.Do.FindSpanningForestKruskal(getWeight: getWeight,maxDegree: n => 2);
-        clone.SetSources(edges: startEdges);
+        using var startEdges = clone.Do.FindSpanningForestKruskal(getWeight: getWeight,maxDegree: n => 2);
+        clone.SetSources(edges: startEdges.Forest);
         TNode[] ends;
         while(true)
         {
@@ -89,6 +88,7 @@ where TEdge : IEdge
                 setFinder.UnionSet(e.SourceId, e.TargetId);
             }
         }
+        
         return (clone.Edges.ToList(),ends);
     }
 }
