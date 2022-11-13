@@ -23,12 +23,8 @@ where TEdge : IEdge
     public abstract IEnumerable<TEdge> OutEdges(int sourceId);
     public abstract IEnumerable<TEdge> InEdges(int targetId);
     public abstract (IEnumerable<TEdge> OutEdges, IEnumerable<TEdge> InEdges) BothEdges(int nodeId);
-    public abstract IEnumerator<TEdge> GetEnumerator();
-    public abstract void Add(TEdge edge);
-    public abstract bool Remove(TEdge edge);
-    public abstract bool Remove(int sourceId, int targetId);
-    public abstract void Clear();
     public abstract IEnumerable<TEdge> InOutEdges(int nodeId);
+    public abstract IEnumerator<TEdge> GetEnumerator();
 
     IEnumerator IEnumerable.GetEnumerator()
     {

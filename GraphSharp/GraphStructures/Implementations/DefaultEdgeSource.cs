@@ -46,7 +46,7 @@ where TEdge : IEdge
         return (Enumerable.Empty<TEdge>(), Enumerable.Empty<TEdge>());
     }
 
-    public override void Add(TEdge edge)
+    public void Add(TEdge edge)
     {
         if (Edges.TryGetValue(edge.SourceId, out var holder)){
             if(!holder.outEdges.Add(edge)) 
@@ -70,7 +70,7 @@ where TEdge : IEdge
         return Edges.Values.SelectMany(x => x.outEdges).GetEnumerator();
     }
 
-    public override bool Remove(TEdge edge)
+    public bool Remove(TEdge edge)
     {
         if (Edges.TryGetValue(edge.SourceId, out var e))
         {
@@ -87,7 +87,7 @@ where TEdge : IEdge
         }
         return false;
     }
-    public override bool Remove(int sourceId, int targetId)
+    public bool Remove(int sourceId, int targetId)
     {
         if (Edges.TryGetValue(sourceId, out var e1) && Edges.TryGetValue(targetId,out var e2))
         {
@@ -104,7 +104,7 @@ where TEdge : IEdge
         }
         return false;
     }
-    public override void Clear()
+    public void Clear()
     {
         Edges.Clear();
         Count = 0;
