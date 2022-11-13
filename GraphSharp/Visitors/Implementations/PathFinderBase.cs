@@ -16,7 +16,7 @@ namespace GraphSharp.Visitors;
 /// that means we are done and algorithm must stop. In that case <paramref name="Done"/>
 /// will be set to true.
 /// </summary>
-public abstract class PathFinderBase<TNode, TEdge> : VisitorBase<TNode, TEdge>
+public abstract class PathFinderBase<TNode, TEdge> : VisitorBase<TNode, TEdge>, IDisposable
 where TNode : INode
 where TEdge : IEdge
 {
@@ -69,7 +69,6 @@ where TEdge : IEdge
         DidSomething = false;
     }
     protected override void EndImpl(){
-        Steps++;
         if(!DidSomething) Done = true;
     }
     /// <summary>
@@ -89,5 +88,10 @@ where TEdge : IEdge
         path.Add(Graph.Nodes[startNodeId]);
         path.Reverse();
         return path;
+    }
+
+    public void Dispose()
+    {
+        Path.Dispose();
     }
 }

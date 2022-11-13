@@ -7,7 +7,6 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    // TODO: fix return docs
     /// <summary>
     /// Finds all unconnected components of a graph
     /// <example>
@@ -16,7 +15,7 @@ where TEdge : IEdge
     /// </code>
     /// </example>
     /// </summary>
-    /// <returns>Array of lists of nodes where each of them represents different component and <see cref="UnionFind"/> that can be used to determine whatever two points in the same components or not.<br/></returns>
+    /// <returns>Class that can be used to get components and determine of two nodes in the same component</returns>
     public ComponentsResult<TNode> FindComponents()
     {
         UnionFind u = new(Nodes.MaxNodeId + 1);

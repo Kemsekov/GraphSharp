@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 namespace GraphSharp.Graphs;
-public interface IImmutableNodeSource<TNode> : ICollection<TNode>
+public interface IImmutableNodeSource<TNode> : IEnumerable<TNode>
 {
     /// <summary>
     /// Max id value of all nodes. If there is no nodes, returns -1.

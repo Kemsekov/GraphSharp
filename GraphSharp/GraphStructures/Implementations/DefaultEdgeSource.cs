@@ -8,7 +8,7 @@ namespace GraphSharp.Graphs;
 /// <summary>
 /// Default implementation of <see cref="IEdgeSource{}"/>
 /// </summary>
-public class DefaultEdgeSource<TEdge> : BaseEdgeSource<TEdge>
+public class DefaultEdgeSource<TEdge> : BaseEdgeSource<TEdge>, IEdgeSource<TEdge>
 where TEdge : IEdge
 {
     IDictionary<int, (HashSet<TEdge> outEdges, HashSet<TEdge> inEdges)> Edges;
@@ -108,5 +108,20 @@ where TEdge : IEdge
     {
         Edges.Clear();
         Count = 0;
+    }
+
+    public bool Contains(TEdge item)
+    {
+        return EdgeSourceExtensions.Contains(this,item);
+    }
+
+    public void CopyTo(TEdge[] array, int arrayIndex)
+    {
+        EdgeSourceExtensions.CopyTo(this,array,arrayIndex);
+    }
+
+    public override IEnumerable<TEdge> InOutEdges(int nodeId)
+    {
+        return EdgeSourceExtensions.InOutEdges(this,nodeId);
     }
 }

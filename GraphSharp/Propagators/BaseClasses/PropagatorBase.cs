@@ -13,11 +13,11 @@ namespace GraphSharp.Propagators;
 /// See <see cref="UsedNodeStates"/> 
 /// to access used node states. <br/>
 /// By default proceed exploration by out edges. <br/>
-/// Uses <see cref="IVisitor{,}"/> to implement how to an exploration. <br/>
+/// Uses <see cref="IVisitor{,}"/> to implement exploration logic. <br/>
 /// See <see cref="PropagatorBase{,}.Propagate"/> for details about how visitor works with
 /// this class.
 /// </summary>
-public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode, TEdge>
+public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode, TEdge>, IDisposable
 where TNode : INode
 where TEdge : IEdge
 {
@@ -168,5 +168,10 @@ where TEdge : IEdge
                 if (!Visitor.Select(edge)) continue;
                 NodeStates.AddState(UsedNodeStates.Visited, edge.TargetId);
             }
+    }
+
+    public void Dispose()
+    {
+        NodeStates.Dispose();
     }
 }

@@ -49,7 +49,7 @@ where TEdge : IEdge
         path.Path.Add(treeDegree2.ends[0]);
         return new TspResult<TNode>(path.Path,cost);
     }
-    public ITsp<TNode> TspCheapestLinkOnPositions(Func<TEdge,double> edgeCost,Action<IGraph<TNode, TEdge>> doDelaunayTriangulation)
+    public ITsp<TNode> TspCheapestLinkOnEdgeCost(Func<TEdge,double> edgeCost,Action<IGraph<TNode, TEdge>> doDelaunayTriangulation)
     {
         var treeDegree2 = FindSpanningTreeDegree2OnNodes(edgeCost,doDelaunayTriangulation);
         var ends = treeDegree2.ends;

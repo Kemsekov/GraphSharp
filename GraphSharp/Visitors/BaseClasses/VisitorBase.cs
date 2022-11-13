@@ -12,7 +12,10 @@ where TEdge : IEdge
     /// <summary>
     /// This predicate can be used to avoid some edges/nodes in path finding. 
     /// By default pass all edges. <br/>
-    /// Begin called at the beginning of <see cref="Select"/> method.
+    /// Begin called at the beginning of <see cref="Select"/> method.<br/>
+    /// If <see langword="Condition(edge)"/> is <see langword="true"/> this 
+    /// <see langword="edge"/> is allowed to pass <see langword="Select"/> function,
+    /// else not allowed.
     /// </summary>
     public Predicate<TEdge> Condition { get; set;}
     /// <summary>

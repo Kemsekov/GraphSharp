@@ -4,7 +4,7 @@ namespace GraphSharp.Graphs;
 /// <summary>
 /// Represents edges storage object
 /// </summary>
-public interface IEdgeSource<TEdge> : IImmutableEdgeSource<TEdge>
+public interface IEdgeSource<TEdge> : IImmutableEdgeSource<TEdge>, ICollection<TEdge>
 {
     /// <summary>
     /// Removes all edges that equals to <paramref name="edge"/> by <paramref name="Equals"/>. 
@@ -18,22 +18,5 @@ public interface IEdgeSource<TEdge> : IImmutableEdgeSource<TEdge>
     /// Removes all edges that directs sourceId -> targetId (including parallel edges)
     /// </summary>
     bool Remove(int sourceId, int targetId);
-    /// <summary>
-    /// Removes all edges that directs source -> target (including parallel edges)
-    /// </summary>
-    bool Remove(INode source, INode target);
-    /// <summary>
-    /// Moves edge to a new position
-    /// </summary>
-    /// <returns>True if moved successfully, else false</returns>
-    bool Move(TEdge edge, int newSourceId, int newTargetId);
-    /// <summary>
-    /// Moves edge to a new position
-    /// </summary>
-    /// <returns>True if moved successfully, else false</returns>
-    bool Move(int oldSourceId, int oldTargetId, int newSourceId, int newTargetId);
-    /// <summary>
-    /// Removes all edges that have any of <see langword="nodes"/> as source or target
-    /// </summary>
-    void Isolate(params int[] nodes);
+
 }

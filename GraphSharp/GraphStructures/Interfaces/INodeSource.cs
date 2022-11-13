@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 namespace GraphSharp.Graphs;
-public interface INodeSource<TNode> : IImmutableNodeSource<TNode>
+public interface INodeSource<TNode> : IImmutableNodeSource<TNode>, ICollection<TNode>
 {
     /// <summary>
     /// Removes node by it's id
