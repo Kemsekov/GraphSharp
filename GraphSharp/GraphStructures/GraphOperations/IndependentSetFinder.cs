@@ -24,6 +24,8 @@ where TEdge : IEdge
         const byte Forbidden = 4;
         using var nodeState = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
         using var freeNeighbors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        using var countOfForbiddenNeighbors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        using var countOfColoredNeighbors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
 
 #pragma warning disable
         bool IsAdded(int nodeId) => (nodeState[nodeId] & Added) == Added;
@@ -40,40 +42,54 @@ where TEdge : IEdge
 
         foreach (var n in Nodes)
         {
-            if (!condition(n))
+            if (!condition(n)){
                 nodeState[n.Id] |= Forbidden;
+                foreach(var n2 in Edges.Neighbors(n.Id)){
+                    countOfForbiddenNeighbors[n2]++;
+                }
+            }
         }
         var toAdd = Nodes.Where(x => !IsForbidden(x.Id)).MaxBy(x => Edges.Neighbors(x.Id).Count()).Id;
         bool found;
         int bestScore;
         IEnumerable<int> neighbors;
+        IList<int> candidates = new List<int>(){toAdd};
         while (true)
             unchecked
             {
                 if (IsAdded(toAdd)) break;
                 nodeState[toAdd] |= Added;
+                candidates.Clear();
 
                 neighbors = Edges.Neighbors(toAdd);
                 foreach(var n in neighbors)
                 {
+                    countOfColoredNeighbors[n]--;
                     if (nodeState[n] != 0) continue;
                     nodeState[n] |= AroundAdded;
                     foreach (var l in Edges.Neighbors(n))
                         freeNeighbors[l]--;
                 };
 
-                bestScore = 1;
+                bestScore = int.MaxValue;
                 for(int index = 0;index<freeNeighbors.Length;index++)
                 {
                     if (nodeState[index] != 0) continue;
                     var score = freeNeighbors[index];
-                    if (score <= bestScore){
+
+                    if(score<bestScore){
                         bestScore = score;
-                        toAdd = index;
+                        candidates.Clear();
+                    }
+
+                    if(score==bestScore){
+                        candidates.Add(index);
                     }
                 };
-                if (bestScore == 1)
+                if (bestScore == int.MaxValue)
                     break;
+                var candidates2 = candidates.AllMinValues(x=>countOfForbiddenNeighbors[x]);
+                toAdd = candidates2.MinBy(x=>countOfColoredNeighbors[x]);
             }
         var result = new List<TNode>(Nodes.Count / 3);
         foreach (var n in Nodes)

@@ -15,7 +15,7 @@ where TEdge : IEdge
 {
     public bool AllowParallelEdges{get;init;}
     public int Count { get; protected set; }
-    public bool IsReadOnly => false;
+    public bool IsReadOnly => true;
     public TEdge this[int sourceId, int targetId]
         => OutEdges(sourceId).FirstOrDefault(x => x.TargetId == targetId) ??
             throw new EdgeNotFoundException($"Edge {sourceId} -> {targetId} not found.");

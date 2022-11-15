@@ -172,7 +172,7 @@ namespace Satsuma.LP
 			return (1.0 / q) * x;
 		}
 	}
-
+#pragma warning disable
 	/// The weighted sum of some variables, plus an optional constant.
 	/// 
 	/// Expressions can be combined with Variables, Expressions and constants using the + - * / operators
@@ -378,6 +378,8 @@ namespace Satsuma.LP
 			throw new InvalidOperationException("Not-equal LP constraints are not supported.");
 		}
 	}
+
+#pragma warning enable
 
 	/// A comparison operator (&lt;, &lt;=, &gt;, &gt;= or =).
 	public enum ComparisonOperator

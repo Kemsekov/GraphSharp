@@ -151,4 +151,23 @@ public static class EdgeSourceExtensions
             }
         }
     }
+    // TODO: add test
+    /// <param name="Edges"></param>
+    /// <param name="n1"></param>
+    /// <param name="n2"></param>
+    /// <typeparam name="TEdge"></typeparam>
+    /// <returns>
+    /// All edges between these two nodes. If there is edges <see langword="A = 1->2"/> and <see langword="B = 2->1"/> then when called <see langword="EdgesBetweenNodes(1,2)"/> will return both edges : <see langword="{A, B}"/>
+    /// </returns>
+    public static IEnumerable<TEdge> EdgesBetweenNodes<TEdge>(this IEdgeSource<TEdge> Edges, int n1, int n2)
+    where TEdge : IEdge
+    {
+        if(Edges.AllowParallelEdges)
+        return Edges.GetParallelEdges(n1,n2).Concat(Edges.GetParallelEdges(n2,n1));
+        Edges.TryGetEdge(n1,n2,out var e1);
+        Edges.TryGetEdge(n2,n1,out var e2);
+        #pragma warning disable
+        return new TEdge[]{e1,e2}.Where(x=>x is not null);
+        #pragma warning enable
+    }
 }

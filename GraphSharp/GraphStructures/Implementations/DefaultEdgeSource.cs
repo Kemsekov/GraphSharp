@@ -11,6 +11,7 @@ namespace GraphSharp.Graphs;
 public class DefaultEdgeSource<TEdge> : BaseEdgeSource<TEdge>, IEdgeSource<TEdge>
 where TEdge : IEdge
 {
+    public new bool IsReadOnly => false;
     IDictionary<int, (HashSet<TEdge> outEdges, HashSet<TEdge> inEdges)> Edges;
     /// <summary>
     /// Creates a new instance of <see cref="DefaultEdgeSource{}"/>

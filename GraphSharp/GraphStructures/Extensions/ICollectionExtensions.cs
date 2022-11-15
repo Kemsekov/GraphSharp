@@ -26,4 +26,29 @@ public static class ICollectionExtensions
         }
         return itemsToDelete.Count;
     }
+    // TODO: add test
+    /// <returns>
+    /// All values that share the same minimal score
+    /// </returns>
+    public static IList<T> AllMinValues<T>(this IEnumerable<T> e, Func<T, float> getMeasure)
+    {
+        var result = new List<T>();
+        var bestScore = float.MaxValue;
+        foreach(var n in e)
+        {
+            var score = getMeasure(n);
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                result.Clear();
+            }
+
+            if (score == bestScore)
+            {
+                result.Add(n);
+            }
+        };
+        return result;
+    }
 }
