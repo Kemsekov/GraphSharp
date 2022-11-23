@@ -19,7 +19,7 @@ where TEdge : IEdge
     /// <param name="startNode">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
     /// <param name="graph">Algorithm will be executed on this graph</param>
-    public DijkstrasAlgorithm(int startNodeId, IGraph<TNode, TEdge> graph, Func<TEdge, double>? getWeight = null) : base(graph)
+    public DijkstrasAlgorithm(int startNodeId, IImmutableGraph<TNode, TEdge> graph, Func<TEdge, double>? getWeight = null) : base(graph)
     {
         getWeight ??= e => e.Weight;
         this._getWeight = getWeight;

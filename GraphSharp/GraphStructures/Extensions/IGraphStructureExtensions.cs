@@ -19,7 +19,7 @@ public static class GraphExtensions
     /// <paramref name="TargetId"/> then returns <paramref name="SourceId"/>.<br/>
     /// If none returns -1
     /// </returns>
-    public static int Other<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TEdge edge, int nodeId)
+    public static int Other<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, TEdge edge, int nodeId)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -30,7 +30,7 @@ public static class GraphExtensions
         return -1;
     }
     /// <returns>True if given graph have one single component</returns>
-    public static bool IsConnected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static bool IsConnected<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -68,7 +68,7 @@ public static class GraphExtensions
     /// Do not clone any nodes or edges.
     /// </summary>
     /// <returns>Cloned by config graph structure</returns>
-    public static IGraph<TNode, TEdge> CloneJustConfiguration<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static IGraph<TNode, TEdge> CloneJustConfiguration<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -76,7 +76,7 @@ public static class GraphExtensions
         return result;
     }
     /// <returns>True if given graph have one single strongly connected component</returns>
-    public static bool IsStronglyConnected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static bool IsStronglyConnected<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -84,7 +84,7 @@ public static class GraphExtensions
         return componentsResult.Components.Count() == 1;
     }
     /// <returns>True if graph is directed, else false</returns>
-    public static bool IsDirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static bool IsDirected<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -98,7 +98,7 @@ public static class GraphExtensions
         return true;
     }
     /// <returns>True if graph is bidirected, else false</returns>
-    public static bool IsBidirected<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static bool IsBidirected<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -115,13 +115,13 @@ public static class GraphExtensions
     /// </summary>
     /// <param name="graph"></param>
     /// <returns>True if directed tree</returns>
-    public static bool IsDirectedTree<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static bool IsDirectedTree<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
         if (graph.IsConnected())
         {
-            return graph.Edges.Count + 1 == graph.Nodes.Count;
+            return graph.Edges.Count() + 1 == graph.Nodes.Count();
         }
         return false;
     }
@@ -129,7 +129,7 @@ public static class GraphExtensions
     /// Checks for data integrity for Nodes and Edges for the case when current graph is simple. <br/>
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">When there is a problem with data integrity in a graph. See exception message for more details.</exception>
-    public static void CheckForIntegrityOfSimpleGraph<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static void CheckForIntegrityOfSimpleGraph<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -141,7 +141,7 @@ public static class GraphExtensions
     /// <summary>
     /// Validates that given path is a valid path for current graph.
     /// </summary>
-    public static void ValidatePath<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> path)
+    public static void ValidatePath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TNode> path)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -158,7 +158,7 @@ public static class GraphExtensions
     /// <summary>
     /// Validates that given path is a valid cycle for given graph.
     /// </summary>
-    public static void ValidateCycle<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> cycle)
+    public static void ValidateCycle<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TNode> cycle)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -202,7 +202,7 @@ public static class GraphExtensions
     /// each other, if it cannot - they simple to each other.
     /// </summary>
     /// <returns>True if combination is successful else false</returns>
-    public static bool CombineCycles<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TNode> cycle1, IList<TNode> cycle2, out IList<TNode> result)
+    public static bool CombineCycles<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TNode> cycle1, IList<TNode> cycle2, out IList<TNode> result)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -271,31 +271,40 @@ public static class GraphExtensions
             System.Console.WriteLine(p);
         }
     }
-    public static double ComputePathCost<TNode,TEdge>(this IGraph<TNode,TEdge> graph,IEnumerable<int> path,Func<TEdge,double>? getWeight = null)
+    /// <summary>
+    /// Computes path cost on enumerable of node ids using cost function
+    /// </summary>
+    public static double ComputePathCost<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph,IEnumerable<int> path,Func<TEdge,double>? getCost = null)
     where TNode : INode
     where TEdge : IEdge
     {
-        getWeight ??= edge=>edge.Weight;
+        getCost ??= edge=>edge.Weight;
         var cost = 0d;
         path.Aggregate((n1,n2)=>{
-            cost += getWeight(graph.Edges[n1,n2]);
+            cost += getCost(graph.Edges[n1,n2]);
             return n2;
         });
         return cost;
     }
-    public static double ComputePathCost<TNode,TEdge>(this IGraph<TNode,TEdge> graph,IEnumerable<TNode> path,Func<TEdge,double>? getWeight = null)
+    /// <summary>
+    /// Computes path cost on enumerable of node using cost function
+    /// </summary>
+    public static double ComputePathCost<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph,IEnumerable<TNode> path,Func<TEdge,double>? getCost = null)
     where TNode : INode
     where TEdge : IEdge
     {
-        getWeight ??= edge=>edge.Weight;
+        getCost ??= edge=>edge.Weight;
         var cost = 0d;
         path.Aggregate((n1,n2)=>{
-            cost += getWeight(graph.Edges[n1.Id,n2.Id]);
+            cost += getCost(graph.Edges[n1.Id,n2.Id]);
             return n2;
         });
         return cost;
     }
-    public static double ComputePathCost<TNode,TEdge>(this IGraph<TNode,TEdge> graph,IEnumerable<TEdge> path,Func<TEdge,double>? getWeight = null)
+    /// <summary>
+    /// Computes path cost on enumerable of path edges
+    /// </summary>
+    public static double ComputePathCost<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph,IEnumerable<TEdge> path,Func<TEdge,double>? getWeight = null)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -305,7 +314,7 @@ public static class GraphExtensions
     /// <summary>
     /// Checks if graph colored in a right way. Throws an exception if there is a case when some node is not colored in a right way.
     /// </summary>
-    public static void EnsureRightColoring<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
+    public static void EnsureRightColoring<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -320,15 +329,10 @@ public static class GraphExtensions
             }
         }
     }
-    public static double MeanNodeEdgesCount<TNode, TEdge>(this IGraph<TNode, TEdge> graph)
-    where TNode : INode
-    where TEdge : IEdge
-        => (double)(graph.Edges.Count) / (graph.Nodes.Count == 0 ? 1 : graph.Nodes.Count);
-
     /// <summary>
     /// Apply predicate on nodes and returns selected nodes Id as int array. Just a shortcut for convenience.
     /// </summary>
-    public static int[] GetNodesIdWhere<TNode, TEdge>(this IGraph<TNode, TEdge> graph, Predicate<TNode> predicate)
+    public static int[] GetNodesIdWhere<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, Predicate<TNode> predicate)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -340,7 +344,7 @@ public static class GraphExtensions
     /// <param name="edge">Edge to clone</param>
     /// <param name="destination">Edges source that will accept cloned edge</param>
     /// <returns>Clone of <paramref name="edge"/></returns>
-    public static TEdge CloneEdgeTo<TNode, TEdge>(this IGraph<TNode, TEdge> src, TEdge edge, IEdgeSource<TEdge> destination)
+    public static TEdge CloneEdgeTo<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> src, TEdge edge, IEdgeSource<TEdge> destination)
             where TNode : INode
             where TEdge : IEdge
     {
@@ -354,7 +358,7 @@ public static class GraphExtensions
     /// <param name="edge">Edge to clone</param>
     /// <param name="destination">Nodes source that will accept cloned node</param>
     /// <returns>Clone of <paramref name="node"/></returns>
-    public static TNode CloneNodeTo<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TNode node, INodeSource<TNode> destination)
+    public static TNode CloneNodeTo<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, TNode node, INodeSource<TNode> destination)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -377,7 +381,7 @@ public static class GraphExtensions
     /// <summary>
     /// Set some color to all nodes
     /// </summary>
-    public static void SetColorToAll<TNode>(this INodeSource<TNode> nodes, System.Drawing.Color color)
+    public static void SetColorToAll<TNode>(this IImmutableNodeSource<TNode> nodes, System.Drawing.Color color)
     where TNode : INode
     {
         foreach (var n in nodes)
@@ -388,7 +392,7 @@ public static class GraphExtensions
     /// <summary>
     /// Set some color to all edges
     /// </summary>
-    public static void SetColorToAll<TEdge>(this IEdgeSource<TEdge> edges, System.Drawing.Color color)
+    public static void SetColorToAll<TEdge>(this IImmutableEdgeSource<TEdge> edges, System.Drawing.Color color)
     where TEdge : IEdge
     {
         foreach (var n in edges)
@@ -400,7 +404,7 @@ public static class GraphExtensions
     /// Converts edges list to path (nodes list)
     /// </summary>
     /// <returns>Converted path</returns>
-    public static IList<TNode> ConvertEdgesListToPath<TNode, TEdge>(this IGraph<TNode, TEdge> graph, IList<TEdge> edges)
+    public static IList<TNode> ConvertEdgesListToPath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TEdge> edges)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -442,23 +446,22 @@ public static class GraphExtensions
             throw new ArgumentException("Given edges list is not a path");
         return result.Select(x => graph.Nodes[x]).ToList();
     }
-
     /// <summary>
     /// Method to get source of the edge
     /// </summary>
-    public static TNode GetSource<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TEdge edge)
+    public static TNode GetSource<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph, TEdge edge)
     where TNode : INode
     where TEdge : IEdge
     {
-        return graph.Configuration.GetSource(edge, graph.Nodes);
+        return graph.Nodes[edge.SourceId];
     }
     /// <summary>
     /// Method to get target of the edge
     /// </summary>
-    public static TNode GetTarget<TNode, TEdge>(this IGraph<TNode, TEdge> graph, TEdge edge)
+    public static TNode GetTarget<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph, TEdge edge)
     where TNode : INode
     where TEdge : IEdge
     {
-        return graph.Configuration.GetTarget(edge, graph.Nodes);
+        return graph.Nodes[edge.TargetId];
     }
 }

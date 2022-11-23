@@ -102,7 +102,6 @@ where TEdge : IEdge
         }
         return usedColors;
     }
-
     int DegreeOfSaturation(int nodeId)
     {
         return Edges.Neighbors(nodeId).DistinctBy(x => Nodes[x].Color).Count();

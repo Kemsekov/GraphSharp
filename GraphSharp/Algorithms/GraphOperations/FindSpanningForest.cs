@@ -5,7 +5,7 @@ using System.Numerics;
 using GraphSharp.Common;
 namespace GraphSharp.Graphs;
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -33,7 +33,7 @@ where TEdge : IEdge
     /// Guarantee to return a tree which connects all nodes in a hamiltonian path.
     /// </summary>
     /// <returns></returns>
-    (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TNode,Vector2> getPos, Func<TEdge, double>? getWeight = null)
+    protected (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TNode,Vector2> getPos, Func<TEdge, double>? getWeight = null)
     {
         getWeight ??= x=>x.Weight;
         return FindSpanningTreeDegree2OnNodes(getWeight,graph=>graph.Do.DelaunayTriangulation(getPos));
@@ -50,7 +50,7 @@ where TEdge : IEdge
     /// <param name="getWeight">Function to take weight from edge</param>
     /// <param name="doDelaunayTriangulation">Function to do delaunay triangulation</param>
     /// <returns>Tree as edges list and tree ends as nodes array. Node is end if it's degree = 1</returns>
-    (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TEdge, double> getWeight, Action<IGraph<TNode,TEdge>> doDelaunayTriangulation)
+    protected (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TEdge, double> getWeight, Action<IGraph<TNode,TEdge>> doDelaunayTriangulation)
     {
         var graph = StructureBase;
         var clone = graph.CloneJustConfiguration();

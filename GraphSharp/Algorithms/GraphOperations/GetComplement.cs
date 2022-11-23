@@ -1,8 +1,9 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace GraphSharp.Graphs;
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -10,7 +11,7 @@ where TEdge : IEdge
     /// Computes graph complement(including self-edges)
     /// </summary>
     public IList<TEdge> GetComplement(){
-        var n = Nodes.Count;
+        var n = Nodes.Count();
         var result = new List<TEdge>(n*(n-1));
         foreach(var n1 in Nodes){
             foreach(var n2 in Nodes){

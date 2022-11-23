@@ -13,7 +13,7 @@ public class AntColony<TNode, TEdge> : IDisposable
 where TNode : INode
 where TEdge : IEdge
 {
-    public IGraph<TNode, TEdge> Graph { get; }
+    public IImmutableGraph<TNode, TEdge> Graph { get; }
     /// <summary>
     /// Ants used here
     /// </summary>
@@ -51,7 +51,7 @@ where TEdge : IEdge
     /// <param name="graph">Graph to run ant simulation on</param>
     /// <param name="smell">Smell dict that will be shared among all ants in this ant simulation.</param>
     /// <param name="colonySize">How many ants need to be in this colony. For better memory usage use multiple of 32 values (like 32, 64, 96 etc)</param>
-    public AntColony(IGraph<TNode, TEdge> graph, IDictionary<TEdge, double> smell, int colonySize)
+    public AntColony(IImmutableGraph<TNode, TEdge> graph, IDictionary<TEdge, double> smell, int colonySize)
     {
         ColonySize = colonySize;
         Smell = smell;

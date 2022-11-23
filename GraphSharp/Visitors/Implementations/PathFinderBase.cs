@@ -40,10 +40,10 @@ where TEdge : IEdge
     /// <summary>
     /// Algorithm executed on this graph
     /// </summary>
-    public IGraph<TNode, TEdge> Graph { get; }
+    public IImmutableGraph<TNode, TEdge> Graph { get; }
 
     /// <param name="graph">Graph that will be used to find path on</param>
-    public PathFinderBase(IGraph<TNode,TEdge> graph)
+    public PathFinderBase(IImmutableGraph<TNode,TEdge> graph)
     {
         this.Condition = edge=>true;
         this.Graph = graph;

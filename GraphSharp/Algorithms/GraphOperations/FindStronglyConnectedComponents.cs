@@ -8,7 +8,7 @@ public class StronglyConnectedComponents<TNode> : IDisposable
     /// <returns>List of tuples, where first value is a list of nodes in a certain component and second value is this component id.</returns>
     public IEnumerable<(IEnumerable<TNode> nodes, int componentId)> Components { get; }
     private RentedArray<int> low;
-    public StronglyConnectedComponents(RentedArray<int> lowLinkValues, INodeSource<TNode> Nodes)
+    public StronglyConnectedComponents(RentedArray<int> lowLinkValues, IImmutableNodeSource<TNode> Nodes)
     {
         Components = lowLinkValues
         .Select((componentId, index) => (componentId, index))
@@ -28,7 +28,7 @@ public class StronglyConnectedComponents<TNode> : IDisposable
         low.Dispose();
     }
 }
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {

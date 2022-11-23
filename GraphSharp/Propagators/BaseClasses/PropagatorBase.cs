@@ -30,12 +30,12 @@ where TEdge : IEdge
     /// Current working graph
     /// </summary>
     /// <value></value>
-    public IGraph<TNode, TEdge> Graph { get; protected set; }
+    public IImmutableGraph<TNode, TEdge> Graph { get; protected set; }
     public ByteStatesHandler NodeStates { get;protected set; }
 
     /// <param name="visitor">Visitor to use</param>
     /// <param name="graph">Graph to use</param>
-    public PropagatorBase(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph)
+    public PropagatorBase(IVisitor<TNode, TEdge> visitor, IImmutableGraph<TNode, TEdge> graph)
     {
         Visitor = visitor;
         Graph = graph;
@@ -48,7 +48,7 @@ where TEdge : IEdge
         NodeStates.RemoveStateFromAll(UsedNodeStates.ToVisit | UsedNodeStates.Visited);
         NodeStates.AddState(UsedNodeStates.Visited, nodeIndices);
     }
-    public void Reset(IGraph<TNode, TEdge> graph, IVisitor<TNode, TEdge> visitor)
+    public void Reset(IImmutableGraph<TNode, TEdge> graph, IVisitor<TNode, TEdge> visitor)
     {
         Graph = graph;
         Visitor = visitor;

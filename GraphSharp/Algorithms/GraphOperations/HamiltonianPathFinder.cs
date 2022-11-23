@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 namespace GraphSharp.Graphs;
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -31,7 +31,7 @@ where TEdge : IEdge
             colony.UpdateSmellParallel();
             colony.ReduceSmell();
             colony.Reset();
-            if (colony.BestPath.Count == Nodes.Count - 1)
+            if (colony.BestPath.Count == Nodes.Count() - 1)
             {
                 break;
             }
@@ -74,9 +74,7 @@ where TEdge : IEdge
             foreach (var e in edges.OrderBy(order).ToList())
             {
                 if (invalidEdges.TryGetValue(e, out var eInfo) && eInfo > 0) continue;
-                Edges.Remove(e);
-                var path = FindAnyPath(e.SourceId, e.TargetId, edge => addedNodes[edge.TargetId] == 0 || edge.TargetId == e.TargetId).Path;
-                Edges.Add(e);
+                var path = FindAnyPath(e.SourceId, e.TargetId, edge => (addedNodes[edge.TargetId] == 0 || edge.TargetId == e.TargetId) && !edge.Equals(e)).Path;
                 if (path.Count() == 0)
                 {
                     invalidEdges[e] = 1;

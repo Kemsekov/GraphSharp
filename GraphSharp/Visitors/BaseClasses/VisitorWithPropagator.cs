@@ -24,7 +24,7 @@ where TEdge : IEdge
         Propagator.SetPosition(nodeIndices);
     }
 
-    public void Reset(IGraph<TNode, TEdge> graph, IVisitor<TNode,TEdge> visitor)
+    public void Reset(IImmutableGraph<TNode, TEdge> graph, IVisitor<TNode,TEdge> visitor)
     {
         Propagator.Reset(graph,visitor);
     }

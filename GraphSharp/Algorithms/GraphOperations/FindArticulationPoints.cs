@@ -5,7 +5,7 @@ using GraphSharp.Common;
 
 namespace GraphSharp.Graphs;
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -16,7 +16,7 @@ where TEdge : IEdge
     /// <returns>Articulation points of a graph</returns>
     public IEnumerable<TNode> FindArticulationPointsTarjan()
     {
-        if (Nodes.Count == 0 || Edges.Count == 0)
+        if (Nodes.Count() == 0 || Edges.Count() == 0)
             return Enumerable.Empty<TNode>();
         
         using var disc = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
@@ -47,7 +47,7 @@ where TEdge : IEdge
         }
         return result;
     }
-    void ArticulationPointsFinder(IEdgeSource<TEdge> adj, int u, RentedArray<byte> flags, RentedArray<int> disc, RentedArray<int> low, ref int time, int parent)
+    void ArticulationPointsFinder(IImmutableEdgeSource<TEdge> adj, int u, RentedArray<byte> flags, RentedArray<int> disc, RentedArray<int> low, ref int time, int parent)
     {
         const byte visitedFlag = 1;
         const byte isApFlag = 2;

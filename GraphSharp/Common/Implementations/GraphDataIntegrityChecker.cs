@@ -13,7 +13,7 @@ public static class GraphDataIntegrityChecker
     /// Seeks for nodes duplicates in a graph. 
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">If found duplicates</exception>
-    public static void CheckForNodesDuplicates<TNode, TEdge>(IGraph<TNode, TEdge> graph)
+    public static void CheckForNodesDuplicates<TNode, TEdge>(IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -26,7 +26,7 @@ public static class GraphDataIntegrityChecker
     /// Checks that each node retrieved by index have <paramref name="Id"/> equal to that same index.
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">If node at some index don't have same Id</exception>
-    public static void CheckForNodeIndicesIntegrity<TNode, TEdge>(IGraph<TNode, TEdge> graph)
+    public static void CheckForNodeIndicesIntegrity<TNode, TEdge>(IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -44,7 +44,7 @@ public static class GraphDataIntegrityChecker
     /// Check that in and out edges are consistent with each other
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">If there is problems with edges integrity</exception>
-    public static void CheckForEdgeIndicesIntegrity<TNode, TEdge>(IGraph<TNode, TEdge> graph)
+    public static void CheckForEdgeIndicesIntegrity<TNode, TEdge>(IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -98,7 +98,7 @@ public static class GraphDataIntegrityChecker
     /// Checks for index duplicates among edges. Will throw if sourceId -> targetId is not unique. Throw if there is any parallel edges.
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">If there is duplicates among edges</exception>
-    public static void CheckForEdgesIndexDuplicates<TNode, TEdge>(IGraph<TNode, TEdge> graph)
+    public static void CheckForEdgesIndexDuplicates<TNode, TEdge>(IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -121,7 +121,7 @@ public static class GraphDataIntegrityChecker
     /// Checks for edges duplicates using <paramref name="Equals"/> of edge
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">If there is duplicates among edges</exception>
-    public static void CheckForEdgesDuplicates<TNode, TEdge>(IGraph<TNode, TEdge> graph)
+    public static void CheckForEdgesDuplicates<TNode, TEdge>(IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
     where TEdge : IEdge
     {

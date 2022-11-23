@@ -20,7 +20,7 @@ class TspResult<TNode> : ITsp<TNode>
     }
 }
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -35,7 +35,6 @@ where TEdge : IEdge
         tsp.Run();
         return tsp;
     }
-    
     public ITsp<TNode> TspCheapestLinkOnPositions(Func<TNode,Vector2> getPos)
     {
         var treeDegree2 = FindSpanningTreeDegree2OnNodes(getPos);

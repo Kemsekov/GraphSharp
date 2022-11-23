@@ -4,7 +4,7 @@ using GraphSharp.Propagators;
 using GraphSharp.Visitors;
 namespace GraphSharp.Graphs;
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {

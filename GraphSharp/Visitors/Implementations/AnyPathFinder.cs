@@ -11,7 +11,7 @@ where TNode : INode
 where TEdge : IEdge
 {
 
-    public AnyPathFinder(int startNodeId, IGraph<TNode, TEdge> graph) : base(graph)
+    public AnyPathFinder(int startNodeId, IImmutableGraph<TNode, TEdge> graph) : base(graph)
     {
         this.StartNodeId = startNodeId;
     }

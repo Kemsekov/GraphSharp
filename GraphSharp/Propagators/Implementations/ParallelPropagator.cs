@@ -15,7 +15,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <inheritdoc cref="ParallelPropagator{,}" />
-    public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph) : base(visitor, graph)
+    public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IImmutableGraph<TNode, TEdge> graph) : base(visitor, graph)
     {
     }
     protected override void PropagateNodes()

@@ -40,7 +40,7 @@ public class IndependentSetResult<TNode> : IEnumerable<TNode>, IDisposable{
     }
 }
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -126,7 +126,7 @@ where TEdge : IEdge
                 var candidates2 = candidates.AllMinValues(x=>countOfForbiddenNeighbors[x]);
                 toAdd = candidates2.MinBy(x=>countOfColoredNeighbors[x]);
             }
-        var result = new List<TNode>(Nodes.Count / 3);
+        var result = new List<TNode>(Nodes.Count() / 3);
         foreach (var n in Nodes)
         {
             if (IsAdded(n.Id))

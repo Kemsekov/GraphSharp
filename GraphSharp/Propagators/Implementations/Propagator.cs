@@ -12,7 +12,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <inheritdoc cref="Propagator{,}" />
-    public Propagator(IVisitor<TNode, TEdge> visitor, IGraph<TNode, TEdge> graph) : base(visitor, graph)
+    public Propagator(IVisitor<TNode, TEdge> visitor, IImmutableGraph<TNode, TEdge> graph) : base(visitor, graph)
     {
     }
     protected override void PropagateNodes()

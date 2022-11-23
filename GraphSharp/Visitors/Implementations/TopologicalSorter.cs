@@ -24,7 +24,7 @@ where TEdge : IEdge
     public const byte Added = 16;
     /// <param name="graph">Algorithm will be executed on this graph</param>
     /// <param name="startingNodes">A set of nodes that will be used as start point for doing topological sort. If empty will be assigned to sources from a graph.</param>
-    public TopologicalSorter(IGraph<TNode, TEdge> graph, params int[] startingNodes)
+    public TopologicalSorter(IImmutableGraph<TNode, TEdge> graph, params int[] startingNodes)
     {
         Propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
         var startingNodesList = new List<int>(startingNodes);

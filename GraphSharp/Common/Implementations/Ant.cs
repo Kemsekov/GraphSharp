@@ -20,7 +20,7 @@ where TEdge : IEdge
     /// </summary>
     public double Coefficient => Path.Count / Path.Sum(x => x.Weight);
 
-    public IGraph<TNode, TEdge> Graph { get; }
+    public IImmutableGraph<TNode, TEdge> Graph { get; }
 
     /// <summary>
     /// After execution each ant left behind itself a smell that later helps other
@@ -49,18 +49,18 @@ where TEdge : IEdge
 
     int nodesCount;
     Random rand = new Random();
-    IEdgeSource<TEdge> Edges => Graph.Edges;
+    IImmutableEdgeSource<TEdge> Edges => Graph.Edges;
     /// <param name="smell">Index is node id. Contains a smell that ants left after they found some path</param>
     /// <param name="visited">Index is node id. Contains a bits for ants to determine if they visited a node in their path finding. By bit operations, each value from this array can have states for up to 32 ants.</param>
     /// <param name="antId">A power of 2 integer. Indicates which bit assigned to this ant in a visited integer array</param>
-    public Ant(IGraph<TNode, TEdge> graph, IDictionary<TEdge, double> smell, RentedArray<uint> visited, uint antId)
+    public Ant(IImmutableGraph<TNode, TEdge> graph, IDictionary<TEdge, double> smell, RentedArray<uint> visited, uint antId)
     {
         if (!isPowerOfTwo(antId) || antId == 0) throw new ArgumentException("antId must be a power of 2 non-zero unsigned integer.");
         Graph = graph;
         Smell = smell;
         Visited = visited;
         AntId = antId;
-        nodesCount = graph.Nodes.Count;
+        nodesCount = graph.Nodes.Count();
         Path = new List<TEdge>();
     }
     /// <summary>

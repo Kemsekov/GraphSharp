@@ -24,5 +24,5 @@ where TEdge : IEdge
     /// Sets new graph and visitor.
     /// Clears all node states for current propagator and resets them to default settings.
     /// </summary>
-    void Reset(IGraph<TNode, TEdge> graph, IVisitor<TNode,TEdge> visitor);
+    void Reset(IImmutableGraph<TNode, TEdge> graph, IVisitor<TNode,TEdge> visitor);
 }

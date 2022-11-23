@@ -320,15 +320,6 @@ public class GraphTests
     }
 
     [Fact]
-    public void MeanNodeEdgesCount_Works()
-    {
-        _Graph.Do.ConnectRandomly(0, 5);
-        double expected = (double)(_Graph.Edges.Count) / _Graph.Nodes.Count;
-        double actual = _Graph.MeanNodeEdgesCount();
-        Assert.Equal(Math.Round(expected,5),Math.Round(actual,5));
-    }
-
-    [Fact]
     public void Clone_Works()
     {
         _Graph.Do.ConnectRandomly(1, 5);

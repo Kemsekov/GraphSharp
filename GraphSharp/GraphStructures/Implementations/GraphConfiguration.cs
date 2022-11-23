@@ -35,13 +35,5 @@ where TEdge : IEdge
         return new DefaultNodeSource<TNode>();
     }
 
-    public TNode GetSource(TEdge edge, INodeSource<TNode> nodes)
-    {
-        return nodes[edge.SourceId];
-    }
 
-    public TNode GetTarget(TEdge edge, INodeSource<TNode> nodes)
-    {
-        return nodes[edge.TargetId];
-    }
 }
