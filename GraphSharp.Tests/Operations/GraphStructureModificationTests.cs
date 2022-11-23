@@ -232,6 +232,20 @@ namespace GraphSharp.Tests.Operations
             Assert.Equal(e,n*(n-1));
         }
         [Fact]
+        public void MakeCompleteOnNodes_Works(){
+            _Graph.Do.CreateNodes(100).ConnectNodes(4);
+            var someNodes = _Graph.Nodes.Take(10).Select(x=>x.Id).ToArray();
+            _Graph.Do.MakeComplete(someNodes);
+            _Graph.CheckForIntegrityOfSimpleGraph();
+            var completeGraph = _Graph.Do.Induce(someNodes);
+            completeGraph.CheckForIntegrityOfSimpleGraph();
+            var nodesCount = someNodes.Length;
+            foreach(var n in completeGraph.Nodes){
+                var edgesCount = completeGraph.Edges.InOutEdges(n.Id);
+                Assert.Equal(edgesCount.Count(),(nodesCount-1)*2);
+            }
+        }
+        [Fact]
         public void ConnectNodesWorks()
         {
             int targetren_count = 100;

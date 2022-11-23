@@ -18,7 +18,6 @@ where TEdge : IEdge
         }
         return this;
     }
-    // TODO: add tests for MakeComplete(nodes)
     /// <summary>
     /// Ensures that subgraph containing given nodes is a complete graph. Creates a clique out of given nodes.
     /// </summary>
