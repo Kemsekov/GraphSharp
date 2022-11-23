@@ -446,6 +446,29 @@ public static class GraphExtensions
             throw new ArgumentException("Given edges list is not a path");
         return result.Select(x => graph.Nodes[x]).ToList();
     }
+    // TODO: add test
+    /// <summary>
+    /// Converts nodes list that forms a path to edges they contains
+    /// </summary>
+    /// <returns><see langword="true"/> if converted successfully, else <see langword="false"/></returns>
+    public static bool ConvertPathToEdges<TNode,TEdge>(this IImmutableGraph<TNode, TEdge> graph,  IList<TNode> nodes, out IList<TEdge> edges)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        var edges1 = new List<TEdge>();
+        bool failed = false;
+        nodes.Aggregate((n1,n2)=>{
+            if(!failed) 
+            if(graph.Edges.TryGetEdge(n1.Id,n2.Id,out var edge) && edge is not null){
+                edges1.Add(edge);
+            }
+            else
+                failed = true;
+            return n2;
+        });
+        edges = edges1;
+        return !failed;
+    }
     /// <summary>
     /// Method to get source of the edge
     /// </summary>

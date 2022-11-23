@@ -7,95 +7,106 @@ namespace GraphSharp.Adapters;
 /// <summary>
 /// Adapter for <see cref="IGraph{,}"/> to work as <see cref="IBidirectionalGraph{,}"/>.
 /// </summary>
-public class ToQuikGraphAdapter<TVertex, TEdge> : IBidirectionalGraph<TVertex, EdgeAdapter<TVertex, TEdge>>
-where TVertex : INode
+public class ToQuikGraphAdapter<TNode, TEdge> : IBidirectionalGraph<int, EdgeAdapter<TEdge>>, IUndirectedGraph<int,EdgeAdapter<TEdge>>
+where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
     /// GraphSharp graph structure
     /// </summary>
-    public Graphs.IGraph<TVertex, TEdge> Graph { get; }
-    public ToQuikGraphAdapter(Graphs.IGraph<TVertex, TEdge> graph)
+    public Graphs.IImmutableGraph<TNode, TEdge> Graph { get; }
+    public ToQuikGraphAdapter(Graphs.IImmutableGraph<TNode, TEdge> graph)
     {
         Graph = graph;
     }
+
+    public IBidirectionalGraph<int, EdgeAdapter<TEdge>> ToBidirectional(){
+        return this as IBidirectionalGraph<int, EdgeAdapter<TEdge>>;
+    }
+    
+    public IUndirectedGraph<int,EdgeAdapter<TEdge>> ToUndirected(){
+        return this as IUndirectedGraph<int,EdgeAdapter<TEdge>>;
+    }
+
     /// <summary>
     /// Converts <paramref name="TEdge"/> to <see cref="EdgeAdapter{,}"/> that works
     /// for QuikGraph library
     /// </summary>
     /// <param name="edge"></param>
     /// <returns></returns>
-    EdgeAdapter<TVertex, TEdge> ToAdapter(TEdge edge)
+    EdgeAdapter<TEdge> ToAdapter(TEdge edge)
     {
-        return new EdgeAdapter<TVertex, TEdge>(edge, Graph);
+        return new EdgeAdapter<TEdge>(edge);
     }
-    public bool IsVerticesEmpty => Graph.Nodes.Count == 0;
+    public bool IsVerticesEmpty => Graph.Nodes.Count() == 0;
 
-    public int VertexCount => Graph.Nodes.Count;
+    public int VertexCount => Graph.Nodes.Count();
 
-    public IEnumerable<TVertex> Vertices => Graph.Nodes;
+    public IEnumerable<int> Vertices => Graph.Nodes.Select(x=>x.Id);
 
-    public bool IsEdgesEmpty => Graph.Edges.Count == 0;
+    public bool IsEdgesEmpty => Graph.Edges.Count() == 0;
 
-    public int EdgeCount => Graph.Edges.Count;
+    public int EdgeCount => Graph.Edges.Count();
 
-    public IEnumerable<EdgeAdapter<TVertex, TEdge>> Edges => Graph.Edges.Select(x => ToAdapter(x));
+    public IEnumerable<EdgeAdapter<TEdge>> Edges => Graph.Edges.Select(x => ToAdapter(x));
 
     public bool IsDirected => Graph.IsDirected();
 
     public bool AllowParallelEdges => Graph.Edges.AllowParallelEdges;
 
-    public bool ContainsEdge(EdgeAdapter<TVertex, TEdge> edge) => Graph.Edges.Contains(edge.GraphSharpEdge);
+    public EdgeEqualityComparer<int> EdgeEqualityComparer => throw new System.NotImplementedException();
 
-    public bool ContainsEdge(TVertex source, TVertex target) => Graph.Edges.Contains(source.Id, target.Id);
+    public bool ContainsEdge(EdgeAdapter<TEdge> edge) => Graph.Edges.Contains(edge.GraphSharpEdge);
 
-    public bool ContainsVertex(TVertex vertex) => Graph.Nodes.Contains(vertex);
+    public bool ContainsEdge(int source, int target) => Graph.Edges.Contains(source, target);
 
-    public int Degree(TVertex vertex) => Graph.Edges.Degree(vertex.Id);
+    public bool ContainsVertex(int vertex) => Graph.Nodes.Contains(vertex);
 
-    public int InDegree(TVertex vertex) => Graph.Edges.InEdges(vertex.Id).Count();
+    public int Degree(int vertex) => Graph.Edges.Degree(vertex);
 
-    public EdgeAdapter<TVertex, TEdge> InEdge(TVertex vertex, int index)
+    public int InDegree(int vertex) => Graph.Edges.InEdges(vertex).Count();
+
+    public EdgeAdapter<TEdge> InEdge(int vertex, int index)
     {
-        var e = Graph.Edges.InEdges(vertex.Id);
+        var e = Graph.Edges.InEdges(vertex);
         return ToAdapter(e.ElementAt(index));
     }
 
-    public IEnumerable<EdgeAdapter<TVertex, TEdge>> InEdges(TVertex vertex)
+    public IEnumerable<EdgeAdapter<TEdge>> InEdges(int vertex)
     {
-        return Graph.Edges.InEdges(vertex.Id).Select(x => ToAdapter(x));
+        return Graph.Edges.InEdges(vertex).Select(x => ToAdapter(x));
     }
 
-    public bool IsInEdgesEmpty(TVertex vertex)
+    public bool IsInEdgesEmpty(int vertex)
     {
-        return Graph.Edges.InEdges(vertex.Id).Count() == 0;
+        return Graph.Edges.InEdges(vertex).Count() == 0;
     }
 
-    public bool IsOutEdgesEmpty(TVertex vertex)
+    public bool IsOutEdgesEmpty(int vertex)
     {
-        return Graph.Edges.OutEdges(vertex.Id).Count() == 0;
+        return Graph.Edges.OutEdges(vertex).Count() == 0;
     }
 
-    public int OutDegree(TVertex vertex)
+    public int OutDegree(int vertex)
     {
-        return Graph.Edges.OutEdges(vertex.Id).Count();
+        return Graph.Edges.OutEdges(vertex).Count();
     }
 
-    public EdgeAdapter<TVertex, TEdge> OutEdge(TVertex vertex, int index)
+    public EdgeAdapter<TEdge> OutEdge(int vertex, int index)
     {
-        var e = Graph.Edges.OutEdges(vertex.Id).ElementAt(index);
+        var e = Graph.Edges.OutEdges(vertex).ElementAt(index);
         return ToAdapter(e);
     }
 
-    public IEnumerable<EdgeAdapter<TVertex, TEdge>> OutEdges(TVertex vertex)
+    public IEnumerable<EdgeAdapter<TEdge>> OutEdges(int vertex)
     {
-        return Graph.Edges.OutEdges(vertex.Id).Select(x => ToAdapter(x));
+        return Graph.Edges.OutEdges(vertex).Select(x => ToAdapter(x));
     }
 
-    public bool TryGetEdge(TVertex source, TVertex target, out EdgeAdapter<TVertex, TEdge> edge)
+    public bool TryGetEdge(int source, int target, out EdgeAdapter<TEdge> edge)
     {
 #nullable disable
-        if (Graph.Edges.TryGetEdge(source.Id, target.Id, out var e) && e is not null)
+        if (Graph.Edges.TryGetEdge(source, target, out var e) && e is not null)
         {
             edge = ToAdapter(e);
             return true;
@@ -105,21 +116,41 @@ where TEdge : IEdge
 #nullable enable
     }
 
-    public bool TryGetEdges(TVertex source, TVertex target, out IEnumerable<EdgeAdapter<TVertex, TEdge>> edges)
+    public bool TryGetEdges(int source, int target, out IEnumerable<EdgeAdapter<TEdge>> edges)
     {
-        edges = Graph.Edges.GetParallelEdges(source.Id, target.Id).Select(x => ToAdapter(x));
+        edges = Graph.Edges.GetParallelEdges(source, target).Select(x => ToAdapter(x));
         return edges.Count() != 0;
     }
 
-    public bool TryGetInEdges(TVertex vertex, out IEnumerable<EdgeAdapter<TVertex, TEdge>> edges)
+    public bool TryGetInEdges(int vertex, out IEnumerable<EdgeAdapter<TEdge>> edges)
     {
-        edges = Graph.Edges.InEdges(vertex.Id).Select(x => ToAdapter(x));
+        edges = Graph.Edges.InEdges(vertex).Select(x => ToAdapter(x));
         return edges.Count() != 0;
     }
 
-    public bool TryGetOutEdges(TVertex vertex, out IEnumerable<EdgeAdapter<TVertex, TEdge>> edges)
+    public bool TryGetOutEdges(int vertex, out IEnumerable<EdgeAdapter<TEdge>> edges)
     {
-        edges = Graph.Edges.OutEdges(vertex.Id).Select(x => ToAdapter(x));
+        edges = Graph.Edges.OutEdges(vertex).Select(x => ToAdapter(x));
         return edges.Count() != 0;
+    }
+
+    public IEnumerable<EdgeAdapter<TEdge>> AdjacentEdges(int vertex)
+    {
+        return Graph.Edges.InOutEdges(vertex).Select(x=>ToAdapter(x));
+    }
+
+    public int AdjacentDegree(int vertex)
+    {
+        return Graph.Edges.Degree(vertex);
+    }
+
+    public bool IsAdjacentEdgesEmpty(int vertex)
+    {
+        return AdjacentDegree(vertex)==0;
+    }
+
+    public EdgeAdapter<TEdge> AdjacentEdge(int vertex, int index)
+    {
+        return ToAdapter(Graph.Edges.InOutEdges(vertex).ElementAt(index));
     }
 }

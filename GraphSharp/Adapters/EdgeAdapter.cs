@@ -6,24 +6,19 @@ namespace GraphSharp.Adapters;
 /// <summary>
 /// Adapter for edges from GraphSharp to work as edges from QuikGraph
 /// </summary>
-public struct EdgeAdapter<TVertex, TEdge> : QuikGraph.IEdge<TVertex>
-where TVertex : INode
+public struct EdgeAdapter<TEdge> : QuikGraph.IEdge<int>, QuikGraph.IUndirectedEdge<int>
 where TEdge : IEdge
 {
-    public TVertex Source => source.Value;
-    public TVertex Target => target.Value;
-    Lazy<TVertex> source;
-    Lazy<TVertex> target;
+    public int Source => GraphSharpEdge.SourceId;
+    public int Target => GraphSharpEdge.TargetId;
     public TEdge GraphSharpEdge { get; }
-    public EdgeAdapter(TEdge edge, GraphSharp.Graphs.IGraph<TVertex, TEdge> graph)
+    public EdgeAdapter(TEdge edge)
     {
-        source = new Lazy<TVertex>(()=>graph.GetSource(edge));
-        target = new Lazy<TVertex>(()=>graph.GetTarget(edge));
         GraphSharpEdge = edge;
     }
     public override bool Equals(object? obj)
     {
-        if (obj is EdgeAdapter<TVertex, TEdge> e)
+        if (obj is EdgeAdapter<TEdge> e)
         {
             return e.GraphSharpEdge.Equals(GraphSharpEdge);
         }

@@ -159,7 +159,7 @@ public static class EdgeSourceExtensions
     /// <returns>
     /// All edges between these two nodes. If there is edges <see langword="A = 1->2"/> and <see langword="B = 2->1"/> then when called <see langword="EdgesBetweenNodes(1,2)"/> will return both edges : <see langword="{A, B}"/>
     /// </returns>
-    public static IEnumerable<TEdge> EdgesBetweenNodes<TEdge>(this IEdgeSource<TEdge> Edges, int n1, int n2)
+    public static IEnumerable<TEdge> EdgesBetweenNodes<TEdge>(this IImmutableEdgeSource<TEdge> Edges, int n1, int n2)
     where TEdge : IEdge
     {
         if(Edges.AllowParallelEdges)
