@@ -1,8 +1,44 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace GraphSharp.Graphs;
+
+public class IndependentSetResult<TNode> : IEnumerable<TNode>, IDisposable{
+    const byte Added = 1;
+    RentedArray<byte> NodeState { get; }
+    /// <summary>
+    /// Nodes in given independent set
+    /// </summary>
+    public IEnumerable<TNode> Nodes { get; }
+    public IndependentSetResult(RentedArray<byte> nodeState, IEnumerable<TNode> nodes)
+    {
+        this.NodeState = nodeState;
+        this.Nodes = nodes;
+    }
+    /// <summary>
+    /// Determine whatever given node is in given independent set
+    /// </summary>
+    /// <param name="nodeId"></param>
+    /// <returns></returns>
+    public bool IsAdded(int nodeId) => (NodeState[nodeId] & Added) == Added;
+
+    public IEnumerator<TNode> GetEnumerator()
+    {
+        return Nodes.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)Nodes).GetEnumerator();
+    }
+
+    public void Dispose()
+    {
+        NodeState.Dispose();
+    }
+}
 
 public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
@@ -17,7 +53,7 @@ where TEdge : IEdge
     /// Only nodes that pass a condition can be added to independent set
     /// </param>
     /// <returns>Nodes from maximal independent set</returns>
-    public IEnumerable<TNode> FindMaximalIndependentSet(Predicate<TNode> condition)
+    public IndependentSetResult<TNode> FindMaximalIndependentSet(Predicate<TNode> condition)
     {
         const byte Added = 1;
         const byte AroundAdded = 2;
@@ -76,7 +112,6 @@ where TEdge : IEdge
                 {
                     if (nodeState[index] != 0) continue;
                     var score = freeNeighbors[index];
-
                     if(score<bestScore){
                         bestScore = score;
                         candidates.Clear();
@@ -97,6 +132,6 @@ where TEdge : IEdge
             if (IsAdded(n.Id))
                 result.Add(n);
         }
-        return result;
+        return new(nodeState,result);
     }
 }

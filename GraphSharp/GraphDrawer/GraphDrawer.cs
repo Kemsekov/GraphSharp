@@ -70,15 +70,27 @@ where TEdge : IEdge
             DrawDirection(e, lineThickness, directionLength, color)
         );
     }
-    public void DrawEdges(IEnumerable<TEdge> edges, double lineThickness)
+    public void DrawEdges(IEnumerable<TEdge> edges, double lineThickness, Color color = default)
     {
-        foreach (var edge in edges)
-            DrawEdge(edge, lineThickness);
+        DrawnEdgesCache.Clear();
+        foreach (var edge in edges){
+            var n1 = Math.Min(edge.SourceId,edge.TargetId);
+            var n2 = Math.Max(edge.SourceId,edge.TargetId);
+            if(DrawnEdgesCache.TryGetValue((n1,n2),out var _)) return;
+            DrawEdge(edge, lineThickness,color);
+            DrawnEdgesCache[(n1,n2)] = 1;
+        }
     }
-    public void DrawEdgesParallel(IEnumerable<TEdge> edges, double lineThickness)
+    public void DrawEdgesParallel(IEnumerable<TEdge> edges, double lineThickness, Color color = default)
     {
-        Parallel.ForEach(edges, edge =>
-            DrawEdge(edge, lineThickness));
+        DrawnEdgesCache.Clear();
+        Parallel.ForEach(edges, edge =>{
+            var n1 = Math.Min(edge.SourceId,edge.TargetId);
+            var n2 = Math.Max(edge.SourceId,edge.TargetId);
+            if(DrawnEdgesCache.TryGetValue((n1,n2),out var _)) return;
+            DrawEdge(edge, lineThickness,color);
+            DrawnEdgesCache[(n1,n2)] = 1;
+        });
     }
     public void DrawNodes(IEnumerable<TNode> nodes, double nodeSize)
     {
@@ -113,7 +125,6 @@ where TEdge : IEdge
     {
         var n1 = Math.Min(edge.SourceId,edge.TargetId);
         var n2 = Math.Max(edge.SourceId,edge.TargetId);
-        if(DrawnEdgesCache.TryGetValue((n1,n2),out var _)) return;
         var sourcePos = ShiftVector(GetNodePos(Graph.GetSource(edge)));
         var targetPos = ShiftVector(GetNodePos(Graph.GetTarget(edge)));
         color = color == default ? edge.Color : color;
@@ -121,7 +132,6 @@ where TEdge : IEdge
         var point1 = sourcePos*((float)size);
         var point2 = targetPos*((float)size);
         Drawer.DrawLine(point1, point2, color, lineThickness*windowSize);
-        DrawnEdgesCache[(n1,n2)] = 1;
     }
     public void DrawDirection(TEdge edge, double lineThickness, double directionLength, Color color)
     {

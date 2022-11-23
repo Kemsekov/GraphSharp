@@ -9,7 +9,7 @@ namespace GraphSharp;
 /// <summary>
 /// Ant colony that runs multiple ants simultaneously to speed up search of hamiltonian path
 /// </summary>
-public class AntColony<TNode, TEdge>
+public class AntColony<TNode, TEdge> : IDisposable
 where TNode : INode
 where TEdge : IEdge
 {
@@ -69,8 +69,7 @@ where TEdge : IEdge
         }
     }
     ~AntColony(){
-        foreach(var arr in Visited)
-            arr.Dispose();
+        Dispose();
     }
     /// <summary>
     /// Run's each node to try find better path on a graph
@@ -194,5 +193,11 @@ where TEdge : IEdge
             }
         }
         return other;
+    }
+
+    public void Dispose()
+    {
+        foreach(var arr in Visited)
+            arr.Dispose();
     }
 }

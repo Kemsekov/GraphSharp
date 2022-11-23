@@ -16,7 +16,9 @@ public class KruskalForest<TEdge> : IDisposable
     public UnionFind TreeFinder { get; }
     public RentedArray<int> Degree { get; }
     public IList<TEdge> Forest { get; }
-
+    /// <summary>
+    /// Helps to determine if two given nodes in the same tree
+    /// </summary>
     public bool InOneComponent(int nodeId1, int nodeId2){
         return TreeFinder.FindSet(nodeId1) == TreeFinder.FindSet(nodeId2);
     }
