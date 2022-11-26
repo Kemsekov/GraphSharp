@@ -19,11 +19,15 @@ where TEdge : IEdge
     {
         Graph = graph;
     }
-
+    /// <summary>
+    /// Casts current graph adapter to <see cref="IBidirectionalGraph{int, EdgeAdapter{TEdge}}"/>
+    /// </summary>
     public IBidirectionalGraph<int, EdgeAdapter<TEdge>> ToBidirectional(){
         return this as IBidirectionalGraph<int, EdgeAdapter<TEdge>>;
     }
-    
+    /// <summary>
+    /// Casts current graph adapter to <see cref="IUndirectedGraph{int, EdgeAdapter{TEdge}}"/>
+    /// </summary>
     public IUndirectedGraph<int,EdgeAdapter<TEdge>> ToUndirected(){
         return this as IUndirectedGraph<int,EdgeAdapter<TEdge>>;
     }
