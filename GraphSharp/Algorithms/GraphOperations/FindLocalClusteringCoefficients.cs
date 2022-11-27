@@ -13,15 +13,15 @@ where TEdge : IEdge
     /// Finds local clustering coefficients
     /// </summary>
     /// <returns>Array, where index is node Id and value is coefficient. -1 means this node was not present in the graph.</returns>
-    public double[] FindLocalClusteringCoefficients()
+    public RentedArray<double> FindLocalClusteringCoefficients()
     {
         //for each node n take it's neighbors
         //induce graph on {n+neighborhoods} in sum N nodes
         //in induced graph find count of edges = K
         //set coeff for n equal K/(N(N-1))
 
-        var coeff = new double[Nodes.MaxNodeId+1];
-        Array.Fill(coeff,-1f);
+        var coeff = ArrayPoolStorage.RentArray<double>(Nodes.MaxNodeId+1);
+        coeff.Fill(-1f);
         Parallel.ForEach(Nodes,n=>{
             var toInduce = Edges.Neighbors(n.Id).Append(n.Id).ToArray();
             if(toInduce.Length==1){

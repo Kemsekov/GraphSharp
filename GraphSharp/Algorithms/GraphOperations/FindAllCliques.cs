@@ -32,10 +32,11 @@ where TEdge : IEdge
     public IDictionary<int,CliqueResult> FindAllCliquesFast()
     {
         var cliques = new ConcurrentDictionary<int,CliqueResult>();
-        //a set of nodes
+        using var coefficients = FindLocalClusteringCoefficients();
+        using var degree = CountDegrees(Edges);
         Parallel.ForEach(Nodes, n =>
         {
-            cliques[n.Id] = FindCliqueFast(n.Id);
+            cliques[n.Id] = FindCliqueFast(n.Id,x=>x.OrderBy(y=>-coefficients[y]*degree[y]));
         });
         return cliques;
     }
@@ -65,10 +66,14 @@ where TEdge : IEdge
     {
         var bestClique = new CliqueResult(0,new List<int>());
         var locker = new object();
+        // using var coefficients = FindLocalClusteringCoefficients();
+        using var degree = CountDegrees(Edges);
         //a set of nodes
         Parallel.ForEach(Nodes, n =>
         {
-            var found = FindCliqueFast(n.Id);
+            // var found = FindCliqueFast(n.Id,x=>x.OrderBy(y=>-coefficients[y]*degree[y]));
+            var found = FindCliqueFast(n.Id,x=>x.OrderBy(y=>-degree[y]));
+            // var found = FindCliqueFast(n.Id);
             lock(locker)
                 if(found.Nodes.Count>bestClique.Nodes.Count)
                     bestClique = found;
@@ -85,7 +90,6 @@ where TEdge : IEdge
     {
         var bestClique = new CliqueResult(0,new List<int>());
         var locker = new object();
-        //a set of nodes
         Parallel.ForEach(Nodes, n =>
         {
             var found = FindClique(n.Id);
@@ -102,12 +106,13 @@ where TEdge : IEdge
     /// Does not produce optimal results, but works fast<br/>
     /// Works in <see langword="O(E^2/N^2)"/> time<br/>
     /// </summary>
-    public CliqueResult FindCliqueFast(int nodeId)
+    public CliqueResult FindCliqueFast(int nodeId,Func<IList<int>,IEnumerable<int>>? order = null)
     {
         var clique = new List<int>();
+        order ??= x=>x;
         var neighbors = Edges.Neighbors(nodeId).ToList();
         clique.Add(nodeId);
-        foreach (var nei in neighbors)
+        foreach (var nei in order(neighbors))
         {
             var neighbors2 = Edges.Neighbors(nei);
             if (clique.Except(neighbors2).Any()) continue;
@@ -126,6 +131,11 @@ where TEdge : IEdge
         var possibleClique = Edges.Neighbors(nodeId).Concat(new[] { nodeId }).ToArray();
         var subgraph = StructureBase.Do.Induce(possibleClique);
         subgraph.Do.MakeDirected();
+        var n = possibleClique.Length;
+        //if our subgraph contains exactly n*(n-1)/2 edges
+        //it means our subgraph is exactly a clique
+        if(subgraph.Edges.Count==n*(n-1)/2)
+            return new CliqueResult(nodeId,possibleClique);
         return subgraph.Do.FindMaxCliqueFast();
     }
 }
