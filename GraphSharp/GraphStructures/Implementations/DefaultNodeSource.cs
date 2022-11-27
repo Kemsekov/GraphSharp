@@ -101,9 +101,9 @@ where TNode : INode
         //Dictionary is sorted by key when key is integer by default
         //Update max node id or min node id only if removed node is one of them
         if (removedNodeId == MinNodeId)
-            MinNodeId = Nodes.First().Key;
+            MinNodeId = Nodes.MinBy(x=>x.Key).Key;
         if (removedNodeId == MaxNodeId)
-            MaxNodeId = Nodes.Last().Key;
+            MaxNodeId = Nodes.MaxBy(x=>x.Key).Key;
     }
 
     public bool Move(TNode node, int newId)
