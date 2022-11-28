@@ -7,7 +7,7 @@ using MathNet.Numerics.LinearAlgebra.Double;
 namespace GraphSharp.Graphs;
 
 /// <summary>
-/// Contains converters for graph structure
+/// Contains converters for immutable graph structure
 /// </summary>
 public partial class ImmutableGraphConverters<TNode, TEdge>
 where TNode : INode
@@ -72,6 +72,9 @@ where TEdge : IEdge
     }
 }
 
+/// <summary>
+/// Contains converters for graph structure
+/// </summary>
 public partial class GraphConverters<TNode, TEdge> : ImmutableGraphConverters<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
