@@ -27,5 +27,5 @@ where TEdge : IEdge
     /// <summary>
     /// Graph converter. If you need to convert current graph to different representations or initialize current graph from different representations then look at this objects methods.
     /// </summary>
-    GraphConverters<TNode, TEdge> Converter { get; }
+    ImmutableGraphConverters<TNode, TEdge> Converter { get; }
 }

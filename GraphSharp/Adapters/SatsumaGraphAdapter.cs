@@ -9,7 +9,7 @@ using Satsuma;
 namespace GraphSharp.Adapters;
 
 /// <summary>
-/// Adapter for <see cref="Graphs.IGraph{,}"/> to behave like <see cref="Satsuma.IGraph"/> from Satsuma library
+/// Adapter for <see cref="Graphs.IImmutableGraph{,}"/> to behave like <see cref="Satsuma.IGraph"/> from Satsuma library
 /// </summary>
 /// <typeparam name="TNode"></typeparam>
 /// <typeparam name="TEdge"></typeparam>
@@ -17,9 +17,9 @@ public class SatsumaGraphAdapter<TNode,TEdge> : Satsuma.IGraph
 where TNode : INode
 where TEdge : IEdge
 {
-    public IGraph<TNode, TEdge> Graph { get; }
+    public IImmutableGraph<TNode, TEdge> Graph { get; }
     IDictionary<int,TEdge?> IdToEdge;
-    public SatsumaGraphAdapter(Graphs.IGraph<TNode,TEdge> graph)
+    public SatsumaGraphAdapter(Graphs.IImmutableGraph<TNode,TEdge> graph)
     {
         Graph = graph;
         IdToEdge = new ConcurrentDictionary<int,TEdge?>();
@@ -40,7 +40,7 @@ where TEdge : IEdge
     public int ArcCount(ArcFilter filter = ArcFilter.All)
     {
         if(filter==ArcFilter.Edge) return 0;
-        return Graph.Edges.Count;
+        return Graph.Edges.Count();
     }
 
     public int ArcCount(Satsuma.Node u, ArcFilter filter = ArcFilter.All)
@@ -115,7 +115,7 @@ where TEdge : IEdge
 
     public int NodeCount()
     {
-        return Graph.Nodes.Count;
+        return Graph.Nodes.Count();
     }
 
     public IEnumerable<Satsuma.Node> Nodes()

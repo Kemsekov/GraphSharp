@@ -7,7 +7,7 @@ using GraphSharp.Exceptions;
 namespace GraphSharp.Graphs;
 
 /// <summary>
-/// Contains extensions for <see cref="IGraph{,}"/>
+/// Contains extensions for <see cref="IGraph{,}"/> and <see cref="IImmutableGraph{,}"/>
 /// </summary>
 public static class GraphExtensions
 {

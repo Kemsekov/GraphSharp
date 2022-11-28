@@ -5,7 +5,7 @@ using QuikGraph;
 namespace GraphSharp.Adapters;
 
 /// <summary>
-/// Adapter for <see cref="IGraph{,}"/> to work as <see cref="IBidirectionalGraph{,}"/>.
+/// Adapter for <see cref="IImmutableGraph{,}"/> to work as <see cref="IBidirectionalGraph{,}"/>.
 /// </summary>
 public class ToQuikGraphAdapter<TNode, TEdge> : IBidirectionalGraph<int, EdgeAdapter<TEdge>>, IUndirectedGraph<int,EdgeAdapter<TEdge>>
 where TNode : INode

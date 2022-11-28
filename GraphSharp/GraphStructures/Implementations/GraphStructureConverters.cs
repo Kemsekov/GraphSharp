@@ -9,15 +9,15 @@ namespace GraphSharp.Graphs;
 /// <summary>
 /// Contains converters for graph structure
 /// </summary>
-public class GraphConverters<TNode, TEdge>
+public partial class ImmutableGraphConverters<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    IGraph<TNode, TEdge> _structureBase;
-    INodeSource<TNode> Nodes => _structureBase.Nodes;
-    IEdgeSource<TEdge> Edges => _structureBase.Edges;
+    IImmutableGraph<TNode, TEdge> _structureBase;
+    IImmutableNodeSource<TNode> Nodes => _structureBase.Nodes;
+    IImmutableEdgeSource<TEdge> Edges => _structureBase.Edges;
     IGraphConfiguration<TNode, TEdge> Configuration => _structureBase.Configuration;
-    public GraphConverters(Graph<TNode, TEdge> structureBase)
+    public ImmutableGraphConverters(IImmutableGraph<TNode, TEdge> structureBase)
     {
         _structureBase = structureBase;
     }
@@ -52,6 +52,38 @@ where TEdge : IEdge
         return adjacencyMatrix;
     }
 
+    /// <summary>
+    /// Uses <see cref="ToQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="QuikGraph.IBidirectionalGraph{TVertex, TEdge}"/> <br/>
+    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="QuikGraph"/> to <paramref name="GraphSharp"/>. <br/>
+    /// Any change to underlying graph will affect adapter as well. Beware.
+    /// </summary>
+    /// <returns>Graph adapter</returns>
+    public ToQuikGraphAdapter<TNode,TEdge> ToQuikGraph(){
+        return new ToQuikGraphAdapter<TNode, TEdge>(this._structureBase);
+    }
+    /// <summary>
+    /// Uses <see cref="SatsumaGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="Satsuma.IGraph"/> <br/>
+    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="Satsuma"/> to <paramref name="GraphSharp"/>. <br/>
+    /// Any change to underlying graph will affect adapter as well. Beware.
+    /// </summary>
+    /// <returns>Graph adapter</returns>
+    public SatsumaGraphAdapter<TNode,TEdge> ToSatsumaGraph(){
+        return new SatsumaGraphAdapter<TNode, TEdge>(this._structureBase);
+    }
+}
+
+public partial class GraphConverters<TNode, TEdge> : ImmutableGraphConverters<TNode, TEdge>
+where TNode : INode
+where TEdge : IEdge
+{
+    IGraph<TNode, TEdge> _structureBase;
+    INodeSource<TNode> Nodes => _structureBase.Nodes;
+    IEdgeSource<TEdge> Edges => _structureBase.Edges;
+    IGraphConfiguration<TNode, TEdge> Configuration => _structureBase.Configuration;
+    public GraphConverters(IGraph<TNode, TEdge> structureBase) : base(structureBase)
+    {
+        _structureBase = structureBase;
+    }
     /// <summary>
     /// Builds a graph from binary code tree. 1(or anything > 0) - is new branch, 0 - is one step back.<br/>
     /// Example [1,0,1,1,0,1]<br/>
@@ -194,7 +226,6 @@ where TEdge : IEdge
     /// Clears graph and recreates it with connections list
     /// </summary>
     /// <param name="connectionsList">List of value pairs where source is edge source and target is edge target.</param>
-    /// <returns></returns>
     public GraphConverters<TNode, TEdge> FromConnectionsList(params (int source, int target)[] connectionsList)
     {
         _structureBase.Clear();
@@ -218,22 +249,5 @@ where TEdge : IEdge
         _structureBase.Do.RemoveIsolatedNodes();
         return this;
     }
-    /// <summary>
-    /// Uses <see cref="ToQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="QuikGraph.IBidirectionalGraph{TVertex, TEdge}"/> <br/>
-    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="QuikGraph"/> to <paramref name="GraphSharp"/>. <br/>
-    /// Any change to underlying graph will affect adapter as well. Beware.
-    /// </summary>
-    /// <returns>Graph adapter</returns>
-    public ToQuikGraphAdapter<TNode,TEdge> ToQuikGraph(){
-        return new ToQuikGraphAdapter<TNode, TEdge>(this._structureBase);
-    }
-    /// <summary>
-    /// Uses <see cref="SatsumaGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="Satsuma.IGraph"/> <br/>
-    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="Satsuma"/> to <paramref name="GraphSharp"/>. <br/>
-    /// Any change to underlying graph will affect adapter as well. Beware.
-    /// </summary>
-    /// <returns>Graph adapter</returns>
-    public SatsumaGraphAdapter<TNode,TEdge> ToSatsumaGraph(){
-        return new SatsumaGraphAdapter<TNode, TEdge>(this._structureBase);
-    }
+
 }

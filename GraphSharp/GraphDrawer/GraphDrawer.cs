@@ -18,12 +18,12 @@ where TEdge : IEdge
     public double Size =>windowSize*SizeMult;
     public Func<TNode, Vector2> GetNodePos { get; }
     private double windowSize;
-    public IGraph<TNode, TEdge> Graph { get; }
+    public IImmutableGraph<TNode, TEdge> Graph { get; }
     public IShapeDrawer Drawer { get; }
-    INodeSource<TNode> Nodes => Graph.Nodes;
+    IImmutableNodeSource<TNode> Nodes => Graph.Nodes;
     IDictionary<(int n1,int n2),byte> DrawnEdgesCache;
     public double XShift = 0,YShift = 0,SizeMult = 1;
-    public GraphDrawer(IGraph<TNode, TEdge> graph, IShapeDrawer drawer, double windowSize, Func<TNode,Vector2> getNodePos)
+    public GraphDrawer(IImmutableGraph<TNode, TEdge> graph, IShapeDrawer drawer, double windowSize, Func<TNode,Vector2> getNodePos)
     {
         this.GetNodePos = getNodePos;
         this.windowSize = windowSize;
