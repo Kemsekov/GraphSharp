@@ -100,7 +100,7 @@ where TEdge : IEdge
                     .ToList();
                 if (neighbors.Count == 0)
                     break;
-                toColor = neighbors.MaxBy(x => DegreeOfSaturation(x));
+                toColor = neighbors.MaxBy(x => DegreeOfSaturation(x,colors));
             }
         }
         return new(colors);
@@ -139,9 +139,9 @@ where TEdge : IEdge
         }
         return new(result);
     }
-    int DegreeOfSaturation(int nodeId)
+        int DegreeOfSaturation(int nodeId, RentedArray<int> colors)
     {
-        return Edges.Neighbors(nodeId).DistinctBy(x => Nodes[x].Color).Count();
+        return Edges.Neighbors(nodeId).DistinctBy(x => colors[x]).Count();
     }
     int GetAvailableColor(int nodeId, RentedArray<int> colors)
     {
