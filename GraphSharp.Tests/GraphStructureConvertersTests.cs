@@ -233,13 +233,13 @@ namespace GraphSharp.Tests
             var converted = _Graph.Converter.ToQuikGraph();
             _Graph.Do.ConnectRandomly(2,3);
             foreach(var n in _Graph.Nodes){
-                var e1 = converted.OutEdges(n).Select(x=>x.GraphSharpEdge);
+                var e1 = converted.OutEdges(n.Id).Select(x=>x.GraphSharpEdge);
                 var e2 = _Graph.Edges.OutEdges(n.Id);
                 Assert.Equal(e1,e2);
-                Assert.Equal(_Graph.Edges.Degree(n.Id),converted.Degree(n));
+                Assert.Equal(_Graph.Edges.Degree(n.Id),converted.Degree(n.Id));
             }
             foreach(var n in _Graph.Nodes){
-                var e1 = converted.InEdges(n).Select(x=>x.GraphSharpEdge);
+                var e1 = converted.InEdges(n.Id).Select(x=>x.GraphSharpEdge);
                 var e2 = _Graph.Edges.InEdges(n.Id);
                 Assert.Equal(e1,e2);
             }

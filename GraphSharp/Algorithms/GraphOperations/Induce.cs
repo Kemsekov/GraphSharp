@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using GraphSharp.Common;
 
@@ -13,7 +14,7 @@ where TEdge : IEdge
     /// </summary>
     /// <param name="nodes">Nodes to induce</param>
     /// <returns>Induced subgraph of current graph</returns>
-    public Graph<TNode,TEdge> Induce(params int[] nodes){
+    public Graph<TNode,TEdge> Induce(IEnumerable<int> nodes){
         var result = new Graph<TNode,TEdge>(Configuration);
         result.SetSources(nodes: nodes.Select(id=>Nodes[id]),edges:Edges.InducedEdges(nodes));
         return result;

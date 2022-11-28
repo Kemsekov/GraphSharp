@@ -2,134 +2,146 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using GraphSharp.Adapters;
+using QuikGraph.Algorithms.VertexColoring;
+
 namespace GraphSharp.Graphs;
 
-public partial class GraphOperation<TNode, TEdge>
+public class ColoringResult : IDisposable{
+    /// <summary>Array, which index is nodeId and value is colorId. If node is not colored it's value is 0</summary>
+    public RentedArray<int> Colors { get; }
+    public ColoringResult(RentedArray<int> colors){
+        this.Colors = colors;
+    }
+    /// <returns>
+    /// A dictionary where key is colorId and value is count of nodes that have colorId as assigned to them color
+    /// </returns>
+    public IDictionary<int,int> CountUsedColors(){
+        var dict = new Dictionary<int,int>();
+        for(int i = 0;i<Colors.Length;i++){
+            var color = Colors[i];
+            if(!dict.ContainsKey(color)) dict[color] = 0;
+            dict[color]++;
+        }
+        return dict;
+    }
+    /// <summary>
+    /// Method to apply some coloring to a graph
+    /// </summary>
+    /// <param name="colors">Node colors. Index equals to nodeId, value equals to colorId</param>
+    /// <param name="colorsToApply">A list of colors to actually use. Changes nodes colors to colors from this list</param>
+    public void ApplyColors<TNode>(IImmutableNodeSource<TNode> nodes,IEnumerable<Color> colorsToApply)
+    where TNode : INode
+    {
+        foreach(var n in nodes){
+            var c = colorsToApply.ElementAt(Colors[n.Id]);
+            n.Color = c;
+        }
+    }
+
+    public void Dispose()
+    {
+        ((IDisposable)Colors).Dispose();
+    }
+}
+
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+
     /// <summary>
     /// Apply linear-time greedy graph nodes coloring algorithm.<br/>
     /// </summary>
-    /// <param name="colors">Colors list. Will be automatically expanded if colors used will surpass count of available colors</param>
-    /// <param name="order">Order in which nodes will be colored</param>
-    /// <returns>Dictionary with key equals to color used, and value equals to count of nodes colored with this color</returns>
-    public IDictionary<Color, int> GreedyColorNodes(IEnumerable<Color>? colors = null)
+    public ColoringResult GreedyColorNodes()
     {
-        var order = Nodes.OrderBy(x => Edges.Neighbors(x.Id).Count());
-        colors ??= Enumerable.Empty<Color>();
-        var usedColors = new Dictionary<Color, int>();
-        Nodes.SetColorToAll(Color.Empty);
-        foreach (var c in colors)
-            usedColors[c] = 0;
+        var order = Nodes.OrderBy(x => -Edges.Neighbors(x.Id).Count());
+        // var order = Nodes;
 
-        var _colors = new List<Color>(colors);
+        var colors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
 
         foreach (var n in order)
         {
-            AssignColor(n, usedColors, _colors);
+            AssignColor(n.Id,colors);
         }
 
-        return usedColors;
+        return new(colors);
     }
     /// <summary>
     /// Slightly different implementation of DSatur coloring algorithm.<br/>
     /// A lot better than greedy algorithm and just about a half of it's speed.
     /// </summary>
-    public IDictionary<Color, int> DSaturColorNodes(IEnumerable<Color>? colors = null)
+    /// <returns>Array, which index is nodeId and value is colorId</returns>
+    public ColoringResult DSaturColorNodes()
     {
-        colors ??= Enumerable.Empty<Color>();
-        var usedColors = new Dictionary<Color, int>();
-        using var coloredNodes = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
-        Nodes.SetColorToAll(Color.Empty);
-        foreach (var c in colors)
-            usedColors[c] = 0;
-        var _colors = new List<Color>(colors);
-
-        var order = Nodes.OrderBy(x => Edges.Neighbors(x.Id).Count());
+        var colors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        var order = Nodes.OrderBy(x => -Edges.Neighbors(x.Id).Count());
 
         int coloredNodesCount = 0;
         foreach (var n in order)
         {
-            if (n.Color != Color.Empty) continue;
-            var toColor = n;
-            while (coloredNodesCount != Nodes.Count)
+            if (colors[n.Id]!=0) continue;
+            var toColor = n.Id;
+            while (coloredNodesCount != Nodes.Count())
             {
-                AssignColor(Nodes[toColor.Id], usedColors, _colors);
-                coloredNodes[toColor.Id] = 1;
+                AssignColor(toColor, colors);
                 coloredNodesCount++;
                 var neighbors =
-                    Edges.Neighbors(toColor.Id)
-                    .Where(x => Nodes[x].Color == Color.Empty)
+                    Edges.Neighbors(toColor)
+                    .Where(x => colors[x]==0)
                     .ToList();
                 if (neighbors.Count == 0)
                     break;
-                toColor = Nodes[neighbors.MaxBy(x => DegreeOfSaturation(x))];
+                toColor = neighbors.MaxBy(x => DegreeOfSaturation(x));
             }
         }
-        return usedColors;
+        return new(colors);
     }
     /// <summary>
     /// Recursive largest first algorithm. The most efficient in colors used algorithm,
     /// but the slowest one.
     /// </summary>
-    public IDictionary<Color, int> RLFColorNodes(IEnumerable<Color>? colors = null)
+    public ColoringResult RLFColorNodes()
     {
-        colors ??= Enumerable.Empty<Color>();
-        Nodes.SetColorToAll(Color.Empty);
-        var usedColors = new Dictionary<Color, int>();
-        foreach (var c in colors)
-            usedColors[c] = 0;
-
-        var colorsList = new List<Color>(colors);
         int coloredNodesCount = 0;
-        int colorIndex = 0;
-        while (coloredNodesCount != Nodes.Count)
+        int colorIndex = 1;
+        var colors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        while (coloredNodesCount != Nodes.Count())
         {
-            if (colorIndex >= colorsList.Count)
-            {
-                var rand = Configuration.Rand;
-                colorsList.Add(Color.FromArgb(rand.Next(256), rand.Next(256), rand.Next(256)));
-            }
-            var color = colorsList[colorIndex];
-            var S = FindMaximalIndependentSet(x => x.Color == Color.Empty);
+            var S = FindMaximalIndependentSet(x => colors[x.Id]==0);
             var count = S.Count();
-            usedColors[color] = count;
             coloredNodesCount += count;
             foreach (var node in S)
-                node.Color = color;
+                colors[node.Id] = colorIndex;
             colorIndex++;
         }
-        return usedColors;
+        return new(colors);
+    }
+    /// <summary>
+    /// QuikGraph's coloring algorithm
+    /// </summary>
+    public ColoringResult QuikGraphColorNodes(){
+        var quikGraph = StructureBase.Converter.ToQuikGraph();
+        var coloring = new VertexColoringAlgorithm<int, EdgeAdapter<TEdge>>(quikGraph);
+        coloring.Compute();
+        var result = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        for(int i = 0;i<result.Length;i++){
+            if(coloring.Colors[i] is int color)
+            result[i] = color;
+        }
+        return new(result);
     }
     int DegreeOfSaturation(int nodeId)
     {
         return Edges.Neighbors(nodeId).DistinctBy(x => Nodes[x].Color).Count();
     }
-    IList<Color> GetAvailableColors(TNode node, IEnumerable<Color> colors)
+    int GetAvailableColor(int nodeId, RentedArray<int> colors)
     {
-        return colors
-            .Except(
-                Edges.Neighbors(node.Id)
-                .Select(x => Nodes[x].Color)
-                .Where(c => c != Color.Empty)
-                .Distinct()
-            ).ToList();
+        var neighborsColors = Edges.Neighbors(nodeId).Select(x=>colors[x]).ToList();
+        return Enumerable.Range(1,neighborsColors.Max()+1).Except(neighborsColors).First();
     }
-    void AssignColor(TNode n, IDictionary<Color, int> usedColors, IList<Color> colors)
+    void AssignColor(int nodeId, RentedArray<int> colors)
     {
-        var color = Color.Empty;
-        var availableColors = GetAvailableColors(n, colors);
-        if (availableColors.Count == 0)
-        {
-            color = Color.FromArgb(Configuration.Rand.Next(256), Configuration.Rand.Next(256), Configuration.Rand.Next(256));
-            colors.Add(color);
-            usedColors[color] = 0;
-        }
-        else
-            color = availableColors.First();
-
-        usedColors[color] += 1;
-        n.Color = color;
+        colors[nodeId] = GetAvailableColor(nodeId, colors);
     }
 }

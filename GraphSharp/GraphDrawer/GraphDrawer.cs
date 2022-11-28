@@ -76,7 +76,7 @@ where TEdge : IEdge
         foreach (var edge in edges){
             var n1 = Math.Min(edge.SourceId,edge.TargetId);
             var n2 = Math.Max(edge.SourceId,edge.TargetId);
-            if(DrawnEdgesCache.TryGetValue((n1,n2),out var _)) return;
+            if(DrawnEdgesCache.TryGetValue((n1,n2),out var _)) continue;
             DrawEdge(edge, lineThickness,color);
             DrawnEdgesCache[(n1,n2)] = 1;
         }
