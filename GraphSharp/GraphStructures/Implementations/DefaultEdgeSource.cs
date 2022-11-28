@@ -78,11 +78,11 @@ where TEdge : IEdge
             var outEdges = e.outEdges;
             var inEdges = Edges[edge.TargetId].inEdges;
             var removed =
-                outEdges.RemoveAll(x => x.Equals(edge)) +
-                inEdges.RemoveAll(x => x.Equals(edge));
-            if (removed > 0)
+                outEdges.Remove(edge) &&
+                inEdges.Remove(edge);
+            if (removed)
             {
-                Count-=removed/2;
+                Count--;
                 return true;
             }
         }

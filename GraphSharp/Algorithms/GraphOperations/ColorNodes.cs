@@ -25,16 +25,24 @@ public class ColoringResult : IDisposable{
         }
         return dict;
     }
+    Color RandomColor(Random rand){
+        return Color.FromArgb(rand.Next(256),rand.Next(256),rand.Next(256));
+    }
     /// <summary>
     /// Method to apply some coloring to a graph
     /// </summary>
     /// <param name="colors">Node colors. Index equals to nodeId, value equals to colorId</param>
-    /// <param name="colorsToApply">A list of colors to actually use. Changes nodes colors to colors from this list</param>
-    public void ApplyColors<TNode>(IImmutableNodeSource<TNode> nodes,IEnumerable<Color> colorsToApply)
+    /// <param name="colorsToApply">A list of colors to actually use. Changes nodes colors to colors from this list. Will be extended automatically if given colors is not enough.</param>
+    public void ApplyColors<TNode>(IImmutableNodeSource<TNode> nodes,IEnumerable<Color>? colorsToApply = null)
     where TNode : INode
     {
+        var colorsList = new List<Color>(colorsToApply ?? Enumerable.Empty<Color>());
         foreach(var n in nodes){
-            var c = colorsToApply.ElementAt(Colors[n.Id]);
+            var colorId = Colors[n.Id];
+            while(colorsList.Count<=colorId){
+                colorsList.Add(RandomColor(Random.Shared));
+            }
+            var c = colorsList[colorId];
             n.Color = c;
         }
     }

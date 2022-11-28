@@ -58,6 +58,15 @@ public static class EdgeSourceExtensions
     {
         return Edges.OutEdges(nodeId).Count() + Edges.InEdges(nodeId).Count();
     }
+
+    static void MoveEdge<TEdge>(IEdgeSource<TEdge> Edges,TEdge edge, int newSourceId, int newTargetId)
+    where TEdge: IEdge
+    {
+        edge.SourceId = newSourceId;
+        edge.TargetId = newTargetId;
+        Edges.Add(edge);
+    }
+
     /// <summary>
     /// Moves edge to a new position
     /// </summary>
@@ -66,9 +75,7 @@ public static class EdgeSourceExtensions
     where TEdge: IEdge
     {
         if (!Edges.Remove(edge)) return false;
-        edge.SourceId = newSourceId;
-        edge.TargetId = newTargetId;
-        Edges.Add(edge);
+        MoveEdge(Edges,edge,newSourceId,newTargetId);
         return true;
     }
     /// <summary>
@@ -78,7 +85,11 @@ public static class EdgeSourceExtensions
     public static bool Move<TEdge>(this IEdgeSource<TEdge> Edges,int oldSourceId, int oldTargetId, int newSourceId, int newTargetId)
     where TEdge: IEdge
     {
-        return Edges.Move(Edges[oldSourceId, oldTargetId], newSourceId, newTargetId);
+        if(Edges.TryGetEdge(oldSourceId,oldTargetId,out var toMove) && toMove is not null){
+            MoveEdge(Edges,toMove,newSourceId,newTargetId);
+            return true;
+        }
+        return false;
     }
     /// <returns>All edges that directs as source id -> target id</returns>
 

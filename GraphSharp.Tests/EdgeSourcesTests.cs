@@ -35,13 +35,14 @@ public class EdgeSourcesTests
         }
     }
 
-    void FillEdges(INodeSource<Node> nodes, IEdgeSource<Edge> edges, int edgesCount)
+    void FillEdges(INodeSource<Node> nodes, IEdgeSource<Edge> edges, int edgesCount, Random rand = null)
     {
         int nodesCount = nodes.Count;
+        rand ??= Random.Shared;
         for (int i = 0; i < edgesCount; i++)
         {
-            var source = nodes[Random.Shared.Next(nodesCount)];
-            var target = nodes[Random.Shared.Next(nodesCount)];
+            var source = nodes[rand.Next(nodesCount)];
+            var target = nodes[rand.Next(nodesCount)];
             var edge = new Edge(source, target);
             if (!edges.TryGetEdge(source.Id, target.Id, out var _))
                 edges.Add(edge);
@@ -82,15 +83,15 @@ public class EdgeSourcesTests
             Assert.Equal(1000, edgeSource.Count);
             _Graph.CheckForIntegrityOfSimpleGraph();
             edgeSource.Clear();
-            edgeSource.Add(new Edge(Nodes[100],Nodes[200]){Weight = 1});
-            edgeSource.Add(new Edge(Nodes[100],Nodes[200]){Weight = 2});
-            Assert.True(edgeSource.Count==2);
-            var r = new Edge(Nodes[101],Nodes[200]);
+            edgeSource.Add(new Edge(Nodes[100], Nodes[200]) { Weight = 1 });
+            edgeSource.Add(new Edge(Nodes[100], Nodes[200]) { Weight = 2 });
+            Assert.True(edgeSource.Count == 2);
+            var r = new Edge(Nodes[101], Nodes[200]);
             edgeSource.Add(r);
-            Assert.True(edgeSource.Count==3);
+            Assert.True(edgeSource.Count == 3);
             edgeSource.Add(r);
             edgeSource.Add(r);
-            Assert.True(edgeSource.Count==3);
+            Assert.True(edgeSource.Count == 3);
         }
     }
 
@@ -165,7 +166,7 @@ public class EdgeSourcesTests
             edgeSource.Remove(e1);
             edgeSource.Remove(e1);
             Assert.Equal(edgeSource.GetParallelEdges(0, 5).Count(), 0);
-
+            _Graph.CheckForIntegrityOfSimpleGraph();
 
         }
     }
@@ -189,7 +190,7 @@ public class EdgeSourcesTests
     {
         foreach (var edgeSource in EdgeSources)
         {
-            if(!edgeSource.AllowParallelEdges) continue;
+            if (!edgeSource.AllowParallelEdges) continue;
             var e1 = new Edge(Nodes[0], Nodes[5]) { Weight = 1 };
             var e2 = new Edge(Nodes[0], Nodes[5]) { Weight = 2 };
             var e3 = new Edge(Nodes[0], Nodes[5]) { Weight = 3 };
@@ -288,7 +289,7 @@ public class EdgeSourcesTests
         foreach (var edgeSource in EdgeSources)
         {
             _Graph.SetSources(Nodes, edgeSource);
-            _Graph.Do.ConnectToClosest(0, 3,(n1,n2)=>(n1.Position-n2.Position).Length());
+            _Graph.Do.ConnectToClosest(0, 3, (n1, n2) => (n1.Position - n2.Position).Length());
             var isolated = _Graph.GetNodesIdWhere(x => edgeSource.Degree(x.Id) == 0);
             var nonIsolated = Nodes.Select(x => x.Id).Except(isolated);
             foreach (var i in isolated)
@@ -360,38 +361,39 @@ public class EdgeSourcesTests
         var edgesCount = 2000;
         foreach (var edgeSource in EdgeSources)
         {
-            FillEdges(Nodes, edgeSource, edgesCount);
+            var rand = new Random(4);
+            FillEdges(Nodes, edgeSource, edgesCount, rand);
             _Graph.SetSources(Nodes, edgeSource);
+            _Graph.CheckForIntegrityOfSimpleGraph();
             for (int i = 0; i < 100; i++)
             {
+
                 var e = edgeSource.ElementAt(i);
-                var newSourceIndex = Random.Shared.Next(NodesCount);
-                var newTargetIndex = Random.Shared.Next(NodesCount);
+                var newSourceIndex = rand.Next(NodesCount);
+                var newTargetIndex = newSourceIndex;
+
+                while(newTargetIndex==newSourceIndex)
+                    newTargetIndex = rand.Next(NodesCount);
+                    
                 var oldSourceIndex = e.SourceId;
                 var oldTargetIndex = e.TargetId;
-                //if we have a free space at that index
-                if (!edgeSource.TryGetEdge(newSourceIndex, newTargetIndex, out var _))
-                {
-                    //then we must be able to move old edge
-                    Assert.True(edgeSource.Move(e, newSourceIndex, newTargetIndex));
-                    //and after it moved there must be moved edge
-                    Assert.True(edgeSource.TryGetEdge(newSourceIndex, newTargetIndex, out var _));
-                    //and must not be old edge
-                    Assert.False(edgeSource.TryGetEdge(oldSourceIndex, oldTargetIndex, out var _));
-                }
-                else
-                {
-                    Assert.False(edgeSource.Move(e, newSourceIndex, newTargetIndex));
-                    Assert.False(edgeSource.TryGetEdge(newSourceIndex, newTargetIndex, out var _));
-                    Assert.True(edgeSource.TryGetEdge(oldSourceIndex, oldTargetIndex, out var _));
-                }
-                Assert.Equal((e.SourceId, e.TargetId), (newSourceIndex, newTargetIndex));
+                Assert.True(edgeSource.Move(e, newSourceIndex, newTargetIndex));
+                Assert.True(edgeSource.TryGetEdge(newSourceIndex, newTargetIndex, out var _));
+                Assert.False(edgeSource.TryGetEdge(oldSourceIndex, oldTargetIndex, out var _));
 
-                //check that everything with edge data is OK
+                Assert.Equal((e.SourceId, e.TargetId), (newSourceIndex, newTargetIndex));
+                Assert.Equal(edgesCount,edgeSource.Count);
                 _Graph.CheckForIntegrityOfSimpleGraph();
 
                 //and count of edge must keep the same
                 Assert.Equal(edgeSource.Count, edgesCount);
+            }
+            for (int i = 0; i < 100; i++)
+            {
+                var randSourceIndex = rand.Next(NodesCount);
+                var randTargetIndex = rand.Next(NodesCount);
+                if (!edgeSource.Contains(randSourceIndex, randTargetIndex))
+                    Assert.False(edgeSource.Move(randSourceIndex, randTargetIndex, 1, 2));
             }
         }
     }
