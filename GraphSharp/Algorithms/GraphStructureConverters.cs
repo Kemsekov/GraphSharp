@@ -53,7 +53,7 @@ where TEdge : IEdge
     }
 
     /// <summary>
-    /// Uses <see cref="ToQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="QuikGraph.IBidirectionalGraph{TVertex, TEdge}"/> <br/>
+    /// Uses <see cref="ToQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as graph from <see cref="QuikGraph"/><br/>
     /// This conversation does not simply copy graph but passes execution of methods from <paramref name="QuikGraph"/> to <paramref name="GraphSharp"/>. <br/>
     /// Any change to underlying graph will affect adapter as well. Beware.
     /// </summary>
@@ -252,5 +252,13 @@ where TEdge : IEdge
         _structureBase.Do.RemoveIsolatedNodes();
         return this;
     }
-
+    /// <summary>
+    /// Uses <see cref="ToMutableQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as mutable graph from <see cref="QuikGraph"/><br/>
+    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="QuikGraph"/> to <paramref name="GraphSharp"/>. <br/>
+    /// Any change to underlying graph will affect adapter as well. Beware.
+    /// </summary>
+    /// <returns>Graph adapter</returns>
+    public ToMutableQuikGraphAdapter<TNode,TEdge> ToMutableQuikGraph(){
+        return new ToMutableQuikGraphAdapter<TNode, TEdge>(this._structureBase);
+    }
 }

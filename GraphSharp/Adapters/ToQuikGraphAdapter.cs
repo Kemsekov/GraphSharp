@@ -38,7 +38,7 @@ where TEdge : IEdge
     /// </summary>
     /// <param name="edge"></param>
     /// <returns></returns>
-    EdgeAdapter<TEdge> ToAdapter(TEdge edge)
+    protected EdgeAdapter<TEdge> ToAdapter(TEdge edge)
     {
         return new EdgeAdapter<TEdge>(edge);
     }
