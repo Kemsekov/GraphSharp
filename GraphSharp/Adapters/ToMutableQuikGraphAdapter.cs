@@ -65,6 +65,7 @@ where TEdge : IEdge
 
     public void TrimEdgeExcess()
     {
+        Graph.Edges.Trim();
     }
 
     public bool AddVerticesAndEdge(EdgeAdapter<TEdge> edge)

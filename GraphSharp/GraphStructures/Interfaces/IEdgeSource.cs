@@ -18,5 +18,8 @@ public interface IEdgeSource<TEdge> : IImmutableEdgeSource<TEdge>, ICollection<T
     /// Removes all edges that directs sourceId -> targetId (including parallel edges)
     /// </summary>
     bool Remove(int sourceId, int targetId);
-
+    /// <summary>
+    /// Clears a memory from empty(unused) edges
+    /// </summary>
+    void Trim();
 }

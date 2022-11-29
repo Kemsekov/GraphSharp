@@ -27,7 +27,9 @@ where TEdge : IEdge
         foreach (var e in edges)
             Add(e);
     }
-
+    public void Trim(){
+        Edges.RemoveAll(x=>(x.Value.inEdges.Count==0 && x.Value.outEdges.Count==0));
+    }
     public override IEnumerable<TEdge> OutEdges(int sourceId)
     {
         if (Edges.TryGetValue(sourceId, out var edge))
