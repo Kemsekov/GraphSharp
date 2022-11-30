@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 namespace GraphSharp.Graphs;
+/// <summary>
+/// Immutable nodes source
+/// </summary>
 public interface IImmutableNodeSource<TNode> : IEnumerable<TNode>
 {
     /// <summary>

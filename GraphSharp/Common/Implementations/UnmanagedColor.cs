@@ -10,6 +10,12 @@ namespace GraphSharp;
 /// </summary>
 public struct UnmanagedColor
 {
+    /// <summary>
+    /// Corresponding color element
+    /// </summary>
     public byte A,R,G,B;
+    /// <summary>
+    /// Color converter
+    /// </summary>
     public static explicit operator Color(UnmanagedColor c) => Color.FromArgb(c.A,c.R,c.G,c.B);
 }

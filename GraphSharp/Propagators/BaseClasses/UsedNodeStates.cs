@@ -1,4 +1,9 @@
+using GraphSharp.Propagators;
+
 namespace GraphSharp.Common;
+/// <summary>
+/// Contains all states used by <see cref="PropagatorBase{TNode,TEdge}"/>
+/// </summary>
 public struct UsedNodeStates
 {
     /// <summary>

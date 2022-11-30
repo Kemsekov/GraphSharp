@@ -2,12 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 namespace GraphSharp.Graphs;
-
+/// <summary>
+/// Result of finding strongly connected components algorithm
+/// </summary>
+/// <typeparam name="TNode"></typeparam>
 public class StronglyConnectedComponents<TNode> : IDisposable
 {
     /// <returns>List of tuples, where first value is a list of nodes in a certain component and second value is this component id.</returns>
     public IEnumerable<(IEnumerable<TNode> nodes, int componentId)> Components { get; }
     private RentedArray<int> low;
+    /// <summary>
+    /// </summary>
     public StronglyConnectedComponents(RentedArray<int> lowLinkValues, IImmutableNodeSource<TNode> Nodes)
     {
         Components = lowLinkValues
@@ -22,7 +27,8 @@ public class StronglyConnectedComponents<TNode> : IDisposable
     {
         return low[nodeId1] == low[nodeId2];
     }
-
+    /// <summary>
+    /// </summary>
     public void Dispose()
     {
         low.Dispose();

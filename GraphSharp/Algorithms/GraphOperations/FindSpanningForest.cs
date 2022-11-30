@@ -23,7 +23,8 @@ where TEdge : IEdge
         var forest = KruskalAlgorithm(edges, maxDegree);
         return forest;
     }
-    public KruskalForest<TEdge> FindKruskalForest(IEnumerable<TEdge> edges, Func<TEdge,double> getWeight,Func<TNode,int> maxDegree)
+    
+    KruskalForest<TEdge> FindKruskalForest(IEnumerable<TEdge> edges, Func<TEdge,double> getWeight,Func<TNode,int> maxDegree)
     {
         edges = edges.OrderBy(x => getWeight(x));
         return KruskalAlgorithm(edges, maxDegree);
@@ -46,7 +47,6 @@ where TEdge : IEdge
     /// and so it can be used to build a TSP by cheapest link approach or anything that
     /// requires tree degree 2 that connects all nodes.
     /// </summary>
-    /// <param name="tree">Resulting tree in edges</param>
     /// <param name="getWeight">Function to take weight from edge</param>
     /// <param name="doDelaunayTriangulation">Function to do delaunay triangulation</param>
     /// <returns>Tree as edges list and tree ends as nodes array. Node is end if it's degree = 1</returns>

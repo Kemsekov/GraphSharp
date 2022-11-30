@@ -13,27 +13,37 @@ public class SourceCreator<TNode, TEdge> : VisitorWithPropagator<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    public const byte Proceed = 16;
-    public const byte ToRemove = 32;
-    ByteStatesHandler NodeStates => Propagator.NodeStates;
-    public override PropagatorBase<TNode, TEdge> Propagator { get; }
-    public IGraph<TNode, TEdge> Graph { get; }
 
+    const byte Proceed = 16;
+    const byte ToRemove = 32;
+    ByteStatesHandler NodeStates => Propagator.NodeStates;
+    ///<inheritdoc/>
+    public override PropagatorBase<TNode, TEdge> Propagator { get; }
+    /// <summary>
+    /// Graph that used by this class
+    /// </summary>
+    public IGraph<TNode, TEdge> Graph { get; }
+    /// <summary>
+    /// Creates a new instance of source creator
+    /// </summary>
     public SourceCreator(IGraph<TNode, TEdge> graph)
     {
         Propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
         this.Graph = graph;
     }
 
+    ///<inheritdoc/>
     protected override void StartImpl()
     {
         DidSomething = false;
     }
+    ///<inheritdoc/>
     protected override bool SelectImpl(TEdge edge)
     {
         return !NodeStates.IsInState(Proceed | ToRemove,edge.TargetId);
     }
 
+    ///<inheritdoc/>
     protected override void VisitImpl(TNode node)
     {
         NodeStates.AddState(Proceed,node.Id);
@@ -51,6 +61,7 @@ where TEdge : IEdge
 
         DidSomething = true;
     }
+    ///<inheritdoc/>
     protected override void EndImpl()
     {
         for (int i = 0; i < Graph.Nodes.MaxNodeId + 1; i++)

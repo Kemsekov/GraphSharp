@@ -22,7 +22,7 @@ where TEdge : IEdge
     {
         if (maxEdgesCount == 0) return this;
         Edges.Clear();
-        using var edgesCountMap = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        using var edgesCountMap = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
         foreach (var node in Nodes)
             edgesCountMap[node.Id] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
 

@@ -17,6 +17,7 @@ where TEdge : IEdge
     IGraphConfiguration<TNode, TEdge> Configuration => StructureBase.Configuration;
     ObjectPool<Propagator<TNode, TEdge>> PropagatorPool;
     ObjectPool<ParallelPropagator<TNode, TEdge>> ParallelPropagatorPool;
+    ///<inheritdoc/>
     public ImmutableGraphOperation(IImmutableGraph<TNode, TEdge> structureBase)
     {
         StructureBase = structureBase;

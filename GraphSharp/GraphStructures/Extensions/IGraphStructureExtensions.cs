@@ -7,16 +7,16 @@ using GraphSharp.Exceptions;
 namespace GraphSharp.Graphs;
 
 /// <summary>
-/// Contains extensions for <see cref="IGraph{,}"/> and <see cref="IImmutableGraph{,}"/>
+/// Contains extensions for <see cref="IGraph{TNode,TEdge}"/> and <see cref="IImmutableGraph{TNode,TEdge}"/>
 /// </summary>
 public static class GraphExtensions
 {
     /// <returns>
     /// Other part of the edge.<br/> 
-    /// If <paramref name="nodeId"/> equals to 
-    /// <paramref name="SourceId"/> then returns <paramref name="TargetId"/>.<br/>
-    /// If <paramref name="nodeId"/> equals to 
-    /// <paramref name="TargetId"/> then returns <paramref name="SourceId"/>.<br/>
+    /// If <see langword="nodeId"/> equals to 
+    /// <see langword="SourceId"/> then returns <see langword="TargetId"/>.<br/>
+    /// If <see langword="nodeId"/> equals to 
+    /// <see langword="TargetId"/> then returns <see langword="SourceId"/>.<br/>
     /// If none returns -1
     /// </returns>
     public static int Other<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, TEdge edge, int nodeId)
@@ -341,6 +341,7 @@ public static class GraphExtensions
     /// <summary>
     /// Clones <paramref name="edge"/> to <paramref name="destination"/>
     /// </summary>
+    /// <param name="src"></param>
     /// <param name="edge">Edge to clone</param>
     /// <param name="destination">Edges source that will accept cloned edge</param>
     /// <returns>Clone of <paramref name="edge"/></returns>
@@ -355,7 +356,8 @@ public static class GraphExtensions
     /// <summary>
     /// Clones <paramref name="node"/> to <paramref name="destination"/>
     /// </summary>
-    /// <param name="edge">Edge to clone</param>
+    /// <param name="graph"></param>
+    /// <param name="node">Node to clone</param>
     /// <param name="destination">Nodes source that will accept cloned node</param>
     /// <returns>Clone of <paramref name="node"/></returns>
     public static TNode CloneNodeTo<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, TNode node, INodeSource<TNode> destination)
@@ -411,7 +413,7 @@ public static class GraphExtensions
         if (edges.Count == 0) return new List<TNode>();
         var m = edges.MaxBy(x => Math.Max(x.SourceId, x.TargetId)) ?? throw new Exception();
         var nodesCount = Math.Max(m.SourceId, m.TargetId);
-        using var addedNodes = ArrayPoolStorage.RentByteArray(nodesCount + 1);
+        using var addedNodes = ArrayPoolStorage.RentArray<byte>(nodesCount + 1);
         var edgesSource = new DefaultEdgeSource<TEdge>(edges);
         var expectedNodesCount = edges.Count + 1;
         int sink = -1;

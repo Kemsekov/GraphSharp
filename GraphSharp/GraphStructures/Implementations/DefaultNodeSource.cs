@@ -8,12 +8,13 @@ using GraphSharp.Exceptions;
 namespace GraphSharp.Graphs;
 
 /// <summary>
-/// Default implementation of <see cref="INodeSource{}"/>
+/// Default implementation of <see cref="INodeSource{TNode}"/>
 /// </summary>
 public class DefaultNodeSource<TNode> : INodeSource<TNode>
 where TNode : INode
 {
     IDictionary<int, TNode> Nodes;
+    ///<inheritdoc/>
     public TNode this[int nodeId]
     {
         get => Nodes[nodeId]; 
@@ -23,18 +24,25 @@ where TNode : INode
             Nodes[nodeId] = value;
         }
     }
+    ///<inheritdoc/>
     public int Count => Nodes.Count;
+    ///<inheritdoc/>
     public int MaxNodeId { get; protected set; }
+    ///<inheritdoc/>
     public int MinNodeId { get; protected set; }
 
+    ///<inheritdoc/>
     public bool IsReadOnly => false;
-
+    /// <summary>
+    /// Creates a new instance of node source and fills it with given nodes
+    /// </summary>
     public DefaultNodeSource(IEnumerable<TNode> nodes) : this()
     {
         foreach(var n in nodes)
             Add(n);
     }
 
+    ///<inheritdoc/>
     public DefaultNodeSource()
     {
         MaxNodeId = -1;
@@ -48,22 +56,26 @@ where TNode : INode
         if (nodeId < MinNodeId || MinNodeId == -1)
             MinNodeId = nodeId;
     }
+    ///<inheritdoc/>
     public void Add(TNode node)
     {
         Nodes[node.Id] = node;
         UpdateMaxMinNodeId(node.Id);
     }
 
+    ///<inheritdoc/>
     public IEnumerator<TNode> GetEnumerator()
     {
         return Nodes.Values.GetEnumerator();
     }
 
+    ///<inheritdoc/>
     public bool Remove(TNode node)
     {
         return Remove(node.Id);
     }
 
+    ///<inheritdoc/>
     public bool Remove(int nodeId)
     {
         if (Nodes.Remove(nodeId))
@@ -79,10 +91,12 @@ where TNode : INode
         return this.GetEnumerator();
     }
 
+    ///<inheritdoc/>
     public bool TryGetNode(int nodeId, out TNode? node)
     {
         return Nodes.TryGetValue(nodeId, out node);
     }
+    ///<inheritdoc/>
     public void Clear()
     {
         Nodes.Clear();
@@ -106,6 +120,7 @@ where TNode : INode
             MaxNodeId = Nodes.MaxBy(x=>x.Key).Key;
     }
 
+    ///<inheritdoc/>
     public bool Move(TNode node, int newId)
     {
         if (TryGetNode(newId, out var _)) return false;
@@ -115,6 +130,7 @@ where TNode : INode
         return true;
     }
 
+    ///<inheritdoc/>
     public bool Move(int nodeId, int newId)
     {
         if (TryGetNode(nodeId, out var n) && n is not null)
@@ -122,16 +138,19 @@ where TNode : INode
         return false;
     }
 
+    ///<inheritdoc/>
     public bool Contains(int nodeId)
     {
         return TryGetNode(nodeId, out var _);
     }
 
+    ///<inheritdoc/>
     public bool Contains(TNode node)
     {
         return Contains(node.Id);
     }
 
+    ///<inheritdoc/>
     public void CopyTo(TNode[] array, int arrayIndex)
     {
         foreach (var n in Nodes)

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace GraphSharp.Graphs;
+/// <summary>
+/// Contains collection extensions
+/// </summary>
 public static class ICollectionExtensions
 {
     /// <summary>

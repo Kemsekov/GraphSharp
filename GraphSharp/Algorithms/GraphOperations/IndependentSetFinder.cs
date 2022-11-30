@@ -5,6 +5,9 @@ using System.Linq;
 
 namespace GraphSharp.Graphs;
 
+/// <summary>
+/// Result of independent set finders algorithms
+/// </summary>
 public class IndependentSetResult<TNode> : IEnumerable<TNode>, IDisposable{
     const byte Added = 1;
     RentedArray<byte> NodeState { get; }
@@ -12,6 +15,8 @@ public class IndependentSetResult<TNode> : IEnumerable<TNode>, IDisposable{
     /// Nodes in given independent set
     /// </summary>
     public IEnumerable<TNode> Nodes { get; }
+    /// <summary>
+    /// </summary>
     public IndependentSetResult(RentedArray<byte> nodeState, IEnumerable<TNode> nodes)
     {
         this.NodeState = nodeState;
@@ -23,6 +28,7 @@ public class IndependentSetResult<TNode> : IEnumerable<TNode>, IDisposable{
     /// <param name="nodeId"></param>
     /// <returns></returns>
     public bool IsAdded(int nodeId) => (NodeState[nodeId] & Added) == Added;
+    /// <inheritdoc/>
 
     public IEnumerator<TNode> GetEnumerator()
     {
@@ -33,7 +39,7 @@ public class IndependentSetResult<TNode> : IEnumerable<TNode>, IDisposable{
     {
         return ((IEnumerable)Nodes).GetEnumerator();
     }
-
+    /// <inheritdoc/>
     public void Dispose()
     {
         NodeState.Dispose();
@@ -58,10 +64,10 @@ where TEdge : IEdge
         const byte Added = 1;
         const byte AroundAdded = 2;
         const byte Forbidden = 4;
-        using var nodeState = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
-        using var freeNeighbors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
-        using var countOfForbiddenNeighbors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
-        using var countOfColoredNeighbors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        using var nodeState = ArrayPoolStorage.RentArray<byte>(Nodes.MaxNodeId + 1);
+        using var freeNeighbors = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
+        using var countOfForbiddenNeighbors = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
+        using var countOfColoredNeighbors = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
 
 #pragma warning disable
         bool IsAdded(int nodeId) => (nodeState[nodeId] & Added) == Added;

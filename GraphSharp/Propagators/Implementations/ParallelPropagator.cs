@@ -5,8 +5,8 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Propagators;
 
 /// <summary>
-/// Concurrent <see cref="PropagatorBase{,}"/> implementation.<br/> 
-/// Every <see cref="IVisitor{,}"/> that accompany this propagator must be implemented
+/// Concurrent <see cref="PropagatorBase{TNode,TEdge}"/> implementation.<br/> 
+/// Every <see cref="IVisitor{TNode,TEdge}"/> that accompany this propagator must be implemented
 /// as thread-safe one.
 /// <inheritdoc />
 /// </summary>
@@ -14,10 +14,11 @@ public class ParallelPropagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    /// <inheritdoc cref="ParallelPropagator{,}" />
+    /// <inheritdoc cref="ParallelPropagator{TNode,TEdge}" />
     public ParallelPropagator(IVisitor<TNode, TEdge> visitor, IImmutableGraph<TNode, TEdge> graph) : base(visitor, graph)
     {
     }
+    ///<inheritdoc/>
     protected override void PropagateNodes()
     {
         var nodes = Graph.Nodes;

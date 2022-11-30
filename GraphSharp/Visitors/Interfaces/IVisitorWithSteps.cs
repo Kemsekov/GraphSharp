@@ -1,4 +1,7 @@
 namespace GraphSharp.Visitors;
+/// <summary>
+/// Visitor that counts it's steps and completion state
+/// </summary>
 public interface IVisitorWithSteps<TNode, TEdge> : IVisitor<TNode,TEdge>
 where TNode : INode
 where TEdge : IEdge

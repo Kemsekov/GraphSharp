@@ -14,6 +14,8 @@ where TEdge : IEdge
     /// <param name="colonySize">Count of ants to use</param>
     /// <param name="startNodeId">Start points that used for searching hamiltonian path</param>
     /// <param name="maxIterations">Because this algorithm works in non-deterministic time it can work up to infinity, so this parameter will limit count of algorithm iterations</param>
+    /// <param name="startSmell">Smell that set to all edges when algorithm is initialized</param>
+    /// <param name="minSmell">A lower bound for smell</param>
     /// <returns>Hamiltonian path, if found before hit maxIterationsLimit. Else some random very long path. And as seconds parameter count of iterations it took to compute path.</returns>
     public (IList<TEdge> path, int steps) TryFindHamiltonianPathByAntSimulation(int colonySize = 256,int startNodeId=0, int maxIterations=1000, double startSmell = 0.5f, double minSmell = 0.0001f)
     {
@@ -50,7 +52,7 @@ where TEdge : IEdge
         getWeight ??= x => x.Weight;
         var start = Edges.MinBy(getWeight);
         var edges = new List<TEdge>();
-        using var addedNodes = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
+        using var addedNodes = ArrayPoolStorage.RentArray<byte>(Nodes.MaxNodeId + 1);
         if (start is null) return edges;
         edges.Add(start);
 

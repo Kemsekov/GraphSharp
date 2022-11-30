@@ -15,8 +15,10 @@ where TEdge : IEdge
     /// what is the length of path from startNode to some other node so far.  
     /// </summary>
     public RentedArray<double> PathLength;
-
-    /// <param name="startNode">Node from which we need to find a shortest path</param>
+    /// <summary>
+    /// Creates a new instance of <see cref="DijkstrasAlgorithm{TNode, TEdge}"/>
+    /// </summary>
+    /// <param name="startNodeId">Node from which we need to find a shortest path</param>
     /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
     /// <param name="graph">Algorithm will be executed on this graph</param>
     public DijkstrasAlgorithm(int startNodeId, IImmutableGraph<TNode, TEdge> graph, Func<TEdge, double>? getWeight = null) : base(graph)
@@ -38,6 +40,7 @@ where TEdge : IEdge
         PathLength[startNodeId] = 0;
         ClearPaths();
     }
+    ///<inheritdoc/>
     protected override bool SelectImpl(TEdge edge)
     {
         (var sourceId,var targetId) = GetEdgeDirection(edge);
@@ -56,13 +59,14 @@ where TEdge : IEdge
         Path[targetId] = sourceId;
         return true;
     }
+    ///<inheritdoc/>
     protected override void VisitImpl(TNode node)
     {
         DidSomething = true;
     }
 
     /// <summary>
-    /// Get path from <paramref name="StartNodeId"/> to <paramref name="endNodeId"/>
+    /// Get path from <see langword="StartNodeId"/> to <paramref name="endNodeId"/>
     /// </summary>
     /// <returns>Empty list if path not found</returns>
     public IList<TNode> GetPath(int endNodeId) => GetPath(StartNodeId, endNodeId);

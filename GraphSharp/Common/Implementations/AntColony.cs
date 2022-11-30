@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Common;
 using GraphSharp.Graphs;
+using RentedArraySharp;
+
 namespace GraphSharp;
 
 /// <summary>
@@ -13,6 +15,10 @@ public class AntColony<TNode, TEdge> : IDisposable
 where TNode : INode
 where TEdge : IEdge
 {
+    /// <summary>
+    /// Graph used
+    /// </summary>
+    /// <value></value>
     public IImmutableGraph<TNode, TEdge> Graph { get; }
     /// <summary>
     /// Ants used here
@@ -62,12 +68,13 @@ where TEdge : IEdge
         {
             if (i % 32 == 0)
             {
-                Visited.Add(ArrayPoolStorage.RentUintArray(graph.Nodes.MaxNodeId + 1));
+                Visited.Add(ArrayPoolStorage.RentArray<uint>(graph.Nodes.MaxNodeId + 1));
             }
             var ant = new Ant<TNode, TEdge>(graph, smell, Visited.Last(), (uint)Math.Pow(2, i % 32));
             Ants.Add(ant);
         }
     }
+    ///<inheritdoc/>
     ~AntColony(){
         Dispose();
     }
@@ -123,7 +130,6 @@ where TEdge : IEdge
     /// After each ant in colony completed it's run we iterate trough their results,
     /// take best ones and update smell depending on them.
     /// </summary>
-    /// <param name="ant"></param>
     public void UpdateSmell()
     {
         foreach (var ant in Ants)
@@ -135,7 +141,6 @@ where TEdge : IEdge
     /// After each ant in colony completed it's run we concurrently iterate trough their results,
     /// take best ones and update smell depending on them. This version of smell updating can be a bit faster when big colony size used.
     /// </summary>
-    /// <param name="ant"></param>
     public void UpdateSmellParallel()
     {
         Parallel.ForEach(Ants,ant=>UpdateSmell(ant));
@@ -170,7 +175,7 @@ where TEdge : IEdge
     }
     /// <summary>
     /// Merges current colony with <paramref name="other"/> colony changing current one to be the best of two.<br/>
-    /// Merges <paramref name="Smell"/>, <paramref name="BestPath"/> and <paramref name="BestCoefficient"/>. <br/>
+    /// Merges <see langword="Smell"/>, <see langword="BestPath"/> and <see langword="BestCoefficient"/>. <br/>
     /// This method can be useful when you have multiple colonies where each of them
     /// have different smell object. You can aggregate such list of colonies and merge
     /// them together to get best result.
@@ -194,7 +199,7 @@ where TEdge : IEdge
         }
         return other;
     }
-
+    ///<inheritdoc/>
     public void Dispose()
     {
         foreach(var arr in Visited)

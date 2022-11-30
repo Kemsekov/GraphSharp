@@ -6,15 +6,37 @@ using QuikGraph.Algorithms.Ranking;
 
 namespace GraphSharp.Graphs;
 
+/// <summary>
+/// Result of max flow algorithms
+/// </summary>
 public class MaxFlowResult<TEdge>
 where TEdge : IEdge
 {
     MaximumFlowAlgorithm<int, EdgeAdapter<TEdge>> Result { get; }
+    /// <summary>
+    /// Id of node that was used as source
+    /// </summary>
     public int SourceId{get;}
+    /// <summary>
+    /// Id of node that was used as sink
+    /// </summary>
     public int SinkId{get;}
+    /// <summary>
+    /// Maximum flow computed
+    /// </summary>
     public double MaxFlow{get;}
+    /// <summary>
+    /// Capacities used in current max flow result
+    /// </summary>
     public Func<TEdge, double> Capacities { get; }
+    /// <summary>
+    /// ResidualCapacities in current max flow result
+    /// </summary>
+    /// <value></value>
     public Func<TEdge, double> ResidualCapacities { get; }
+    /// <summary>
+    /// Creates a new instance if max fow result
+    /// </summary>
     public MaxFlowResult(MaximumFlowAlgorithm<int, EdgeAdapter<TEdge>> result)
     {
         Result = result;
@@ -42,7 +64,7 @@ where TEdge : IEdge
     /// Id of sink node
     /// </param>
     /// <param name="getCapacity">
-    /// Function to get edge capacity. By default uses edge weight.
+    /// Function to get edge capacity. By default uses edge flow values
     /// </param>
     public MaxFlowResult<TEdge> MaxFlowEdmondsKarp(int sourceId, int sinkId, Func<TEdge, double>? getCapacity = null)
     {

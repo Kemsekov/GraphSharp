@@ -4,17 +4,18 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Propagators;
 
 /// <summary>
-/// Single threaded <see cref="PropagatorBase{,}"/> implementation.<br/>
+/// Single threaded <see cref="PropagatorBase{TNode,TEdge}"/> implementation.<br/>
 /// <inheritdoc />
 /// </summary>
 public class Propagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    /// <inheritdoc cref="Propagator{,}" />
+    /// <inheritdoc/>
     public Propagator(IVisitor<TNode, TEdge> visitor, IImmutableGraph<TNode, TEdge> graph) : base(visitor, graph)
     {
     }
+    ///<inheritdoc/>
     protected override void PropagateNodes()
     {
         var nodes = Graph.Nodes;

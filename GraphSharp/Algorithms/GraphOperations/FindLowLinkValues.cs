@@ -14,14 +14,14 @@ where TEdge : IEdge
     /// <returns>Array where index is node id and value is low link value. When value is -1 it means that there is not node with given index.</returns>
     public RentedArray<int>  FindLowLinkValues()
     {
-        using var ids = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
-        using var onStack = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        using var ids = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
+        using var onStack = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
         //thanks to https://www.youtube.com/watch?v=wUgWX0nc4NY
         var UNVISITED = -1;
         
         //we assign new local id to each node so we can find low link values
         //here we store low link values
-        var low = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
+        var low = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
         //if value > 0 then on a stack
 
         var stack = new Stack<int>();

@@ -13,8 +13,8 @@ namespace GraphSharp.Propagators;
 /// See <see cref="UsedNodeStates"/> 
 /// to access used node states. <br/>
 /// By default proceed exploration by out edges. <br/>
-/// Uses <see cref="IVisitor{,}"/> to implement exploration logic. <br/>
-/// See <see cref="PropagatorBase{,}.Propagate"/> for details about how visitor works with
+/// Uses <see cref="IVisitor{TNode,TEdge}"/> to implement exploration logic. <br/>
+/// See <see cref="PropagatorBase{TNode,TEdge}.Propagate"/> for details about how visitor works with
 /// this class.
 /// </summary>
 public abstract class PropagatorBase<TNode, TEdge> : IPropagator<TNode, TEdge>, IDisposable
@@ -22,7 +22,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Current working visitor in this propagator. On each call of <see cref="IPropagator{,}.Propagate"/>
+    /// Current working visitor in this propagator. On each call of <see cref="IPropagator{TNode,TEdge}.Propagate"/>
     /// this visitor will be used to implement algorithm logic
     /// </summary>
     public IVisitor<TNode, TEdge> Visitor { get; protected set; }
@@ -31,6 +31,9 @@ where TEdge : IEdge
     /// </summary>
     /// <value></value>
     public IImmutableGraph<TNode, TEdge> Graph { get; protected set; }
+    /// <summary>
+    /// Underlying node states that used to keep track of exploration process
+    /// </summary>
     public ByteStatesHandler NodeStates { get;protected set; }
 
     /// <param name="visitor">Visitor to use</param>
@@ -43,11 +46,13 @@ where TEdge : IEdge
         NodeStates.SetStateToAll(UsedNodeStates.IterateByOutEdges);
         NodeStates.DefaultState = UsedNodeStates.IterateByOutEdges;
     }
+    ///<inheritdoc/>
     public void SetPosition(params int[] nodeIndices)
     {
         NodeStates.RemoveStateFromAll(UsedNodeStates.ToVisit | UsedNodeStates.Visited);
         NodeStates.AddState(UsedNodeStates.Visited, nodeIndices);
     }
+    ///<inheritdoc/>
     public void Reset(IImmutableGraph<TNode, TEdge> graph, IVisitor<TNode, TEdge> visitor)
     {
         Graph = graph;
@@ -111,7 +116,7 @@ where TEdge : IEdge
     }
     /// <summary>
     /// Propagate nodes. In general it is just taking a step further in graph exploration.<br/>
-    /// 1) Calls <see cref="IVisitor{,}.Start"/> to prepare visitor for next iteration<br/>
+    /// 1) Calls <see cref="IVisitor{TNode,TEdge}.Start"/> to prepare visitor for next iteration<br/>
     /// 2) Finds all nodes with state <see cref="UsedNodeStates.ToVisit"/><br/>
     /// 3) Finds edges that touch these nodes in such a way, that: <br/>
     /// If node have state <see cref="UsedNodeStates.IterateByOutEdges"/>, 
@@ -119,15 +124,15 @@ where TEdge : IEdge
     /// If node have state <see cref="UsedNodeStates.IterateByInEdges"/>, 
     /// then it chooses all it's in edges <br/>
     /// Meanwhile both in and out edges can be chosen from one node.<br/>
-    /// 4) It calls <see cref="IVisitor{,}.Select"/> to all found edges to determine
+    /// 4) It calls <see cref="IVisitor{TNode,TEdge}.Select"/> to all found edges to determine
     /// which direction need to be explored further more, and which are don't need to.<br/>
     /// 5) On each passed edge it founds other node of the edge (direction), and
     /// marks it as <see cref="UsedNodeStates.Visited"/><br/>
-    /// 6) Later on it calls <see cref="IVisitor{,}.Visit"/> on each node that marked as 
+    /// 6) Later on it calls <see cref="IVisitor{TNode,TEdge}.Visit"/> on each node that marked as 
     /// <see cref="UsedNodeStates.Visited"/> <br/>
     /// 7) Switch all <see cref="UsedNodeStates.Visited"/> nodes states to <see cref="UsedNodeStates.ToVisit"/>
     /// to mark next iteration. <br/>
-    /// 8) Calls <see cref="IVisitor{,}.End"/> to signal that execution of iteration is ended. <br/>
+    /// 8) Calls <see cref="IVisitor{TNode,TEdge}.End"/> to signal that execution of iteration is ended. <br/>
     /// Good luck trying to implement any custom visitor!
     /// </summary>
     public void Propagate()
@@ -147,13 +152,12 @@ where TEdge : IEdge
         Visitor.End();
     }
     /// <summary>
-    /// This method implements how to call <see cref="PropagatorBase{,}.PropagateNode"/> on nodes.
+    /// This method implements how to call <see cref="PropagatorBase{TNode,TEdge}.PropagateNode"/> on nodes.
     /// </summary>
     protected abstract void PropagateNodes();
     /// <summary>
     /// Iterates trough
     /// </summary>
-    /// <param name="nodeId"></param>
     protected void PropagateNode(int nodeId, byte state)
     {
         if (ByteStatesHandler.IsInState(UsedNodeStates.IterateByInEdges,state))
@@ -169,7 +173,7 @@ where TEdge : IEdge
                 NodeStates.AddState(UsedNodeStates.Visited, edge.TargetId);
             }
     }
-
+    ///<inheritdoc/>
     public void Dispose()
     {
         NodeStates.Dispose();

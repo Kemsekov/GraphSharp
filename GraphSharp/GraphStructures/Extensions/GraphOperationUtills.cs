@@ -9,7 +9,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     RentedArray<int> CountDegrees(IEnumerable<TEdge> edges){
-        var result = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        var result = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId+1);
         foreach(var e in edges){
             result[e.SourceId]++;
             result[e.TargetId]++;
@@ -20,10 +20,11 @@ where TEdge : IEdge
     /// Apply Kruskal algorithm on set edges.
     /// </summary>
     /// <param name="edges">Spanning tree edges</param>
+    /// <param name="maxDegree">Maximal degree that limits tree building</param>
     public KruskalForest<TEdge> KruskalAlgorithm(IEnumerable<TEdge> edges, Func<TNode,int> maxDegree)
     {
         using UnionFind unionFind = new(Nodes.MaxNodeId + 1);
-        using var degree = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        using var degree = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId+1);
         var outputEdges = new List<TEdge>();
         foreach (var n in Nodes)
             unionFind.MakeSet(n.Id);

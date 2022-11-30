@@ -7,10 +7,22 @@ using GraphSharp.Common;
 
 namespace GraphSharp.Graphs;
 
+/// <summary>
+/// Result of finding cliques algorithms
+/// </summary>
 public class CliqueResult
 {
+    /// <summary>
+    /// Nodes in a clique
+    /// </summary>
     public IList<int> Nodes { get; }
+    /// <summary>
+    /// Node id that was first added to clique
+    /// </summary>
     public int InitialNodeId { get; }
+    /// <summary>
+    /// Initialize new <see cref="CliqueResult"/> instance
+    /// </summary>
     public CliqueResult(int initialNodeId, IList<int> nodes)
     {
         InitialNodeId = initialNodeId;

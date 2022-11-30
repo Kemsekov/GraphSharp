@@ -18,6 +18,12 @@ public interface IImmutableEdgeSource<TEdge> : IEnumerable<TEdge>
     (IEnumerable<TEdge> OutEdges, IEnumerable<TEdge> InEdges) BothEdges(int nodeId);
     /// <returns>A list of combined in and out edges</returns>
     IEnumerable<TEdge> InOutEdges(int nodeId);
+    /// <summary>
+    /// Get first found edge with same <paramref name="sourceId"/> and <paramref name="targetId"/>
+    /// </summary>
     TEdge this[int sourceId, int targetId] { get; }
+    /// <summary>
+    /// Get first found edge with same <paramref name="source"/> and <paramref name="target"/>
+    /// </summary>
     TEdge this[INode source, INode target] { get; }
 }

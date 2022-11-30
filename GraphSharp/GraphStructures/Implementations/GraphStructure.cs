@@ -10,8 +10,11 @@ public class Graph<TNode, TEdge> : IGraph<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    ///<inheritdoc/>
     public IGraphConfiguration<TNode, TEdge> Configuration { get; protected set; }
+    ///<inheritdoc/>
     public INodeSource<TNode> Nodes { get; protected set; }
+    ///<inheritdoc/>
     public IEdgeSource<TEdge> Edges { get; protected set; }
 
     /// <summary>
@@ -45,6 +48,7 @@ where TEdge : IEdge
         Do = new GraphOperation<TNode, TEdge>(this);
     }
 
+    ///<inheritdoc/>
     public Graph<TNode, TEdge> SetSources(INodeSource<TNode>? nodes = null, IEdgeSource<TEdge>? edges = null)
     {
         Nodes = nodes ?? Nodes;
@@ -52,7 +56,9 @@ where TEdge : IEdge
         return this;
     }
 
+    ///<inheritdoc/>
     public GraphOperation<TNode, TEdge> Do{get;}
+    ///<inheritdoc/>
     public GraphConverters<TNode, TEdge> Converter => new(this);
 
 }

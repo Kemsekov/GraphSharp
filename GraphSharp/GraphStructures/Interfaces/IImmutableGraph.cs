@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace GraphSharp.Graphs;
+/// <summary>
+/// Immutable graph
+/// </summary>
 public interface IImmutableGraph<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge

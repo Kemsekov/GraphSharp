@@ -12,7 +12,6 @@ where TEdge : IEdge
     /// Finds fundamental cycles basis.
     /// See https://en.wikipedia.org/wiki/Cycle_basis#Fundamental_cycles
     /// </summary>
-    /// <param name="nodeId">Node id</param>
     /// <returns>A list of paths that forms a fundamental cycles basis</returns>
     public IEnumerable<IList<TNode>> FindCyclesBasis()
     {

@@ -5,7 +5,7 @@ namespace GraphSharp;
 /// <summary>
 /// Interface for all edges.
 /// </summary>
-public interface IEdge : IComparable<IEdge>, ICloneable<IEdge>, IFlowed, IWeighted, IColored
+public interface IEdge : IComparable<IEdge>, ICloneable<IEdge>, IWeighted, IColored
 {
     /// <summary>
     /// Id of a source node of this edge

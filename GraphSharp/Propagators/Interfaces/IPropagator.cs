@@ -4,7 +4,7 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Propagators;
 
 /// <summary>
-/// Algorithm that uses <see cref="IVisitor{,}"/> to do graph exploration and modification
+/// Algorithm that uses <see cref="IVisitor{TNode,TEdge}"/> to do graph exploration and modification
 /// in a specific way designed by implementations
 /// </summary>
 public interface IPropagator<TNode, TEdge>

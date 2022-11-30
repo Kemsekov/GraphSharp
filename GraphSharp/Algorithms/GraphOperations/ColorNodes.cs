@@ -7,9 +7,17 @@ using QuikGraph.Algorithms.VertexColoring;
 
 namespace GraphSharp.Graphs;
 
+/// <summary>
+/// Result of coloring algorithm
+/// </summary>
 public class ColoringResult : IDisposable{
     /// <summary>Array, which index is nodeId and value is colorId. If node is not colored it's value is 0</summary>
     public RentedArray<int> Colors { get; }
+    /// <param name="colors">
+    /// Colors to use. <br/>
+    /// <see langword="colors[id] == colorId"/> <br/>
+    /// Where <see langword="id"/> is node id, <see langword="colorId"/> is id of color assigned to that node
+    /// </param>
     public ColoringResult(RentedArray<int> colors){
         this.Colors = colors;
     }
@@ -31,7 +39,7 @@ public class ColoringResult : IDisposable{
     /// <summary>
     /// Method to apply some coloring to a graph
     /// </summary>
-    /// <param name="colors">Node colors. Index equals to nodeId, value equals to colorId</param>
+    /// <param name="nodes">Nodes to assign colors</param>
     /// <param name="colorsToApply">A list of colors to actually use. Changes nodes colors to colors from this list. Will be extended automatically if given colors is not enough.</param>
     public void ApplyColors<TNode>(IImmutableNodeSource<TNode> nodes,IEnumerable<Color>? colorsToApply = null)
     where TNode : INode
@@ -46,7 +54,9 @@ public class ColoringResult : IDisposable{
             n.Color = c;
         }
     }
-
+    /// <summary>
+    /// Disposes object
+    /// </summary>
     public void Dispose()
     {
         ((IDisposable)Colors).Dispose();
@@ -66,7 +76,7 @@ where TEdge : IEdge
         var order = Nodes.OrderBy(x => -Edges.Neighbors(x.Id).Count());
         // var order = Nodes;
 
-        var colors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        var colors = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId+1);
 
         foreach (var n in order)
         {
@@ -82,7 +92,7 @@ where TEdge : IEdge
     /// <returns>Array, which index is nodeId and value is colorId</returns>
     public ColoringResult DSaturColorNodes()
     {
-        var colors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        var colors = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId+1);
         var order = Nodes.OrderBy(x => -Edges.Neighbors(x.Id).Count());
 
         int coloredNodesCount = 0;
@@ -113,7 +123,7 @@ where TEdge : IEdge
     {
         int coloredNodesCount = 0;
         int colorIndex = 1;
-        var colors = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        var colors = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId+1);
         while (coloredNodesCount != Nodes.Count())
         {
             var S = FindMaximalIndependentSet(x => colors[x.Id]==0);
@@ -132,7 +142,7 @@ where TEdge : IEdge
         var quikGraph = StructureBase.Converter.ToQuikGraph();
         var coloring = new VertexColoringAlgorithm<int, EdgeAdapter<TEdge>>(quikGraph);
         coloring.Compute();
-        var result = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId+1);
+        var result = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId+1);
         for(int i = 0;i<result.Length;i++){
             if(coloring.Colors[i] is int color)
             result[i] = color;

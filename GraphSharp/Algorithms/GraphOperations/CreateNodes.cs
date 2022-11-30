@@ -7,7 +7,7 @@ where TEdge : IEdge
     /// <summary>
     /// Clears graph and creates some count of nodes.
     /// </summary>
-    /// <param name="count">Count of nodes to create</param>
+    /// <param name="nodesCount">Count of nodes to create</param>
     public GraphOperation<TNode, TEdge> CreateNodes(int nodesCount)
     {
         this.StructureBase.Clear();

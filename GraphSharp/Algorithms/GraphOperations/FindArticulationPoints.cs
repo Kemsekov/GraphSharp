@@ -19,9 +19,9 @@ where TEdge : IEdge
         if (Nodes.Count() == 0 || Edges.Count() == 0)
             return Enumerable.Empty<TNode>();
         
-        using var disc = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
-        using var low = ArrayPoolStorage.RentIntArray(Nodes.MaxNodeId + 1);
-        using var flags = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
+        using var disc = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
+        using var low = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
+        using var flags = ArrayPoolStorage.RentArray<byte>(Nodes.MaxNodeId + 1);
 
         int time = 0, parent = -1;
         const byte visitedFlag = 1;

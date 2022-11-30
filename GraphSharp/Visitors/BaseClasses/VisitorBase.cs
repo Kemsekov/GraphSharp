@@ -34,9 +34,13 @@ where TEdge : IEdge
     /// Called at the beginning of <see cref="End"/> method
     /// </summary>
     public event Action EndEvent;
+    ///<inheritdoc/>
     public bool Done{get;set;} = false;
+    ///<inheritdoc/>
     public int Steps{get;set;} = 0;
+    ///<inheritdoc/>
     public bool DidSomething{get;set;}
+    ///<inheritdoc/>
     public VisitorBase()
     {
         Condition = edge=>true;
@@ -45,21 +49,25 @@ where TEdge : IEdge
         StartEvent = ()=>{};
         EndEvent = ()=>{};
     }
+    ///<inheritdoc/>
     public void Start(){
         DidSomething = false;
         StartEvent();
         StartImpl();
     }
+    ///<inheritdoc/>
     public bool Select(TEdge edge){
         if(!Condition(edge) || Done) return false;
         SelectEvent(edge);
         return SelectImpl(edge);
     }
+    ///<inheritdoc/>
     public void Visit(TNode node){
         if(Done) return;
         VisitEvent(node);
         VisitImpl(node);
     }
+    ///<inheritdoc/>
     public void End(){
         EndEvent();
         EndImpl();

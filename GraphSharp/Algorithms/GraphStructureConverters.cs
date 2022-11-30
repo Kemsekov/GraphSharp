@@ -17,6 +17,7 @@ where TEdge : IEdge
     IImmutableNodeSource<TNode> Nodes => _structureBase.Nodes;
     IImmutableEdgeSource<TEdge> Edges => _structureBase.Edges;
     IGraphConfiguration<TNode, TEdge> Configuration => _structureBase.Configuration;
+    ///<inheritdoc/>
     public ImmutableGraphConverters(IImmutableGraph<TNode, TEdge> structureBase)
     {
         _structureBase = structureBase;
@@ -53,8 +54,8 @@ where TEdge : IEdge
     }
 
     /// <summary>
-    /// Uses <see cref="ToQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as graph from <see cref="QuikGraph"/><br/>
-    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="QuikGraph"/> to <paramref name="GraphSharp"/>. <br/>
+    /// Uses <see cref="ToQuikGraphAdapter{TNode,TEdge}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as graph from <see cref="QuikGraph"/><br/>
+    /// This conversation does not simply copy graph but passes execution of methods from <see langword="QuikGraph"/> to <see langword="GraphSharp"/>. <br/>
     /// Any change to underlying graph will affect adapter as well. Beware.
     /// </summary>
     /// <returns>Graph adapter</returns>
@@ -62,8 +63,8 @@ where TEdge : IEdge
         return new ToQuikGraphAdapter<TNode, TEdge>(this._structureBase);
     }
     /// <summary>
-    /// Uses <see cref="SatsumaGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="Satsuma.IGraph"/> <br/>
-    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="Satsuma"/> to <paramref name="GraphSharp"/>. <br/>
+    /// Uses <see cref="SatsumaGraphAdapter{TNode,TEdge}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="Satsuma.IGraph"/> <br/>
+    /// This conversation does not simply copy graph but passes execution of methods from <see langword="Satsuma"/> to <see langword="GraphSharp"/>. <br/>
     /// Any change to underlying graph will affect adapter as well. Beware.
     /// </summary>
     /// <returns>Graph adapter</returns>
@@ -83,6 +84,7 @@ where TEdge : IEdge
     INodeSource<TNode> Nodes => _structureBase.Nodes;
     IEdgeSource<TEdge> Edges => _structureBase.Edges;
     IGraphConfiguration<TNode, TEdge> Configuration => _structureBase.Configuration;
+    ///<inhericdoc/> 
     public GraphConverters(IGraph<TNode, TEdge> structureBase) : base(structureBase)
     {
         _structureBase = structureBase;
@@ -253,8 +255,8 @@ where TEdge : IEdge
         return this;
     }
     /// <summary>
-    /// Uses <see cref="ToMutableQuikGraphAdapter{,}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as mutable graph from <see cref="QuikGraph"/><br/>
-    /// This conversation does not simply copy graph but passes execution of methods from <paramref name="QuikGraph"/> to <paramref name="GraphSharp"/>. <br/>
+    /// Uses <see langword="ToMutableQuikGraphAdapter"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as mutable graph from <see cref="QuikGraph"/><br/>
+    /// This conversation does not simply copy graph but passes execution of methods from <see langword="QuikGraph"/> to <see langword="GraphSharp"/>. <br/>
     /// Any change to underlying graph will affect adapter as well. Beware.
     /// </summary>
     /// <returns>Graph adapter</returns>

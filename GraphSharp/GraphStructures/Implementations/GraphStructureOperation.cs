@@ -15,6 +15,7 @@ where TEdge : IEdge
     INodeSource<TNode> Nodes => StructureBase.Nodes;
     IEdgeSource<TEdge> Edges => StructureBase.Edges;
     IGraphConfiguration<TNode,TEdge> Configuration => StructureBase.Configuration;
+    ///<inheritdoc/>
     public GraphOperation(IGraph<TNode, TEdge> structureBase) : base(structureBase)
     {
         StructureBase = structureBase;

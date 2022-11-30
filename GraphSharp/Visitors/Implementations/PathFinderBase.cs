@@ -9,11 +9,11 @@ using GraphSharp.Graphs;
 namespace GraphSharp.Visitors;
 /// <summary>
 /// Base class for path finding algorithms, that search for all paths from <see cref="StartNodeId"/> to all other nodes. <br/> 
-/// Between each consequent calls of <see cref="Start"/> and 
-/// <see cref="End"/> parameter <paramref name="DidSomething"/> 
+/// Between each consequent calls of <see langword="Start"/> and 
+/// <see langword="End"/> parameter <paramref langword="DidSomething"/> 
 /// must be set to <paremref name="true"/> in order for path finder to continue it's working.
 /// Logic is that if in the iteration execution of algorithm we did nothing at all
-/// that means we are done and algorithm must stop. In that case <paramref name="Done"/>
+/// that means we are done and algorithm must stop. In that case <paramref langword="Done"/>
 /// will be set to true.
 /// </summary>
 public abstract class PathFinderBase<TNode, TEdge> : VisitorBase<TNode, TEdge>, IDisposable
@@ -22,11 +22,12 @@ where TEdge : IEdge
 {
     /// <summary>
     /// Path storage array that used to track paths in a graph. It may be:<br/>
-    /// Path[source] = target <br/>
+    /// <see langword="Path[source] == target"/> <br/>
     /// or <br/>
-    /// Path[target] = source <br/>
+    /// <see langword="Path[target] == source"/> <br/>
     /// Depending on implementation <br/>
-    /// Path[nodeId] = -1 if algorithm did not found any ancestor for this node.
+    ///  <see langword="Path[nodeId] == -1"/><br/> 
+    /// if algorithm did not found any ancestor for this node.
     /// </summary>
     public RentedArray<int> Path{get;init;}
     /// <summary>
@@ -47,17 +48,20 @@ where TEdge : IEdge
     {
         this.Condition = edge=>true;
         this.Graph = graph;
-        Path = ArrayPoolStorage.RentIntArray(graph.Nodes.MaxNodeId+1);
+        Path = ArrayPoolStorage.RentArray<int>(graph.Nodes.MaxNodeId+1);
         Path.Fill(-1);
         GetEdgeDirection = edge=>(edge.SourceId,edge.TargetId);
     }
+    /// <summary>
+    /// Disposes object when collected by GC
+    /// </summary>
     ~PathFinderBase(){
         Path.Dispose();
     }
     /// <summary>
     /// Sets all values of <see cref="Path"/> to -1, 
-    /// resets <paramref name="Done"/> to <paramref name="false"/> and
-    /// <paramref name="Steps"/> to 0.
+    /// resets <see langword="Done"/> to <see langword="false"/> and
+    /// <see langword="Steps"/> to <see langword="0"/>.
     /// </summary>
     public void ClearPaths(){
         Path.Fill(-1);
@@ -65,9 +69,11 @@ where TEdge : IEdge
         Steps = 0;
         GetEdgeDirection = edge=>(edge.SourceId,edge.TargetId);
     }
+    ///<inheritdoc/>
     protected override void StartImpl(){
         DidSomething = false;
     }
+    ///<inheritdoc/>
     protected override void EndImpl(){
         if(!DidSomething) Done = true;
     }
@@ -90,6 +96,7 @@ where TEdge : IEdge
         return path;
     }
 
+    ///<inheritdoc/>
     public void Dispose()
     {
         Path.Dispose();

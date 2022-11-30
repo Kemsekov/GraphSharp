@@ -14,6 +14,7 @@ public class TopologicalSorter<TNode,TEdge> : VisitorWithPropagator<TNode, TEdge
 where TNode : INode
 where TEdge : IEdge
 {
+    ///<inheritdoc/>
     public override PropagatorBase<TNode, TEdge> Propagator { get; }
     ByteStatesHandler NodeStates => Propagator.NodeStates;
     /// <summary>
@@ -21,7 +22,7 @@ where TEdge : IEdge
     /// Nodes on each layer have the same X coordinate and each following layer have X coordinate bigger that previous one.
     /// </summary>
     public IList<IList<TNode>> Layers { get; }
-    public const byte Added = 16;
+    const byte Added = 16;
     /// <param name="graph">Algorithm will be executed on this graph</param>
     /// <param name="startingNodes">A set of nodes that will be used as start point for doing topological sort. If empty will be assigned to sources from a graph.</param>
     public TopologicalSorter(IImmutableGraph<TNode, TEdge> graph, params int[] startingNodes)
@@ -43,6 +44,7 @@ where TEdge : IEdge
             NodeStates.AddState(Added,n);
         this.End();
     }
+    ///<inheritdoc/>
     protected override bool SelectImpl(TEdge edge)
     {
         
@@ -53,11 +55,13 @@ where TEdge : IEdge
         NodeStates.AddState(Added,edge.TargetId);
         return true;
     }
+    ///<inheritdoc/>
     protected override void VisitImpl(TNode node)
     {
         lock (Layers)
             Layers[^1].Add(node);
     }
+    ///<inheritdoc/>
     protected override void EndImpl()
     {
         if (Done) return;
@@ -91,6 +95,7 @@ where TEdge : IEdge
         }
     }
 
+    ///<inheritdoc/>
     protected override void StartImpl()
     {
     }

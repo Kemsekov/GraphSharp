@@ -7,7 +7,7 @@ namespace GraphSharp.Graphs;
 public interface IEdgeSource<TEdge> : IImmutableEdgeSource<TEdge>, ICollection<TEdge>
 {
     /// <summary>
-    /// Removes all edges that equals to <paramref name="edge"/> by <paramref name="Equals"/>. 
+    /// Removes all edges that equals to <paramref name="edge"/> by default <see langword="Equals()"/>.  <br/>
     /// This method of removal allows to remove some of parallel edges, which
     /// are not equal to each other.
     /// Meanwhile other Remove methods will remove all parallel edges.

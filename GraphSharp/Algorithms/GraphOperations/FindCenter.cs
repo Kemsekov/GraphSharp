@@ -10,6 +10,11 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    /// <summary>
+    /// Result of center finding algorithm
+    /// </summary>
+    /// <param name="radius">Found radius of graph</param>
+    /// <param name="center">Center nodes that share same radius</param>
     public record CenterFinderResult(double radius, IEnumerable<TNode> center);
     /// <summary>
     /// Finds radius and center of graph using approximation technic. In general produce very good results, but works very fast.<br/>
@@ -17,7 +22,7 @@ where TEdge : IEdge
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
     public CenterFinderResult TryFindCenterByApproximation(Func<TEdge, double>? getWeight = null)
     {
-        using var visited = ArrayPoolStorage.RentByteArray(Nodes.MaxNodeId + 1);
+        using var visited = ArrayPoolStorage.RentArray<byte>(Nodes.MaxNodeId + 1);
 
         //this method do following:
         //1) take node A and find all shortest paths to all other nodes

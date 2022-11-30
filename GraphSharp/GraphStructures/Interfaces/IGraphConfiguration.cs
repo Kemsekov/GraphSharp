@@ -19,11 +19,11 @@ public interface IGraphConfiguration<TNode, TEdge>
     /// </summary>
     INodeSource<TNode> CreateNodeSource();
     /// <summary>
-    /// Method that used to create instance of <paramref name="TNode"/> from it's <paramref name="Id"/> as argument
+    /// Method that used to create instance of <see langword="TNode"/> from it's <see langword="Id"/> as argument
     /// </summary>
     TNode CreateNode(int nodeId);
     /// <summary>
-    /// Method that used to create new <paramref name="TEdge"/> from two nodes of type <paramref name="TNode"/>
+    /// Method that used to create new <see langword="TEdge"/> from two nodes of type <see langword="TNode"/>
     /// </summary>
     TEdge CreateEdge(TNode source, TNode target);
 }

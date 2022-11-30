@@ -23,7 +23,7 @@ public static class GraphDataIntegrityChecker
             throw new GraphDataIntegrityException("Nodes contains duplicates");
     }
     /// <summary>
-    /// Checks that each node retrieved by index have <paramref name="Id"/> equal to that same index.
+    /// Checks that each node retrieved by index have <see langword="Id"/> equal to that same index.
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">If node at some index don't have same Id</exception>
     public static void CheckForNodeIndicesIntegrity<TNode, TEdge>(IImmutableGraph<TNode, TEdge> graph)
@@ -39,7 +39,7 @@ public static class GraphDataIntegrityChecker
         }
     }
     /// <summary>
-    /// Checks that each edge received by <paramref name="SourceId"/> and <paramref name="TargetId"/> is in fact have the same <paramref name="SourceId"/> and <paramref name="TargetId"/> <br/>
+    /// Checks that each edge received by <see langword="SourceId"/> and <see langword="TargetId"/> is in fact have the same <see langword="SourceId"/> and <see langword="TargetId"/> <br/>
     /// Checks if every nodeId from each edge is present in nodes (there is no ghost links) <br/>
     /// Check that in and out edges are consistent with each other
     /// </summary>
@@ -118,7 +118,7 @@ public static class GraphDataIntegrityChecker
         }
     }
     /// <summary>
-    /// Checks for edges duplicates using <paramref name="Equals"/> of edge
+    /// Checks for edges duplicates using <see langword="Equals"/> of edge
     /// </summary>
     /// <exception cref="GraphDataIntegrityException">If there is duplicates among edges</exception>
     public static void CheckForEdgesDuplicates<TNode, TEdge>(IImmutableGraph<TNode, TEdge> graph)

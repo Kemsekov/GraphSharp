@@ -35,6 +35,9 @@ where TEdge : IEdge
         tsp.Run();
         return tsp;
     }
+    /// <summary>
+    /// Computes a TSP on 2vector positions
+    /// </summary>
     public ITsp<TNode> TspCheapestLinkOnPositions(Func<TNode,Vector2> getPos)
     {
         var treeDegree2 = FindSpanningTreeDegree2OnNodes(getPos);
@@ -48,6 +51,17 @@ where TEdge : IEdge
         path.Path.Add(treeDegree2.ends[0]);
         return new TspResult<TNode>(path.Path,cost);
     }
+    /// <summary>
+    /// Computes tsp on edge costs only. When supplied with good <see langword="doDelaunayTriangulation"/> 
+    /// function can compute TSP on any dimensional space.
+    /// </summary>
+    /// <param name="edgeCost">Function to get edge cost</param>
+    /// <param name="doDelaunayTriangulation">
+    /// Function that need to be able to connect closest nodes in given 
+    /// graph by creating edge between them<br/>
+    /// Delaunay triangulation works best, but you can try other variance.
+    /// </param>
+    /// <returns></returns>
     public ITsp<TNode> TspCheapestLinkOnEdgeCost(Func<TEdge,double> edgeCost,Action<IGraph<TNode, TEdge>> doDelaunayTriangulation)
     {
         var treeDegree2 = FindSpanningTreeDegree2OnNodes(edgeCost,doDelaunayTriangulation);
@@ -63,17 +77,28 @@ where TEdge : IEdge
         path.Path.Add(treeDegree2.ends[0]);
         return new TspResult<TNode>(path.Path,cost);
     }
+    /// <summary>
+    /// Computes TSP by cheapest link strategy
+    /// </summary>
     public ITsp<TNode> TspCheapestLink(Func<TNode, TNode, double> cost)
     {
         var tsp = new Satsuma.CheapestLinkTsp<TNode>(Nodes.ToList(), cost);
         return tsp;
     }
+    /// <summary>
+    /// Computes tsp by inserting farthest strategy
+    /// </summary>
+    /// <param name="cost"></param>
     public ITsp<INode> TspInsertionFarthest(Func<TNode, TNode, double> cost)
     {
         var tsp = new Satsuma.InsertionTsp<INode>(Nodes.Cast<INode>(), (n1, n2) => cost((TNode)n1, (TNode)n2), Satsuma.TspSelectionRule.Farthest);
         tsp.Run();
         return tsp;
     }
+    /// <summary>
+    /// Computes tsp by inserting nearest strategy
+    /// </summary>
+    /// <param name="cost"></param>
     public ITsp<INode> TspInsertionNearest(Func<TNode, TNode, double> cost)
     {
         var tsp = new Satsuma.InsertionTsp<INode>(Nodes.Cast<INode>(), (n1, n2) => cost((TNode)n1, (TNode)n2), Satsuma.TspSelectionRule.Nearest);

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using GraphSharp.Common;
 using GraphSharp.Graphs;
+using RentedArraySharp;
+
 namespace GraphSharp;
 
 /// <summary>
@@ -19,7 +21,9 @@ where TEdge : IEdge
     /// The higher this coefficient the better is found path
     /// </summary>
     public double Coefficient => Path.Count / Path.Sum(x => x.Weight);
-
+    /// <summary>
+    /// Graph used
+    /// </summary>
     public IImmutableGraph<TNode, TEdge> Graph { get; }
 
     /// <summary>
@@ -29,11 +33,9 @@ where TEdge : IEdge
     public IDictionary<TEdge, double> Smell { get; }
 
     /// <summary>
-    /// This array is shared with 32 ants where each ant have unique power of 2 index <see cref="Ant{,}.AntId"/>
+    /// This array is shared with 32 ants where each ant have unique power of 2 index <see cref="Ant{TNode,TEdge}.AntId"/>
     /// to store information about visited nodes. <br/>
-    /// if (Visited[nodeId] & AntId) == AntId means this node visited some node with index nodeId in the past
     /// </summary>
-    /// <value></value>
     public RentedArray<uint> Visited { get; }
 
     /// <summary>
@@ -50,6 +52,7 @@ where TEdge : IEdge
     int nodesCount;
     Random rand = new Random();
     IImmutableEdgeSource<TEdge> Edges => Graph.Edges;
+    /// <param name="graph">Graph to use</param>
     /// <param name="smell">Index is node id. Contains a smell that ants left after they found some path</param>
     /// <param name="visited">Index is node id. Contains a bits for ants to determine if they visited a node in their path finding. By bit operations, each value from this array can have states for up to 32 ants.</param>
     /// <param name="antId">A power of 2 integer. Indicates which bit assigned to this ant in a visited integer array</param>
@@ -133,7 +136,7 @@ where TEdge : IEdge
         return isolate;
     }
     /// <summary>
-    /// Add smell on current <see cref="Ant{,}.Path"/> equals to <see cref="Ant{,}.Coefficient"/>
+    /// Add smell on current <see cref="Ant{TNode,TEdge}.Path"/> equals to <see cref="Ant{TNode,TEdge}.Coefficient"/>
     /// </summary>
     public void AddSmell()
     {
@@ -144,7 +147,7 @@ where TEdge : IEdge
         }
     }
     /// <summary>
-    /// Subtracts <see cref="Ant{,}.Coefficient"/> smell from current <see cref="Ant{,}.Path"/>
+    /// Subtracts <see cref="Ant{TNode,TEdge}.Coefficient"/> smell from current <see cref="Ant{TNode,TEdge}.Path"/>
     /// </summary>
     public void SubtractSmell()
     {
@@ -173,10 +176,16 @@ where TEdge : IEdge
     {
         return (Visited[nodeId] & AntId) == AntId;
     }
+    /// <summary>
+    /// Visits node so it cannot be visited again
+    /// </summary>
     public void VisitNode(int nodeId)
     {
         Interlocked.Or(ref Visited.At(nodeId),AntId);
     }
+    /// <summary>
+    /// Unvisits node
+    /// </summary>
     public void UnvisitNode(int nodeId){
         Interlocked.And(ref Visited.At(nodeId),~AntId);
     }

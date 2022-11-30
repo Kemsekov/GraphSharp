@@ -4,6 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace GraphSharp.Graphs;
+/// <summary>
+/// Contains common for any edges methods and extensions
+/// </summary>
 public static class EdgeSourceExtensions
 {
     /// <summary>
@@ -14,6 +17,10 @@ public static class EdgeSourceExtensions
     {
         return Edges.Remove(source.Id, target.Id);
     }
+    /// <summary>
+    /// Tries to get edge by <paramref name="sourceId"/> and <paramref name="targetId"/>
+    /// </summary>
+    /// <returns><see langword="true"/> if edge is found, else <see langword="false"/></returns>
     public static bool TryGetEdge<TEdge>(this IImmutableEdgeSource<TEdge> Edges,int sourceId, int targetId, out TEdge? edge)
     where TEdge: IEdge
     {
@@ -29,6 +36,10 @@ public static class EdgeSourceExtensions
     {
         return Edges.TryGetEdge(sourceId, targetId, out var _);
     }
+
+    /// <summary>
+    /// Determine whatever given edge is present among edges of this edge source
+    /// </summary>
     public static bool Contains<TEdge>(this IImmutableEdgeSource<TEdge> Edges,TEdge edge)
     where TEdge : IEdge
     {
@@ -109,6 +120,9 @@ public static class EdgeSourceExtensions
         var inNeighbors = Edges.InEdges(nodeId).Select(x => x.SourceId);
         return outNeighbors.Union(inNeighbors);
     }
+    /// <summary>
+    /// Copies edges to array
+    /// </summary>
     public static void CopyTo<TEdge>(this IImmutableEdgeSource<TEdge> Edges,TEdge[] array, int arrayIndex)
     where TEdge: IEdge
     {
@@ -125,7 +139,7 @@ public static class EdgeSourceExtensions
     where TEdge: IEdge
     {
         var length = nodeIndices.Max() + 1;
-        using var map = ArrayPoolStorage.RentByteArray(length);
+        using var map = ArrayPoolStorage.RentArray<byte>(length);
         foreach (var node in nodeIndices)
         {
             map[node] = 1;

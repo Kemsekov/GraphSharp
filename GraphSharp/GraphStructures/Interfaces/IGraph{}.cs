@@ -27,6 +27,8 @@ where TEdge : IEdge
     /// </summary>
     new GraphConverters<TNode, TEdge> Converter { get; }
     ImmutableGraphConverters<TNode, TEdge>  IImmutableGraph<TNode, TEdge>.Converter => Converter;
-
+    /// <summary>
+    /// Changes graph elements sources.
+    /// </summary>
     Graph<TNode, TEdge> SetSources(INodeSource<TNode>? nodes = null, IEdgeSource<TEdge>? edges = null);
 }

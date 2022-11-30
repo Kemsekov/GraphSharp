@@ -13,7 +13,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Finds any first found path between any two nodes. Much faster than <see cref="GraphOperation{,}.FindShortestPaths"/>
+    /// Finds any first found path between any two nodes. Much faster than Dijkstra path finding
     /// </summary>
     /// <returns>Path between two nodes. Empty list if path is not found.</returns>
     /// <param name="startNodeId">Start point</param>
@@ -23,6 +23,9 @@ where TEdge : IEdge
     /// (for example avoid forbidden nodes/edges) then specify this argument. 
     /// If this condition falls then edge will not be used in resulting path
     /// By default passes all edges.
+    /// </param>
+    /// <param name="getWeight">
+    /// Func to get edge weight. When null will use default edge weight property
     /// </param>
     public IPath<TNode> FindAnyPath(int startNodeId, int endNodeId,Predicate<TEdge>? condition = null,Func<TEdge,double>? getWeight = null)
     {
@@ -36,10 +39,9 @@ where TEdge : IEdge
         return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p,getWeight),path);
     }
     /// <summary>
-    /// Concurrently finds any first found path between any two nodes. Much faster than <see cref="GraphOperation{,}.FindShortestPaths"/>
+    /// Concurrently finds any first found path between any two nodes. Much faster than Dijkstra path finding
     /// </summary>
     /// <returns>Path between two nodes. Empty list if path is not found.</returns>
-
     public IPath<TNode> FindAnyPathParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null, Func<TEdge,double>? getWeight = null)
     {
         var path = 
@@ -54,7 +56,7 @@ where TEdge : IEdge
     }
     
     /// <summary>
-    /// Using any <see cref="PathFinderBase{,}"/> to find path between two nodes by stopping search 
+    /// Using any <see cref="PathFinderBase{TNode,TEdge}"/> to find path between two nodes by stopping search 
     /// at first encounter of <paramref name="endNodeId"/>
     /// </summary>
     /// <param name="startNodeId">Start point</param>
@@ -67,7 +69,7 @@ where TEdge : IEdge
     /// </param>
     /// <param name="createPropagator">What propagator to use</param>
     /// <param name="createPathFinder">What path finder to use</param>
-    /// <returns><paramref name="PathFinderBase"/> that was used to find path.</returns>
+    /// <returns><see langword="PathFinderBase"/> that was used to find path.</returns>
     PathFinderBase<TNode, TEdge> FindPathWithFirstEncounter(
             int startNodeId,
             int endNodeId,

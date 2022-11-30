@@ -5,19 +5,46 @@ using System.Threading.Tasks;
 using GraphSharp.Graphs;
 
 namespace GraphSharp.Adapters;
+/// <summary>
+/// Graph adapter that maps GraphSharp's graph to QuikGraph mutable graph
+/// </summary>
 public class ToMutableQuikGraphAdapter<TNode,TEdge> : ToQuikGraphAdapter<TNode, TEdge>, QuikGraph.IMutableBidirectionalGraph<int,EdgeAdapter<TEdge>>, QuikGraph.IMutableUndirectedGraph<int,EdgeAdapter<TEdge>>
 where TNode : INode
 where TEdge : IEdge
 {
+    ///<inheritdoc/>
     new public IGraph<TNode,TEdge> Graph{get;}
+    /// <summary>
+    /// Creates a new instance of mutable QuikGraph graph's adapter out of GraphSharp mutable graph
+    /// </summary>
+    /// <param name="graph"></param>
     public ToMutableQuikGraphAdapter(IGraph<TNode,TEdge> graph) : base(graph){
         Graph = graph;
         
     }
+
+    /// <summary>
+    /// Casts current graph adapter to <see cref="QuikGraph.IMutableBidirectionalGraph{T, T}"/>
+    /// </summary>
+    new public QuikGraph.IMutableBidirectionalGraph<int, EdgeAdapter<TEdge>> ToBidirectional(){
+        return this as QuikGraph.IMutableBidirectionalGraph<int, EdgeAdapter<TEdge>>;
+    }
+    /// <summary>
+    /// Casts current graph adapter to <see cref="QuikGraph.IMutableUndirectedGraph{T, T}"/>
+    /// </summary>
+    new public QuikGraph.IMutableUndirectedGraph<int,EdgeAdapter<TEdge>> ToUndirected(){
+        return this as QuikGraph.IMutableUndirectedGraph<int,EdgeAdapter<TEdge>>;
+    }
+
+    ///<inheritdoc/>
     public event QuikGraph.VertexAction<int>? VertexAdded;
+    ///<inheritdoc/>
     public event QuikGraph.VertexAction<int>? VertexRemoved;
+    ///<inheritdoc/>
     public event QuikGraph.EdgeAction<int, EdgeAdapter<TEdge>>? EdgeAdded;
+    ///<inheritdoc/>
     public event QuikGraph.EdgeAction<int, EdgeAdapter<TEdge>>? EdgeRemoved;
+    ///<inheritdoc/>
     public int RemoveInEdgeIf(int vertex, QuikGraph.EdgePredicate<int, EdgeAdapter<TEdge>> predicate)
     {
         int counter = 0;
@@ -30,6 +57,7 @@ where TEdge : IEdge
         return counter;
     }
 
+    ///<inheritdoc/>
     public void ClearInEdges(int vertex)
     {
         foreach(var toRemove in Graph.Edges.InEdges(vertex).ToList()){
@@ -37,6 +65,7 @@ where TEdge : IEdge
         }
     }
 
+    ///<inheritdoc/>
     public void ClearEdges(int vertex)
     {
         foreach(var toRemove in Graph.Edges.InOutEdges(vertex).ToList()){
@@ -44,6 +73,7 @@ where TEdge : IEdge
         }
     }
 
+    ///<inheritdoc/>
     public int RemoveOutEdgeIf(int vertex, QuikGraph.EdgePredicate<int, EdgeAdapter<TEdge>> predicate)
     {
         int counter = 0;
@@ -56,6 +86,7 @@ where TEdge : IEdge
         return counter;
     }
 
+    ///<inheritdoc/>
     public void ClearOutEdges(int vertex)
     {
         foreach(var toRemove in Graph.Edges.OutEdges(vertex).ToList()){
@@ -63,11 +94,13 @@ where TEdge : IEdge
         }
     }
 
+    ///<inheritdoc/>
     public void TrimEdgeExcess()
     {
         Graph.Edges.Trim();
     }
 
+    ///<inheritdoc/>
     public bool AddVerticesAndEdge(EdgeAdapter<TEdge> edge)
     {
         if(!Graph.Nodes.Contains(edge.Source))
@@ -82,6 +115,7 @@ where TEdge : IEdge
         
     }
 
+    ///<inheritdoc/>
     public int AddVerticesAndEdgeRange(IEnumerable<EdgeAdapter<TEdge>> edges)
     {
         int counter = 0;
@@ -92,6 +126,7 @@ where TEdge : IEdge
         return counter;
     }
 
+    ///<inheritdoc/>
     public bool AddVertex(int vertex)
     {
         if(Graph.Nodes.Contains(vertex))
@@ -100,6 +135,7 @@ where TEdge : IEdge
         return true;
     }
 
+    ///<inheritdoc/>
     public int AddVertexRange(IEnumerable<int> vertices)
     {
         int counter = 0;
@@ -110,16 +146,19 @@ where TEdge : IEdge
         return counter;
     }
 
+    ///<inheritdoc/>
     public bool RemoveVertex(int vertex)
     {
         return Graph.Nodes.Remove(vertex);
     }
 
+    ///<inheritdoc/>
     public int RemoveVertexIf(QuikGraph.VertexPredicate<int> predicate)
     {
         return Graph.Nodes.RemoveAll(x=>predicate(x.Id));
     }
 
+    ///<inheritdoc/>
     public bool AddEdge(EdgeAdapter<TEdge> edge)
     {
         if(Graph.Edges.Contains(edge.GraphSharpEdge))
@@ -129,6 +168,7 @@ where TEdge : IEdge
         return true;
     }
 
+    ///<inheritdoc/>
     public int AddEdgeRange(IEnumerable<EdgeAdapter<TEdge>> edges)
     {
         int counter = 0;
@@ -139,21 +179,25 @@ where TEdge : IEdge
         return counter;
     }
 
+    ///<inheritdoc/>
     public bool RemoveEdge(EdgeAdapter<TEdge> edge)
     {
         return Graph.Edges.Remove(edge.GraphSharpEdge);
     }
 
+    ///<inheritdoc/>
     public int RemoveEdgeIf(QuikGraph.EdgePredicate<int, EdgeAdapter<TEdge>> predicate)
     {
         return Graph.Edges.RemoveAll(x=>predicate(ToAdapter(x)));
     }
 
+    ///<inheritdoc/>
     public void Clear()
     {
         Graph.Clear();
     }
 
+    ///<inheritdoc/>
     public int RemoveAdjacentEdgeIf(int vertex, QuikGraph.EdgePredicate<int, EdgeAdapter<TEdge>> predicate)
     {
         int counter = 0;
@@ -166,6 +210,7 @@ where TEdge : IEdge
         return counter;
     }
 
+    ///<inheritdoc/>
     public void ClearAdjacentEdges(int vertex)
     {
         foreach(var e in Graph.Edges.InOutEdges(vertex).ToList()){

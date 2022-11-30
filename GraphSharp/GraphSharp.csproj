@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputType>Library</OutputType>
     <TargetFramework>net7.0</TargetFramework>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -13,11 +14,12 @@
     <WarningLevel>6</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
-    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2" />
-    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="Delaunator" Version="1.0.9" />
-    <PackageReference Include="QuikGraph" Version="2.5.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2022.1.0"/>
+    <PackageReference Include="Microsoft.Toolkit.HighPerformance" Version="7.1.2"/>
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0"/>
+    <PackageReference Include="Delaunator" Version="1.0.9"/>
+    <PackageReference Include="QuikGraph" Version="2.5.0"/>
+    <PackageReference Include="RentedArraySharp" Version="1.0.4"/>
     <ProjectReference Include="../Satsuma/Satsuma.csproj"/>
   </ItemGroup>
 </Project>
