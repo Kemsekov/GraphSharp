@@ -25,6 +25,15 @@ public class GraphTests
         _Graph.Do.CreateNodes(1000);
     }
     [Fact]
+    public void FindClique_Works(){
+        _Graph.Do.CreateNodes(500);
+        _Graph.Do.ConnectNodes(10);
+        foreach(var n in _Graph.Nodes){
+            var clique = _Graph.Do.FindClique(n.Id);
+            Assert.Equal(clique.InitialNodeId,n.Id)
+        }
+    }
+    [Fact]
     public void TryFindHamiltonianPathByAntSimulation_Works()
     {
         _Graph.Do.CreateNodes(50);
