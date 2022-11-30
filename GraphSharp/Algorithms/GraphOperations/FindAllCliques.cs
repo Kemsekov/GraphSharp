@@ -22,7 +22,6 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    // TODO: add tests for it
     /// <summary>
     /// Finds all cliques in a graph.<br/> 
     /// Does not produce optimal results.<br/>
@@ -40,7 +39,6 @@ where TEdge : IEdge
         });
         return cliques;
     }
-    // TODO: add tests for it
     /// <summary>
     /// Finds all cliques in a graph. <br/>
     /// Produce close to optimal results.<br/>
@@ -56,7 +54,6 @@ where TEdge : IEdge
         });
         return cliques;
     }
-    // TODO: add tests for it
     /// <summary>
     /// Finds clique of max size for given graph<br/>
     /// Does not produce optimal results, but works fast<br/>
@@ -80,7 +77,6 @@ where TEdge : IEdge
         });
         return bestClique;
     }
-    // TODO: add tests for it
     /// <summary>
     /// Finds clique of max size for given graph<br/>
     /// Produce close to optimal results.<br/>
@@ -100,7 +96,6 @@ where TEdge : IEdge
         return bestClique;
     }
 
-    // TODO: add tests for it
     /// <summary>
     /// Finds clique for given node<br/>
     /// Does not produce optimal results, but works fast<br/>
@@ -120,7 +115,6 @@ where TEdge : IEdge
         }
         return new(nodeId, clique);
     }
-    // TODO: add tests for it
     /// <summary>
     /// Finds clique for given node<br/>
     /// Produce close to optimal results<br/>
@@ -136,6 +130,7 @@ where TEdge : IEdge
         //it means our subgraph is exactly a clique
         if(subgraph.Edges.Count==n*(n-1)/2)
             return new CliqueResult(nodeId,possibleClique);
-        return subgraph.Do.FindMaxCliqueFast();
+        var result = subgraph.Do.FindMaxCliqueFast();
+        return new(nodeId,result.Nodes);
     }
 }

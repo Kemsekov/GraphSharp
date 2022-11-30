@@ -24,13 +24,66 @@ public class GraphTests
         this._Graph = new Graph<Node, Edge>(new TestGraphConfiguration(new Random()));
         _Graph.Do.CreateNodes(1000);
     }
+    void CheckClique(int nodeId,CliqueResult clique){
+        Assert.Equal(clique.InitialNodeId,nodeId);
+        Assert.Contains(nodeId,clique.Nodes);
+        var induced = _Graph.Do.Induce(clique.Nodes);
+        induced.Do.MakeBidirected();
+        var complement = induced.Do.GetComplement();
+        Assert.True(complement.All(x=>x.SourceId==x.TargetId));
+        Assert.Equal(complement.Count,clique.Nodes.Count);
+    }
     [Fact]
     public void FindClique_Works(){
         _Graph.Do.CreateNodes(500);
         _Graph.Do.ConnectNodes(10);
         foreach(var n in _Graph.Nodes){
             var clique = _Graph.Do.FindClique(n.Id);
-            Assert.Equal(clique.InitialNodeId,n.Id)
+            CheckClique(n.Id,clique);
+        }
+    }
+    [Fact]
+    public void FindCliqueFast_Works(){
+        _Graph.Do.CreateNodes(500);
+        _Graph.Do.ConnectNodes(10);
+        foreach(var n in _Graph.Nodes){
+            var clique = _Graph.Do.FindCliqueFast(n.Id);
+            CheckClique(n.Id,clique);
+        }
+    }
+    [Fact]
+    public void FindMaxClique_Works(){
+        _Graph.Do.CreateNodes(500);
+        _Graph.Do.ConnectNodes(10);
+        var clique = _Graph.Do.FindMaxClique();
+        CheckClique(clique.InitialNodeId,clique);
+    }
+    [Fact]
+    public void FindMaxCliqueFast_Works(){
+        _Graph.Do.CreateNodes(500);
+        _Graph.Do.ConnectNodes(10);
+        var clique = _Graph.Do.FindMaxCliqueFast();
+        CheckClique(clique.InitialNodeId,clique);
+    }
+
+    [Fact]
+    public void MaxFlow_Works(){
+        _Graph.Do.CreateNodes(500);
+        _Graph.Do.ConnectNodes(10);
+        _Graph.Do.MakeSources(0);
+        var clone = _Graph.Clone();
+        var sink = _Graph.Nodes.First(x=>_Graph.Edges.IsSink(x.Id)).Id;
+        var flow = _Graph.Do.MaxFlowEdmondsKarp(0,sink,x=>Random.Shared.NextDouble());
+        Assert.True(flow.MaxFlow>0);
+
+        //check that after max flow we didn't changed our graph
+        Assert.Equal(_Graph.Edges.Count,clone.Edges.Count);
+        Assert.Equal(_Graph.Nodes.Count,clone.Nodes.Count);
+        foreach(var e in clone.Edges){
+            Assert.True(_Graph.Edges.Contains(e.SourceId,e.TargetId));
+        }
+        foreach(var e in _Graph.Edges){
+            Assert.True(clone.Edges.Contains(e.SourceId,e.TargetId));
         }
     }
     [Fact]
