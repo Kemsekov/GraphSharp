@@ -21,12 +21,14 @@ For samples see https://github.com/Kemsekov/GraphSharp.Samples
 ![example](https://user-images.githubusercontent.com/57869319/176494620-2cb92342-aa2d-432f-bfc6-ca503017464d.jpg)
 [Find components of a graph](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/FindComponents)
 ![example](https://user-images.githubusercontent.com/57869319/176998046-e1ba18c7-9f11-4b9d-bd2f-54537d5d4a0a.jpg)
-[Cycles finder](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/CycleFinder) (here I color 10 shortest cycles found)
+[Cycles basis finder](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/CycleFinder) (here I color 10 shortest cycles found)
 ![example](https://user-images.githubusercontent.com/57869319/179674538-142bf36b-e760-49d8-9ed6-eed3c512e907.jpg)
 [Strongly connected components finder](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/StronglyComponentsFinder)
 ![example](https://user-images.githubusercontent.com/57869319/181353679-86969151-e88e-4600-8db1-8d9e361e96ce.jpg)
-[TravelingSalesmanProblem](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/TravelingSalesmanProblem) (for 5k nodes it took my old i5 about 2 seconds to calculate this)
+[TravelingSalesmanProblem](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/TravelingSalesmanProblem)
 ![example](https://user-images.githubusercontent.com/57869319/183226714-827188f0-2f34-4a99-b90d-c6937c5dd41f.jpg)
 I have a adapter for `IGraph` to work as graph from [QuikGraph](https://github.com/KeRNeLith/QuikGraph).
 [Here is an example how this works](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/PageRank) using PageRank implementation from [QuikGraph](https://github.com/KeRNeLith/QuikGraph).
 ![example](https://user-images.githubusercontent.com/57869319/187511214-3963fa78-ebf5-4d84-8bac-b483ea70f4b1.jpg)
+[Max flow algorithm from left bottom to top right (here max capacity is edge length). The brighter - the more flow goes trough](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/MaxFlow)
+![example](https://user-images.githubusercontent.com/57869319/204763293-8687acca-30e2-4d23-98e1-3d01e7d192e4.jpg)
