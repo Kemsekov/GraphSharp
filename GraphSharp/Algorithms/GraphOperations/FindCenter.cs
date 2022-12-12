@@ -65,12 +65,12 @@ where TEdge : IEdge
         }
         
         IEnumerable<(IEnumerable<TNode> nodes, int componentId)> components;
-        if(!undirected){
-            using var componentsResult = FindStronglyConnectedComponentsTarjan();
-            components = componentsResult.Components;
+        if(undirected){
+            components = new (IEnumerable<TNode> nodes, int componentId)[]{(Nodes,1)};
         }
         else{
-            components = new (IEnumerable<TNode> nodes, int componentId)[]{(Nodes,1)};
+            var componentsResult = FindStronglyConnectedComponentsTarjan();
+            components = componentsResult.Components;
         }
         var radius = double.MaxValue;
         var center = Enumerable.Empty<int>();

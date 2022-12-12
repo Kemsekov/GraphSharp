@@ -7,7 +7,7 @@ namespace GraphSharp.Common;
 /// <summary>
 /// Path finding algorithm result
 /// </summary>
-public interface IPath<TNode>
+public interface IPath<TNode> : IList<TNode>
 {
     PathType PathType{get;}
     /// <summary>

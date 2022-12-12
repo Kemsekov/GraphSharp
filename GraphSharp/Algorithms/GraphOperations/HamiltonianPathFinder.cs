@@ -76,7 +76,7 @@ where TEdge : IEdge
             foreach (var e in edges.OrderBy(order).ToList())
             {
                 if (invalidEdges.TryGetValue(e, out var eInfo) && eInfo > 0) continue;
-                var path = FindAnyPath(e.SourceId, e.TargetId, edge => (addedNodes[edge.TargetId] == 0 || edge.TargetId == e.TargetId) && !edge.Equals(e)).Path;
+                var path = FindAnyPath(e.SourceId, e.TargetId, edge => (addedNodes[edge.Edge.TargetId] == 0 || edge.Edge.TargetId == e.TargetId) && !edge.Edge.Equals(e)).Path;
                 if (path.Count() == 0)
                 {
                     invalidEdges[e] = 1;

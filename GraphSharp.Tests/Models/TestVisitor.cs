@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using GraphSharp.Common;
 using GraphSharp.Graphs;
 
 using GraphSharp.Propagators;
@@ -23,7 +23,7 @@ namespace GraphSharp.Tests.Models
         {
         }
 
-        protected override bool SelectImpl(Edge edge)
+        protected override bool SelectImpl(EdgeSelect<Edge> edge)
         {
             return true;
         }

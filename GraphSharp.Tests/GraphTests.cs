@@ -97,7 +97,8 @@ public class GraphTests
         var result = _Graph.Do.TryFindHamiltonianPathByAntSimulation();
         Assert.Equal(result.path.Count, 49);
         var convertedPath = _Graph.ConvertEdgesListToPath(result.path);
-        _Graph.ValidatePath(convertedPath);
+        var pathToValidate = new PathResult<Node>(x=>_Graph.ComputePathCost(convertedPath),convertedPath,PathType.Undirected);
+        _Graph.ValidatePath(pathToValidate);
     }
     [Fact]
     public void TryFindHamiltonianCycleByBubbleExpansion_Works()
@@ -106,8 +107,9 @@ public class GraphTests
         _Graph.Do.DelaunayTriangulation(x=>x.Position);
         _Graph.Do.MakeBidirected();
         var result = _Graph.Do.TryFindHamiltonianCycleByBubbleExpansion();
-        var path = _Graph.ConvertEdgesListToPath(result);
-        _Graph.ValidateCycle(path);
+        var convertedPath = _Graph.ConvertEdgesListToPath(result);
+        var pathToValidate = new PathResult<Node>(x=>_Graph.ComputePathCost(convertedPath),convertedPath,PathType.Undirected);
+        _Graph.ValidateCycle(pathToValidate);
     }
     [Fact]
     public void TopologicalSort_Works()
@@ -165,10 +167,12 @@ public class GraphTests
     {
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.DelaunayTriangulation(x=>x.Position);
-        (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1);
-        (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1);
+        (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1,false);
+        (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1,false);
         Assert.NotEmpty(c1);
         Assert.NotEmpty(c2);
+        c2 = c2.OrderBy(x=>x.Id).ToList();
+        c1 = c1.OrderBy(x=>x.Id).ToList();
         Assert.Equal(c2.ToHashSet(), c1.ToHashSet());
         foreach (var c in c1.Concat(c2))
         {
@@ -252,12 +256,12 @@ public class GraphTests
         {
             int outEdgesCount = 0;
             _Graph.ValidateCycle(c);
-            c.Aggregate((n1, n2) =>
+            c.Path.Aggregate((n1, n2) =>
             {
                 outEdgesCount += tree.Where(x => x.SourceId == n1.Id && x.TargetId == n2.Id).Count();
                 return n2;
             });
-            Assert.Equal(c.Count - outEdgesCount, 2);
+            Assert.Equal(c.Path.Count - outEdgesCount, 2);
         }
         foreach (var c1 in cycles)
             foreach (var c2 in cycles)
@@ -431,14 +435,15 @@ public class GraphTests
     public void CombineCycles_Works()
     {
         {
-            var cycle1 = new Node[] { new(26), new(90), new(86), new(89), new(26) };
-            var cycle2 = new Node[] { new(86), new(26), new(94), new(90), new(86) };
-            Assert.True(_Graph.CombineCycles(cycle1.ToList(), cycle2.ToList(), out var combined));
-            Assert.True(combined.Count > cycle1.Length && combined.Count > cycle2.Length);
+            var cycle1 =_Graph.ToPath(new Node[] { new(26), new(90), new(86), new(89), new(26) },PathType.OutEdges);
+            var cycle2 =_Graph.ToPath(new Node[] { new(86), new(26), new(94), new(90), new(86) },PathType.OutEdges);
+
+            Assert.True(_Graph.CombineCycles(cycle1, cycle2, out var combined));
+            Assert.True(combined.Count > cycle1.Count && combined.Count > cycle2.Count);
         }
         {
-            var cycle1 = new Node[] { new(1), new(8), new(7), new(9), new(2), new(1) };
-            var cycle2 = new Node[] { new(3), new(2), new(9), new(7), new(6), new(5), new(4), new(3) };
+            var cycle1 = _Graph.ToPath(new Node[] { new(1), new(8), new(7), new(9), new(2), new(1) },PathType.OutEdges);
+            var cycle2 = _Graph.ToPath(new Node[] { new(3), new(2), new(9), new(7), new(6), new(5), new(4), new(3) },PathType.OutEdges);
             Assert.False(_Graph.CombineCycles(cycle1, cycle2, out var combined));
         }
         _Graph.Do.CreateNodes(1000);
@@ -457,7 +462,9 @@ public class GraphTests
             Array.Fill(inCycles, (byte)0);
             foreach (var c in cycle1.Concat(cycle2))
                 inCycles[c.Id] = 1;
-            if (_Graph.CombineCycles(cycle1.ToList(), cycle2.ToList(), out var combined))
+            var c1 = _Graph.ToPath(cycle1,PathType.OutEdges);
+            var c2 = _Graph.ToPath(cycle2,PathType.OutEdges);
+            if (_Graph.CombineCycles(c1, c2, out var combined))
             {
                 _Graph.ValidateCycle(combined);
                 Assert.True(combined.Count >= cycle1.Count && combined.Count >= cycle2.Count);

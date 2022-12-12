@@ -261,7 +261,7 @@ namespace GraphSharp.Tests
                         if (i == 0)
                         {
                             foreach (var e in buf)
-                                visitor.Select(new Edge(new Node(-1), e as Node));
+                                visitor.Select(new(new Edge(new Node(-1), e as Node),-1));
                         }
                         visited.Sort();
                         Assert.Equal(buf.Count, visited.Count);

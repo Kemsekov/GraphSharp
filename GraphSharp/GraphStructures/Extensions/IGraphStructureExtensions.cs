@@ -168,6 +168,15 @@ public static class GraphExtensions
     /// <summary>
     /// Validates that given path is a valid cycle for given graph.
     /// </summary>
+    public static IPath<TNode> ToPath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<TNode> nodes,PathType pathType)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        return new PathResult<TNode>(x=>graph.ComputePathCost(x),nodes.ToList(),pathType);
+    }
+    /// <summary>
+    /// Validates that given path is a valid cycle for given graph.
+    /// </summary>
     public static void ValidateCycle<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IPath<TNode> cycle)
     where TNode : INode
     where TEdge : IEdge
@@ -212,14 +221,14 @@ public static class GraphExtensions
     /// each other, if it cannot - they simple to each other.
     /// </summary>
     /// <returns>True if combination is successful else false</returns>
-    public static bool CombineCycles<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TNode> cycle1, IList<TNode> cycle2, out IList<TNode> result)
+    public static bool CombineCycles<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IPath<TNode> cycle1, IPath<TNode> cycle2, out IPath<TNode> result)
     where TNode : INode
     where TEdge : IEdge
     {
-        var intersection = cycle1.Select(x => x.Id).Intersect(cycle2.Select(y => y.Id)).ToArray();
+        var intersection = cycle1.Path.Select(x => x.Id).Intersect(cycle2.Path.Select(y => y.Id)).ToArray();
 
-        var cycles = cycle1.Concat(cycle2);
-        result = new List<TNode>(cycle1.Count + cycle2.Count - intersection.Length);
+        var cycles = cycle1.Path.Concat(cycle2.Path);
+        result = graph.ToPath(new List<TNode>(cycle1.Path.Count + cycle2.Path.Count - intersection.Length),PathType.OutEdges);
 
         if (intersection.Length < 2)
             return false;

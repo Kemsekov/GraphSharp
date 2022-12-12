@@ -192,6 +192,8 @@ where TEdge : IEdge
         while (!done)
         {
             propagator.Propagate();
+            if(startFinder.Done || endFinder.Done)
+                return new PathResult<TNode>(x=>0,new List<TNode>(),PathType.Undirected);
         }
         var path1 = startFinder.GetPath(startNodeId, intersectionNodeId);
         var path2 = endFinder.GetPath(endNodeId, intersectionNodeId);

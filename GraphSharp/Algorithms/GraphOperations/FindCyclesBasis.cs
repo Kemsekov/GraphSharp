@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 namespace GraphSharp.Graphs;
 
@@ -13,7 +14,7 @@ where TEdge : IEdge
     /// See https://en.wikipedia.org/wiki/Cycle_basis#Fundamental_cycles
     /// </summary>
     /// <returns>A list of paths that forms a fundamental cycles basis</returns>
-    public IEnumerable<IList<TNode>> FindCyclesBasis()
+    public IEnumerable<IPath<TNode>> FindCyclesBasis()
     {
         var treeGraph = new Graph<TNode, TEdge>(Configuration);
         treeGraph.SetSources(Nodes, Configuration.CreateEdgeSource());
@@ -30,14 +31,17 @@ where TEdge : IEdge
             }
         }
 
-        var outsideEdges = Edges.Except(treeGraph.Edges);
-        var result = new ConcurrentBag<IList<TNode>>();
+        var outsideEdges = Edges.Except(treeGraph.Edges).ToList();
+        var result = new ConcurrentBag<IPath<TNode>>();
+        int counter = 0;
         Parallel.ForEach(outsideEdges, e =>
         {
+            Interlocked.Increment(ref counter);
             var path = treeGraph.Do.FindAnyPath(e.TargetId, e.SourceId).Path;
             if (path.Count() != 0)
             {
-                result.Add(path.Prepend(StructureBase.GetSource(e)).ToList());
+                var p = path.Prepend(StructureBase.GetSource(e)).ToList();
+                result.Add(new PathResult<TNode>(x=>StructureBase.ComputePathCost(x),p,PathType.OutEdges));
             }
         });
         return result;
