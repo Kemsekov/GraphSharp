@@ -15,7 +15,7 @@ where TEdge : IEdge
     /// </summary>
     /// <param name="edge">Edge to process</param>
     /// <returns>True if we need to step into given edge, else false</returns>
-    bool Select(TEdge edge);
+    bool Select(EdgeSelect<TEdge> edge);
     /// <summary>
     /// Method to process nodes that was passed by selected edges.
     /// </summary>

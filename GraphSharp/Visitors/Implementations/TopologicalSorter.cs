@@ -45,9 +45,8 @@ where TEdge : IEdge
         this.End();
     }
     ///<inheritdoc/>
-    protected override bool SelectImpl(TEdge edge)
+    protected override bool SelectImpl(EdgeSelect<TEdge> edge)
     {
-        
         if (NodeStates.IsInState(Added,edge.TargetId))
         {
             return false;

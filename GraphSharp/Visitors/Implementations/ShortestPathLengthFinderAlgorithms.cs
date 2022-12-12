@@ -11,11 +11,11 @@ public class ShortestPathsLengthFinderAlgorithms<TNode, TEdge> : VisitorBase<TNo
 where TNode : INode
 where TEdge : IEdge
 {
+    public Func<TEdge,double> GetWeight{get;set;}
     /// <summary>
     /// What is the length of path from startNode to some other node so far.  
     /// </summary>
     public RentedArray<double> PathLength{get;protected set;}
-    private Func<TEdge, double> _getWeight;
     IImmutableGraph<TNode, TEdge> Graph{get;}
     /// <summary>
     /// Root of all found path lengths
@@ -24,12 +24,10 @@ where TEdge : IEdge
     public int StartNodeId{get;protected set;}
 
     /// <param name="startNodeId">Node from which we need to find a shortest path</param>
-    /// <param name="getWeight">When null shortest path is computed by comparing weights of the edges. If you need to change this behavior specify this delegate. Beware that this method will be called in concurrent context and must be thread safe.</param>
     /// <param name="graph">Algorithm will be executed on this graph</param>
-    public ShortestPathsLengthFinderAlgorithms(int startNodeId, IImmutableGraph<TNode, TEdge> graph, Func<TEdge, double>? getWeight = null)
+    public ShortestPathsLengthFinderAlgorithms(int startNodeId, IImmutableGraph<TNode, TEdge> graph)
     {
-        getWeight ??= e => e.Weight;
-        this._getWeight = getWeight;
+        GetWeight = e => e.Weight;
         this.Graph = graph;
         this.StartNodeId = startNodeId;
         PathLength = ArrayPoolStorage.RentArray<double>(graph.Nodes.MaxNodeId + 1);
@@ -55,11 +53,11 @@ where TEdge : IEdge
         Done = false;
     }
     ///<inheritdoc/>
-    protected override bool SelectImpl(TEdge connection)
+    protected override bool SelectImpl(EdgeSelect<TEdge> connection)
     {
         var sourceId = connection.SourceId;
         var targetId = connection.TargetId;
-        var pathLength = PathLength[sourceId] + _getWeight(connection);
+        var pathLength = PathLength[sourceId] + GetWeight(connection);
 
         var pathSoFar = PathLength[targetId];
 

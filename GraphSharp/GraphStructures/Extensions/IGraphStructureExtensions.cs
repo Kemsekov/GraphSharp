@@ -141,28 +141,38 @@ public static class GraphExtensions
     /// <summary>
     /// Validates that given path is a valid path for current graph.
     /// </summary>
-    public static void ValidatePath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TNode> path)
+    public static void ValidatePath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IPath<TNode> pathToCheck)
     where TNode : INode
     where TEdge : IEdge
     {
+        var path = pathToCheck.Path;
         for (int i = 0; i < path.Count - 1; i++)
         {
             var current = path[i];
             var next = path[i + 1];
-            if (!graph.Edges.TryGetEdge(current.Id, next.Id, out var edge))
+            var edges = graph.Edges.EdgesBetweenNodes(current.Id, next.Id);
+            if (edges.Count()==0)
             {
-                throw new ArgumentException($"Edge {current.Id}->{next.Id} not found! Path is not valid!");
+                throw new ArgumentException($"Edge between {current.Id}<->{next.Id} not found! Path is not valid!");
+            }
+            if(pathToCheck.PathType==PathType.OutEdges){
+                if(edges.FirstOrDefault(x=>x.SourceId==current.Id && x.TargetId==next.Id) is null)
+                   throw new ArgumentException($"Edge {current.Id}->{next.Id} not found! Path is not valid!");
+            }
+            if(pathToCheck.PathType==PathType.InEdges){
+                if(edges.FirstOrDefault(x=>x.TargetId==current.Id && x.SourceId==next.Id) is null)
+                   throw new ArgumentException($"Edge {current.Id}<-{next.Id} not found! Path is not valid!");
             }
         }
     }
     /// <summary>
     /// Validates that given path is a valid cycle for given graph.
     /// </summary>
-    public static void ValidateCycle<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TNode> cycle)
+    public static void ValidateCycle<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IPath<TNode> cycle)
     where TNode : INode
     where TEdge : IEdge
     {
-        var head = cycle.First();
+        var head = cycle.Path.First();
         try
         {
             try
@@ -173,15 +183,15 @@ public static class GraphExtensions
             {
                 throw new ArgumentException("Given cycle is not a correct path!\n" + e.Message);
             }
-            if (cycle.Last().Id != head.Id)
+            if (cycle.Path.Last().Id != head.Id)
             {
                 throw new ArgumentException("Cycle must start and end with same node");
             }
-            if (cycle.Count < 3)
+            if (cycle.Path.Count < 3)
             {
                 throw new ArgumentException("Cycle length must be at least 3");
             }
-            var headless = cycle.Except(new[] { head });
+            var headless = cycle.Path.Except(new[] { head });
             if (headless.Count() != headless.DistinctBy(x => x.Id).Count())
             {
                 throw new ArgumentException("Cycle contains duplicate nodes.");
@@ -262,11 +272,11 @@ public static class GraphExtensions
     /// <summary>
     /// Prints path in a console.
     /// </summary>
-    public static void PrintPath<TNode>(IList<TNode> path)
+    public static void PrintPath<TNode>(IPath<TNode> path)
     where TNode : INode
     {
         System.Console.WriteLine("-------------------");
-        foreach (var p in path)
+        foreach (var p in path.Path)
         {
             System.Console.WriteLine(p);
         }
@@ -296,7 +306,8 @@ public static class GraphExtensions
         getCost ??= edge=>edge.Weight;
         var cost = 0d;
         path.Aggregate((n1,n2)=>{
-            cost += getCost(graph.Edges[n1.Id,n2.Id]);
+            var e = graph.Edges.EdgesBetweenNodes(n1.Id,n2.Id).First();
+            cost += getCost(e);
             return n2;
         });
         return cost;

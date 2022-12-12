@@ -13,116 +13,192 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
-    public IPath<TNode> FindPathByMeetInTheMiddle(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    public IPath<TNode> FindPathByMeetInTheMiddle(int startNodeId, int endNodeId, Func<TEdge, double>? getWeight = null, Predicate<EdgeSelect<TEdge>>? condition = null, bool undirected = false)
     {
+        getWeight ??= x => x.Weight;
+        condition ??= x => true;
+        var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
         var path = FindPathByMeetInTheMiddleBase(
             startNodeId,
             endNodeId,
+            condition,
             visitor => GetPropagator(visitor),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
-            condition);
-        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p),path);
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase, pathType) { GetWeight = getWeight },
+            undirected);
+        return path;
     }
     /// <summary>
-    /// Finds shortest path between two points using Dijkstra algorithm and meet in the middle technique.
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
+    /// Finds shortest path between two points using Dijkstra algorithm and meet in the middle technique.
     /// </summary>
-    public IPath<TNode> FindPathByMeetInTheMiddleDijkstra(int startNodeId, int endNodeId,Func<TEdge,double>? getWeight = null, Predicate<TEdge>? condition = null)
+    /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
+    public IPath<TNode> FindPathByMeetInTheMiddleDijkstra(int startNodeId, int endNodeId, Func<TEdge, double>? getWeight = null, Predicate<EdgeSelect<TEdge>>? condition = null, bool undirected = false)
     {
+        getWeight ??= x => x.Weight;
+        condition ??= x => true;
+        var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
         var path = FindPathByMeetInTheMiddleBase(
             startNodeId,
             endNodeId,
+            condition,
             visitor => GetPropagator(visitor),
-            () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase,getWeight),
-            condition);
-        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p),path);
+            () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase, pathType) { GetWeight = getWeight },
+            undirected);
+        return path;
     }
     /// <summary>
     /// Concurrently finds shortest path between two points using Dijkstra algorithm and meet in the middle technique.
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     /// </summary>
-    public IPath<TNode> FindPathByMeetInTheMiddleDijkstraParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
+    public IPath<TNode> FindPathByMeetInTheMiddleDijkstraParallel(int startNodeId, int endNodeId, Func<TEdge, double>? getWeight = null, Predicate<EdgeSelect<TEdge>>? condition = null, bool undirected = false)
     {
+        getWeight ??= x => x.Weight;
+        condition ??= x => true;
+        var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
         var path = FindPathByMeetInTheMiddleBase(
             startNodeId,
             endNodeId,
+            condition,
             visitor => GetParallelPropagator(visitor),
-            () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase),
-            condition);
-        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p),path);
+            () => new DijkstrasAlgorithm<TNode, TEdge>(startNodeId, StructureBase, pathType) { GetWeight = getWeight },
+            undirected);
+        return path;
     }
     /// <summary>
     /// Concurrent path finder <br/>
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     /// </summary>
-    public IPath<TNode> FindPathByMeetInTheMiddleParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null)
+    /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
+    public IPath<TNode> FindPathByMeetInTheMiddleParallel(int startNodeId, int endNodeId, Func<TEdge, double>? getWeight = null, Predicate<EdgeSelect<TEdge>>? condition = null, bool undirected = false)
     {
+        getWeight ??= x => x.Weight;
+        condition ??= x => true;
+        var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
         var path = FindPathByMeetInTheMiddleBase(
             startNodeId,
             endNodeId,
+            condition,
             visitor => GetParallelPropagator(visitor),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
-            condition);
-        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p),path);
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase, pathType) { GetWeight = getWeight },
+            undirected);
+        return path; ;
     }
     /// <summary>
     /// Finds any first found path between any two nodes using meet in the middle technique<br/>
     /// Much faster on certain type of graphs where BFS with each step takes exponentially
     /// more nodes to process.
     /// </summary>
+    /// <param name="startNodeId">Path start</param>
+    /// <param name="endNodeId">Path end</param>
+    /// <param name="condition">Use this predicate to exclude some parts of path that is forbidden for exploring. True if given edge is allowed to pass, else false</param>
+    /// <param name="createPropagator"></param>
+    /// <param name="createPathFinder"></param>
+    /// <param name="undirected">Whatever resulting path must be undirected or directed</param>
+    /// <returns></returns>
     /// <returns>Path between two nodes. Empty list if path is not found.</returns>
-    public IList<TNode> FindPathByMeetInTheMiddleBase(
+    IPath<TNode> FindPathByMeetInTheMiddleBase(
         int startNodeId,
         int endNodeId,
+        Predicate<EdgeSelect<TEdge>> condition,
         Func<IVisitor<TNode, TEdge>, PropagatorBase<TNode, TEdge>> createPropagator,
         Func<PathFinderBase<TNode, TEdge>> createPathFinder,
-        Predicate<TEdge>? condition = null)
+        bool undirected)
     {
-        condition ??= new(edge => true);
-        int meetNodeId = -1;
-        var outPathFinder = createPathFinder();
-        var inPathFinder = createPathFinder();
+        bool done = false;
+        int intersectionNodeId = -1;
+        var pathJoiner = new ActionVisitor<TNode, TEdge>();
+        var propagator = createPropagator(pathJoiner);
 
-        outPathFinder.StartNodeId = startNodeId;
-        inPathFinder.StartNodeId = endNodeId;
+        byte StartNodeBFS = (byte)(PropagatorBase<TNode, TEdge>.BiggestUsedState * 2);
+        byte EndNodeBFS = (byte)(StartNodeBFS * 2);
 
-        inPathFinder.GetEdgeDirection = edge=>(edge.TargetId,edge.SourceId);
+        var startFinder = createPathFinder();
+        var endFinder = createPathFinder();
+        propagator.SetPosition(startNodeId, endNodeId);
+        var states = propagator.NodeStates;
+        states.AddState(StartNodeBFS, startNodeId);
+        states.AddState(EndNodeBFS, endNodeId);
 
-        var meetInTheMiddlePathFinder = new ActionVisitor<TNode,TEdge>();
-
-        var propagator = createPropagator(meetInTheMiddlePathFinder);
-
-        propagator.SetPosition(startNodeId,endNodeId);
-
-        propagator.SetToIterateByInEdges(endNodeId);
-        var nodeStates = propagator.NodeStates;
-
-        meetInTheMiddlePathFinder.Condition = edge=>{
-            if(!condition(edge)) return false;
-            if(nodeStates.IsInState(UsedNodeStates.IterateByInEdges,edge.TargetId)){
-                if(inPathFinder.Select(edge)){
-                    propagator.SetToIterateByInEdges(edge.SourceId);
-                    return true;
+        if (undirected)
+        {
+            propagator.SetToIterateByBothEdges();
+        }
+        else
+        {
+            propagator.NodeStates.RemoveStateFromAll(UsedNodeStates.IterateByInEdges | UsedNodeStates.IterateByOutEdges);
+            propagator.SetToIterateByOutEdges(startNodeId);
+            propagator.SetToIterateByInEdges(endNodeId);
+        }
+        pathJoiner.StartEvent += () =>
+        {
+            startFinder.Start();
+            endFinder.Start();
+        };
+        pathJoiner.EndEvent += () =>
+        {
+            startFinder.End();
+            endFinder.End();
+        };
+        pathJoiner.VisitEvent += node =>
+        {
+            if (done) return;
+            var id = node.Id;
+            if (states.IsInState(StartNodeBFS, id) && states.IsInState(EndNodeBFS, id))
+            {
+                lock (pathJoiner)
+                {
+                    done = true;
+                    intersectionNodeId = id;
+                }
+            }
+            startFinder.Visit(node);
+            endFinder.Visit(node);
+        };
+        if (undirected)
+            pathJoiner.Condition += (EdgeSelect<TEdge> edge) =>
+            {
+                if (done) return false;
+                if(!condition(edge)) return false;
+                if (states.IsInState(StartNodeBFS, edge.SourceId))
+                {
+                    states.AddState(StartNodeBFS, edge.TargetId);
+                    return startFinder.Select(edge);
+                }
+                if (states.IsInState(EndNodeBFS, edge.SourceId))
+                {
+                    states.AddState(EndNodeBFS, edge.TargetId);
+                    return endFinder.Select(edge);
                 }
                 return false;
-            }
-            return outPathFinder.Select(edge);
-        };
-        var DidSomething = true;
-        meetInTheMiddlePathFinder.VisitEvent += node=>{
-            DidSomething = true;
-            if(outPathFinder.Path[node.Id]!=-1 && inPathFinder.Path[node.Id]!=-1){
-                meetNodeId = node.Id;
-            }
-        };
-        while(meetNodeId==-1 && DidSomething){
-            DidSomething = false;
+            };
+        else
+            pathJoiner.Condition += (EdgeSelect<TEdge> edge) =>
+            {
+                if (done) return false;
+                if (states.IsInState(StartNodeBFS, edge.SourceId))
+                {
+                    states.AddState((byte)(StartNodeBFS | UsedNodeStates.IterateByOutEdges), edge.TargetId);
+                    return startFinder.Select(edge);
+                }
+                if (states.IsInState(EndNodeBFS, edge.SourceId))
+                {
+                    states.AddState((byte)(EndNodeBFS | UsedNodeStates.IterateByInEdges), edge.TargetId);
+                    return endFinder.Select(edge);
+                }
+                return false;
+            };
+
+        while (!done)
+        {
             propagator.Propagate();
         }
-        if(meetNodeId==-1) return new List<TNode>();
-        var p1 = outPathFinder.GetPath(startNodeId,meetNodeId);
-        var p2 = inPathFinder.GetPath(endNodeId,meetNodeId);
-        return p1.Concat(p2.Reverse().Skip(1)).ToList();
+        var path1 = startFinder.GetPath(startNodeId, intersectionNodeId);
+        var path2 = endFinder.GetPath(endNodeId, intersectionNodeId);
+        var cost = path1.Cost + path2.Cost;
+        var resultPath = path1.Path.Concat(path2.Path.Reverse().Skip(1)).ToList();
+        var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
+        return new PathResult<TNode>(x => cost, resultPath, pathType);
     }
 
 }

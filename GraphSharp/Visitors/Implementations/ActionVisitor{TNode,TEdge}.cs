@@ -13,10 +13,10 @@ where TEdge : IEdge
     /// <param name="select"><see cref="IVisitor{TNode,TEdge}.Select"/> function</param>
     /// <param name="end"><see cref="IVisitor{TNode,TEdge}.End"/> function.</param>
     /// <param name="start"><see cref="IVisitor{TNode,TEdge}.Start"/> function.</param>
-    public ActionVisitor(Action<TNode>? visit = null, Predicate<TEdge>? select = null, Action? end = null, Action? start = null)
+    public ActionVisitor(Action<TNode>? visit = null, Predicate<EdgeSelect<TEdge>>? select = null, Action? end = null, Action? start = null)
     {
         this.VisitEvent += visit ?? new Action<TNode>(node => { });
-        this.Condition = select ?? new Predicate<TEdge>(edge => true);
+        this.Condition = select ?? new Predicate<EdgeSelect<TEdge>>(edge => true);
         this.EndEvent += end ?? new Action(() => { });
         this.StartEvent += start ?? new Action(() => { });
     }
@@ -29,7 +29,7 @@ where TEdge : IEdge
     /// <summary>
     /// Select function implementation
     /// </summary>
-    protected override bool SelectImpl(TEdge edge)
+    protected override bool SelectImpl(EdgeSelect<TEdge> edge)
     {
         return true;
     }

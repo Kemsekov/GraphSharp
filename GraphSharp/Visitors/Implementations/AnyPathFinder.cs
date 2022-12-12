@@ -13,7 +13,7 @@ where TEdge : IEdge
     /// <summary>
     /// Creates a new instance of <see cref="AnyPathFinder{TNode,TEdge}"/>
     /// </summary>
-    public AnyPathFinder(int startNodeId, IImmutableGraph<TNode, TEdge> graph) : base(graph)
+    public AnyPathFinder(int startNodeId, IImmutableGraph<TNode, TEdge> graph, PathType pathType) : base(graph,pathType)
     {
         this.StartNodeId = startNodeId;
     }
@@ -27,9 +27,9 @@ where TEdge : IEdge
         Done = false;
     }
     /// <inheritdoc/>
-    protected override bool SelectImpl(TEdge edge)
+    protected override bool SelectImpl(EdgeSelect<TEdge> edge)
     {
-        (var sourceId,var targetId) = GetEdgeDirection(edge);
+        (var sourceId,var targetId) = (edge.SourceId,edge.TargetId);
         if (Path[targetId] == -1)
         {
             Path[targetId] = sourceId;

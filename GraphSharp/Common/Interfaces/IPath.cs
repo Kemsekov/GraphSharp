@@ -9,6 +9,7 @@ namespace GraphSharp.Common;
 /// </summary>
 public interface IPath<TNode>
 {
+    PathType PathType{get;}
     /// <summary>
     /// A list of nodes, which order defines a path
     /// </summary>
@@ -17,4 +18,12 @@ public interface IPath<TNode>
     /// Path cost
     /// </summary>
     double Cost{get;}
+}
+
+/// <summary>
+/// Path finder
+/// </summary>
+public interface IPathFinder<TNode>{
+    PathType PathType{get;}
+    IPath<TNode> GetPath(int node1, int node2);
 }

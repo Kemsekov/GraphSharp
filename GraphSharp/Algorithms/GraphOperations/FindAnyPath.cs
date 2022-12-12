@@ -27,32 +27,35 @@ where TEdge : IEdge
     /// <param name="getWeight">
     /// Func to get edge weight. When null will use default edge weight property
     /// </param>
-    public IPath<TNode> FindAnyPath(int startNodeId, int endNodeId,Predicate<TEdge>? condition = null,Func<TEdge,double>? getWeight = null)
+    /// <param name="pathType">What type of path to produce</param>
+    public IPath<TNode> FindAnyPath(int startNodeId, int endNodeId,Predicate<EdgeSelect<TEdge>>? condition = null,Func<TEdge,double>? getWeight = null, PathType pathType = PathType.OutEdges)
     {
+        getWeight ??= x=>x.Weight;
         var path = FindPathWithFirstEncounter(
             startNodeId,
             endNodeId,
             v => GetPropagator(v),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase,pathType){GetWeight = getWeight},
             condition)
         .GetPath(startNodeId, endNodeId);
-        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p,getWeight),path);
+        return path;
     }
     /// <summary>
     /// Concurrently finds any first found path between any two nodes. Much faster than Dijkstra path finding
     /// </summary>
     /// <returns>Path between two nodes. Empty list if path is not found.</returns>
-    public IPath<TNode> FindAnyPathParallel(int startNodeId, int endNodeId, Predicate<TEdge>? condition = null, Func<TEdge,double>? getWeight = null)
+    public IPath<TNode> FindAnyPathParallel(int startNodeId, int endNodeId, Predicate<EdgeSelect<TEdge>>? condition = null, Func<TEdge,double>? getWeight = null, PathType pathType = PathType.OutEdges)
     {
+        getWeight ??= x=>x.Weight;
         var path = 
         FindPathWithFirstEncounter(
             startNodeId,
             endNodeId,
             v => GetParallelPropagator(v),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase),
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase,pathType){GetWeight = getWeight},
             condition)
-            .GetPath(startNodeId, endNodeId);
-        return new PathResult<TNode>(p=>StructureBase.ComputePathCost(p,getWeight),path);
+        .GetPath(startNodeId, endNodeId);
+        return path;
     }
     
     /// <summary>
@@ -75,7 +78,7 @@ where TEdge : IEdge
             int endNodeId,
             Func<PathFinderBase<TNode, TEdge>, PropagatorBase<TNode, TEdge>> createPropagator,
             Func<PathFinderBase<TNode, TEdge>> createPathFinder,
-            Predicate<TEdge>? condition = null)
+            Predicate<EdgeSelect<TEdge>>? condition = null)
     {
         condition ??= edge => true;
         var pathFinder = createPathFinder();
@@ -90,6 +93,14 @@ where TEdge : IEdge
         };
         var propagator = createPropagator(pathFinder);
         propagator.SetPosition(startNodeId);
+        var pathType = pathFinder.PathType;
+        if(pathType==PathType.Undirected)
+            propagator.SetToIterateByBothEdges();
+        if(pathType==PathType.OutEdges)
+            propagator.SetToIterateByOutEdges();
+        if(pathType==PathType.InEdges)
+            propagator.SetToIterateByInEdges();
+        
         while (!pathFinder.Done)
         {
             propagator.Propagate();

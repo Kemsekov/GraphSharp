@@ -2,7 +2,6 @@ using System;
 using GraphSharp.Visitors;
 using System.Linq;
 using GraphSharp.Graphs;
-using Microsoft.Toolkit.HighPerformance;
 using GraphSharp.Common;
 
 namespace GraphSharp.Propagators;
@@ -31,6 +30,10 @@ where TEdge : IEdge
     /// </summary>
     /// <value></value>
     public IImmutableGraph<TNode, TEdge> Graph { get; protected set; }
+    /// <summary>
+    /// Biggest used byte node state
+    /// </summary>
+    public static byte BiggestUsedState => UsedNodeStates.IterateByOutEdges;
     /// <summary>
     /// Underlying node states that used to keep track of exploration process
     /// </summary>
@@ -163,13 +166,13 @@ where TEdge : IEdge
         if (ByteStatesHandler.IsInState(UsedNodeStates.IterateByInEdges,state))
             foreach (var edge in Graph.Edges.InEdges(nodeId))
             {
-                if (!Visitor.Select(edge)) continue;
+                if (!Visitor.Select(new(edge,nodeId))) continue;
                 NodeStates.AddState(UsedNodeStates.Visited, edge.SourceId);
             }
         if (ByteStatesHandler.IsInState(UsedNodeStates.IterateByOutEdges,state))
             foreach (var edge in Graph.Edges.OutEdges(nodeId))
             {
-                if (!Visitor.Select(edge)) continue;
+                if (!Visitor.Select(new(edge,nodeId))) continue;
                 NodeStates.AddState(UsedNodeStates.Visited, edge.TargetId);
             }
     }

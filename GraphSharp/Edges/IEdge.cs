@@ -15,6 +15,17 @@ public interface IEdge : IComparable<IEdge>, ICloneable<IEdge>, IWeighted, IColo
     /// Id of a target node of this edge
     /// </summary>
     int TargetId { get; set; }
+    /// <returns>
+    /// Other part of edge, or <see langword="-1"/> if not found
+    /// </returns>
+    public int Other(int nodeId)
+    {
+        if (SourceId == nodeId)
+            return TargetId;
+        if (TargetId == nodeId)
+            return SourceId;
+        return -1;
+    }
     int IComparable<IEdge>.CompareTo(IEdge? other)
     {
         if (other is null)

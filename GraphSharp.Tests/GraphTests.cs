@@ -380,7 +380,7 @@ public class GraphTests
             .MakeBidirected();
         Assert.True(directed.IsBidirected());
     }
-
+    
     [Fact]
     public void Clone_Works()
     {

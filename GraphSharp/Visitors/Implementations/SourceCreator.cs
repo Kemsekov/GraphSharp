@@ -38,7 +38,7 @@ where TEdge : IEdge
         DidSomething = false;
     }
     ///<inheritdoc/>
-    protected override bool SelectImpl(TEdge edge)
+    protected override bool SelectImpl(EdgeSelect<TEdge> edge)
     {
         return !NodeStates.IsInState(Proceed | ToRemove,edge.TargetId);
     }

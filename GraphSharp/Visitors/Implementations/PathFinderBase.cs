@@ -16,7 +16,7 @@ namespace GraphSharp.Visitors;
 /// that means we are done and algorithm must stop. In that case <paramref langword="Done"/>
 /// will be set to true.
 /// </summary>
-public abstract class PathFinderBase<TNode, TEdge> : VisitorBase<TNode, TEdge>, IDisposable
+public abstract class PathFinderBase<TNode, TEdge> : VisitorBase<TNode, TEdge>, IDisposable, IPathFinder<TNode>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -30,10 +30,8 @@ where TEdge : IEdge
     /// if algorithm did not found any ancestor for this node.
     /// </summary>
     public RentedArray<int> Path{get;init;}
-    /// <summary>
-    /// Function that used to determine direction of edge
-    /// </summary>
-    public Func<TEdge,(int sourceId,int targetId)> GetEdgeDirection;
+    public PathType PathType { get; }
+    public Func<TEdge,double> GetWeight{get;set;}
     /// <summary>
     /// Id of first node in the path
     /// </summary>
@@ -44,13 +42,14 @@ where TEdge : IEdge
     public IImmutableGraph<TNode, TEdge> Graph { get; }
 
     /// <param name="graph">Graph that will be used to find path on</param>
-    public PathFinderBase(IImmutableGraph<TNode,TEdge> graph)
+    public PathFinderBase(IImmutableGraph<TNode,TEdge> graph,PathType pathType)
     {
+        this.PathType = pathType;
+        this.GetWeight = e=>e.Weight;
         this.Condition = edge=>true;
         this.Graph = graph;
         Path = ArrayPoolStorage.RentArray<int>(graph.Nodes.MaxNodeId+1);
         Path.Fill(-1);
-        GetEdgeDirection = edge=>(edge.SourceId,edge.TargetId);
     }
     /// <summary>
     /// Disposes object when collected by GC
@@ -67,7 +66,6 @@ where TEdge : IEdge
         Path.Fill(-1);
         Done = false;
         Steps = 0;
-        GetEdgeDirection = edge=>(edge.SourceId,edge.TargetId);
     }
     ///<inheritdoc/>
     protected override void StartImpl(){
@@ -81,9 +79,9 @@ where TEdge : IEdge
     /// Tries to get a path between two nodes.
     /// </summary>
     /// <returns>List of nodes if path between two nodes is found, else empty list is returned</returns>
-    public IList<TNode> GetPath(int startNodeId, int endNodeId){
+    public IPath<TNode> GetPath(int startNodeId, int endNodeId){
         var path = new List<TNode>();
-        if (Path[endNodeId] == -1) return path;
+        if (Path[endNodeId] == -1) return new PathResult<TNode>(x=>Graph.ComputePathCost(x,GetWeight),path,PathType);
         while (true)
         {
             var parent = Path[endNodeId];
@@ -93,7 +91,7 @@ where TEdge : IEdge
         }
         path.Add(Graph.Nodes[startNodeId]);
         path.Reverse();
-        return path;
+        return new PathResult<TNode>(x=>Graph.ComputePathCost(x,GetWeight),path,PathType);
     }
 
     ///<inheritdoc/>

@@ -17,7 +17,7 @@ where TEdge : IEdge
     /// <see langword="edge"/> is allowed to pass <see langword="Select"/> function,
     /// else not allowed.
     /// </summary>
-    public Predicate<TEdge> Condition { get; set;}
+    public Predicate<EdgeSelect<TEdge>> Condition { get; set;}
     /// <summary>
     /// Called at the beginning of <see cref="Visit"/> method
     /// </summary>
@@ -25,7 +25,7 @@ where TEdge : IEdge
     /// <summary>
     /// Called at the beginning of <see cref="Select"/> method
     /// </summary>
-    public event Action<TEdge> SelectEvent;
+    public event Action<EdgeSelect<TEdge>> SelectEvent;
     /// <summary>
     /// Called at the beginning of <see cref="Start"/> method
     /// </summary>
@@ -56,7 +56,7 @@ where TEdge : IEdge
         StartImpl();
     }
     ///<inheritdoc/>
-    public bool Select(TEdge edge){
+    public bool Select(EdgeSelect<TEdge> edge){
         if(!Condition(edge) || Done) return false;
         SelectEvent(edge);
         return SelectImpl(edge);
@@ -80,7 +80,7 @@ where TEdge : IEdge
     /// <summary>
     /// <see cref="Select"/> function implementation
     /// </summary>
-    protected abstract bool SelectImpl(TEdge edge);
+    protected abstract bool SelectImpl(EdgeSelect<TEdge> edge);
     /// <summary>
     /// <see cref="Visit"/> function implementation
     /// </summary>

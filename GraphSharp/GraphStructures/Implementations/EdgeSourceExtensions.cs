@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GraphSharp.Visitors;
 
 namespace GraphSharp.Graphs;
 /// <summary>
@@ -174,6 +175,17 @@ public static class EdgeSourceExtensions
                 if (candidate.SourceId == nodeId || candidate.TargetId == nodeId)
                     Edges.Remove(candidate);
             }
+        }
+    }
+    public static IEnumerable<EdgeSelect<TEdge>> AdjacentEdges<TEdge>(this IEdgeSource<TEdge> Edges,params int[] nodes)
+    where TEdge: IEdge
+    {
+        foreach (var nodeId in nodes)
+        {
+            foreach(var e in Edges.InOutEdges(nodeId)){
+                yield return new(e,nodeId);
+            }
+            
         }
     }
     // TODO: add test
