@@ -26,6 +26,10 @@ public interface IEdge : IComparable<IEdge>, ICloneable<IEdge>, IWeighted, IColo
             return SourceId;
         return -1;
     }
+    /// <returns>True if edges connect same nodes, without taking their directness into accountants</returns>
+    public bool ConnectsSame(IEdge edge){
+        return TargetId==edge.TargetId && SourceId==edge.SourceId || SourceId==edge.TargetId && TargetId==edge.SourceId;
+    }
     int IComparable<IEdge>.CompareTo(IEdge? other)
     {
         if (other is null)

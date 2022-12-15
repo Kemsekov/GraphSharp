@@ -177,7 +177,7 @@ public static class EdgeSourceExtensions
             }
         }
     }
-    public static IEnumerable<EdgeSelect<TEdge>> AdjacentEdges<TEdge>(this IEdgeSource<TEdge> Edges,params int[] nodes)
+    public static IEnumerable<EdgeSelect<TEdge>> AdjacentEdges<TEdge>(this IImmutableEdgeSource<TEdge> Edges,params int[] nodes)
     where TEdge: IEdge
     {
         foreach (var nodeId in nodes)
@@ -206,5 +206,13 @@ public static class EdgeSourceExtensions
         #pragma warning disable
         return new TEdge[]{e1,e2}.Where(x=>x is not null);
         #pragma warning enable
+    }
+    /// <summary>
+    /// Returns first found edge between two nodes
+    /// </summary>
+    public static TEdge Between<TEdge>(this IImmutableEdgeSource<TEdge> Edges, int n1, int n2)
+    where TEdge : IEdge
+    {
+        return Edges.EdgesBetweenNodes(n1,n2).First();
     }
 }

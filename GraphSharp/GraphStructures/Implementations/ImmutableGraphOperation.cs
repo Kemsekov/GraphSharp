@@ -1,3 +1,4 @@
+using System;
 using GraphSharp.Common;
 using GraphSharp.Propagators;
 using GraphSharp.Visitors;
@@ -30,9 +31,7 @@ where TEdge : IEdge
     /// </summary>
     public Propagator<TNode, TEdge> GetPropagator(IVisitor<TNode, TEdge> visitor)
     {
-        var p = PropagatorPool.Get();
-        p.Reset(StructureBase, visitor);
-        return p;
+        return new Propagator<TNode, TEdge>(visitor,StructureBase);
     }
     /// <summary>
     /// Get parallel propagator from pool
@@ -47,10 +46,8 @@ where TEdge : IEdge
     /// Returns propagator to pool
     /// </summary>
     public void ReturnPropagator(IPropagator<TNode, TEdge> propagator){
-        if(propagator is ParallelPropagator<TNode,TEdge> p1)
-            ParallelPropagatorPool.Return(p1);
-        if(propagator is Propagator<TNode,TEdge> p2)
-            PropagatorPool.Return(p2);
+        if(propagator is IDisposable d)
+            d.Dispose();
     }
     
 }

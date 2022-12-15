@@ -8,7 +8,7 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    RentedArray<int> CountDegrees(IEnumerable<TEdge> edges){
+    public RentedArray<int> CountDegrees(IEnumerable<TEdge> edges){
         var result = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId+1);
         foreach(var e in edges){
             result[e.SourceId]++;

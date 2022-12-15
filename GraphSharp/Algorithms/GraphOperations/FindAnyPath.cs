@@ -21,8 +21,8 @@ where TEdge : IEdge
     /// <param name="condition">
     /// If path's edges need to follow some condition
     /// (for example avoid forbidden nodes/edges) then specify this argument. 
-    /// If this condition falls then edge will not be used in resulting path
-    /// By default passes all edges.
+    /// If this condition fails then edge will not be used in resulting path.
+    /// By default always returns true and passes all edges.
     /// </param>
     /// <param name="getWeight">
     /// Func to get edge weight. When null will use default edge weight property

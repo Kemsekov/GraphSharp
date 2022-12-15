@@ -37,6 +37,10 @@ where TEdge : IEdge
     /// Other part of the edge, or -1 if not found
     /// </summary>
     public int Other(int nodeId) => Edge.Other(nodeId);
+    /// <returns>True if edges connect same nodes, without taking their directness into accountants</returns>
+    public bool ConnectsSame(IEdge edge){
+        return Edge.ConnectsSame(edge);
+    }
     /// <summary>
     /// Converts <see langword="TEdge"/> to <see cref="EdgeSelect{T}"/>
     /// </summary>

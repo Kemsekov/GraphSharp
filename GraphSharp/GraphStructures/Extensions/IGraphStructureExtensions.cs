@@ -23,9 +23,9 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        if(edge.SourceId==nodeId)
+        if (edge.SourceId == nodeId)
             return edge.TargetId;
-        if(edge.TargetId==nodeId)
+        if (edge.TargetId == nodeId)
             return edge.SourceId;
         return -1;
     }
@@ -151,28 +151,30 @@ public static class GraphExtensions
             var current = path[i];
             var next = path[i + 1];
             var edges = graph.Edges.EdgesBetweenNodes(current.Id, next.Id);
-            if (edges.Count()==0)
+            if (edges.Count() == 0)
             {
                 throw new ArgumentException($"Edge between {current.Id}<->{next.Id} not found! Path is not valid!");
             }
-            if(pathToCheck.PathType==PathType.OutEdges){
-                if(edges.FirstOrDefault(x=>x.SourceId==current.Id && x.TargetId==next.Id) is null)
-                   throw new ArgumentException($"Edge {current.Id}->{next.Id} not found! Path is not valid!");
+            if (pathToCheck.PathType == PathType.OutEdges)
+            {
+                if (edges.FirstOrDefault(x => x.SourceId == current.Id && x.TargetId == next.Id) is null)
+                    throw new ArgumentException($"Edge {current.Id}->{next.Id} not found! Path is not valid!");
             }
-            if(pathToCheck.PathType==PathType.InEdges){
-                if(edges.FirstOrDefault(x=>x.TargetId==current.Id && x.SourceId==next.Id) is null)
-                   throw new ArgumentException($"Edge {current.Id}<-{next.Id} not found! Path is not valid!");
+            if (pathToCheck.PathType == PathType.InEdges)
+            {
+                if (edges.FirstOrDefault(x => x.TargetId == current.Id && x.SourceId == next.Id) is null)
+                    throw new ArgumentException($"Edge {current.Id}<-{next.Id} not found! Path is not valid!");
             }
         }
     }
     /// <summary>
     /// Validates that given path is a valid cycle for given graph.
     /// </summary>
-    public static IPath<TNode> ToPath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<TNode> nodes,PathType pathType)
+    public static IPath<TNode> ToPath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<TNode> nodes, PathType pathType)
     where TNode : INode
     where TEdge : IEdge
     {
-        return new PathResult<TNode>(x=>graph.ComputePathCost(x),nodes.ToList(),pathType);
+        return new PathResult<TNode>(x => graph.ComputePathCost(x), nodes.ToList(), pathType);
     }
     /// <summary>
     /// Validates that given path is a valid cycle for given graph.
@@ -228,7 +230,7 @@ public static class GraphExtensions
         var intersection = cycle1.Path.Select(x => x.Id).Intersect(cycle2.Path.Select(y => y.Id)).ToArray();
 
         var cycles = cycle1.Path.Concat(cycle2.Path);
-        result = graph.ToPath(new List<TNode>(cycle1.Path.Count + cycle2.Path.Count - intersection.Length),PathType.OutEdges);
+        result = graph.ToPath(new List<TNode>(cycle1.Path.Count + cycle2.Path.Count - intersection.Length), PathType.OutEdges);
 
         if (intersection.Length < 2)
             return false;
@@ -293,14 +295,15 @@ public static class GraphExtensions
     /// <summary>
     /// Computes path cost on enumerable of node ids using cost function
     /// </summary>
-    public static double ComputePathCost<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph,IEnumerable<int> path,Func<TEdge,double>? getCost = null)
+    public static double ComputePathCost<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<int> path, Func<TEdge, double>? getCost = null)
     where TNode : INode
     where TEdge : IEdge
     {
-        getCost ??= edge=>edge.Weight;
+        getCost ??= edge => edge.Weight;
         var cost = 0d;
-        path.Aggregate((n1,n2)=>{
-            cost += getCost(graph.Edges[n1,n2]);
+        path.Aggregate((n1, n2) =>
+        {
+            cost += getCost(graph.Edges.Between(n1, n2));
             return n2;
         });
         return cost;
@@ -308,14 +311,15 @@ public static class GraphExtensions
     /// <summary>
     /// Computes path cost on enumerable of node using cost function
     /// </summary>
-    public static double ComputePathCost<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph,IEnumerable<TNode> path,Func<TEdge,double>? getCost = null)
+    public static double ComputePathCost<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<TNode> path, Func<TEdge, double>? getCost = null)
     where TNode : INode
     where TEdge : IEdge
     {
-        getCost ??= edge=>edge.Weight;
+        getCost ??= edge => edge.Weight;
         var cost = 0d;
-        path.Aggregate((n1,n2)=>{
-            var e = graph.Edges.EdgesBetweenNodes(n1.Id,n2.Id).First();
+        path.Aggregate((n1, n2) =>
+        {
+            var e = graph.Edges.EdgesBetweenNodes(n1.Id, n2.Id).First();
             cost += getCost(e);
             return n2;
         });
@@ -324,12 +328,12 @@ public static class GraphExtensions
     /// <summary>
     /// Computes path cost on enumerable of path edges
     /// </summary>
-    public static double ComputePathCost<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph,IEnumerable<TEdge> path,Func<TEdge,double>? getWeight = null)
+    public static double ComputePathCost<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<TEdge> path, Func<TEdge, double>? getWeight = null)
     where TNode : INode
     where TEdge : IEdge
     {
-        getWeight ??= edge=>edge.Weight;
-        return path.Sum(x=>getWeight(x));
+        getWeight ??= edge => edge.Weight;
+        return path.Sum(x => getWeight(x));
     }
     /// <summary>
     /// Checks if graph colored in a right way. Throws an exception if there is a case when some node is not colored in a right way.
@@ -397,7 +401,7 @@ public static class GraphExtensions
     {
         nodes ??= graph.Nodes;
         edges ??= graph.Edges;
-        graph.SetSources(new DefaultNodeSource<TNode>(nodes),new DefaultEdgeSource<TEdge>(edges));
+        graph.SetSources(new DefaultNodeSource<TNode>(nodes), new DefaultEdgeSource<TEdge>(edges));
         return graph;
     }
     /// <summary>
@@ -422,15 +426,61 @@ public static class GraphExtensions
             n.Color = color;
         }
     }
+    //TODO: add tests
     /// <summary>
-    /// Converts edges list to path (nodes list)
+    /// Converts edges list to undirected path
     /// </summary>
     /// <returns>Converted path</returns>
-    public static IList<TNode> ConvertEdgesListToPath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TEdge> edges)
+    public static IPath<TNode> ConvertEdgesListToUndirectedPath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<TEdge> edges)
     where TNode : INode
     where TEdge : IEdge
     {
-        if (edges.Count == 0) return new List<TNode>();
+        if (edges.Count() == 0) return graph.ToPath(Enumerable.Empty<TNode>(), PathType.Undirected);
+        using var degrees = graph.Do.CountDegrees(edges);
+        var edgeSource = new DefaultEdgeSource<TEdge>(edges);
+        var ends = edges
+            .Where(x => degrees[x.SourceId] == 1)
+            .Select(x => x.SourceId)
+            .ToList();
+        if (ends.Count > 2)
+        {
+            var frame = new string('-', 10);
+            System.Console.WriteLine(frame);
+            foreach (var v in ends)
+                System.Console.WriteLine(v);
+            throw new GraphConverterException("Given path have more than two ends\n" + frame);
+        }
+
+        foreach (var e in edges)
+        {
+            var deg = degrees[e.SourceId];
+            if (deg > 0 && deg < 3) continue;
+            throw new ArgumentException($"Given edges list is not a path. Node {e.SourceId} have degree : {deg}");
+        }
+
+        var resultPath = new List<TNode>();
+
+        var end = ends.Count == 0 ? edges.First().SourceId : ends.First();
+        while (true)
+        {
+            resultPath.Add(graph.Nodes[end]);
+            degrees[end] = 0;
+            var ends1 = edgeSource.AdjacentEdges(end).Where(x=>degrees[x.TargetId]!=0);
+            if(ends1.Count()==0) break;
+            end = ends1.First().TargetId;
+        }
+        return new PathResult<TNode>(x => graph.ComputePathCost(resultPath), resultPath, PathType.Undirected);
+    }
+
+    /// <summary>
+    /// Converts edges list to path
+    /// </summary>
+    /// <returns>Converted path</returns>
+    public static IPath<TNode> ConvertEdgesListToPath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IList<TEdge> edges)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        if (edges.Count == 0) return graph.ToPath(Enumerable.Empty<TNode>(), PathType.OutEdges);
         var m = edges.MaxBy(x => Math.Max(x.SourceId, x.TargetId)) ?? throw new Exception();
         var nodesCount = Math.Max(m.SourceId, m.TargetId);
         using var addedNodes = ArrayPoolStorage.RentArray<byte>(nodesCount + 1);
@@ -466,26 +516,40 @@ public static class GraphExtensions
         }
         if (result.Count != expectedNodesCount)
             throw new ArgumentException("Given edges list is not a path");
-        return result.Select(x => graph.Nodes[x]).ToList();
+        return graph.ToPath(result.Select(x => graph.Nodes[x]).ToList(), PathType.OutEdges);
     }
+/// <summary>
+    /// Converts nodes list that forms a path to edges they contains
+    /// </summary>
+    /// <returns><see langword="true"/> if converted successfully, else <see langword="false"/></returns>
+    public static bool ConvertPathToEdges<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<TNode> nodes, out IList<TEdge> edges)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        return graph.ConvertPathToEdges(nodes.Select(x=>x.Id),out edges);
+    }
+
     // TODO: add test
     /// <summary>
     /// Converts nodes list that forms a path to edges they contains
     /// </summary>
     /// <returns><see langword="true"/> if converted successfully, else <see langword="false"/></returns>
-    public static bool ConvertPathToEdges<TNode,TEdge>(this IImmutableGraph<TNode, TEdge> graph,  IList<TNode> nodes, out IList<TEdge> edges)
+    public static bool ConvertPathToEdges<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<int> nodes, out IList<TEdge> edges)
     where TNode : INode
     where TEdge : IEdge
     {
         var edges1 = new List<TEdge>();
         bool failed = false;
-        nodes.Aggregate((n1,n2)=>{
-            if(!failed) 
-            if(graph.Edges.TryGetEdge(n1.Id,n2.Id,out var edge) && edge is not null){
-                edges1.Add(edge);
-            }
-            else
-                failed = true;
+        nodes.Aggregate((n1, n2) =>
+        {
+            var e = graph.Edges.EdgesBetweenNodes(n1, n2);
+            if (!failed)
+                if (e.FirstOrDefault() is TEdge edge)
+                {
+                    edges1.Add(edge);
+                }
+                else
+                    failed = true;
             return n2;
         });
         edges = edges1;
@@ -494,7 +558,7 @@ public static class GraphExtensions
     /// <summary>
     /// Method to get source of the edge
     /// </summary>
-    public static TNode GetSource<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph, TEdge edge)
+    public static TNode GetSource<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, TEdge edge)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -503,7 +567,7 @@ public static class GraphExtensions
     /// <summary>
     /// Method to get target of the edge
     /// </summary>
-    public static TNode GetTarget<TNode,TEdge>(this IImmutableGraph<TNode,TEdge> graph, TEdge edge)
+    public static TNode GetTarget<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, TEdge edge)
     where TNode : INode
     where TEdge : IEdge
     {

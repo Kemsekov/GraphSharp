@@ -48,7 +48,7 @@ where TEdge : IEdge
     /// <summary>
     /// Draws a path from given nodes list with given thickness and color
     /// </summary>
-    public void DrawPath(IEnumerable<TNode> path, Color color, double lineThickness)
+    public void DrawPath(IEnumerable<TNode> path, double lineThickness,Color color)
     {
         if (path.Count() == 0) return;
         DrawnEdgesCache.Clear();
