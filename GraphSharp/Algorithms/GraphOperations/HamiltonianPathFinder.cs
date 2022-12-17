@@ -61,11 +61,12 @@ where TEdge : IEdge
         var didSomething = true;
         double minWeight = double.MaxValue;
 
-        var sameEdge = (TEdge e1, TEdge e2) => e1.TargetId == e2.TargetId && e1.SourceId == e2.SourceId || e1.TargetId == e2.SourceId && e1.SourceId == e2.TargetId;
+        // var cliques = FindAllCliquesFast();
 
         Func<TEdge, double> order = x =>
         {
             return -getWeight(x);
+            // return -(cliques[x.SourceId].Nodes.Count+cliques[x.TargetId].Nodes.Count);
         };
         bool firstIteration = true;
         var iterations = 0;
@@ -80,7 +81,7 @@ where TEdge : IEdge
                 var path = FindAnyPath(
                     e.SourceId,
                     e.TargetId,
-                    edge => (edges.Degree(edge.TargetId) == 0 || edge.TargetId == e.TargetId) && !sameEdge(edge.Edge, e),
+                    edge => (edges.Degree(edge.TargetId) == 0 || edge.TargetId == e.TargetId) && !edge.ConnectsSame(e),
                     getWeight,
                     pathType: PathType.Undirected
                 );
@@ -89,16 +90,21 @@ where TEdge : IEdge
                     path = FindAnyPath(
                         e.SourceId,
                         e.TargetId,
-                        edge => !sameEdge(edge.Edge, e),
+                        edge => !edge.Edge.ConnectsSame(e),
                         getWeight,
                         pathType: PathType.Undirected
                     );
+                    //this one breaks everything
+                    //OptByPath don't seems to work fine here
+                    //although works just fine in OptimizeHamiltonianCycle below
+                    //I think main problem is that it can't
+                    //work properly with paths where some nodes is not in a cycle
                     if (OptByPath(edges, e, getWeight, getWeight(e), path.Select(x => x.Id)))
                     {
                         didSomething = true;
                         break;
                     }
-                    else
+                    if(NeighborsFromEdge(e,getWeight,Edges).All(x=>edges.Degree(x.NodeId)!=0))
                         invalidEdges[e] = 1;
                     continue;
                 }
@@ -109,7 +115,7 @@ where TEdge : IEdge
                 var pathInEdges = new List<TEdge>();
                 path.Aggregate((n1, n2) =>
                 {
-                    pathInEdges.Add(Edges.EdgesBetweenNodes(n1.Id, n2.Id).First());
+                    pathInEdges.Add(Edges.Between(n1.Id, n2.Id));
                     return n2;
                 });
 
@@ -120,19 +126,26 @@ where TEdge : IEdge
                 foreach (var e1 in pathInEdges)
                     edges.Add(e1);
                 didSomething = true;
+
                 if (firstIteration)
                 {
-                    edges.Add(Edges.EdgesBetweenNodes(start.TargetId, start.SourceId).First());
+                    edges.Add(Edges.Between(start.TargetId, start.SourceId));
                     firstIteration = false;
                 }
                 break;
             }
         }
+        while(IncludeMissingNodes(edges,getWeight)>0) ; //this one causes cringe
+
         OptimizeHamiltonianCycle(edges, getWeight);
-        while(IncludeMissingNodes(edges,getWeight)>0) ;
-        //найти вершины, которые не попали в список,
-        //рядом с ними сломать какое-нибудь соединение и добавить
-        //данную вершину в список, потом попытаться восстановить сломанное соединение
+
+        //-----
+        // var t = StructureBase.CloneJustConfiguration();
+        // t.SetSources(edges.SelectMany(x=>new []{x.SourceId,x.TargetId}).Distinct().Select(x=>Nodes[x]));
+        // t.SetSources(edges:edges);
+        // t.CheckForIntegrityOfSimpleGraph();
+        //-----
+
         var resultPath = StructureBase.ConvertEdgesListToUndirectedPath(edges);
         resultPath.Add(resultPath.First());
         return resultPath;
@@ -147,6 +160,7 @@ where TEdge : IEdge
             if(IncludeMissingNode(n.Id,cycleEdges,getWeight))
                 included++;
         }
+        System.Console.WriteLine(included + " Added to cycle");
         return included;
     }
     bool IncludeNode(int nodeId, IEdgeSource<TEdge> cycleEdges, IList<TEdge>? nearbyEdges = null){
@@ -268,46 +282,46 @@ where TEdge : IEdge
         return false;
 
     }
-
-    private bool Opt2Something(IEdgeSource<TEdge> cycleEdges, TEdge edge, Func<TEdge, double> getWeight)
-    {
-        double edgeWeight = getWeight(edge);
-        var sameEdge = (TEdge e1, TEdge e2) => e1.TargetId == e2.TargetId && e1.SourceId == e2.SourceId || e1.TargetId == e2.SourceId && e1.SourceId == e2.TargetId;
-
-        var pathS = FindAnyPath(
-            edge.SourceId,
-            edge.TargetId,
-            e => !sameEdge(e, edge),
-            getWeight,
-            PathType.Undirected
-        );
-
-        return OptByPath(cycleEdges, edge, getWeight, edgeWeight, pathS.Select(x => x.Id));
-    }
     /// <summary>
     /// Accepts some edge and path that goes from one edge end to other, and deduce whatever given path should
-    /// be included into cycle.
+    /// be included into cycle. It asks occupied nodes in a path to free space, and if 
+    /// all of them can free it's place into cycle and if their total path distance loss bigger than total distance gain
+    /// we proceed replacement. If there is not included into cycle node and all of other nodes can be free it
+    /// will always execute. 
     /// </summary>
-    /// <returns>true if included path into cycle</returns>
+    /// <returns>true if path included into cycle</returns>
     private bool OptByPath(IEdgeSource<TEdge> cycleEdges, TEdge edge, Func<TEdge, double> getWeight, double edgeWeight, IEnumerable<int> pathS)
     {
         if (pathS.Count() == 0) return false;
+        
+        var pos = new Edge(pathS.First(),pathS.Last());
+        if(!edge.ConnectsSame(pos)){
+            throw new Exception("WTF");
+        }
+
         var pathFreeing = pathS
-            .Select(x => x)
             .Except(new[] { edge.SourceId, edge.TargetId })
-            .Select(x => FreeNodeFromCycle(x, cycleEdges, getWeight))
+            .Select(x =>{
+                var r = FreeNodeFromCycle(x, cycleEdges, getWeight);
+                r.ExecuteFree?.Invoke();
+                return r;
+            })
             .ToList();
-        if (pathFreeing.Any(x => x.ExecuteFree is null)) return false;
+        var restore = ()=>{
+            pathFreeing.Reverse();
+            foreach(var v in pathFreeing)
+                v.ExecuteRestore?.Invoke();
+            return false;
+        };
+        if (pathFreeing.Any(x => x.ExecuteFree is null)) return restore();
 
         var totalDistanceLoss = pathFreeing.Sum(x => x.distanceLoss);
 
         var totalDistanceGain = StructureBase.ComputePathCost(pathS) - edgeWeight;
 
-        if (totalDistanceGain > totalDistanceLoss) return false;
+        if (totalDistanceGain >= totalDistanceLoss) return restore();
 
-        foreach (var free in pathFreeing)
-            free.ExecuteFree?.Invoke();
-        StructureBase.ConvertPathToEdges(pathS, out var toAdd);
+        if(!StructureBase.ConvertPathToEdges(pathS, out var toAdd)) return restore();
         cycleEdges.Remove(edge);
         foreach (var e in toAdd)
             cycleEdges.Add(e);
