@@ -135,11 +135,9 @@ where TEdge : IEdge
                 break;
             }
         }
-        // IncludeMissingNodes(edges,getWeight);
-        // IncludeMissingNodes(edges,getWeight);
-        while(IncludeMissingNodes(edges,getWeight)>0) ;
-
         OptimizeHamiltonianCycle(edges, getWeight);
+        
+        while(IncludeMissingNodes(edges,getWeight)>0) ;
 
         //-----
         // var t = StructureBase.CloneJustConfiguration();
@@ -164,7 +162,6 @@ where TEdge : IEdge
                 included++;
             }
         }
-        System.Console.WriteLine(included + " Added to cycle");
         return included;
     }
 
