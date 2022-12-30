@@ -135,7 +135,9 @@ where TEdge : IEdge
                 break;
             }
         }
-        while(IncludeMissingNodes(edges,getWeight)>0) ; //this one causes cringe
+        // IncludeMissingNodes(edges,getWeight);
+        // IncludeMissingNodes(edges,getWeight);
+        while(IncludeMissingNodes(edges,getWeight)>0) ;
 
         OptimizeHamiltonianCycle(edges, getWeight);
 
@@ -153,16 +155,42 @@ where TEdge : IEdge
 
     int IncludeMissingNodes(IEdgeSource<TEdge> cycleEdges, Func<TEdge, double> getWeight)
     {
+        // return 0;
         var included = 0; 
         foreach (var n in Nodes)
         {
             if(cycleEdges.Degree(n.Id)==0)
-            if(IncludeMissingNode(n.Id,cycleEdges,getWeight))
+            if(IncludeMissingNodeTypeA(n.Id,cycleEdges,getWeight) || IncludeMissingNodeTypeB(n.Id,cycleEdges,getWeight)){
                 included++;
+            }
         }
         System.Console.WriteLine(included + " Added to cycle");
         return included;
     }
+
+    bool IncludeMissingNodeTypeB(int nodeId, IEdgeSource<TEdge> cycleEdges, Func<TEdge, double> getWeight)
+    {
+        var nearbyEdges = Edges.InducedEdges(Edges.Neighbors(nodeId)).ToList();
+        if(IncludeNode(nodeId,cycleEdges,nearbyEdges)) return true;
+        bool found = false;
+        foreach(var c in nearbyEdges){
+            if(found) break;
+            var toFree = NeighborsFromEdge(c,getWeight).Where(x=>x.NodeId!=nodeId).ToList();
+            foreach(var d in toFree){
+                var freeing = FreeNodeFromCycle(d.NodeId,cycleEdges,getWeight);
+                if(freeing.ExecuteFree is null) continue;
+                freeing.ExecuteFree();
+                if(cycleEdges.Contains(c)){
+                    found = true;
+                    break;
+                }
+                freeing.ExecuteRestore?.Invoke();
+            }
+        }
+        if(!found) return false;
+        return IncludeNode(nodeId,cycleEdges,nearbyEdges);
+    }
+
     bool IncludeNode(int nodeId, IEdgeSource<TEdge> cycleEdges, IList<TEdge>? nearbyEdges = null){
         nearbyEdges ??= Edges.InducedEdges(Edges.Neighbors(nodeId)).ToList();
         foreach (var e in nearbyEdges)
@@ -177,30 +205,35 @@ where TEdge : IEdge
         }
         return false;
     }
-    bool IncludeMissingNode(int nodeId, IEdgeSource<TEdge> cycleEdges, Func<TEdge, double> getWeight)
+    bool IncludeMissingNodeTypeA(int nodeId, IEdgeSource<TEdge> cycleEdges, Func<TEdge, double> getWeight)
     {
         var nearbyEdges = Edges.InducedEdges(Edges.Neighbors(nodeId)).ToList();
         if(IncludeNode(nodeId,cycleEdges,nearbyEdges)) return true;
-        foreach (var e in nearbyEdges)
-        {
-            var nodeToFree = NeighborsFromEdge(e, getWeight,cycleEdges);
-            if(nodeToFree.Count==0) continue;
-            foreach(var n in nodeToFree){
-                var freeResult = FreeNodeFromCycle(n.NodeId, cycleEdges, getWeight);
-                if (freeResult.ExecuteFree is null) continue;
-                freeResult.ExecuteFree();
-                if(!IncludeNode(n.NodeId,cycleEdges,Edges.InducedEdges(Edges.Neighbors(n.NodeId)).Where(x=>!x.ConnectsSame(e)).ToList())){
-                    freeResult.ExecuteRestore?.Invoke();
-                    continue;
-                }
-                cycleEdges.Remove(e);
-                cycleEdges.Add(Edges.Between(e.SourceId, nodeId));
-                cycleEdges.Add(Edges.Between(e.TargetId, nodeId));
-                return true;
+        bool found = false;
+        foreach(var n in Edges.Neighbors(nodeId)){
+            if(found) break;
+            var freeing = FreeNodeFromCycle(n,cycleEdges,getWeight);
+            if(freeing.ExecuteFree is null) continue;
+            var A = cycleEdges.InducedEdges(Edges.Neighbors(n)).ToList();
+            freeing.ExecuteFree();
+            foreach(var a in A){
+                var Ba = NeighborsEdge(a);
+                var intersection = Ba.Intersect(nearbyEdges).ToList();
+                if(intersection.Count==0) continue;
+                cycleEdges.Remove(a);
+                cycleEdges.Add(Edges.Between(a.SourceId,n));
+                cycleEdges.Add(Edges.Between(a.TargetId,n));
+                found = true;
+                break;
             }
+            if(!found) 
+                freeing.ExecuteRestore?.Invoke();
         }
-        return false;
+        if(!found) return false;
+        return IncludeNode(nodeId,cycleEdges,nearbyEdges);
     }
+
+ 
 
     void OptimizeHamiltonianCycle(IEdgeSource<TEdge> cycleEdges, Func<TEdge, double> getWeight)
     {
@@ -295,9 +328,6 @@ where TEdge : IEdge
         if (pathS.Count() == 0) return false;
         
         var pos = new Edge(pathS.First(),pathS.Last());
-        if(!edge.ConnectsSame(pos)){
-            throw new Exception("WTF");
-        }
 
         var pathFreeing = pathS
             .Except(new[] { edge.SourceId, edge.TargetId })

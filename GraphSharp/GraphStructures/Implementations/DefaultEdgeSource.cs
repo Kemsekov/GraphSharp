@@ -85,11 +85,11 @@ where TEdge : IEdge
     ///<inheritdoc/>
     public bool Remove(TEdge edge)
     {
-        if (Edges.TryGetValue(edge.SourceId, out var e))
+        if (Edges.TryGetValue(edge.SourceId, out var e1) && Edges.TryGetValue(edge.TargetId, out var e2))
         {
-            var outEdges = e.outEdges;
-            var inEdges = Edges[edge.TargetId].inEdges;
-            var removed =
+            var outEdges = e1.outEdges;
+            var inEdges  = e2.inEdges;
+            var removed  =
                 outEdges.Remove(edge) &&
                 inEdges.Remove(edge);
             if (removed)
