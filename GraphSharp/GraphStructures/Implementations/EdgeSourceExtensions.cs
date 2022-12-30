@@ -177,6 +177,7 @@ public static class EdgeSourceExtensions
             }
         }
     }
+    /// <returns>All edges adjacent to given nodes</returns>
     public static IEnumerable<EdgeSelect<TEdge>> AdjacentEdges<TEdge>(this IImmutableEdgeSource<TEdge> Edges,params int[] nodes)
     where TEdge: IEdge
     {

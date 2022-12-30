@@ -4,43 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 namespace GraphSharp.Graphs;
 
+//Beware, this code is not maintainable and there is no one in the whole universe
+//(including me, the one who wrote it) that could understand what all of this is actually
+//doing. I've been writing this ham cycle heuristic for so long that forgot what
+//all of this layers upon layers of methods and abstractions do, but all I know that
+//it is doing great on planar graphs
+
 public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    /// <summary>
-    /// Tries to find a hamiltonian path by ant simulation. Running in non-deterministic time.
-    /// </summary>
-    /// <param name="colonySize">Count of ants to use</param>
-    /// <param name="startNodeId">Start points that used for searching hamiltonian path</param>
-    /// <param name="maxIterations">Because this algorithm works in non-deterministic time it can work up to infinity, so this parameter will limit count of algorithm iterations</param>
-    /// <param name="startSmell">Smell that set to all edges when algorithm is initialized</param>
-    /// <param name="minSmell">A lower bound for smell</param>
-    /// <returns>Hamiltonian path, if found before hit maxIterationsLimit. Else some random very long path. And as seconds parameter count of iterations it took to compute path.</returns>
-    public (IList<TEdge> path, int steps) TryFindHamiltonianPathByAntSimulation(int colonySize = 256, int startNodeId = 0, int maxIterations = 1000, double startSmell = 0.5f, double minSmell = 0.0001f)
-    {
-        var smell = new ConcurrentDictionary<TEdge, double>();
-        foreach (var e in Edges)
-            smell[e] = startSmell;
-
-        using var colony = new AntColony<TNode, TEdge>(StructureBase, smell, colonySize);
-        int counter = 0;
-        while (true)
-        {
-            counter++;
-            if (counter >= maxIterations) break;
-            colony.RunParallel(0);
-            colony.UpdateSmellParallel();
-            colony.ReduceSmell();
-            colony.Reset();
-            if (colony.BestPath.Count == Nodes.Count() - 1)
-            {
-                break;
-            }
-        }
-        var path = colony.BestPath;
-        return (path, counter);
-    }
     /// <summary>
     /// Tries to find hamiltonian cycle by 'bubble expansion' technique. Works only on bidirected graphs. 
     /// Results wary and can be exact hamiltonian cycle or just a very long cycle in a graph.<br/>

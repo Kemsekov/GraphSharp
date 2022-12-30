@@ -30,7 +30,9 @@ where TEdge : IEdge
     /// if algorithm did not found any ancestor for this node.
     /// </summary>
     public RentedArray<int> Path{get;init;}
+    /// <inheritdoc/>
     public PathType PathType { get; }
+    /// <inheritdoc/>
     public Func<TEdge,double> GetWeight{get;set;}
     /// <summary>
     /// Id of first node in the path
@@ -42,6 +44,7 @@ where TEdge : IEdge
     public IImmutableGraph<TNode, TEdge> Graph { get; }
 
     /// <param name="graph">Graph that will be used to find path on</param>
+    /// <param name="pathType">Type of path to use</param>
     public PathFinderBase(IImmutableGraph<TNode,TEdge> graph,PathType pathType)
     {
         this.PathType = pathType;

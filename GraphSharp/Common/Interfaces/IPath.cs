@@ -9,6 +9,9 @@ namespace GraphSharp.Common;
 /// </summary>
 public interface IPath<TNode> : IList<TNode>
 {
+    /// <summary>
+    /// Type of path. Can be directed or undirected. Also directness can be defined on out edges or on in edges.
+    /// </summary>
     PathType PathType{get;}
     /// <summary>
     /// A list of nodes, which order defines a path
@@ -24,6 +27,10 @@ public interface IPath<TNode> : IList<TNode>
 /// Path finder
 /// </summary>
 public interface IPathFinder<TNode>{
+    /// <summary>
+    /// Type of path. Can be directed or undirected. Also directness can be defined on out edges or on in edges.
+    /// </summary>
     PathType PathType{get;}
+    /// <returns>Path between two given nodes</returns>
     IPath<TNode> GetPath(int node1, int node2);
 }

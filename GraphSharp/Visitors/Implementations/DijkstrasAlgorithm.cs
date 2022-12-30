@@ -19,6 +19,7 @@ where TEdge : IEdge
     /// </summary>
     /// <param name="startNodeId">Node from which we need to find a shortest path</param>
     /// <param name="graph">Algorithm will be executed on this graph</param>
+    /// <param name="pathType">The type of path</param>
     public DijkstrasAlgorithm(int startNodeId, IImmutableGraph<TNode, TEdge> graph,PathType pathType) : base(graph,pathType)
     {
         GetWeight = e => e.Weight;

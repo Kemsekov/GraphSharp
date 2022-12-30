@@ -11,6 +11,7 @@ public class ShortestPathsLengthFinderAlgorithms<TNode, TEdge> : VisitorBase<TNo
 where TNode : INode
 where TEdge : IEdge
 {
+    ///<inheritdoc/>
     public Func<TEdge,double> GetWeight{get;set;}
     /// <summary>
     /// What is the length of path from startNode to some other node so far.  

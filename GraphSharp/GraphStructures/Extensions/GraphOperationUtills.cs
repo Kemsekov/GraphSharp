@@ -8,6 +8,9 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    /// <summary>
+    /// Count node degrees from given edges
+    /// </summary>
     public RentedArray<int> CountDegrees(IEnumerable<TEdge> edges){
         var result = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId+1);
         foreach(var e in edges){
