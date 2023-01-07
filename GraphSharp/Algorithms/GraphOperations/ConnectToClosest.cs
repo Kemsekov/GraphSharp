@@ -60,17 +60,23 @@ where TEdge : IEdge
         var nodesScreenShot = Nodes.ToArray();
 
         int added = 0;
-
+        var haveEdge = (int n1, int n2)=>{
+            while(true){
+                try{
+                    return Edges.BetweenOrDefault(n1,n2) is not null;
+                }
+                catch(Exception){}
+            }
+        };
         Parallel.ForEach(Nodes,n=>{
             float takenCount = added%2==0 ? -0.5f : -1;
             var toAdd = nodesScreenShot
             .OrderBy(x=>distance(x,n))
-            .Where(x=>Edges.BetweenOrDefault(x.Id,n.Id) is null && x.Id!=n.Id)
-            .TakeWhile(x=>{
-                takenCount+=1;
-                return takenCount<expectedDegree;
-            });
+            .Where(x=>!haveEdge(x.Id,n.Id) && x.Id!=n.Id);
             foreach(var next in toAdd){
+                if(Edges.Degree(next.Id)>averageDegree) continue;
+                takenCount+=1;
+                if(takenCount>=expectedDegree) break;
                 Edges.Add(Configuration.CreateEdge(n,next));
             }
             Interlocked.Increment(ref added);
