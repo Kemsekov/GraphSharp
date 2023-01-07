@@ -7,7 +7,7 @@ namespace GraphSharp.Common;
 /// <summary>
 /// Result of kruskal algorithm
 /// </summary>
-public class KruskalForest<TEdge> : IDisposable
+public class KruskalForest<TEdge> : IDisposable, IForest<TEdge>
 {
     /// <inheritdoc/>
     public KruskalForest(UnionFind treeFinder,RentedArray<int> degree, IList<TEdge> forest)
@@ -29,10 +29,11 @@ public class KruskalForest<TEdge> : IDisposable
     /// A list of edges that forms a forest
     /// </summary>
     public IList<TEdge> Forest { get; }
+    IEnumerable<TEdge> IForest<TEdge>.Forest => Forest;
     /// <summary>
     /// Helps to determine if two given nodes in the same tree
     /// </summary>
-    public bool InOneComponent(int nodeId1, int nodeId2){
+    public bool InSameComponent(int nodeId1, int nodeId2){
         return TreeFinder.FindSet(nodeId1) == TreeFinder.FindSet(nodeId2);
     }
     ///<inheritdoc/>
@@ -40,5 +41,10 @@ public class KruskalForest<TEdge> : IDisposable
     {
         TreeFinder.Dispose();
         Degree.Dispose();
+    }
+
+    int IForest<TEdge>.Degree(int nodeId)
+    {
+        return Degree[nodeId];
     }
 }

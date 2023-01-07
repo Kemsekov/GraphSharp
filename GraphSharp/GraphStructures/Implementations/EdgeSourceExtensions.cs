@@ -104,7 +104,6 @@ public static class EdgeSourceExtensions
         return false;
     }
     /// <returns>All edges that directs as source id -> target id</returns>
-
     public static IEnumerable<TEdge> GetParallelEdges<TEdge>(this IImmutableEdgeSource<TEdge> Edges,int sourceId, int targetId)
     where TEdge: IEdge
     {
@@ -129,6 +128,7 @@ public static class EdgeSourceExtensions
     {
         foreach (var e in Edges)
         {
+            if(arrayIndex>=array.Length) return;    
             array[arrayIndex] = e;
             arrayIndex++;
         }
@@ -215,5 +215,13 @@ public static class EdgeSourceExtensions
     where TEdge : IEdge
     {
         return Edges.EdgesBetweenNodes(n1,n2).First();
+    }
+    /// <summary>
+    /// Returns first found edge between two nodes or default value if no edge is found
+    /// </summary>
+    public static TEdge? BetweenOrDefault<TEdge>(this IImmutableEdgeSource<TEdge> Edges, int n1, int n2)
+    where TEdge : IEdge
+    {
+        return Edges.EdgesBetweenNodes(n1,n2).FirstOrDefault();
     }
 }

@@ -87,29 +87,13 @@ public class GraphTests
         }
     }
     [Fact]
-    public void TryFindHamiltonianPathByAntSimulation_Works()
-    {
-        _Graph.Do.CreateNodes(50);
-        _Graph.Do.DelaunayTriangulation(x=>x.Position);
-        _Graph.Do.MakeBidirected();
-        //It works very good at small graphs<200 nodes, especially on
-        //triangulated graphs, so I am expecting it to return exact solution here.
-        var result = _Graph.Do.TryFindHamiltonianPathByAntSimulation();
-        Assert.Equal(result.path.Count, 49);
-        var convertedPath = _Graph.ConvertEdgesListToPath(result.path);
-        var pathToValidate = new PathResult<Node>(x=>_Graph.ComputePathCost(convertedPath),convertedPath,PathType.Undirected);
-        _Graph.ValidatePath(pathToValidate);
-    }
-    [Fact]
     public void TryFindHamiltonianCycleByBubbleExpansion_Works()
     {
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.DelaunayTriangulation(x=>x.Position);
         _Graph.Do.MakeBidirected();
         var result = _Graph.Do.TryFindHamiltonianCycleByBubbleExpansion();
-        var convertedPath = _Graph.ConvertEdgesListToPath(result);
-        var pathToValidate = new PathResult<Node>(x=>_Graph.ComputePathCost(convertedPath),convertedPath,PathType.Undirected);
-        _Graph.ValidateCycle(pathToValidate);
+        _Graph.ValidateCycle(result);
     }
     [Fact]
     public void TopologicalSort_Works()

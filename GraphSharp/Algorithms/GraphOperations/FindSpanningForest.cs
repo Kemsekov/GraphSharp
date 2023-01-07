@@ -23,8 +23,8 @@ where TEdge : IEdge
         var forest = KruskalAlgorithm(edges, maxDegree);
         return forest;
     }
-    
-    KruskalForest<TEdge> FindKruskalForest(IEnumerable<TEdge> edges, Func<TEdge,double> getWeight,Func<TNode,int> maxDegree)
+
+    KruskalForest<TEdge> FindKruskalForest(IEnumerable<TEdge> edges, Func<TEdge, double> getWeight, Func<TNode, int> maxDegree)
     {
         edges = edges.OrderBy(x => getWeight(x));
         return KruskalAlgorithm(edges, maxDegree);
@@ -34,10 +34,10 @@ where TEdge : IEdge
     /// Guarantee to return a tree which connects all nodes in a hamiltonian path.
     /// </summary>
     /// <returns></returns>
-    protected (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TNode,Vector2> getPos, Func<TEdge, double>? getWeight = null)
+    protected (IList<TEdge> tree, TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TNode, Vector2> getPos, Func<TEdge, double>? getWeight = null)
     {
-        getWeight ??= x=>x.Weight;
-        return FindSpanningTreeDegree2OnNodes(getWeight,graph=>graph.Do.DelaunayTriangulation(getPos));
+        getWeight ??= x => x.Weight;
+        return FindSpanningTreeDegree2OnNodes(getWeight, graph => graph.Do.DelaunayTriangulation(getPos));
     }
     /// <summary>
     /// Constructs a spanning tree degree 2 on nodes only by repeatedly applying delaunay triangulation
@@ -50,16 +50,16 @@ where TEdge : IEdge
     /// <param name="getWeight">Function to take weight from edge</param>
     /// <param name="doDelaunayTriangulation">Function to do delaunay triangulation</param>
     /// <returns>Tree as edges list and tree ends as nodes array. Node is end if it's degree = 1</returns>
-    protected (IList<TEdge> tree,TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TEdge, double> getWeight, Action<IGraph<TNode,TEdge>> doDelaunayTriangulation)
+    protected (IList<TEdge> tree, TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TEdge, double> getWeight, Action<IGraph<TNode, TEdge>> doDelaunayTriangulation)
     {
         var graph = StructureBase;
         var clone = graph.CloneJustConfiguration();
         clone.SetSources(graph.Nodes);
         doDelaunayTriangulation(clone);
-        using var startEdges = clone.Do.FindSpanningForestKruskal(getWeight: getWeight,maxDegree: n => 2);
+        using var startEdges = clone.Do.FindSpanningForestKruskal(getWeight: getWeight, maxDegree: n => 2);
         clone.SetSources(edges: startEdges.Forest);
         TNode[] ends;
-        while(true)
+        while (true)
         {
             using var components = clone.Do.FindComponents();
             var nodesDegreeBelow2 = clone.Nodes.Where(n => clone.Edges.Degree(n.Id) < 2).ToList();
@@ -71,24 +71,24 @@ where TEdge : IEdge
                 break;
             }
             doDelaunayTriangulation(tmpGraph);
-            foreach(var n in tmpGraph.Nodes)
-            foreach (var e in tmpGraph.Edges.OutEdges(n.Id))
-            {
-                if (components.InSameComponent(e.SourceId, e.TargetId))
+            foreach (var n in tmpGraph.Nodes)
+                foreach (var e in tmpGraph.Edges.OutEdges(n.Id))
                 {
-                    tmpGraph.Edges.Remove(e.SourceId, e.TargetId);
+                    if (components.InSameComponent(e.SourceId, e.TargetId))
+                    {
+                        tmpGraph.Edges.Remove(e.SourceId, e.TargetId);
+                    }
                 }
-            }
-            using var forest = FindKruskalForest(tmpGraph.Edges,getWeight,x=>1);
+            using var forest = FindKruskalForest(tmpGraph.Edges, getWeight, x => 1);
             var setFinder = components.SetFinder;
-            foreach (var e in forest.Forest.OrderBy(x =>getWeight(x)))
+            foreach (var e in forest.Forest.OrderBy(x => getWeight(x)))
             {
                 if (components.InSameComponent(e.SourceId, e.TargetId)) continue;
                 clone.Edges.Add(e);
                 setFinder.UnionSet(e.SourceId, e.TargetId);
             }
         }
-        
-        return (clone.Edges.ToList(),ends);
+
+        return (clone.Edges.ToList(), ends);
     }
 }

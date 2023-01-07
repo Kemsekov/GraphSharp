@@ -45,6 +45,7 @@ where TEdge : IEdge
         var iterations = 0;
         while (didSomething)
         {
+            if(edges.Count==Nodes.Count()) break;
             didSomething = false;
             minWeight = double.MaxValue;
             foreach (var e in edges.OrderBy(order).ToList())
@@ -67,11 +68,6 @@ where TEdge : IEdge
                         getWeight,
                         pathType: PathType.Undirected
                     );
-                    //this one breaks everything
-                    //OptByPath don't seems to work fine here
-                    //although works just fine in OptimizeHamiltonianCycle below
-                    //I think main problem is that it can't
-                    //work properly with paths where some nodes is not in a cycle
                     if (OptByPath(edges, e, getWeight, getWeight(e), path.Select(x => x.Id)))
                     {
                         didSomething = true;
@@ -111,13 +107,6 @@ where TEdge : IEdge
         OptimizeHamiltonianCycle(edges, getWeight);
         
         while(IncludeMissingNodes(edges,getWeight)>0) ;
-
-        //-----
-        // var t = StructureBase.CloneJustConfiguration();
-        // t.SetSources(edges.SelectMany(x=>new []{x.SourceId,x.TargetId}).Distinct().Select(x=>Nodes[x]));
-        // t.SetSources(edges:edges);
-        // t.CheckForIntegrityOfSimpleGraph();
-        //-----
 
         var resultPath = StructureBase.ConvertEdgesListToUndirectedPath(edges);
         resultPath.Add(resultPath.First());

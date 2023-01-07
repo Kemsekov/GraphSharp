@@ -230,7 +230,7 @@ public static class GraphExtensions
         var intersection = cycle1.Path.Select(x => x.Id).Intersect(cycle2.Path.Select(y => y.Id)).ToArray();
 
         var cycles = cycle1.Path.Concat(cycle2.Path);
-        result = graph.ToPath(new List<TNode>(cycle1.Path.Count + cycle2.Path.Count - intersection.Length), PathType.OutEdges);
+        result = graph.ToPath(new List<TNode>(cycle1.Path.Count + cycle2.Path.Count - intersection.Length), PathType.Undirected);
 
         if (intersection.Length < 2)
             return false;

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using GraphSharp.Common;
 
@@ -43,6 +44,38 @@ where TEdge : IEdge
                 }
             }
         });
+        return this;
+    }
+    /// <summary>
+    /// Connects closest nodes while retaining some specified average degree.<br/>
+    /// For even values of <paramref name="averageDegree"/> resulting graph will have exactly same
+    /// average degree as specified.<br/>
+    /// For non-even values of <paramref name="averageDegree"/> resulting graph will have
+    /// approximately same average degree as specified(the more nodes, the closer this value is)
+    /// </summary>
+    public GraphOperation<TNode, TEdge> ConnectToClosest(int averageDegree, Func<TNode, TNode, double> distance){
+        if(averageDegree==0) return this;
+        Edges.Clear();
+        float expectedDegree = averageDegree*1.0f/2;
+        var nodesScreenShot = Nodes.ToArray();
+
+        int added = 0;
+
+        Parallel.ForEach(Nodes,n=>{
+            float takenCount = added%2==0 ? -0.5f : -1;
+            var toAdd = nodesScreenShot
+            .OrderBy(x=>distance(x,n))
+            .Where(x=>Edges.BetweenOrDefault(x.Id,n.Id) is null && x.Id!=n.Id)
+            .TakeWhile(x=>{
+                takenCount+=1;
+                return takenCount<expectedDegree;
+            });
+            foreach(var next in toAdd){
+                Edges.Add(Configuration.CreateEdge(n,next));
+            }
+            Interlocked.Increment(ref added);
+        });
+        
         return this;
     }
 }
