@@ -19,8 +19,14 @@ where TEdge : IEdge
         foreach (var e in Edges)
             u.UnionSet(e.SourceId, e.TargetId);
         
-        var totalSets = Nodes.Select(x => u.FindSet(x.Id)).Distinct();
-        var result = totalSets.Select(setId => Nodes.Where(n => u.FindSet(n.Id) == setId));
-        return new (result.ToArray(), u);
+        var result = new Dictionary<int,IList<TNode>>(u.SetsCount+1);
+        foreach(var n in Nodes){
+            var set = u.FindSet(n.Id);
+            if(result.TryGetValue(set,out var list))
+                list.Add(n);
+            else
+                result[set] = new List<TNode>(){n};
+        }
+        return new (result.Values.ToArray(), u);
     }
 }
