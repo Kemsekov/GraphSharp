@@ -311,6 +311,7 @@ public class GraphTests
         _Graph.Do.ConnectRandomly(0, 6);
         int indexer = 0;
         var result = _Graph.Do.FindComponents();
+        Assert.Equal(result.Components.Length,result.SetFinder.SetsCount);
         var indexedComponents = result.Components.Select(x => (indexer++, x)).ToArray();
         var paired = new Dictionary<(int, int), int>();
         foreach (var c1 in indexedComponents)

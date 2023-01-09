@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace GraphSharp.Common;
 
@@ -10,6 +11,11 @@ public class UnionFind : IDisposable
 {
     RentedArray<int> parent;
     RentedArray<int> rank;
+    /// <summary>
+    /// Total count of sets in the union find
+    /// </summary>
+    /// <returns></returns>
+    public int SetsCount => parent.Distinct().Count();
     /// <param name="maxSetSize">Max element index in union set</param>
     public UnionFind(int maxSetSize)
     {
