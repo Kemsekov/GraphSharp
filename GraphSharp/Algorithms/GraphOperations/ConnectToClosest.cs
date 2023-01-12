@@ -68,6 +68,7 @@ where TEdge : IEdge
                 catch(Exception){}
             }
         };
+        var locker = new object();
         Parallel.ForEach(Nodes,n=>{
             float takenCount = added%2==0 ? -0.5f : -1;
             var toAdd = nodesScreenShot
@@ -77,7 +78,8 @@ where TEdge : IEdge
                 if(Edges.Degree(next.Id)>averageDegree) continue;
                 takenCount+=1;
                 if(takenCount>=expectedDegree) break;
-                Edges.Add(Configuration.CreateEdge(n,next));
+                lock(locker)
+                    Edges.Add(Configuration.CreateEdge(n,next));
             }
             Interlocked.Increment(ref added);
         });

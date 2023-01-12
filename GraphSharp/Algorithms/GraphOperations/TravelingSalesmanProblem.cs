@@ -78,13 +78,17 @@ where TEdge : IEdge
         return new TspResult<TNode>(path.Path,cost);
     }
     /// <summary>
-    /// Computes TSP by cheapest link strategy
+    /// Computes TSP by cheapest link strategy. <br/>
+    /// Creates a close-connected graph, finds on it spanning tree degree 2, builds tsp out of it and optimizes result.<br/>
+    /// Works in O(N^2) time
     /// </summary>
-    public ITsp<TNode> TspCheapestLink(Func<TNode, TNode, double> cost)
+    public ITsp<TNode> TspCheapestLink(Func<TNode, TNode, double> cost, int initialConnectionsCount)
     {
-        var tsp = new Satsuma.CheapestLinkTsp<TNode>(Nodes.ToList(), cost);
+        var tsp = TspCheapestLinkOnEdgeCost(e=>e.Weight,g=>g.Do.ConnectToClosest(initialConnectionsCount,cost));;
+        tsp = TspOpt2(tsp.Tour,tsp.TourCost,cost);
         return tsp;
     }
+
     /// <summary>
     /// Computes tsp by inserting farthest strategy
     /// </summary>
