@@ -55,6 +55,7 @@ where TEdge : IEdge
     /// </summary>
     public GraphOperation<TNode, TEdge> ConnectToClosest(int averageDegree, Func<TNode, TNode, double> distance){
         if(averageDegree==0) return this;
+        
         Edges.Clear();
         float expectedDegree = averageDegree*1.0f/2;
         var nodesScreenShot = Nodes.ToArray();

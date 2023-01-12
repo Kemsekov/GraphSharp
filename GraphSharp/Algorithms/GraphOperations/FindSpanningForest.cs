@@ -56,12 +56,12 @@ where TEdge : IEdge
         var clone = graph.CloneJustConfiguration();
         clone.SetSources(graph.Nodes);
         doDelaunayTriangulation(clone);
+
         using var startEdges = clone.Do.FindSpanningForestKruskal(getWeight: getWeight, maxDegree: n => 2);
         clone.SetSources(edges: startEdges.Forest);
         TNode[] ends;
         while (true)
         {
-            using var components = clone.Do.FindComponents();
             var nodesDegreeBelow2 = clone.Nodes.Where(n => clone.Edges.Degree(n.Id) < 2).ToList();
             var tmpGraph = clone.CloneJustConfiguration();
             tmpGraph.SetSources(nodesDegreeBelow2);
@@ -70,6 +70,7 @@ where TEdge : IEdge
                 ends = nodesDegreeBelow2.ToArray();
                 break;
             }
+            using var components = clone.Do.FindComponents();
             doDelaunayTriangulation(tmpGraph);
             foreach (var n in tmpGraph.Nodes)
                 foreach (var e in tmpGraph.Edges.OutEdges(n.Id))

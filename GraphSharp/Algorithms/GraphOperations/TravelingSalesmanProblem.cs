@@ -40,6 +40,9 @@ where TEdge : IEdge
     /// </summary>
     public ITsp<TNode> TspCheapestLinkOnPositions(Func<TNode,Vector2> getPos)
     {
+        var count = Nodes.Count();
+        if(count==1) return new TspResult<TNode>(new[]{Nodes.First(),Nodes.First()},0);
+        if(count<=0) throw new ArgumentException("Cannot find TSP on empty graph");
         var treeDegree2 = FindSpanningTreeDegree2OnNodes(getPos);
         var graph = StructureBase.CloneJustConfiguration();
         graph.SetSources(Nodes,Edges);
@@ -64,6 +67,9 @@ where TEdge : IEdge
     /// <returns></returns>
     public ITsp<TNode> TspCheapestLinkOnEdgeCost(Func<TEdge,double> edgeCost,Action<IGraph<TNode, TEdge>> doDelaunayTriangulation)
     {
+        var count = Nodes.Count();
+        if(count==1) return new TspResult<TNode>(new[]{Nodes.First(),Nodes.First()},0);
+        if(count<=0) throw new ArgumentException("Cannot find TSP on empty graph");
         var treeDegree2 = FindSpanningTreeDegree2OnNodes(edgeCost,doDelaunayTriangulation);
         var ends = treeDegree2.ends;
         var graph = StructureBase.CloneJustConfiguration();
