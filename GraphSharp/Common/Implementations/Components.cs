@@ -17,7 +17,7 @@ public class ComponentsResult<TNode> : IDisposable
         this.SetFinder = setFinder;
     }
     /// <summary>
-    /// A list of components, where each element is a array of nodes that represents different components
+    /// An array of components, where each component contains a set of nodes it contains
     /// </summary>
     public IEnumerable<TNode>[] Components { get; }
     /// <summary>
