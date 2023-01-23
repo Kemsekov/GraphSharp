@@ -28,6 +28,7 @@ where TEdge : IEdge
     /// Func to get edge weight. When null will use default edge weight property
     /// </param>
     /// <param name="pathType">What type of path to produce</param>
+    /// /// <returns>Path between two nodes. Empty list if path is not found.</returns>
     public IPath<TNode> FindAnyPath(int startNodeId, int endNodeId,Predicate<EdgeSelect<TEdge>>? condition = null,Func<TEdge,double>? getWeight = null, PathType pathType = PathType.OutEdges)
     {
         getWeight ??= x=>x.Weight;
@@ -43,7 +44,7 @@ where TEdge : IEdge
     /// <summary>
     /// Concurrently finds any first found path between any two nodes. Much faster than Dijkstra path finding
     /// </summary>
-    /// <returns>Path between two nodes. Empty list if path is not found.</returns>
+    /// <inheritdoc cref="FindAnyPath"/>
     public IPath<TNode> FindAnyPathParallel(int startNodeId, int endNodeId, Predicate<EdgeSelect<TEdge>>? condition = null, Func<TEdge,double>? getWeight = null, PathType pathType = PathType.OutEdges)
     {
         getWeight ??= x=>x.Weight;
@@ -57,7 +58,7 @@ where TEdge : IEdge
         .GetPath(startNodeId, endNodeId);
         return path;
     }
-    
+
     /// <summary>
     /// Using any <see cref="PathFinderBase{TNode,TEdge}"/> to find path between two nodes by stopping search 
     /// at first encounter of <paramref name="endNodeId"/>
@@ -70,6 +71,8 @@ where TEdge : IEdge
     /// If this condition falls then edge will not be used in resulting path.
     /// By default passes all edges.
     /// </param>
+    /// <param name="minStepsCount">Min count of steps to do</param>
+    /// <param name="maxStepsCount">Max count of steps to do</param>
     /// <param name="createPropagator">What propagator to use</param>
     /// <param name="createPathFinder">What path finder to use</param>
     /// <returns><see langword="PathFinderBase"/> that was used to find path.</returns>
@@ -78,7 +81,9 @@ where TEdge : IEdge
             int endNodeId,
             Func<PathFinderBase<TNode, TEdge>, PropagatorBase<TNode, TEdge>> createPropagator,
             Func<PathFinderBase<TNode, TEdge>> createPathFinder,
-            Predicate<EdgeSelect<TEdge>>? condition = null)
+            Predicate<EdgeSelect<TEdge>>? condition = null,
+            int minStepsCount = -1,
+            int maxStepsCount = int.MaxValue)
     {
         condition ??= edge => true;
         var pathFinder = createPathFinder();
@@ -100,10 +105,12 @@ where TEdge : IEdge
             propagator.SetToIterateByOutEdges();
         if(pathType==PathType.InEdges)
             propagator.SetToIterateByInEdges();
-        
-        while (!pathFinder.Done)
+        int steps = 0;
+        while (!pathFinder.Done || steps<minStepsCount)
         {
             propagator.Propagate();
+            steps++;
+            if(steps>maxStepsCount) break;
         }
         ReturnPropagator(propagator);
         return pathFinder;

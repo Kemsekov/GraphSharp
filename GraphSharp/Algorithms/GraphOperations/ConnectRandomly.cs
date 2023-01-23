@@ -6,7 +6,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Clear Edges and randomly create some range of edges for each node, so each node have more or equal than minEdgesCount but than less maxEdgesCount edges.
+    /// Randomly create some range of edges for each node, so each node have more or equal than minEdgesCount but than less maxEdgesCount edges.
     /// </summary>
     /// <param name="minEdgesCount">Min count of edges for each node</param>
     /// <param name="maxEdgesCount">Max count of edges for each node</param>
@@ -14,8 +14,6 @@ where TEdge : IEdge
     {
         minEdgesCount = minEdgesCount < 0 ? 0 : minEdgesCount;
         maxEdgesCount = maxEdgesCount > Nodes.Count ? Nodes.Count : maxEdgesCount;
-
-        Edges.Clear();
 
         //swap using xor
         if (minEdgesCount > maxEdgesCount)

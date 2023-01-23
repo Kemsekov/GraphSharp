@@ -6,12 +6,11 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Clears Edges and randomly create edgesCount of edges for each node.
+    /// Randomly create edgesCount of edges for each node.
     /// </summary>
     /// <param name="edgesCount">How much edges each node need</param>
     public GraphOperation<TNode, TEdge> ConnectNodes(int edgesCount)
     {
-        Edges.Clear();
         var availableNodes = Nodes.Select(x => x.Id).ToList();
         edgesCount = edgesCount > Nodes.Count ? Nodes.Count : edgesCount;
 

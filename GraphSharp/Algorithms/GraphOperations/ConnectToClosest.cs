@@ -12,7 +12,7 @@ where TEdge : IEdge
 {
     /// <summary>
     /// Creates thresholded random geometric - like graph.<br/>
-    /// Clears Edges and randomly connects closest nodes using <paramref name="distance"/><br/> 
+    /// Randomly connects closest nodes using <paramref name="distance"/><br/> 
     /// minEdgesCount and maxEdgesCount not gonna give 100% right results. 
     /// This params are just approximation of how much edges per node is gonna be created.<br/>
     /// </summary>
@@ -22,7 +22,6 @@ where TEdge : IEdge
     public GraphOperation<TNode, TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<TNode, TNode, double> distance)
     {
         if (maxEdgesCount == 0) return this;
-        Edges.Clear();
         using var edgesCountMap = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
         foreach (var node in Nodes)
             edgesCountMap[node.Id] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
@@ -53,9 +52,8 @@ where TEdge : IEdge
     /// For non-even values of <paramref name="averageDegree"/> resulting graph will have
     /// approximately same average degree as specified(the more nodes, the closer this value is)
     /// </summary>
-    public GraphOperation<TNode, TEdge> ConnectToClosest(int averageDegree, Func<TNode, TNode, double> distance){
+    public GraphOperation<TNode, TEdge> ConnectToClosestParallel(int averageDegree, Func<TNode, TNode, double> distance){
         if(averageDegree==0) return this;
-        Edges.Clear();
         float expectedDegree = averageDegree*1.0f/2;
         var nodesScreenShot = Nodes.ToArray();
 
@@ -83,6 +81,37 @@ where TEdge : IEdge
             }
             Interlocked.Increment(ref added);
         });
+        
+        return this;
+    }
+    /// <inheritdoc cref="ConnectToClosestParallel"/>
+    public GraphOperation<TNode, TEdge> ConnectToClosest(int averageDegree, Func<TNode, TNode, double> distance){
+        if(averageDegree==0) return this;
+        float expectedDegree = averageDegree*1.0f/2;
+        var nodesScreenShot = Nodes.ToArray();
+
+        int added = 0;
+        var haveEdge = (int n1, int n2)=>{
+            while(true){
+                try{
+                    return Edges.BetweenOrDefault(n1,n2) is not null;
+                }
+                catch(Exception){}
+            }
+        };
+        foreach(var n in Nodes){
+            float takenCount = added%2==0 ? -0.5f : -1;
+            var toAdd = nodesScreenShot
+            .OrderBy(x=>distance(x,n))
+            .Where(x=>!haveEdge(x.Id,n.Id) && x.Id!=n.Id);
+            foreach(var next in toAdd){
+                if(Edges.Degree(next.Id)>averageDegree) continue;
+                takenCount+=1;
+                if(takenCount>=expectedDegree) break;
+                Edges.Add(Configuration.CreateEdge(n,next));
+            }
+            Interlocked.Increment(ref added);
+        };
         
         return this;
     }

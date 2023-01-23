@@ -48,7 +48,7 @@ where TEdge : IEdge
             if(edges.Count==Nodes.Count()) break;
             didSomething = false;
             minWeight = double.MaxValue;
-            foreach (var e in edges.OrderBy(order).ToList())
+            foreach (var e in edges.OrderBy(order))
             {
                 if (invalidEdges.TryGetValue(e, out var eInfo) && eInfo > 0) continue;
                 iterations++;
