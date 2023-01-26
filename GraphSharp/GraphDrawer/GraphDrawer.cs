@@ -130,18 +130,18 @@ where TEdge : IEdge
     /// <summary>
     /// Draws nodes
     /// </summary>
-    public void DrawNodes(IEnumerable<TNode> nodes, double nodeSize)
+    public void DrawNodes(IEnumerable<TNode> nodes, double nodeSize, Color color = default)
     {
         foreach (var node in nodes)
-            DrawNode(node, nodeSize);
+            DrawNode(node, nodeSize,color);
     }
     /// <summary>
     /// Draws nodes in parallel
     /// </summary>
-    public void DrawNodesParallel(IEnumerable<TNode> nodes, double nodeSize)
+    public void DrawNodesParallel(IEnumerable<TNode> nodes, double nodeSize, Color color = default)
     {
         Parallel.ForEach(nodes, node =>
-            DrawNode(node, nodeSize));
+            DrawNode(node, nodeSize,color));
     }
     /// <summary>
     /// Clears whole window with given color

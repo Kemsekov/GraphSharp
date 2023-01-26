@@ -73,6 +73,18 @@ where TEdge : IEdge
         SetFixedPointsToRightShape();
     }
     /// <summary>
+    /// Resets fixed points and allows to re-run algorithm
+    /// </summary>
+    public void ResetFixedPoints(int fixedPointsCount){
+        Change = 1;
+        EdgesLengthSum = 0;
+        foreach(var n in Graph.Nodes)
+            Positions[n.Id] = new(Random.Shared.NextSingle(),Random.Shared.NextSingle());
+        this.FixedPoints = new int[fixedPointsCount];
+        FindFixedPoints(fixedPointsCount);
+        SetFixedPointsToRightShape();
+    }
+    /// <summary>
     /// Computes step, by optimizing average distance between nodes, reducing average edges sum length
     /// </summary>
     /// <returns></returns>
@@ -182,3 +194,4 @@ where TEdge : IEdge
         }
     }
 }
+

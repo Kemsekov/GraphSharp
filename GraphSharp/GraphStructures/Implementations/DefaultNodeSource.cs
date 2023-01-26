@@ -38,8 +38,9 @@ where TNode : INode
     /// </summary>
     public DefaultNodeSource(IEnumerable<TNode> nodes) : this()
     {
-        foreach(var n in nodes)
+        foreach(var n in nodes){
             Add(n);
+        }
     }
 
     ///<inheritdoc/>
