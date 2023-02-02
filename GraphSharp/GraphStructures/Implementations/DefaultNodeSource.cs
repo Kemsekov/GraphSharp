@@ -44,11 +44,11 @@ where TNode : INode
     }
 
     ///<inheritdoc/>
-    public DefaultNodeSource()
+    public DefaultNodeSource(int capacity = 0)
     {
         MaxNodeId = -1;
         MinNodeId = -1;
-        Nodes = new ConcurrentDictionary<int, TNode>(Environment.ProcessorCount, 0);
+        Nodes = new ConcurrentDictionary<int, TNode>(Environment.ProcessorCount, capacity);
     }
     void UpdateMaxMinNodeId(int nodeId)
     {

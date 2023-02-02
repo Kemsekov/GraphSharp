@@ -24,7 +24,7 @@ where TEdge : IEdge
     /// <summary>
     /// Graph used
     /// </summary>
-    public IGraph<TNode, TEdge> Graph { get; }
+    public IImmutableGraph<TNode, TEdge> Graph { get; }
     /// <summary>
     /// Set of points used to fix graph ends
     /// </summary>
@@ -38,7 +38,7 @@ where TEdge : IEdge
     /// <summary>
     /// Creates new <see cref="PlanarGraphRender{TNode,TEdge}"/> with given graph and set of fixed points
     /// </summary>
-    public PlanarGraphRender(IGraph<TNode, TEdge> graph, int[] fixedPoints)
+    public PlanarGraphRender(IImmutableGraph<TNode, TEdge> graph, int[] fixedPoints)
     {
         this.Positions = new Dictionary<int, Vector2>();
         foreach(var n in graph.Nodes)
@@ -104,10 +104,11 @@ where TEdge : IEdge
         {
             if (FixedPoints.Contains(n.Id)) return;
             Vector2 direction = new(0, 0);
+            var nodePos = Positions[n.Id];
             
             foreach (var e in edges.AdjacentEdges(n.Id))
             {
-                var dir = Positions[e.TargetId] - Positions[e.SourceId];
+                var dir = Positions[e.TargetId] - nodePos;
                 direction += dir;
             }
             Positions[n.Id] += direction / edges.Degree(n.Id);

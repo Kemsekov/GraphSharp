@@ -5,6 +5,8 @@ using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 
+//TODO: add test
+
 namespace GraphSharp.Graphs;
 /// <summary>
 /// Node of line graph
@@ -46,18 +48,22 @@ where TEdge : IEdge
 /// <summary>
 /// Line graph configuration
 /// </summary>
-public class LineGraphConfiguration<TEdge> : IGraphConfiguration<LineGraphNode<TEdge>, Edge>
+public class LineGraphConfiguration<TNode,TEdge> : IGraphConfiguration<LineGraphNode<TEdge>, Edge>
 where TEdge : IEdge
 {
     /// <summary>
     /// Creates new line graph configuration
     /// </summary>
-    public LineGraphConfiguration(Random? rand = null)
+    public LineGraphConfiguration(IGraphConfiguration<TNode,TEdge> configuration)
     {
-        Rand = rand ?? new();
+        Rand = configuration.Rand;
+        this._confBase = configuration;
     }
     /// <inheritdoc/>
     public Random Rand { get; set; }
+
+    private IGraphConfiguration<TNode, TEdge> _confBase;
+
     /// <inheritdoc/>
     public Edge CreateEdge(LineGraphNode<TEdge> source, LineGraphNode<TEdge> target)
     {
@@ -73,12 +79,7 @@ where TEdge : IEdge
 
     public LineGraphNode<TEdge> CreateNode(int nodeId)
     {
-        throw new NotImplementedException(
-            @"You cannot create new 
-            node for line graph, 
-            because they defined by edges 
-            of original graph"
-        );
+        return new LineGraphNode<TEdge>(nodeId,_confBase.CreateEdge(_confBase.CreateNode(0),_confBase.CreateNode(0)));
     }
     /// <inheritdoc/>
 
@@ -102,7 +103,7 @@ where TEdge : IEdge
     /// </summary>
     /// <param name="graph">Graph to use</param>
     /// <param name="configuration">Line graph configuration. Let it be null and default configuration will be used</param>
-    public LineGraph(IGraph<TNode, TEdge> graph, IGraphConfiguration<LineGraphNode<TEdge>, Edge>? configuration = null)
+    public LineGraph(IImmutableGraph<TNode, TEdge> graph, IGraphConfiguration<LineGraphNode<TEdge>, Edge>? configuration = null)
     {
         EdgeIds = new ConcurrentDictionary<TEdge, int>();
         int counter = 0;
@@ -132,7 +133,7 @@ where TEdge : IEdge
         }
         Nodes = nodes;
         Edges = edges;
-        Configuration = configuration ?? new LineGraphConfiguration<TEdge>();
+        Configuration = configuration ?? new LineGraphConfiguration<TNode,TEdge>(graph.Configuration);
     }
     /// <inheritdoc/>
     public IImmutableNodeSource<LineGraphNode<TEdge>> Nodes { get; }

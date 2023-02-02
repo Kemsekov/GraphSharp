@@ -3,7 +3,7 @@ using GraphSharp.Common;
 
 namespace GraphSharp.Graphs;
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -14,7 +14,6 @@ where TEdge : IEdge
     /// </summary>
     public LineGraph<TNode, TEdge> LineGraph()
     {
-        var g = new LineGraph<TNode,TEdge>(StructureBase);
-        return g;
+        return new LineGraph<TNode,TEdge>(StructureBase);
     }
 }

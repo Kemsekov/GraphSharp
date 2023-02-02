@@ -17,9 +17,9 @@ where TEdge : IEdge
     /// <summary>
     /// Creates a new instance of <see cref="DefaultEdgeSource{TEdge}"/>
     /// </summary>
-    public DefaultEdgeSource()
+    public DefaultEdgeSource(int capacity = 0)
     {
-        Edges = new ConcurrentDictionary<int, (HashSet<TEdge> outEdges, HashSet<TEdge> inEdges)>(Environment.ProcessorCount, Environment.ProcessorCount * 4);
+        Edges = new ConcurrentDictionary<int, (HashSet<TEdge> outEdges, HashSet<TEdge> inEdges)>(Environment.ProcessorCount, capacity);
         AllowParallelEdges = true;
     }
     /// <summary>
