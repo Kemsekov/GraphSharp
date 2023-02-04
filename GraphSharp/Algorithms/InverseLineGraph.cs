@@ -111,6 +111,7 @@ where TEdge : IEdge
     public InverseLineGraph(IImmutableGraph<TNode, TEdge> lineGraph, IGraphConfiguration<TNode, InverseLineGraphEdge>? configuration = null)
     {
         Configuration = configuration ?? new InverseLineGraphConfiguration<TNode, TEdge>(lineGraph.Configuration);
+        var lineEdges = lineGraph.Edges;
         //lineGraph.Nodes <- N
         var nodes = new Dictionary<int,InverseLineGraphNode>(lineGraph.Nodes.Count());
         foreach(var n in lineGraph.Nodes)
@@ -122,11 +123,57 @@ where TEdge : IEdge
         var randomEdge = lineGraph.Edges.First();
         var n1 = randomEdge.SourceId;
         var n2 = randomEdge.TargetId;
-        
-
-
+        var v1 = 0;
+        var v2 = 1;
+        gNodes.Add(Configuration.CreateNode(v1));
+        gNodes.Add(Configuration.CreateNode(v2));
+        nodes[n1] = new InverseLineGraphNode(v1,v2);
+        nodes[n2] = new InverseLineGraphNode(v1,-1);
+        var toConnect = lineEdges.Neighbors(n1).Except(lineEdges.Neighbors(n2).Concat(new[]{n2}));
+        foreach(var n in toConnect)
+        {
+            AddAdjacentNode(nodes, n, v2);
+        }
+        var n1Neighbors = lineEdges.Neighbors(n1);
+        var n2Neighbors = lineEdges.Neighbors(n2);
+        var intersection = n1Neighbors.Intersect(n2Neighbors).ToList();
+        if(intersection.Count<3){
+            var nu = intersection.FirstOrDefault(nu=>{
+                var nuNeighbors = lineEdges.Neighbors(nu);
+                var firstCondition = nuNeighbors.Except(n1Neighbors).Except(n2Neighbors).Count()==0;
+                var secondCondition = nuNeighbors.Except(new int[]{n1,n2}).Count()>=3;
+                return firstCondition && secondCondition;
+            },-1);
+            if(nu!=-1){
+                AddAdjacentNode(nodes,nu,v2);
+                intersection = intersection.Except(new int[]{nu}).ToList();
+            }   
+            else{
+                InitSpecialCases();
+            }
+        }
+        else{
+            
+        }
     }
-    
+
+    void AddAdjacentNode(Dictionary<int, InverseLineGraphNode> nodes, int nodeInLineGraph, int adjacentNode)
+    {
+        var connection = nodes[nodeInLineGraph];
+        if (connection.SourceId == -1)
+            connection.SourceId = adjacentNode;
+        else
+            connection.TargetId = adjacentNode;
+        (var n1, var n2) = (Math.Min(connection.SourceId,connection.TargetId),Math.Max(connection.SourceId,connection.TargetId));
+        connection.SourceId = n1;
+        connection.TargetId = n2;
+    }
+
+    private void InitSpecialCases()
+    {
+        throw new NotImplementedException();
+    }
+
     bool AllHaveAtLeastOneFreeSpace(IEnumerable<int> clique, Dictionary<int, InverseLineGraphNode> inverseNodes){
         return clique.All(x =>
         {

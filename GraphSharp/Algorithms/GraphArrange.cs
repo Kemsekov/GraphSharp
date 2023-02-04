@@ -2,10 +2,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Threading.Tasks;
 using GraphSharp.Visitors;
-
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearAlgebra.Single;
 namespace GraphSharp.Graphs;
 
 /// <summary>
@@ -20,7 +20,17 @@ where TEdge : IEdge
     /// Node positions, where key is node id, value is computed position
     /// </summary>
     /// <value></value>
-    public Dictionary<int, Vector2> Positions { get; }
+    public Dictionary<int, Vector> Positions { get; }
+    /// <summary>
+    /// Returns normalized position
+    /// </summary>
+    public Vector this[int nodeId]{
+        get{
+            var vec = (Vector)Positions[nodeId].Clone();
+            Normalize(vec);
+            return vec;
+        }
+    }
     /// <summary>
     /// Graph used
     /// </summary>
@@ -29,33 +39,54 @@ where TEdge : IEdge
     /// Sum of edges length
     /// </summary>
     /// <value></value>
-    public double EdgesLengthSum {get;protected set;} = 0;
+    public double EdgesLengthSum { get; protected set; } = 0;
     /// <summary>
     /// How to calculate edge weight. 
     /// Can be used to arrange graph in such a way that preserves nodes relative positions depending on edges between them
     /// </summary>
     public Func<TEdge, float> GetWeight { get; }
     /// <summary>
+    /// Space dimensions count used to arrange graph
+    /// </summary>
+    public int SpaceDimensions { get; }
+    /// <summary>
     /// How many nodes do we need to look around in order to produce repulsion from them. When set to -1 will choose all
     /// </summary>
     public int ClosestCount = 5;
+    private Lazy<(Vector<float> minVector,Vector<float> scalar)> normalizers;
+
     /// <summary>
     /// Creates new instance of graph arranging algorithm
     /// </summary>
     /// <param name="graph">Graph to arrange</param>
     /// <param name="closestCount">Count of closest to given node elements to compute repulsion from. Let it be -1 so all nodes will be used to compute repulsion</param>
     /// <param name="getWeight">How to measure edge weights. By default will use distance between edge endpoints.</param>
-    public GraphArrange(IImmutableGraph<TNode, TEdge> graph, int closestCount = -1, Func<TEdge,float>? getWeight = null)
+    public GraphArrange(IImmutableGraph<TNode, TEdge> graph, int closestCount = -1, int spaceDimensions = 2, Func<TEdge, float>? getWeight = null)
     {
         ClosestCount = closestCount;
-        this.Positions = new Dictionary<int, Vector2>();
-        GetWeight = getWeight ?? (x=>1.0f);
+        this.Positions = new Dictionary<int, Vector>();
+        GetWeight = getWeight ?? (x => 1.0f);
         Graph = graph;
-        foreach(var n in graph.Nodes)
-            Positions[n.Id] = new(Random.Shared.NextSingle(),Random.Shared.NextSingle());
-
+        foreach (var n in graph.Nodes)
+            Positions[n.Id] = RandomVector(spaceDimensions);
+        this.SpaceDimensions = spaceDimensions;
+        normalizers = new(()=>UpdatePositionsNormalizer(Positions));
     }
 
+    Vector RandomVector(int spaceDimensions)
+    {
+        var vec = new DenseVector(spaceDimensions);
+        for (int i = 0; i < spaceDimensions; i++)
+            vec[i] = Random.Shared.NextSingle();
+        return vec;
+    }
+    Vector<float> EmptyVector() => new DenseVector(SpaceDimensions);
+    Vector<float> EmptyVector(float value)
+    {
+        var storage = new float[SpaceDimensions];
+        Array.Fill(storage, value);
+        return new DenseVector(storage);
+    }
     /// <summary>
     /// Computes step, by optimizing average distance between nodes, reducing average edges sum length
     /// </summary>
@@ -64,53 +95,76 @@ where TEdge : IEdge
     {
         EdgesLengthSum = ((float)GetEdgesLengthSum());
         var Change = 0f;
-        
+
         var nodes = Graph.Nodes;
         var edges = Graph.Edges;
-        var closestCount = Math.Min(nodes.Count(),ClosestCount);
-        if(closestCount==-1) closestCount=nodes.Count();
-        if(closestCount == 0 ) return 0;
+        var closestCount = Math.Min(nodes.Count(), ClosestCount);
+        if (closestCount == -1) closestCount = nodes.Count();
+        if (closestCount == 0) return 0;
         var locker = new object();
         Parallel.ForEach(nodes, n =>
         {
-            Vector2 direction = new(0, 0);
-            Vector2 change = new(0,0);
+            var direction = EmptyVector();
+            var change = EmptyVector();
             var nodePos = Positions[n.Id];
             var addedCoeff = 0.0f;
             foreach (var e in edges.AdjacentEdges(n.Id))
             {
                 var dir = Positions[e.TargetId] - nodePos;
-                // var coeff = 1;
-                var coeff = dir.Length()*GetWeight(e);
-                addedCoeff+=coeff;
-                direction += dir*coeff;
-                // direction += dir;
+                var coeff = ((float)dir.L2Norm()) * GetWeight(e);
+                addedCoeff += coeff;
+                direction += dir * coeff;
             }
-            change += direction / addedCoeff;
+            change += direction.Divide(addedCoeff);
 
             var closest = Graph.Nodes
-                .OrderBy(x=>(Positions[x.Id]-nodePos).Length())
+                .OrderBy(x => (Positions[x.Id] - nodePos).L2Norm())
                 .Take(closestCount)
                 .ToList();
-            
-            direction.X = 0;
-            direction.Y = 0;
-            foreach(var c in closest){
-                var dir = Positions[c.Id]-nodePos;
-                var coeff = MathF.Min(1/dir.LengthSquared(),((float)EdgesLengthSum));
+
+            direction = EmptyVector();
+            foreach (var c in closest)
+            {
+                var dir = Positions[c.Id] - nodePos;
+                var norm = (float)dir.L2Norm();
+                var coeff = MathF.Min(1 / (norm * norm), ((float)EdgesLengthSum));
                 // var coeff = 1;
-                direction+=dir*coeff;
+                direction = (direction + dir * coeff);
             }
             change -= direction / closest.Count;
-            Positions[n.Id]+=change;
-            lock(locker)
-                Change+=change.Length();
+            Positions[n.Id] = (Vector)(Positions[n.Id] + change);
+            lock (locker)
+                Change += ((float)change.L2Norm());
         });
+        normalizers = new(()=>UpdatePositionsNormalizer(Positions));
         return Change;
     }
+    void Normalize(Vector vec)
+    {
+        var minVector = normalizers.Value.minVector;
+        var scalar = normalizers.Value.scalar;
+        for (int i = 0; i < SpaceDimensions; i++)
+        {
+            vec[i] -= minVector[i];
+            vec[i] /= scalar[i];
+        }
+    }
+    (Vector<float> minVector,Vector<float> scalar) UpdatePositionsNormalizer(Dictionary<int, Vector> positions)
+    {
+        var maxVector = EmptyVector(float.MinValue);
+        var minVector = EmptyVector(float.MaxValue);
+        foreach (var p in positions)
+        {
+            maxVector = maxVector.PointwiseMaximum(p.Value);
+            minVector = minVector.PointwiseMinimum(p.Value);
+        }
+        var scalar = maxVector - minVector;
+        return (minVector,scalar);
+    }
+
     double GetEdgesLengthSum()
     {
-        return Graph.Edges.Sum(x => (Positions[x.SourceId] - Positions[x.TargetId]).Length());
+        return Graph.Edges.Sum(x => (Positions[x.SourceId] - Positions[x.TargetId]).L2Norm());
     }
 }
 
