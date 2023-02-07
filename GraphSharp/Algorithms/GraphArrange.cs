@@ -53,13 +53,19 @@ where TEdge : IEdge
     /// How many nodes do we need to look around in order to produce repulsion from them. When set to -1 will choose all
     /// </summary>
     public int ClosestCount = 5;
+    /// <summary>
+    /// A power that used to determine how strong close nodes should repulse each other. <br/>
+    /// </summary>
+    public float DistancePower = 2;
     private Lazy<(Vector<float> minVector,Vector<float> scalar)> normalizers;
+    private ComponentsResult<TNode> components;
 
     /// <summary>
     /// Creates new instance of graph arranging algorithm
     /// </summary>
     /// <param name="graph">Graph to arrange</param>
     /// <param name="closestCount">Count of closest to given node elements to compute repulsion from. Let it be -1 so all nodes will be used to compute repulsion</param>
+    /// <param name="spaceDimensions">Space dimensions count used to arrange graph</param>
     /// <param name="getWeight">How to measure edge weights. By default will use distance between edge endpoints.</param>
     public GraphArrange(IImmutableGraph<TNode, TEdge> graph, int closestCount = -1, int spaceDimensions = 2, Func<TEdge, float>? getWeight = null)
     {
@@ -71,6 +77,7 @@ where TEdge : IEdge
             Positions[n.Id] = RandomVector(spaceDimensions);
         this.SpaceDimensions = spaceDimensions;
         normalizers = new(()=>UpdatePositionsNormalizer(Positions));
+        components = Graph.Do.FindComponents();
     }
 
     Vector RandomVector(int spaceDimensions)
@@ -90,7 +97,7 @@ where TEdge : IEdge
     /// <summary>
     /// Computes step, by optimizing average distance between nodes, reducing average edges sum length
     /// </summary>
-    /// <returns>Measure of change in a graph. How much nodes was shifted</returns>
+    /// <returns>Measure of change in a graph. How much nodes was shifted, measured in percents</returns>
     public float ComputeStep()
     {
         EdgesLengthSum = ((float)GetEdgesLengthSum());
@@ -111,7 +118,8 @@ where TEdge : IEdge
             foreach (var e in edges.AdjacentEdges(n.Id))
             {
                 var dir = Positions[e.TargetId] - nodePos;
-                var coeff = ((float)dir.L2Norm()) * GetWeight(e);
+                var norm = (float)dir.L2Norm();
+                var coeff = norm * GetWeight(e);
                 addedCoeff += coeff;
                 direction += dir * coeff;
             }
@@ -125,19 +133,20 @@ where TEdge : IEdge
             direction = EmptyVector();
             foreach (var c in closest)
             {
+                if(!components.InSameComponent(n.Id,c.Id)) continue;
                 var dir = Positions[c.Id] - nodePos;
                 var norm = (float)dir.L2Norm();
-                var coeff = MathF.Min(1 / (norm * norm), ((float)EdgesLengthSum));
-                // var coeff = 1;
-                direction = (direction + dir * coeff);
+                var coeff = MathF.Min(MathF.Pow(1 / norm,DistancePower), ((float)EdgesLengthSum));
+                direction +=  dir * coeff;
             }
             change -= direction / closest.Count;
-            Positions[n.Id] = (Vector)(Positions[n.Id] + change);
-            lock (locker)
-                Change += ((float)change.L2Norm());
+            lock (locker){
+                Positions[n.Id] = (Vector)(Positions[n.Id] + change);
+                    Change += ((float)change.L2Norm());
+            }
         });
         normalizers = new(()=>UpdatePositionsNormalizer(Positions));
-        return Change;
+        return Change/((float)EdgesLengthSum);
     }
     void Normalize(Vector vec)
     {
