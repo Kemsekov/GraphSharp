@@ -73,6 +73,7 @@ where TEdge : IEdge
     /// </summary>
     public CliqueResult FindMaxCliqueFast()
     {
+        if(Nodes.MaxNodeId==-1) return new(-1,new List<int>());
         var bestClique = new CliqueResult(0,new List<int>());
         var locker = new object();
         // using var coefficients = FindLocalClusteringCoefficients();
