@@ -109,6 +109,7 @@ where TEdge : IEdge
         if (closestCount == -1) closestCount = nodes.Count();
         if (closestCount == 0) return 0;
         var locker = new object();
+        bool needToSort = closestCount*1.0f/nodes.Count()<0.5f;
         Parallel.ForEach(nodes, n =>
         {
             var direction = EmptyVector();
@@ -124,11 +125,17 @@ where TEdge : IEdge
                 direction += dir * coeff;
             }
             change += direction.Divide(addedCoeff);
-
-            var closest = Graph.Nodes
+            List<TNode>? closest;
+            if(needToSort)
+            closest = Graph.Nodes
                 .OrderBy(x => (Positions[x.Id] - nodePos).L2Norm())
                 .Take(closestCount)
                 .ToList();
+            else
+                closest = Graph.Nodes
+                .Take(closestCount)
+                .ToList();
+
 
             direction = EmptyVector();
             foreach (var c in closest)

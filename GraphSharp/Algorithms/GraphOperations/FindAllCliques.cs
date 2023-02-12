@@ -81,6 +81,7 @@ where TEdge : IEdge
         //a set of nodes
         Parallel.ForEach(Nodes, n =>
         {
+            if(Edges.Degree(n.Id)<bestClique.Nodes.Count-1) return;
             // var found = FindCliqueFast(n.Id,x=>x.OrderBy(y=>-coefficients[y]*degree[y]));
             var found = FindCliqueFast(n.Id,x=>x.OrderBy(y=>-degree[y]));
             // var found = FindCliqueFast(n.Id);
@@ -101,6 +102,7 @@ where TEdge : IEdge
         var locker = new object();
         Parallel.ForEach(Nodes, n =>
         {
+            if(Edges.Degree(n.Id)<bestClique.Nodes.Count-1) return;
             var found = FindClique(n.Id);
             lock(locker)
                 if(found.Nodes.Count>bestClique.Nodes.Count)

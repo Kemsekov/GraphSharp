@@ -52,7 +52,7 @@ where TEdge : IEdge
     /// <summary>
     /// Creates new <see cref="PlanarGraphRender{TNode,TEdge}"/> with given graph and some count of fixed points
     /// </summary>
-    public PlanarGraphRender(IGraph<TNode, TEdge> graph, int fixedPointsCount)
+    public PlanarGraphRender(IImmutableGraph<TNode, TEdge> graph, int fixedPointsCount)
     {
         this.Positions = new Dictionary<int, Vector2>();
         foreach(var n in graph.Nodes)

@@ -39,6 +39,10 @@ where TNode : INode
     public DefaultNodeSource(IEnumerable<TNode> nodes) : this()
     {
         foreach(var n in nodes){
+            MaxNodeId = Math.Max(MaxNodeId,n.Id);
+            MinNodeId = Math.Min(MinNodeId,n.Id);
+        }
+        foreach(var n in nodes){
             Add(n);
         }
     }
