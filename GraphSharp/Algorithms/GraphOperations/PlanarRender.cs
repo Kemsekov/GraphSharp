@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using MathNet.Numerics.LinearAlgebra;
 using GraphSharp.Common;
 
 namespace GraphSharp.Graphs;
@@ -18,7 +18,7 @@ where TEdge : IEdge
     /// Algorithm will fix these nodes into right shape and render 
     /// everything else inside of given nodes</param>
     /// <returns>Dictionary, where key is node id, and value is node position</returns>
-    public IDictionary<int,Vector2> PlanarRender(int[] fixedNodes)
+    public IDictionary<int,Vector<float>> PlanarRender(int[] fixedNodes)
     {
         var p = new PlanarGraphRender<TNode,TEdge>(StructureBase,fixedNodes);
         while(p.ComputeStep()) ;
@@ -30,7 +30,7 @@ where TEdge : IEdge
     /// Algorithm will try to find a cycle of given size and select them as fixed nodes,
     /// set them into right shape and render everything else inside of found nodes.
     /// </param>
-    public IDictionary<int,Vector2> PlanarRender(int cycleSize){
+    public IDictionary<int,Vector<float>> PlanarRender(int cycleSize){
         var p = new PlanarGraphRender<TNode,TEdge>(StructureBase,cycleSize);
         while(p.ComputeStep()) ;
         return p.Positions;

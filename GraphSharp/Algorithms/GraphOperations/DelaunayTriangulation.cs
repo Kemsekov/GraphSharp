@@ -1,7 +1,8 @@
 using System;
 using System.Linq;
-using System.Numerics;
 using DelaunatorSharp;
+using MathNet.Numerics.LinearAlgebra.Single;
+
 namespace GraphSharp.Graphs;
 
 public partial class GraphOperation<TNode, TEdge>
@@ -12,7 +13,7 @@ where TEdge : IEdge
     /// Removes all edges from graph then
     /// preforms delaunay triangulation. See https://en.wikipedia.org/wiki/Delaunay_triangulation <br/>
     /// </summary>
-    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,Vector2> getPos)
+    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,Vector> getPos)
     {
         Edges.Clear();
 
@@ -20,7 +21,7 @@ where TEdge : IEdge
             x =>
             {
                 var pos = getPos(x);
-                var point = new DelaunatorSharp.Point(pos.X, pos.Y);
+                var point = new DelaunatorSharp.Point(pos[0], pos[1]);
                 return point as IPoint;
             }
         );
@@ -38,7 +39,7 @@ where TEdge : IEdge
     /// Removes all edges from graph then
     /// preforms delaunay triangulation, but removes hull. See https://en.wikipedia.org/wiki/Delaunay_triangulation <br/>
     /// </summary>
-    public GraphOperation<TNode, TEdge> DelaunayTriangulationWithoutHull(Func<TNode,Vector2> getPos)
+    public GraphOperation<TNode, TEdge> DelaunayTriangulationWithoutHull(Func<TNode,Vector> getPos)
     {
         Edges.Clear();
 
@@ -53,11 +54,11 @@ where TEdge : IEdge
             x =>
             {
                 var pos = getPos(x);
-                var point = new DelaunatorSharp.Point(pos.X, pos.Y);
-                maxX = Math.Max(pos.X,maxX);
-                maxY = Math.Max(pos.Y,maxY);
-                minX = Math.Min(pos.X,minX);
-                minY = Math.Min(pos.Y,minY);
+                var point = new DelaunatorSharp.Point(pos[0], pos[1]);
+                maxX = Math.Max(pos[0],maxX);
+                maxY = Math.Max(pos[1],maxY);
+                minX = Math.Min(pos[0],minX);
+                minY = Math.Min(pos[1],minY);
                 return point as IPoint;
             }
         );

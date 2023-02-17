@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using MathNet.Numerics.LinearAlgebra.Single;
 using System.Threading.Tasks;
 using GraphSharp.Adapters;
 using Satsuma;
@@ -38,7 +38,7 @@ where TEdge : IEdge
     /// <summary>
     /// Computes a TSP on 2vector positions
     /// </summary>
-    public ITsp<TNode> TspCheapestLinkOnPositions(Func<TNode,Vector2> getPos)
+    public ITsp<TNode> TspCheapestLinkOnPositions(Func<TNode,Vector> getPos)
     {
         var count = Nodes.Count();
         if(count==1) return new TspResult<TNode>(new[]{Nodes.First(),Nodes.First()},0);
@@ -49,7 +49,7 @@ where TEdge : IEdge
         graph.SetSources(edges:treeDegree2.tree);
         graph.Do.MakeBidirected();
         var path = graph.Do.FindAnyPath(treeDegree2.ends[0].Id,treeDegree2.ends[1].Id);
-        var additionalCost = (getPos(treeDegree2.ends[0])-getPos(treeDegree2.ends[1])).Length();
+        var additionalCost = (getPos(treeDegree2.ends[0])-getPos(treeDegree2.ends[1])).L2Norm();
         var cost = path.Cost+additionalCost;
         path.Path.Add(treeDegree2.ends[0]);
         return new TspResult<TNode>(path.Path,cost);

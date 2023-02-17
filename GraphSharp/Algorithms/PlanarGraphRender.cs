@@ -2,9 +2,10 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using MathNet.Numerics.LinearAlgebra.Single;
 using System.Threading.Tasks;
 using GraphSharp.Visitors;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace GraphSharp.Graphs;
 /// <summary>
@@ -20,7 +21,7 @@ where TEdge : IEdge
     /// Node positions, where key is node id, value is computed position
     /// </summary>
     /// <value></value>
-    public Dictionary<int, Vector2> Positions { get; }
+    public Dictionary<int, Vector<float>> Positions { get; }
     /// <summary>
     /// Graph used
     /// </summary>
@@ -40,9 +41,9 @@ where TEdge : IEdge
     /// </summary>
     public PlanarGraphRender(IImmutableGraph<TNode, TEdge> graph, int[] fixedPoints)
     {
-        this.Positions = new Dictionary<int, Vector2>();
+        this.Positions = new Dictionary<int, Vector<float>>();
         foreach(var n in graph.Nodes)
-            Positions[n.Id] = new(Random.Shared.NextSingle(),Random.Shared.NextSingle());
+            Positions[n.Id] = new DenseVector(new float[]{Random.Shared.NextSingle(),Random.Shared.NextSingle()});
         this.Graph = graph;
         this.FixedPoints = fixedPoints;
         if (FixedPoints.Length < 3)
@@ -54,9 +55,9 @@ where TEdge : IEdge
     /// </summary>
     public PlanarGraphRender(IImmutableGraph<TNode, TEdge> graph, int fixedPointsCount)
     {
-        this.Positions = new Dictionary<int, Vector2>();
+        this.Positions = new Dictionary<int, Vector<float>>();
         foreach(var n in graph.Nodes)
-            Positions[n.Id] = new(Random.Shared.NextSingle(),Random.Shared.NextSingle());
+            Positions[n.Id] = new DenseVector(new float[]{Random.Shared.NextSingle(),Random.Shared.NextSingle()});
         this.Graph = graph;
         this.FixedPoints = new int[fixedPointsCount];
         FindFixedPoints(fixedPointsCount);
@@ -79,7 +80,7 @@ where TEdge : IEdge
         Change = 1;
         EdgesLengthSum = 0;
         foreach(var n in Graph.Nodes)
-            Positions[n.Id] = new(Random.Shared.NextSingle(),Random.Shared.NextSingle());
+            Positions[n.Id] = new DenseVector(new float[]{Random.Shared.NextSingle(),Random.Shared.NextSingle()});
         this.FixedPoints = new int[fixedPointsCount];
         FindFixedPoints(fixedPointsCount);
         SetFixedPointsToRightShape();
@@ -103,7 +104,7 @@ where TEdge : IEdge
         Parallel.ForEach(nodes, n =>
         {
             if (FixedPoints.Contains(n.Id)) return;
-            Vector2 direction = new(0, 0);
+            Vector<float> direction = new DenseVector(new float[]{0, 0});
             var nodePos = Positions[n.Id];
             
             foreach (var e in edges.AdjacentEdges(n.Id))
@@ -117,7 +118,7 @@ where TEdge : IEdge
     }
     double GetEdgesLengthSum()
     {
-        return Graph.Edges.Sum(x => (Positions[x.SourceId] - Positions[x.TargetId]).Length());
+        return Graph.Edges.Sum(x => (Positions[x.SourceId] - Positions[x.TargetId]).L2Norm());
     }
     void SetFixedPointsToRightShape()
     {
@@ -155,14 +156,14 @@ where TEdge : IEdge
         var cliques = Graph.Do.FindMaxClique();
         FixedPoints = cliques.Nodes.ToArray();
     }
-    IList<Vector2> GenerateCoordinatesFor(int n)
+    IList<Vector<float>> GenerateCoordinatesFor(int n)
     {
-        var coords = new List<Vector2>();
+        var coords = new List<Vector<float>>();
         var step = 2.0f * MathF.PI / (n - 1);
         var value = step;
         for (int i = 0; i < n; i++)
         {
-            coords.Add(new Vector2(MathF.Cos(value), MathF.Sin(value)));
+            coords.Add(new DenseVector(new float[]{MathF.Cos(value), MathF.Sin(value)}));
             value += step;
         }
         return coords;
@@ -175,12 +176,12 @@ where TEdge : IEdge
         var minY = float.MaxValue;
         foreach (var n in Positions)
         {
-            maxX = MathF.Max(n.Value.X, maxX);
-            maxY = MathF.Max(n.Value.Y, maxY);
-            minX = MathF.Min(n.Value.X, minX);
-            minY = MathF.Min(n.Value.Y, minY);
+            maxX = MathF.Max(n.Value[0], maxX);
+            maxY = MathF.Max(n.Value[1], maxY);
+            minX = MathF.Min(n.Value[0], minX);
+            minY = MathF.Min(n.Value[1], minY);
         }
-        var shift = new Vector2(minX, minY);
+        var shift = new DenseVector(new float[]{minX, minY});
         foreach (var n in Graph.Nodes)
         {
             Positions[n.Id] -= shift;

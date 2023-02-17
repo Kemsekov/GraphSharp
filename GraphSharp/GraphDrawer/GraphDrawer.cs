@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-using System.Numerics;
+using MathNet.Numerics.LinearAlgebra.Single;
 using System.Threading.Tasks;
 using GraphSharp.Graphs;
 namespace GraphSharp.GraphDrawer;
@@ -19,7 +19,7 @@ where TEdge : IEdge
     /// Size of window
     /// </summary>
     public double Size =>windowSize*SizeMult;
-    Func<TNode, Vector2> GetNodePos { get; }
+    Func<TNode, Vector> GetNodePos { get; }
     double windowSize;
     /// <summary>
     /// Graph used by this drawer
@@ -37,7 +37,7 @@ where TEdge : IEdge
     /// </summary>
     public double XShift = 0,YShift = 0,SizeMult = 1;
     ///<inheritdoc/>
-    public GraphDrawer(IImmutableGraph<TNode, TEdge> graph, IShapeDrawer drawer, double windowSize, Func<TNode,Vector2> getNodePos)
+    public GraphDrawer(IImmutableGraph<TNode, TEdge> graph, IShapeDrawer drawer, double windowSize, Func<TNode,Vector> getNodePos)
     {
         this.GetNodePos = getNodePos;
         this.windowSize = windowSize;
@@ -158,7 +158,7 @@ where TEdge : IEdge
     {
         var pos = ShiftVector(GetNodePos(node));
         float size = ((float)Size);
-        var point = new Vector2((float)(pos.X - fontSize / 2) * size, (float)(pos.Y - fontSize / 2) * size);
+        var point = new DenseVector(new[]{(float)(pos[0] - fontSize / 2) * size, (float)(pos[1] - fontSize / 2) * size});
         Drawer.DrawText(node.Id.ToString(), point, color, fontSize*windowSize);
     }
     /// <summary>
@@ -170,7 +170,7 @@ where TEdge : IEdge
         var pos = ShiftVector(GetNodePos(node));
         color = color==default ? node.Color : color;
         var point = pos*((float)Size);
-        Drawer.FillEllipse(point, nodeSize*windowSize, nodeSize*windowSize, color);
+        Drawer.FillEllipse((Vector)point, nodeSize*windowSize, nodeSize*windowSize, color);
     }
     /// <summary>
     /// Draws edge as a line with given color and thickness. If color is not given uses edge color
@@ -185,7 +185,7 @@ where TEdge : IEdge
         var size = Size;
         var point1 = sourcePos*((float)size);
         var point2 = targetPos*((float)size);
-        Drawer.DrawLine(point1, point2, color, lineThickness*windowSize);
+        Drawer.DrawLine((Vector)point1, (Vector)point2, color, lineThickness*windowSize);
     }
     /// <summary>
     /// Draws direction of given edge.
@@ -195,27 +195,27 @@ where TEdge : IEdge
         var sourcePos = ShiftVector(GetNodePos(Graph.GetSource(edge)));
         var targetPos = ShiftVector(GetNodePos(Graph.GetTarget(edge)));
 
-        var distance = Vector2.Distance(sourcePos, targetPos);
+        var distance = (sourcePos- targetPos).L2Norm();
 
         var size = ((float)Size);
 
         var dirVector = targetPos - sourcePos;
-        dirVector /= dirVector.Length();
+        dirVector /= ((float)dirVector.L2Norm());
 
 
         dirVector = targetPos - dirVector * ((float)(directionLength));
         var point1 = dirVector*((float)size);
         var point2 = targetPos*((float)size);
-        if ((dirVector - targetPos).Length() < distance / 2){
-            Drawer.DrawLine(point1, point2, color, lineThickness*size);
+        if ((dirVector - targetPos).L2Norm() < distance / 2){
+            Drawer.DrawLine((Vector)point1, (Vector)point2, color, lineThickness*size);
         }
         else
         {
-            var sourcePoint = new Vector2((sourcePos.X + targetPos.X) / 2 * size, (sourcePos.Y + targetPos.Y) / 2 * size);
-            Drawer.DrawLine(sourcePoint, point2, color, lineThickness*windowSize);
+            var sourcePoint = new DenseVector(new[]{(sourcePos[0] + targetPos[1]) / 2 * size, (sourcePos[1] + targetPos[1]) / 2 * size});
+            Drawer.DrawLine(sourcePoint, (Vector)point2, color, lineThickness*windowSize);
         }
     }
-    Vector2 ShiftVector(Vector2 v){
-        return new(((float)(v.X+XShift)),((float)(v.Y+YShift)));
+    Vector ShiftVector(Vector v){
+        return new DenseVector(new[]{((float)(v[0]+XShift)),((float)(v[1]+YShift))});
     }
 }

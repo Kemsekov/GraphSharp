@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using GraphSharp.Common;
 using GraphSharp.Graphs;
 using GraphSharp.Propagators;
+using MathNet.Numerics.LinearAlgebra.Single;
+
 namespace GraphSharp.Visitors;
 
 /// <summary>
@@ -78,7 +79,7 @@ where TEdge : IEdge
     /// After all nodes have been sorted to different layers 
     /// this method will assign corresponding X coordinate to each layer.
     /// </summary>
-    public void ApplyTopologicalSort(Action<TNode,Vector2> setPos, Func<TNode,double> getYPos)
+    public void ApplyTopologicalSort(Action<TNode,Vector> setPos, Func<TNode,double> getYPos)
     {
         if (!Done) return;
         float startNodePosition = 0f;
@@ -88,7 +89,7 @@ where TEdge : IEdge
         {
             foreach (var node in layer)
             {
-                setPos(node,new(startNodePosition, ((float)getYPos(node))));
+                setPos(node,new DenseVector(new[]{startNodePosition, ((float)getYPos(node))}));
             }
             startNodePosition += nodePositionShift;
         }

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
+using MathNet.Numerics.LinearAlgebra.Single;
 using GraphSharp.Common;
 namespace GraphSharp.Graphs;
 
@@ -34,7 +34,7 @@ where TEdge : IEdge
     /// Guarantee to return a tree which connects all nodes in a hamiltonian path.
     /// </summary>
     /// <returns></returns>
-    protected (IList<TEdge> tree, TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TNode, Vector2> getPos, Func<TEdge, double>? getWeight = null)
+    protected (IList<TEdge> tree, TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TNode, Vector> getPos, Func<TEdge, double>? getWeight = null)
     {
         getWeight ??= x => x.Weight;
         return FindSpanningTreeDegree2OnNodes(getWeight, graph => graph.Do.DelaunayTriangulation(getPos));

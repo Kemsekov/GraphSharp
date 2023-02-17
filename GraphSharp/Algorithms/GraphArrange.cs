@@ -58,7 +58,6 @@ where TEdge : IEdge
     /// </summary>
     public float DistancePower = 2;
     private Lazy<(Vector<float> minVector,Vector<float> scalar)> normalizers;
-    private ComponentsResult<TNode> components;
 
     /// <summary>
     /// Creates new instance of graph arranging algorithm
@@ -77,7 +76,6 @@ where TEdge : IEdge
             Positions[n.Id] = RandomVector(spaceDimensions);
         this.SpaceDimensions = spaceDimensions;
         normalizers = new(()=>UpdatePositionsNormalizer(Positions));
-        components = Graph.Do.FindComponents();
     }
 
     Vector RandomVector(int spaceDimensions)
@@ -124,7 +122,9 @@ where TEdge : IEdge
                 addedCoeff += coeff;
                 direction += dir * coeff;
             }
-            change += direction.Divide(addedCoeff);
+            if(addedCoeff!=0)
+                change += direction.Divide(addedCoeff);
+            
             List<TNode>? closest;
             if(needToSort)
             closest = Graph.Nodes
@@ -140,13 +140,15 @@ where TEdge : IEdge
             direction = EmptyVector();
             foreach (var c in closest)
             {
-                if(!components.InSameComponent(n.Id,c.Id)) continue;
                 var dir = Positions[c.Id] - nodePos;
                 var norm = (float)dir.L2Norm();
                 var coeff = MathF.Min(MathF.Pow(1 / norm,DistancePower), ((float)EdgesLengthSum));
                 direction +=  dir * coeff;
+                
             }
-            change -= direction / closest.Count;
+            if(closest.Count!=0)
+                change -= direction / closest.Count;
+            
             lock (locker){
                 Positions[n.Id] = (Vector)(Positions[n.Id] + change);
                     Change += ((float)change.L2Norm());

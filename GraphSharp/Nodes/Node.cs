@@ -1,5 +1,5 @@
 using System.Drawing;
-using System.Numerics;
+using MathNet.Numerics.LinearAlgebra.Single;
 using GraphSharp.Common;
 namespace GraphSharp;
 
@@ -13,7 +13,7 @@ public class Node : INode
     ///<inheritdoc/>
     public int Id { get; set; }
     ///<inheritdoc/>
-    public Vector2 Position { get; set; }
+    public Vector Position { get; set; }
     ///<inheritdoc/>
     public Color Color { get; set; } = DefaultColor;
     ///<inheritdoc/>
@@ -23,6 +23,7 @@ public class Node : INode
     public Node(int id)
     {
         Id = id;
+        Position = new DenseVector(new float[0]);
     }
     ///<inheritdoc/>
     public override string ToString()
