@@ -3,9 +3,9 @@
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OutputType>Library</OutputType>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>3.0.0</Version>
+    <Version>3.0.1</Version>
     <PackageId>Kemsekov.GraphSharp</PackageId>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageVersion>$(Version)</PackageVersion>
@@ -14,11 +14,11 @@
     <WarningLevel>6</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="MathNet.Numerics" Version="5.0.0"/>
-    <PackageReference Include="Delaunator" Version="1.0.9"/>
-    <PackageReference Include="QuikGraph" Version="2.5.0"/>
-    <PackageReference Include="RentedArraySharp" Version="1.0.4"/>
-    <PackageReference Include="ConcurrentHashSet" Version="1.3.0"/>
-    <ProjectReference Include="../Satsuma/Satsuma.csproj"/>
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageReference Include="Delaunator" Version="1.0.9" />
+    <PackageReference Include="QuikGraph" Version="2.5.0" />
+    <PackageReference Include="RentedArraySharp" Version="1.0.4" />
+    <PackageReference Include="SpaceDivisor" Version="1.0.0" />
+    <ProjectReference Include="../Satsuma/Satsuma.csproj" />
   </ItemGroup>
 </Project>

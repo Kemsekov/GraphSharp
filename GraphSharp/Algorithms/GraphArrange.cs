@@ -21,6 +21,7 @@ where TEdge : IEdge
     /// </summary>
     /// <value></value>
     public Dictionary<int, Vector> Positions { get; }
+    Dictionary<int,Vector> Change;
     /// <summary>
     /// Returns normalized position
     /// </summary>
@@ -69,7 +70,8 @@ where TEdge : IEdge
     public GraphArrange(IImmutableGraph<TNode, TEdge> graph, int closestCount = -1, int spaceDimensions = 2, Func<TEdge, float>? getWeight = null)
     {
         ClosestCount = closestCount;
-        this.Positions = new Dictionary<int, Vector>();
+        this.Positions = new Dictionary<int, Vector>(graph.Nodes.Count());
+        Change = new Dictionary<int, Vector>(graph.Nodes.Count());
         GetWeight = getWeight ?? (x => 1.0f);
         Graph = graph;
         foreach (var n in graph.Nodes)
@@ -99,7 +101,8 @@ where TEdge : IEdge
     public float ComputeStep()
     {
         EdgesLengthSum = ((float)GetEdgesLengthSum());
-        var Change = 0f;
+        var totalChange = 0f;
+        Change.Clear();
 
         var nodes = Graph.Nodes;
         var edges = Graph.Edges;
@@ -144,18 +147,18 @@ where TEdge : IEdge
                 var norm = (float)dir.L2Norm();
                 var coeff = MathF.Min(MathF.Pow(1 / norm,DistancePower), ((float)EdgesLengthSum));
                 direction +=  dir * coeff;
-                
             }
             if(closest.Count!=0)
                 change -= direction / closest.Count;
             
             lock (locker){
+                Change[n.Id] = (Vector)change;
                 Positions[n.Id] = (Vector)(Positions[n.Id] + change);
-                    Change += ((float)change.L2Norm());
+                totalChange += ((float)change.L2Norm());
             }
         });
         normalizers = new(()=>UpdatePositionsNormalizer(Positions));
-        return Change/((float)EdgesLengthSum);
+        return totalChange/((float)EdgesLengthSum);
     }
     void Normalize(Vector vec)
     {

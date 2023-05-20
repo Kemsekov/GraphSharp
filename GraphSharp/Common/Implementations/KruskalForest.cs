@@ -8,6 +8,7 @@ namespace GraphSharp.Common;
 /// Result of kruskal algorithm
 /// </summary>
 public class KruskalForest<TEdge> : IDisposable, IForest<TEdge>
+where TEdge : IEdge
 {
     /// <inheritdoc/>
     public KruskalForest(UnionFind treeFinder,RentedArray<int> degree, IList<TEdge> forest)
@@ -15,6 +16,17 @@ public class KruskalForest<TEdge> : IDisposable, IForest<TEdge>
         this.TreeFinder = treeFinder;
         this.Degree = degree;
         this.Forest = forest;
+    }
+    /// <inheritdoc/>
+    public KruskalForest(IList<TEdge> forest,int nodesCount){
+        this.Forest = forest;
+        this.Degree = ArrayPoolStorage.RentArray<int>(nodesCount);
+        this.TreeFinder = new UnionFind(nodesCount);
+        foreach(var e in forest){
+            Degree[e.SourceId]+=1;
+            Degree[e.TargetId]+=1;
+            TreeFinder.UnionSet(e.SourceId,e.TargetId);
+        }
     }
     /// <summary>
     /// Set finder that helps to determine if two nodes in same tree

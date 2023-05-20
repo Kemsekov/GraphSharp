@@ -23,7 +23,6 @@ where TEdge : IEdge
         var forest = KruskalAlgorithm(edges, maxDegree);
         return forest;
     }
-
     KruskalForest<TEdge> FindKruskalForest(IEnumerable<TEdge> edges, Func<TEdge, double> getWeight, Func<TNode, int> maxDegree)
     {
         edges = edges.OrderBy(x => getWeight(x));
@@ -48,14 +47,14 @@ where TEdge : IEdge
     /// requires tree degree 2 that connects all nodes.
     /// </summary>
     /// <param name="getWeight">Function to take weight from edge</param>
-    /// <param name="doDelaunayTriangulation">Function to do delaunay triangulation</param>
+    /// <param name="connect">Function to connect closes nodes</param>
     /// <returns>Tree as edges list and tree ends as nodes array. Node is end if it's degree = 1</returns>
-    protected (IList<TEdge> tree, TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TEdge, double> getWeight, Action<IGraph<TNode, TEdge>> doDelaunayTriangulation)
+    protected (IList<TEdge> tree, TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TEdge, double> getWeight, Action<IGraph<TNode, TEdge>> connect)
     {
         var graph = StructureBase;
         var clone = graph.CloneJustConfiguration();
         clone.SetSources(graph.Nodes);
-        doDelaunayTriangulation(clone);
+        connect(clone);
 
         using var startEdges = clone.Do.FindSpanningForestKruskal(getWeight: getWeight, maxDegree: n => 2);
         clone.SetSources(edges: startEdges.Forest);
@@ -71,7 +70,7 @@ where TEdge : IEdge
                 break;
             }
             using var components = clone.Do.FindComponents();
-            doDelaunayTriangulation(tmpGraph);
+            connect(tmpGraph);
             foreach (var n in tmpGraph.Nodes)
                 foreach (var e in tmpGraph.Edges.OutEdges(n.Id))
                 {

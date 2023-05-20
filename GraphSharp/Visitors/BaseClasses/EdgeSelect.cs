@@ -19,7 +19,7 @@ where TEdge : IEdge
     {
         Edge = edge;
         SourceId = sourceId;
-        TargetId = Other(sourceId);
+        TargetId = Edge.Other(sourceId);
     }
     /// <summary>
     /// Underlying edge that being selected

@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using GraphSharp.Adapters;
 using GraphSharp.Exceptions;
-using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Single;
+
 namespace GraphSharp.Graphs;
 
 /// <summary>
@@ -48,7 +49,7 @@ where TEdge : IEdge
         adjacencyMatrix = SparseMatrix.Create(size, size, 0);
         foreach (var e in Edges)
         {
-            adjacencyMatrix[e.SourceId, e.TargetId] = e.Weight;
+            adjacencyMatrix[e.SourceId, e.TargetId] = ((float)e.Weight);
         }
         return adjacencyMatrix;
     }
