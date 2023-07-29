@@ -201,7 +201,7 @@ public class GraphTests
     public void FindStronglyConnectedComponents_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.ConnectToClosest(2, 5,(n1,n2)=>(n1.Position-n2.Position).Length());
+        _Graph.Do.ConnectToClosest(2, 5,(n1,n2)=>(n1.Position-n2.Position).L2Norm());
         var ssc = _Graph.Do.FindStronglyConnectedComponentsTarjan();
         Assert.NotEmpty(ssc.Components);
         foreach (var c in ssc.Components)

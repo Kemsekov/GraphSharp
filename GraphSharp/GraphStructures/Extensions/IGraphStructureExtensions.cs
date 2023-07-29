@@ -88,9 +88,15 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        foreach (var e in graph.Edges)
+        return graph.Edges.IsDirected();
+    }
+    /// <returns>True if graph is directed, else false</returns>
+    public static bool IsDirected<TEdge>(this IImmutableEdgeSource<TEdge> edges)
+    where TEdge : IEdge
+    {
+        foreach (var e in edges)
         {
-            if (graph.Edges.TryGetEdge(e.TargetId, e.SourceId, out _))
+            if (edges.TryGetEdge(e.TargetId, e.SourceId, out _))
             {
                 return false;
             }
@@ -102,14 +108,20 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        foreach (var e in graph.Edges)
+        return graph.Edges.IsBidirected();
+    }
+
+    /// <returns>True if graph is bidirected, else false</returns>
+    public static bool IsBidirected<TEdge>(this IImmutableEdgeSource<TEdge> edges)
+    where TEdge : IEdge
+    {
+        foreach (var e in edges)
         {
-            if (!graph.Edges.TryGetEdge(e.TargetId, e.SourceId, out _))
+            if (!edges.TryGetEdge(e.TargetId, e.SourceId, out _))
                 return false;
         }
         return true;
     }
-
     /// <summary>
     /// Determine whatever given graph is a directed tree
     /// </summary>

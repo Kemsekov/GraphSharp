@@ -7,7 +7,7 @@ using GraphSharp.Exceptions;
 using GraphSharp.Graphs;
 
 using GraphSharp.Tests.Models;
-using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Single;
 using Xunit;
 
 namespace GraphSharp.Tests
@@ -161,17 +161,17 @@ namespace GraphSharp.Tests
 
             Assert.Equal(adjacencyMatrix, result);
         }
-        public Matrix CreateSquareMatrix(int size, Func<int, int, double> createElement)
+        public Matrix CreateSquareMatrix(int size, Func<int, int, float> createElement)
         {
-            var result = new double[size, size];
+            var result = new float[size, size];
             for (int i = 0; i < size; i++)
                 for (int b = 0; b < size; b++)
                     result[i, b] = createElement(i, b);
             return DenseMatrix.OfArray(result);
         }
-        public Matrix CreateRandomIncidenceMatrix(Random rand, int nodesCount, int edgesCount, Func<int, int, double> createElement)
+        public Matrix CreateRandomIncidenceMatrix(Random rand, int nodesCount, int edgesCount, Func<int, int, float> createElement)
         {
-            var result = new double[nodesCount, edgesCount];
+            var result = new float[nodesCount, edgesCount];
             for (int e = 0; e < edgesCount; e++)
             {
                 int randPoint1 = rand.Next(nodesCount);

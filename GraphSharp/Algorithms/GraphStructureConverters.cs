@@ -40,16 +40,30 @@ where TEdge : IEdge
         return result;
     }
     /// <summary>
+    /// Converts current <see cref="Nodes"/> to adjacency matrix.
+    /// </summary>
+    public DenseMatrix ToAdjacencyMatrix()
+    {
+        DenseMatrix adjacencyMatrix;
+        int size = Nodes.MaxNodeId + 1;
+        adjacencyMatrix = DenseMatrix.Create(size, size, 0);
+        foreach (var e in Edges)
+        {
+            adjacencyMatrix[e.SourceId, e.TargetId] = (float)e.Weight;
+        }
+        return adjacencyMatrix;
+    }
+    /// <summary>
     /// Converts current <see cref="Nodes"/> to sparse adjacency matrix.
     /// </summary>
-    public SparseMatrix ToAdjacencyMatrix()
+    public SparseMatrix ToSparseAdjacencyMatrix()
     {
         SparseMatrix adjacencyMatrix;
         int size = Nodes.MaxNodeId + 1;
         adjacencyMatrix = SparseMatrix.Create(size, size, 0);
         foreach (var e in Edges)
         {
-            adjacencyMatrix[e.SourceId, e.TargetId] = ((float)e.Weight);
+            adjacencyMatrix[e.SourceId, e.TargetId] = (float)e.Weight;
         }
         return adjacencyMatrix;
     }
