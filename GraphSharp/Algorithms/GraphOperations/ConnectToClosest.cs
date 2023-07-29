@@ -37,6 +37,7 @@ where TEdge : IEdge
                 lock (locker)
                 {
                     if (edgesCount <= 0) break;
+                    if(Edges.TryGetEdge(source.Id,target.Id,out var _)) continue;
                     Edges.Add(Configuration.CreateEdge(source, target));
                     edgesCount--;
                     edgesCountMap[target.Id]--;

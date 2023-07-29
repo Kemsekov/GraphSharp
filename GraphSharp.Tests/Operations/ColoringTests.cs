@@ -11,7 +11,15 @@ namespace GraphSharp.Tests.Operations
 {
     public class ColoringTests : BaseTest
     {
-
+        [Fact]
+        public void QuickGraphColorNodes_Works()
+        {
+            var coloring = _Graph.Do.ConnectRandomly(1, 5).QuikGraphColorNodes();
+            var usedColors = coloring.CountUsedColors();
+            coloring.ApplyColors(_Graph.Nodes);
+            _Graph.EnsureRightColoring();
+            Assert.Equal(usedColors.Sum(x => x.Value), _Graph.Nodes.Count);
+        }
         [Fact]
         public void GreedyColorNodes_Works()
         {

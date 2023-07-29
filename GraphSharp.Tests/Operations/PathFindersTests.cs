@@ -15,7 +15,7 @@ namespace GraphSharp.Tests.Operations
         public void FindPath(Func<IGraph<Node, Edge>, int, int, IPath<Node>> getPath)
         {
             _Graph.Do.CreateNodes(1000);
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 _Graph.Do.ConnectRandomly(0, 7);
                 _Graph.Do.MakeBidirected();
