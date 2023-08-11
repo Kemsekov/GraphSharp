@@ -33,9 +33,13 @@ where TEdge : IEdge
         }
     }
     /// <summary>
-    /// Graph used
+    /// Graph' nodes
     /// </summary>
-    public IImmutableGraph<TNode, TEdge> Graph { get; }
+    public IImmutableNodeSource<TNode> Nodes{get;}
+    /// <summary>
+    /// Graph' edges
+    /// </summary>
+    public IImmutableEdgeSource<TEdge> Edges{get;}
     /// <summary>
     /// Sum of edges length
     /// </summary>
@@ -59,22 +63,32 @@ where TEdge : IEdge
     /// </summary>
     public float DistancePower = 2;
     private Lazy<(Vector<float> minVector,Vector<float> scalar)> normalizers;
-
-    /// <summary>
-    /// Creates new instance of graph arranging algorithm
-    /// </summary>
     /// <param name="graph">Graph to arrange</param>
     /// <param name="closestCount">Count of closest to given node elements to compute repulsion from. Let it be -1 so all nodes will be used to compute repulsion</param>
     /// <param name="spaceDimensions">Space dimensions count used to arrange graph</param>
     /// <param name="getWeight">How to measure edge weights. By default will use distance between edge endpoints.</param>
-    public GraphArrange(IImmutableGraph<TNode, TEdge> graph, int closestCount = -1, int spaceDimensions = 2, Func<TEdge, float>? getWeight = null)
+    public GraphArrange(IImmutableGraph<TNode,TEdge> graph, int closestCount = -1, int spaceDimensions = 2, Func<TEdge, float>? getWeight = null) : this(graph.Nodes,graph.Edges,closestCount,spaceDimensions,getWeight)
+    {
+        
+    }
+
+    /// <summary>
+    /// Creates new instance of graph arranging algorithm
+    /// </summary>
+    /// <param name="nodes">graph nodes</param>
+    /// <param name="edges">graph edges</param>
+    /// <param name="closestCount">Count of closest to given node elements to compute repulsion from. Let it be -1 so all nodes will be used to compute repulsion</param>
+    /// <param name="spaceDimensions">Space dimensions count used to arrange graph</param>
+    /// <param name="getWeight">How to measure edge weights. By default will use distance between edge endpoints.</param>
+    public GraphArrange(IImmutableNodeSource<TNode> nodes, IImmutableEdgeSource<TEdge> edges, int closestCount = -1, int spaceDimensions = 2, Func<TEdge, float>? getWeight = null)
     {
         ClosestCount = closestCount;
-        this.Positions = new Dictionary<int, Vector>(graph.Nodes.Count());
-        Change = new Dictionary<int, Vector>(graph.Nodes.Count());
+        this.Positions = new Dictionary<int, Vector>(nodes.Count());
+        Change = new Dictionary<int, Vector>(nodes.Count());
         GetWeight = getWeight ?? (x => 1.0f);
-        Graph = graph;
-        foreach (var n in graph.Nodes)
+        Nodes = nodes;
+        Edges = edges;
+        foreach (var n in nodes)
             Positions[n.Id] = RandomVector(spaceDimensions);
         this.SpaceDimensions = spaceDimensions;
         normalizers = new(()=>UpdatePositionsNormalizer(Positions));
@@ -104,20 +118,18 @@ where TEdge : IEdge
         var totalChange = 0f;
         Change.Clear();
 
-        var nodes = Graph.Nodes;
-        var edges = Graph.Edges;
-        var closestCount = Math.Min(nodes.Count(), ClosestCount);
-        if (closestCount == -1) closestCount = nodes.Count();
+        var closestCount = Math.Min(Nodes.Count(), ClosestCount);
+        if (closestCount == -1) closestCount = Nodes.Count();
         if (closestCount == 0) return 0;
         var locker = new object();
-        bool needToSort = closestCount*1.0f/nodes.Count()<0.5f;
-        Parallel.ForEach(nodes, n =>
+        bool needToSort = closestCount*1.0f/Nodes.Count()<0.5f;
+        Parallel.ForEach(Nodes, n =>
         {
             var direction = EmptyVector();
             var change = EmptyVector();
             var nodePos = Positions[n.Id];
             var addedCoeff = 0.0f;
-            foreach (var e in edges.AdjacentEdges(n.Id))
+            foreach (var e in Edges.AdjacentEdges(n.Id))
             {
                 var dir = Positions[e.TargetId] - nodePos;
                 var norm = (float)dir.L2Norm();
@@ -130,12 +142,12 @@ where TEdge : IEdge
             
             List<TNode>? closest;
             if(needToSort)
-            closest = Graph.Nodes
+            closest = Nodes
                 .OrderBy(x => (Positions[x.Id] - nodePos).L2Norm())
                 .Take(closestCount)
                 .ToList();
             else
-                closest = Graph.Nodes
+                closest = Nodes
                 .Take(closestCount)
                 .ToList();
 
@@ -185,7 +197,7 @@ where TEdge : IEdge
 
     double GetEdgesLengthSum()
     {
-        return Graph.Edges.Sum(x => (Positions[x.SourceId] - Positions[x.TargetId]).L2Norm());
+        return Edges.Sum(x => (Positions[x.SourceId] - Positions[x.TargetId]).L2Norm());
     }
 }
 
