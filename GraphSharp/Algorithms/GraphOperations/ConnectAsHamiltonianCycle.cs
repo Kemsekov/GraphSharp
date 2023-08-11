@@ -18,7 +18,7 @@ where TEdge : IEdge
         tsp.Tour.Aggregate((n1,n2)=>{
             Edges.Add(Configuration.CreateEdge(n1,n2));
             return n2;
-        });
+        }).ToString();
         return this;
     }
 }
