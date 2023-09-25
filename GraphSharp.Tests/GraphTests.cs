@@ -90,7 +90,7 @@ public class GraphTests
     public void TryFindHamiltonianCycleByBubbleExpansion_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation(x=>x.Position);
+        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
         _Graph.Do.MakeBidirected();
         var result = _Graph.Do.TryFindHamiltonianCycleByBubbleExpansion();
         _Graph.ValidateCycle(result);
@@ -150,7 +150,7 @@ public class GraphTests
     public void TryFindCenter_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation(x=>x.Position);
+        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
         (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1,false);
         (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1,false);
         Assert.NotEmpty(c1);
@@ -201,7 +201,7 @@ public class GraphTests
     public void FindStronglyConnectedComponents_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.ConnectToClosest(2, 5,(n1,n2)=>(n1.Position-n2.Position).L2Norm());
+        _Graph.Do.ConnectToClosest(2, 5,(n1,n2)=>(n1.MapProperties().Position-n2.MapProperties().Position).L2Norm());
         var ssc = _Graph.Do.FindStronglyConnectedComponentsTarjan();
         Assert.NotEmpty(ssc.Components);
         foreach (var c in ssc.Components)
@@ -222,7 +222,7 @@ public class GraphTests
     public void FindEccentricity_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation(x=>x.Position);
+        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
         var node = _Graph.Nodes[Random.Shared.Next(1000)];
         var ecc = _Graph.Do.FindEccentricity(node.Id);
         var paths = _Graph.Do.FindShortestPathsDijkstra(node.Id);

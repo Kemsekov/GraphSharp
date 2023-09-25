@@ -248,7 +248,7 @@ namespace GraphSharp.Tests
         [Fact]
         public void ConvertEdgesListToPath(){
             _Graph.Do.CreateNodes(1000);
-            _Graph.Do.DelaunayTriangulation(x=>x.Position);
+            _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
             for(int i = 0;i<100;i++){
                 var n1 = Random.Shared.Next(1000);
                 var n2 = (n1+1)%1000;

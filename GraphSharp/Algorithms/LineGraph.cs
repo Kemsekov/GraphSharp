@@ -33,6 +33,9 @@ where TEdge : IEdge
     /// </summary>
     public TEdge Edge { get; }
     /// <inheritdoc/>
+    public IDictionary<string, object> Properties => Edge.Properties;
+
+    /// <inheritdoc/>
     public INode Clone()
     {
         return new LineGraphNode<TEdge>(Id, (TEdge)Edge.Clone());

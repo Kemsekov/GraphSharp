@@ -19,6 +19,8 @@
     <PackageReference Include="QuikGraph" Version="2.5.0" />
     <PackageReference Include="RentedArraySharp" Version="1.0.4" />
     <PackageReference Include="SpaceDivisor" Version="1.0.0" />
-    <ProjectReference Include="../Satsuma/Satsuma.csproj" />
+    <PackageReference Include="Unchase.Satsuma.Algorithms" Version="1.0.0" />
+    <PackageReference Include="Unchase.Satsuma.Core" Version="1.0.0" />
+    <PackageReference Include="Unchase.Satsuma.TSP" Version="1.0.0" />
   </ItemGroup>
 </Project>

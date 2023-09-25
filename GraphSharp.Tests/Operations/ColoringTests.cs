@@ -44,19 +44,19 @@ namespace GraphSharp.Tests.Operations
             _Graph.Do.ConnectRandomly(1, 5);
             var coloring1 = _Graph.Do.GreedyColorNodes();
             var usedColors1 = coloring1.CountUsedColors();
-            Assert.False(_Graph.Nodes.Any(x => x.Color == Color.Empty));
+            Assert.False(_Graph.Nodes.Any(x => x.MapProperties().Color == Color.Empty));
             coloring1.ApplyColors(_Graph.Nodes);
             _Graph.EnsureRightColoring();
 
             var coloring2 = _Graph.Do.DSaturColorNodes();
             var usedColors2 = coloring2.CountUsedColors();
-            Assert.False(_Graph.Nodes.Any(x => x.Color == Color.Empty));
+            Assert.False(_Graph.Nodes.Any(x => x.MapProperties().Color == Color.Empty));
             coloring2.ApplyColors(_Graph.Nodes);
             _Graph.EnsureRightColoring();
 
             var coloring3 = _Graph.Do.RLFColorNodes();
             var usedColors3 = coloring3.CountUsedColors();
-            Assert.False(_Graph.Nodes.Any(x => x.Color == Color.Empty));
+            Assert.False(_Graph.Nodes.Any(x => x.MapProperties().Color == Color.Empty));
             coloring3.ApplyColors(_Graph.Nodes);
             _Graph.EnsureRightColoring();
 

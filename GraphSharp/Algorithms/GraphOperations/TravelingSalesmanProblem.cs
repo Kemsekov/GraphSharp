@@ -5,7 +5,9 @@ using System.Linq;
 using MathNet.Numerics.LinearAlgebra.Single;
 using System.Threading.Tasks;
 using GraphSharp.Adapters;
-using Satsuma;
+using Unchase.Satsuma;
+using Unchase.Satsuma.TSP.Contracts;
+using Unchase.Satsuma.TSP;
 
 namespace GraphSharp.Graphs;
 
@@ -15,6 +17,7 @@ class TspResult<TNode> : ITsp<TNode>
     public double TourCost{get;}
     public TspResult(IEnumerable<TNode> tour, double cost)
     {
+        
         Tour = tour;
         TourCost = cost;
     }
@@ -31,7 +34,7 @@ where TEdge : IEdge
     /// </summary>
     public ITsp<TNode> TspOpt2(IEnumerable<TNode> tour, double tourCost, Func<TNode, TNode, double> cost)
     {
-        var tsp = new Satsuma.Opt2Tsp<TNode>(cost, tour, tourCost);
+        var tsp = new Opt2Tsp<TNode>(cost, tour, tourCost);
         tsp.Run();
         return tsp;
     }
@@ -101,7 +104,7 @@ where TEdge : IEdge
     /// <param name="cost"></param>
     public ITsp<INode> TspInsertionFarthest(Func<TNode, TNode, double> cost)
     {
-        var tsp = new Satsuma.InsertionTsp<INode>(Nodes.Cast<INode>(), (n1, n2) => cost((TNode)n1, (TNode)n2), Satsuma.TspSelectionRule.Farthest);
+        var tsp = new InsertionTsp<INode>(Nodes.Cast<INode>(), (n1, n2) => cost((TNode)n1, (TNode)n2), Unchase.Satsuma.TSP.Enums.TspSelectionRule.Farthest);
         tsp.Run();
         return tsp;
     }
@@ -111,7 +114,7 @@ where TEdge : IEdge
     /// <param name="cost"></param>
     public ITsp<INode> TspInsertionNearest(Func<TNode, TNode, double> cost)
     {
-        var tsp = new Satsuma.InsertionTsp<INode>(Nodes.Cast<INode>(), (n1, n2) => cost((TNode)n1, (TNode)n2), Satsuma.TspSelectionRule.Nearest);
+        var tsp = new InsertionTsp<INode>(Nodes.Cast<INode>(), (n1, n2) => cost((TNode)n1, (TNode)n2), Unchase.Satsuma.TSP.Enums.TspSelectionRule.Nearest);
         tsp.Run();
         return tsp;
     }

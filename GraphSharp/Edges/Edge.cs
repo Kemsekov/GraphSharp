@@ -1,6 +1,10 @@
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Drawing;
 using GraphSharp.Common;
 namespace GraphSharp;
+
+
 
 /// <summary>
 /// Default <see cref="IEdge"/> implementation
@@ -17,14 +21,12 @@ public class Edge : IEdge
     public double Weight { get; set; }
     ///<inheritdoc/>
     public Color Color { get; set; } = DefaultColor;
+    ///<inheritdoc/>
+    public IDictionary<string, object> Properties{get;init;}
     /// <summary>
     /// Creates a new instance of edge
     /// </summary>
-    public Edge(INode source, INode target)
-    {
-        SourceId = source.Id;
-        TargetId = target.Id;
-    }
+    public Edge(INode source, INode target) : this(source.Id,target.Id){}
     /// <summary>
     /// Creates a new instance of edge
     /// </summary>
@@ -32,6 +34,7 @@ public class Edge : IEdge
     {
         SourceId = sourceId;
         TargetId = targetId;
+        Properties = new Dictionary<string,object>();
     }
     ///<inheritdoc/>
     public override string ToString()

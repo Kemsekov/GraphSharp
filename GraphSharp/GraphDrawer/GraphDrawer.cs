@@ -168,7 +168,7 @@ where TEdge : IEdge
     {
 
         var pos = ShiftVector(GetNodePos(node));
-        color = color==default ? node.Color : color;
+        color = color==default ? node.MapProperties().Color : color;
         var point = pos*((float)Size);
         Drawer.FillEllipse((Vector)point, nodeSize*windowSize, nodeSize*windowSize, color);
     }

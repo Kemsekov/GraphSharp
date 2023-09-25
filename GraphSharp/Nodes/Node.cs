@@ -1,6 +1,9 @@
 using System.Drawing;
 using MathNet.Numerics.LinearAlgebra.Single;
 using GraphSharp.Common;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using GraphSharp.Extensions;
 namespace GraphSharp;
 
 /// <summary>
@@ -12,18 +15,16 @@ public class Node : INode
     public static Color DefaultColor = Color.Brown;
     ///<inheritdoc/>
     public int Id { get; set; }
-    ///<inheritdoc/>
-    public Vector Position { get; set; }
-    ///<inheritdoc/>
-    public Color Color { get; set; } = DefaultColor;
-    ///<inheritdoc/>
-    public double Weight { get; set; }
 
+    ///<inheritdoc/>
+    public IDictionary<string, object> Properties{get;init;}
     ///<inheritdoc/>
     public Node(int id)
     {
         Id = id;
-        Position = new DenseVector(new float[0]);
+        Properties = new Dictionary<string,object>();
+        Properties["color"] = DefaultColor;
+        Properties["position"] = DenseVector.Create(2,0);
     }
     ///<inheritdoc/>
     public override string ToString()
@@ -36,9 +37,7 @@ public class Node : INode
     {
         return new Node(Id)
         {
-            Weight = this.Weight,
-            Position = this.Position,
-            Color = this.Color
+            Properties=this.Properties.Clone()
         };
     }
 

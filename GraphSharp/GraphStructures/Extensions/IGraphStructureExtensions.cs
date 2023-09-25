@@ -357,9 +357,9 @@ public static class GraphExtensions
         var Nodes = graph.Nodes;
         foreach (var n in Nodes)
         {
-            var color = n.Color;
+            var color = n.MapProperties().Color;
             var edges = graph.Edges.OutEdges(n.Id);
-            if (edges.Any(x => Nodes[x.TargetId].Color == color))
+            if (edges.Any(x => Nodes[x.TargetId].MapProperties().Color == color))
             {
                 throw new WrongGraphColoringException($"Wrong graph coloring! Node {n.Id} with color {color} have edge with the same color!");
             }
@@ -424,7 +424,7 @@ public static class GraphExtensions
     {
         foreach (var n in nodes)
         {
-            n.Color = color;
+            n.MapProperties().Color = color;
         }
     }
     /// <summary>

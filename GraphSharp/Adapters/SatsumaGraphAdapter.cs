@@ -3,36 +3,59 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using GraphSharp.Extensions;
 using GraphSharp.Graphs;
-using Satsuma;
+using Unchase.Satsuma.Core;
+using Unchase.Satsuma.Core.Enums;
 
 namespace GraphSharp.Adapters;
 
 /// <summary>
-/// Adapter for <see cref="Graphs.IImmutableGraph{TNode,TEdge}"/> to behave like <see cref="Satsuma.IGraph"/> from Satsuma library
+/// Adapter for <see cref="Graphs.IImmutableGraph{TNode,TEdge}"/> to behave like <see cref="Unchase.Satsuma.Core.Contracts.IGraph"/> from Satsuma library
 /// </summary>
 /// <typeparam name="TNode"></typeparam>
 /// <typeparam name="TEdge"></typeparam>
-public class SatsumaGraphAdapter<TNode,TEdge> : Satsuma.IGraph
+public class SatsumaGraphAdapter<TNode,TEdge> : Unchase.Satsuma.Core.Contracts.IGraph
 where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
     /// Underlying GraphSharp graph
     /// </summary>
-    public IImmutableGraph<TNode, TEdge> Graph { get; }
+    public Graphs.IImmutableGraph<TNode, TEdge> Graph { get; }
+    ///<inheritdoc/>
+    public Dictionary<Arc, ArcProperties<object>> ArcPropertiesDictionary{get;}
+    ///<inheritdoc/>
+    public Dictionary<Unchase.Satsuma.Core.Node, NodeProperties<object>> NodePropertiesDictionary{get;}
+
     IDictionary<int,TEdge?> IdToEdge;
     /// <summary>
     /// Creates new satsuma graph adapter out of GraphSharp graph
     /// </summary>
     public SatsumaGraphAdapter(Graphs.IImmutableGraph<TNode,TEdge> graph)
     {
+        
         Graph = graph;
         IdToEdge = new ConcurrentDictionary<int,TEdge?>();
+        ArcPropertiesDictionary = new Dictionary<Arc, ArcProperties<object>>();
+        NodePropertiesDictionary = new Dictionary<Unchase.Satsuma.Core.Node, NodeProperties<object>>();
+
+        foreach(var n in graph.Nodes){
+            if(n.Properties is Dictionary<string,object> d)
+                NodePropertiesDictionary[ToNode(n)] = new(d);
+            else
+                NodePropertiesDictionary[ToNode(n)] = new(n.Properties.Clone());
+        }
+        foreach(var e in graph.Edges){
+            if(e.Properties is Dictionary<string,object> d)
+                ArcPropertiesDictionary[ToArc(e)] = new(ToNode(graph.Nodes[e.SourceId]),ToNode(graph.Nodes[e.TargetId]),true,d);
+            else
+                ArcPropertiesDictionary[ToArc(e)] = new(ToNode(graph.Nodes[e.SourceId]),ToNode(graph.Nodes[e.TargetId]),true,e.Properties.Clone());
+        }
     }
 
     Arc ToArc(TEdge edge) => new Arc(GetEdgeId(edge));
-    Satsuma.Node ToNode(TNode x) => new(x.Id);
+    Unchase.Satsuma.Core.Node ToNode(TNode x) => new(x.Id);
     long GetEdgeId(TEdge edge){
         int id = edge.GetHashCode();
         if(!IdToEdge.ContainsKey(id)){
@@ -51,7 +74,7 @@ where TEdge : IEdge
     }
 
     ///<inheritdoc/>
-    public int ArcCount(Satsuma.Node u, ArcFilter filter = ArcFilter.All)
+    public int ArcCount(Unchase.Satsuma.Core.Node u, ArcFilter filter = ArcFilter.All)
     {
         if(filter==ArcFilter.Edge) return 0;
         switch(filter){
@@ -64,7 +87,7 @@ where TEdge : IEdge
     }
 
     ///<inheritdoc/>
-    public int ArcCount(Satsuma.Node u, Satsuma.Node v, ArcFilter filter = ArcFilter.All)
+    public int ArcCount(Unchase.Satsuma.Core.Node u, Unchase.Satsuma.Core.Node v, ArcFilter filter = ArcFilter.All)
     {
         if(filter==ArcFilter.Edge) return 0;
         switch(filter){
@@ -84,7 +107,7 @@ where TEdge : IEdge
     }
 
     ///<inheritdoc/>
-    public IEnumerable<Arc> Arcs(Satsuma.Node u, ArcFilter filter = ArcFilter.All)
+    public IEnumerable<Arc> Arcs(Unchase.Satsuma.Core.Node u, ArcFilter filter = ArcFilter.All)
     {
         if(filter == ArcFilter.Edge) return Enumerable.Empty<Arc>();
         switch(filter){
@@ -98,7 +121,7 @@ where TEdge : IEdge
     }
 
     ///<inheritdoc/>
-    public IEnumerable<Arc> Arcs(Satsuma.Node u, Satsuma.Node v, ArcFilter filter = ArcFilter.All)
+    public IEnumerable<Arc> Arcs(Unchase.Satsuma.Core.Node u, Unchase.Satsuma.Core.Node v, ArcFilter filter = ArcFilter.All)
     {
         switch(filter){
             case ArcFilter.Forward:
@@ -117,7 +140,7 @@ where TEdge : IEdge
     }
 
     ///<inheritdoc/>
-    public bool HasNode(Satsuma.Node node)
+    public bool HasNode(Unchase.Satsuma.Core.Node node)
     {
         return Graph.Nodes.Contains((int)node.Id);
     }
@@ -135,22 +158,40 @@ where TEdge : IEdge
     }
 
     ///<inheritdoc/>
-    public IEnumerable<Satsuma.Node> Nodes()
+    public IEnumerable<Unchase.Satsuma.Core.Node> Nodes()
     {
         return Graph.Nodes.Select(x=>ToNode(x));
     }
 
     ///<inheritdoc/>
-    public Satsuma.Node U(Arc arc)
+    public Unchase.Satsuma.Core.Node U(Arc arc)
     {
         var pos = GetEdge((int)arc.Id);
         return ToNode(Graph.Nodes[pos.SourceId]);
     }
 
     ///<inheritdoc/>
-    public Satsuma.Node V(Arc arc)
+    public Unchase.Satsuma.Core.Node V(Arc arc)
     {
         var pos = GetEdge((int)arc.Id);
         return ToNode(Graph.Nodes[pos.TargetId]);
+    }
+
+    ///<inheritdoc/>
+    public Dictionary<string, object>? GetArcProperties(Arc arc)
+    {
+        var e = GetEdge((int)arc.Id);
+        if(e.Properties is Dictionary<string,object> p)
+            return p;
+        return e.Properties.Clone();
+    }
+
+    ///<inheritdoc/>
+    public Dictionary<string, object>? GetNodeProperties(Unchase.Satsuma.Core.Node node)
+    {
+        var n = Graph.Nodes[(int)node.Id];
+        if(n.Properties is Dictionary<string,object> p)
+            return p;
+        return n.Properties.Clone();
     }
 }

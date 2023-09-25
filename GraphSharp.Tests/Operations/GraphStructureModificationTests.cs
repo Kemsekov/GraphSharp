@@ -273,7 +273,7 @@ namespace GraphSharp.Tests.Operations
             for (int i = 0; i < 10; i++)
             {
                 _Graph.Do
-                .ConnectToClosest(1, 10,(n1,n2)=>(n1.Position-n2.Position).L2Norm());
+                .ConnectToClosest(1, 10,(n1,n2)=>(n1.MapProperties().Position-n2.MapProperties().Position).L2Norm());
                 validateThereIsNoCopiesAndSourcesInEdges(_Graph.Nodes, _Graph.Edges);
                 _Graph.CheckForIntegrityOfSimpleGraph();
             }

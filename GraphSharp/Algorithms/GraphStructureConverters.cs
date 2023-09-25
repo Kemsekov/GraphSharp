@@ -78,7 +78,7 @@ where TEdge : IEdge
         return new ToQuikGraphAdapter<TNode, TEdge>(this._structureBase);
     }
     /// <summary>
-    /// Uses <see cref="SatsumaGraphAdapter{TNode,TEdge}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="Satsuma.IGraph"/> <br/>
+    /// Uses <see cref="SatsumaGraphAdapter{TNode,TEdge}"/> to threat <see cref="Graphs.IGraph{TNode, TEdge}"/> as <see cref="Unchase.Satsuma.Core.Contracts.IGraph"/> <br/>
     /// This conversation does not simply copy graph but passes execution of methods from <see langword="Satsuma"/> to <see langword="GraphSharp"/>. <br/>
     /// Any change to underlying graph will affect adapter as well. Beware.
     /// </summary>

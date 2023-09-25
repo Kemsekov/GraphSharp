@@ -13,7 +13,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     ///<inheritdoc/>
-    new public IGraph<TNode,TEdge> Graph{get;}
+    public IGraph<TNode,TEdge> Graph{get;}
     /// <summary>
     /// Creates a new instance of mutable QuikGraph graph's adapter out of GraphSharp mutable graph
     /// </summary>
@@ -50,8 +50,10 @@ where TEdge : IEdge
         int counter = 0;
         foreach(var e in Graph.Edges.InEdges(vertex).ToList()){
             if(predicate(ToAdapter(e))){
-                if(Graph.Edges.Remove(e))
-                counter++;
+                if(Graph.Edges.Remove(e)){
+                    counter++;
+                    EdgeRemoved?.Invoke(ToAdapter(e));
+                }
             }
         }
         return counter;
@@ -62,6 +64,7 @@ where TEdge : IEdge
     {
         foreach(var toRemove in Graph.Edges.InEdges(vertex).ToList()){
             Graph.Edges.Remove(toRemove);
+            EdgeRemoved?.Invoke(ToAdapter(toRemove));
         }
     }
 
@@ -70,6 +73,7 @@ where TEdge : IEdge
     {
         foreach(var toRemove in Graph.Edges.InOutEdges(vertex).ToList()){
             Graph.Edges.Remove(toRemove);
+            EdgeRemoved?.Invoke(ToAdapter(toRemove));
         }
     }
 
@@ -79,8 +83,10 @@ where TEdge : IEdge
         int counter = 0;
         foreach(var e in Graph.Edges.OutEdges(vertex).ToList()){
             if(predicate(ToAdapter(e))){
-                if(Graph.Edges.Remove(e))
-                counter++;
+                if(Graph.Edges.Remove(e)){
+                    counter++;
+                    EdgeRemoved?.Invoke(ToAdapter(e));
+                }
             }
         }
         return counter;
@@ -91,6 +97,7 @@ where TEdge : IEdge
     {
         foreach(var toRemove in Graph.Edges.OutEdges(vertex).ToList()){
             Graph.Edges.Remove(toRemove);
+            EdgeRemoved?.Invoke(ToAdapter(toRemove));
         }
     }
 
@@ -103,12 +110,17 @@ where TEdge : IEdge
     ///<inheritdoc/>
     public bool AddVerticesAndEdge(EdgeAdapter<TEdge> edge)
     {
-        if(!Graph.Nodes.Contains(edge.Source))
+        if(!Graph.Nodes.Contains(edge.Source)){
             Graph.Nodes.Add(Graph.Configuration.CreateNode(edge.Source));
-        if(!Graph.Nodes.Contains(edge.Target))
+            VertexAdded?.Invoke(edge.Source);
+        }
+        if(!Graph.Nodes.Contains(edge.Target)){
             Graph.Nodes.Add(Graph.Configuration.CreateNode(edge.Target));
+            VertexAdded?.Invoke(edge.Target);
+        }
         if(!Graph.Edges.Contains(edge.GraphSharpEdge)){
             Graph.Edges.Add(edge.GraphSharpEdge);
+            EdgeAdded?.Invoke(edge);
             return true;
         }
         return false;
@@ -132,6 +144,7 @@ where TEdge : IEdge
         if(Graph.Nodes.Contains(vertex))
             return false;
         Graph.Nodes.Add(Graph.Configuration.CreateNode(vertex));
+        VertexAdded?.Invoke(vertex);
         return true;
     }
 
@@ -149,13 +162,23 @@ where TEdge : IEdge
     ///<inheritdoc/>
     public bool RemoveVertex(int vertex)
     {
-        return Graph.Nodes.Remove(vertex);
+        if(Graph.Nodes.Remove(vertex)){
+            VertexRemoved?.Invoke(vertex);
+            return true;
+        }
+        return false;
     }
 
     ///<inheritdoc/>
     public int RemoveVertexIf(QuikGraph.VertexPredicate<int> predicate)
     {
-        return Graph.Nodes.RemoveAll(x=>predicate(x.Id));
+        return Graph.Nodes.RemoveAll(x=>{
+            if(predicate(x.Id)){
+                VertexRemoved?.Invoke(x.Id);
+                return true;    
+            }
+            return false;
+        });
     }
 
     ///<inheritdoc/>
@@ -164,7 +187,9 @@ where TEdge : IEdge
         if(Graph.Edges.Contains(edge.GraphSharpEdge))
             return false;
         
-        Graph.Edges.Add(edge.GraphSharpEdge);
+        var e = edge.GraphSharpEdge;
+        Graph.Edges.Add(e);
+        EdgeAdded?.Invoke(ToAdapter(e));
         return true;
     }
 
@@ -182,13 +207,24 @@ where TEdge : IEdge
     ///<inheritdoc/>
     public bool RemoveEdge(EdgeAdapter<TEdge> edge)
     {
-        return Graph.Edges.Remove(edge.GraphSharpEdge);
+        if(Graph.Edges.Remove(edge.GraphSharpEdge)){
+            EdgeRemoved?.Invoke(edge);
+            return true;
+        }
+        return false;
     }
 
     ///<inheritdoc/>
     public int RemoveEdgeIf(QuikGraph.EdgePredicate<int, EdgeAdapter<TEdge>> predicate)
     {
-        return Graph.Edges.RemoveAll(x=>predicate(ToAdapter(x)));
+        return Graph.Edges.RemoveAll(x=>{
+            var e = ToAdapter(x);
+            if(predicate(e)){
+                EdgeRemoved?.Invoke(e);
+                return true;
+            }
+            return false;
+        });
     }
 
     ///<inheritdoc/>
@@ -204,6 +240,7 @@ where TEdge : IEdge
         foreach(var e in Graph.Edges.InOutEdges(vertex).ToList()){
             if(predicate(ToAdapter(e))){
                 Graph.Edges.Remove(e);
+                EdgeRemoved?.Invoke(ToAdapter(e));
                 counter++;
             }
         }
@@ -215,6 +252,7 @@ where TEdge : IEdge
     {
         foreach(var e in Graph.Edges.InOutEdges(vertex).ToList()){
             Graph.Edges.Remove(e);
+            EdgeRemoved?.Invoke(ToAdapter(e));
         }
     }
 }

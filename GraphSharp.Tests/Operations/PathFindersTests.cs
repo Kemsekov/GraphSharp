@@ -49,7 +49,7 @@ namespace GraphSharp.Tests.Operations
         {
             FindPath((graph, n1, n2) => graph.Do.FindAnyPath(n1, n2, x => true));
             FindPath((graph, n1, n2) => graph.Do.FindAnyPathParallel(n1, n2, x => true));
-            _Graph.Do.DelaunayTriangulation(x=>x.Position);
+            _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
             for (int i = 0; i < 10; i++)
             {
                 var p = Random.Shared.Next(999) + 1;

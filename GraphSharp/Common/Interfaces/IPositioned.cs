@@ -1,4 +1,4 @@
-using System.Numerics;
+using MathNet.Numerics.LinearAlgebra.Single;
 
 namespace GraphSharp.Common;
 

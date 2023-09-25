@@ -49,7 +49,7 @@ public class ColoringResult : IDisposable{
                 colorsList.Add(RandomColor(Random.Shared));
             }
             var c = colorsList[colorId];
-            n.Color = c;
+            n.MapProperties().Color = c;
         }
     }
     /// <summary>

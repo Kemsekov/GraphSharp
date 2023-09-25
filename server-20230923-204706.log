@@ -1,0 +1,9 @@
+JsonRpc Information: 3 : Listening started.
+JsonRpc Information: 7 : {"id":null,"method":"exit"}
+JsonRpc Verbose: 7 : Received: {
+  "jsonrpc": "2.0",
+  "method": "exit"
+}
+JsonRpc Information: 6 : Received notification for method "exit".
+JsonRpc Information: 9 : Invoking VSSharperServer.Server.VSSharperServer.Exit()
+JsonRpc Information: 13 : Connection closing (LocallyDisposed: Stream has been disposed). 
