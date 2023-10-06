@@ -4,11 +4,10 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Propagators;
 
 /// <summary>
-/// Algorithm that uses <see cref="IVisitor{TNode,TEdge}"/> to do graph exploration and modification
+/// Algorithm that uses <see cref="IVisitor{TEdge}"/> to do graph exploration and modification
 /// in a specific way designed by implementations
 /// </summary>
-public interface IPropagator<TNode, TEdge>
-where TNode : INode
+public interface IPropagator<TEdge>
 where TEdge : IEdge
 {
     /// <summary>
@@ -21,8 +20,8 @@ where TEdge : IEdge
     /// </summary>
     void SetPosition(params int[] nodeIndices);
     /// <summary>
-    /// Sets new graph and visitor.
+    /// Sets new graph edges and visitor.
     /// Clears all node states for current propagator and resets them to default settings.
     /// </summary>
-    void Reset(IImmutableGraph<TNode, TEdge> graph, IVisitor<TNode,TEdge> visitor);
+    void Reset(IImmutableEdgeSource<TEdge> edges, IVisitor<TEdge> visitor, int maxNodeId = -1);
 }

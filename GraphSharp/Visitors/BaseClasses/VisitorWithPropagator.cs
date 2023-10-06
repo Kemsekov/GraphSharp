@@ -4,16 +4,15 @@ using GraphSharp.Propagators;
 namespace GraphSharp.Visitors;
 
 /// <summary>
-/// Base implementation of <see cref="IVisitor{TNode,TEdge}"/> and proxy of <see cref="IPropagator{TNode,TEdge}"/> in one instance.
+/// Base implementation of <see cref="IVisitor{TEdge}"/> and proxy of <see cref="IPropagator{TEdge}"/> in one instance.
 /// </summary>
-public abstract class VisitorWithPropagator<TNode, TEdge> : VisitorBase<TNode, TEdge>, IPropagator<TNode, TEdge>
-where TNode : INode
+public abstract class VisitorWithPropagator<TEdge> : VisitorBase<TEdge>, IPropagator<TEdge>
 where TEdge : IEdge
 {
     /// <summary>
-    /// <see cref="PropagatorBase{TNode,TEdge}"/> implementation that used for this proxy class
+    /// <see cref="PropagatorBase{TEdge}"/> implementation that used for this proxy class
     /// </summary>
-    public abstract PropagatorBase<TNode, TEdge> Propagator { get; }
+    public abstract PropagatorBase<TEdge> Propagator { get; }
     /// <summary>
     /// Function that used to propagate any exploration algorithm
     /// </summary>
@@ -32,8 +31,8 @@ where TEdge : IEdge
     /// <summary>
     /// Resets propagator and whole exploration algorithm with new graph and visitor
     /// </summary>
-    public void Reset(IImmutableGraph<TNode, TEdge> graph, IVisitor<TNode,TEdge> visitor)
+    public void Reset(IImmutableEdgeSource<TEdge> edges, IVisitor<TEdge> visitor, int maxNodeId = -1)
     {
-        Propagator.Reset(graph,visitor);
+        Propagator.Reset(edges,visitor,maxNodeId);
     }
 }

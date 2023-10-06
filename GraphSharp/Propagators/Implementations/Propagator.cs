@@ -4,21 +4,19 @@ using GraphSharp.Visitors;
 namespace GraphSharp.Propagators;
 
 /// <summary>
-/// Single threaded <see cref="PropagatorBase{TNode,TEdge}"/> implementation.<br/>
+/// Single threaded <see cref="PropagatorBase{TEdge}"/> implementation.<br/>
 /// <inheritdoc />
 /// </summary>
-public class Propagator<TNode, TEdge> : PropagatorBase<TNode, TEdge>
-where TNode : INode
+public class Propagator<TEdge> : PropagatorBase<TEdge>
 where TEdge : IEdge
 {
     /// <inheritdoc/>
-    public Propagator(IVisitor<TNode, TEdge> visitor, IImmutableGraph<TNode, TEdge> graph) : base(visitor, graph)
+    public Propagator(IImmutableEdgeSource<TEdge> edges,IVisitor<TEdge> visitor, int maxNodeId = -1) : base(edges, visitor,maxNodeId)
     {
     }
     ///<inheritdoc/>
     protected override void PropagateNodes()
     {
-        var nodes = Graph.Nodes;
         byte state = 0;
         for (int nodeId = 0; nodeId < NodeStates.Length; ++nodeId)
         {
@@ -29,7 +27,7 @@ where TEdge : IEdge
         for (int nodeId = 0; nodeId < NodeStates.Length; ++nodeId)
         {
             if (NodeStates.IsInState(UsedNodeStates.Visited,nodeId))
-                Visitor.Visit(nodes[nodeId]);
+                Visitor.Visit(nodeId);
         };
     }
 

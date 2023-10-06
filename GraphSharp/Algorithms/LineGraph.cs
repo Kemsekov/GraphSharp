@@ -24,10 +24,6 @@ where TEdge : IEdge
     }
     /// <inheritdoc/>
     public int Id { get; set; }
-    /// <inheritdoc/>
-    public Color Color { get => Edge.Color; set => Edge.Color = value; }
-    /// <inheritdoc/>
-    public double Weight { get => Edge.Weight; set => Edge.Weight = value; }
     /// <summary>
     /// What edge given line graph node encapsulate
     /// </summary>

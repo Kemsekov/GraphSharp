@@ -16,7 +16,7 @@ namespace GraphSharp.Visitors;
 /// that means we are done and algorithm must stop. In that case <paramref langword="Done"/>
 /// will be set to true.
 /// </summary>
-public abstract class PathFinderBase<TNode, TEdge> : VisitorBase<TNode, TEdge>, IDisposable, IPathFinder<TNode>
+public abstract class PathFinderBase<TNode, TEdge> : VisitorBase<TEdge>, IDisposable, IPathFinder<TNode>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -48,7 +48,7 @@ where TEdge : IEdge
     public PathFinderBase(IImmutableGraph<TNode,TEdge> graph,PathType pathType)
     {
         this.PathType = pathType;
-        this.GetWeight = e=>e.Weight;
+        this.GetWeight = e=>e.MapProperties().Weight;
         this.Condition = edge=>true;
         this.Graph = graph;
         Path = ArrayPoolStorage.RentArray<int>(graph.Nodes.MaxNodeId+1);

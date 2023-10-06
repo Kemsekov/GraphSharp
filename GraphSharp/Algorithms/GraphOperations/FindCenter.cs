@@ -109,7 +109,7 @@ where TEdge : IEdge
     /// <param name="undirected">Is resulting graph center should correspond to center of undirected graph?</param>
     public CenterFinderResult FindCenterByDijkstras(Func<TEdge, double>? getWeight = null, bool undirected = true)
     {
-        getWeight ??= x=>x.Weight;
+        getWeight ??= x=>x.MapProperties().Weight;
         var radius = double.MaxValue;
         var center = new List<TNode>();
         var pathFinder = new ShortestPathsLengthFinderAlgorithms<TNode, TEdge>(0, StructureBase){GetWeight = getWeight};

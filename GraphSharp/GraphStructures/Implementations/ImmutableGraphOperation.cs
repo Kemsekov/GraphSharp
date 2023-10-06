@@ -16,38 +16,42 @@ where TEdge : IEdge
     IImmutableNodeSource<TNode> Nodes => StructureBase.Nodes;
     IImmutableEdgeSource<TEdge> Edges => StructureBase.Edges;
     IGraphConfiguration<TNode, TEdge> Configuration => StructureBase.Configuration;
-    ObjectPool<Propagator<TNode, TEdge>> PropagatorPool;
-    ObjectPool<ParallelPropagator<TNode, TEdge>> ParallelPropagatorPool;
+    ObjectPool<Propagator<TEdge>> PropagatorPool;
+    ObjectPool<ParallelPropagator<TEdge>> ParallelPropagatorPool;
     ///<inheritdoc/>
     public ImmutableGraphOperation(IImmutableGraph<TNode, TEdge> structureBase)
     {
         StructureBase = structureBase;
         var tmpVisitor = new ActionVisitor<TNode, TEdge>();
-        PropagatorPool = new(() => new Propagator<TNode, TEdge>(tmpVisitor, StructureBase));
-        ParallelPropagatorPool = new(() => new ParallelPropagator<TNode, TEdge>(tmpVisitor, StructureBase));
+        PropagatorPool = new(() => new Propagator<TEdge>(StructureBase.Edges,tmpVisitor,StructureBase.Nodes.MaxNodeId));
+        ParallelPropagatorPool = new(() => new ParallelPropagator<TEdge>(StructureBase.Edges,tmpVisitor,StructureBase.Nodes.MaxNodeId));
     }
     /// <summary>
     /// Get propagator from pool
     /// </summary>
-    public Propagator<TNode, TEdge> GetPropagator(IVisitor<TNode, TEdge> visitor)
+    public Propagator<TEdge> GetPropagator(IVisitor<TEdge> visitor)
     {
-        return new Propagator<TNode, TEdge>(visitor,StructureBase);
+        var p = PropagatorPool.Get();
+        p.Reset(StructureBase.Edges, visitor,StructureBase.Nodes.MaxNodeId);
+        return p;
     }
     /// <summary>
     /// Get parallel propagator from pool
     /// </summary>
-    public ParallelPropagator<TNode, TEdge> GetParallelPropagator(IVisitor<TNode, TEdge> visitor)
+    public ParallelPropagator<TEdge> GetParallelPropagator(IVisitor<TEdge> visitor)
     {
         var p = ParallelPropagatorPool.Get();
-        p.Reset(StructureBase, visitor);
+        p.Reset(StructureBase.Edges, visitor,StructureBase.Nodes.MaxNodeId);
         return p;
     }
     /// <summary>
     /// Returns propagator to pool
     /// </summary>
-    public void ReturnPropagator(IPropagator<TNode, TEdge> propagator){
-        if(propagator is IDisposable d)
-            d.Dispose();
+    public void ReturnPropagator(IPropagator<TEdge> propagator){
+        if(propagator is Propagator<TEdge> p1)
+            PropagatorPool.Return(p1);
+        if(propagator is ParallelPropagator<TEdge> p2)
+            ParallelPropagatorPool.Return(p2);
     }
     
 }

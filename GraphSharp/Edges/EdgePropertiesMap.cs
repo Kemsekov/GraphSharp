@@ -13,6 +13,24 @@ public partial class EdgePropertiesMap : IEdge
     /// Base edge
     /// </summary>
     public IEdge BaseEdge { get; }
+
+    /// <summary>
+    /// Edge capacity
+    /// </summary>
+    public double Capacity
+    {
+        get
+        {
+            var c = Properties.GetOrDefault("capacity");
+            if (c is double cap)
+                return cap;
+            return 0;
+        }
+        set
+        {
+            Properties["capacity"] = value;
+        }
+    }
     /// <summary>
     /// Node color
     /// </summary>

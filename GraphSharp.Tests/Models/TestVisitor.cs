@@ -10,13 +10,13 @@ using GraphSharp.Visitors;
 
 namespace GraphSharp.Tests.Models
 {
-    public class TestVisitor : VisitorWithPropagator<Node, Edge>
+    public class TestVisitor : VisitorWithPropagator<Edge>
     {
         
-        public override PropagatorBase<Node, Edge> Propagator{get;}
+        public override PropagatorBase<Edge> Propagator{get;}
         public TestVisitor(IGraph<Node, Edge> graph)
         {
-            this.Propagator = new ParallelPropagator<Node,Edge>(this,graph);
+            this.Propagator = new ParallelPropagator<Edge>(graph.Edges,this,graph.Nodes.MaxNodeId);
         }
 
         protected override void StartImpl()
@@ -28,7 +28,7 @@ namespace GraphSharp.Tests.Models
             return true;
         }
 
-        protected override void VisitImpl(Node node)
+        protected override void VisitImpl(int node)
         {
         }
 

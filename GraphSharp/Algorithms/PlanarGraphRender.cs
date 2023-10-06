@@ -132,7 +132,7 @@ where TEdge : IEdge
     {
 
         var pathFinder = new AnyPathFinder<TNode,TEdge>(0,Graph,PathType.Undirected);
-        var propagator = new Propagators.Propagator<TNode,TEdge>(pathFinder,Graph);
+        var propagator = new Propagators.Propagator<TEdge>(Graph.Edges,pathFinder,Graph.Nodes.MaxNodeId);
         foreach (var e in Graph.Edges)
         {
             int i = 1;

@@ -2,7 +2,7 @@ using GraphSharp.Propagators;
 
 namespace GraphSharp.Common;
 /// <summary>
-/// Contains all states used by <see cref="PropagatorBase{TNode,TEdge}"/>
+/// Contains all states used by <see cref="PropagatorBase{TEdge}"/>
 /// </summary>
 public struct UsedNodeStates
 {

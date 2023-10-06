@@ -7,7 +7,7 @@ namespace GraphSharp.Visitors;
 /// Algorithm to find length of shortest path between given node to all nodes in a graph.
 /// Basically the same as <see cref="DijkstrasAlgorithm{TNode,TEdge}"/> but only keeps track of lengths of paths so uses(x2) less memory than DijkstrasAlgorithm and a bit faster.
 /// </summary>
-public class ShortestPathsLengthFinderAlgorithms<TNode, TEdge> : VisitorBase<TNode, TEdge>
+public class ShortestPathsLengthFinderAlgorithms<TNode, TEdge> : VisitorBase<TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -28,7 +28,7 @@ where TEdge : IEdge
     /// <param name="graph">Algorithm will be executed on this graph</param>
     public ShortestPathsLengthFinderAlgorithms(int startNodeId, IImmutableGraph<TNode, TEdge> graph)
     {
-        GetWeight = e => e.Weight;
+        GetWeight = e => e.MapProperties().Weight;
         this.Graph = graph;
         this.StartNodeId = startNodeId;
         PathLength = ArrayPoolStorage.RentArray<double>(graph.Nodes.MaxNodeId + 1);
@@ -74,7 +74,7 @@ where TEdge : IEdge
     }
 
     ///<inheritdoc/>
-    protected override void VisitImpl(TNode node)
+    protected override void VisitImpl(int node)
     {
         DidSomething = true;
     }

@@ -43,12 +43,12 @@ where TEdge : IEdge
     DijkstrasAlgorithm<TNode, TEdge> FindShortestPathsDijkstraBase(
         int nodeId,
         Func<DijkstrasAlgorithm<TNode, TEdge>,
-        PropagatorBase<TNode,TEdge>> createPropagator, 
+        PropagatorBase<TEdge>> createPropagator, 
         Predicate<EdgeSelect<TEdge>>? condition = null,
         Func<TEdge, double>? getWeight = null, 
         PathType pathType = PathType.OutEdges)
     {
-        getWeight ??= x=>x.Weight;
+        getWeight ??= x=>x.MapProperties().Weight;
         condition ??= e=>true;
 
         var pathFinder = new DijkstrasAlgorithm<TNode, TEdge>(nodeId, StructureBase, pathType);

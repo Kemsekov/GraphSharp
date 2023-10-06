@@ -31,7 +31,7 @@ where TEdge : IEdge
     /// /// <returns>Path between two nodes. Empty list if path is not found.</returns>
     public IPath<TNode> FindAnyPath(int startNodeId, int endNodeId,Predicate<EdgeSelect<TEdge>>? condition = null,Func<TEdge,double>? getWeight = null, PathType pathType = PathType.OutEdges)
     {
-        getWeight ??= x=>x.Weight;
+        getWeight ??= x=>x.MapProperties().Weight;
         var path = FindPathWithFirstEncounter(
             startNodeId,
             endNodeId,
@@ -47,7 +47,7 @@ where TEdge : IEdge
     /// <inheritdoc cref="FindAnyPath"/>
     public IPath<TNode> FindAnyPathParallel(int startNodeId, int endNodeId, Predicate<EdgeSelect<TEdge>>? condition = null, Func<TEdge,double>? getWeight = null, PathType pathType = PathType.OutEdges)
     {
-        getWeight ??= x=>x.Weight;
+        getWeight ??= x=>x.MapProperties().Weight;
         var path = 
         FindPathWithFirstEncounter(
             startNodeId,
@@ -79,7 +79,7 @@ where TEdge : IEdge
     PathFinderBase<TNode, TEdge> FindPathWithFirstEncounter(
             int startNodeId,
             int endNodeId,
-            Func<PathFinderBase<TNode, TEdge>, PropagatorBase<TNode, TEdge>> createPropagator,
+            Func<PathFinderBase<TNode, TEdge>, PropagatorBase<TEdge>> createPropagator,
             Func<PathFinderBase<TNode, TEdge>> createPathFinder,
             Predicate<EdgeSelect<TEdge>>? condition = null,
             int minStepsCount = -1,

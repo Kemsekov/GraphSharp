@@ -18,9 +18,9 @@ public class Edge : IEdge
     ///<inheritdoc/>
     public int TargetId { get; set; }
     ///<inheritdoc/>
-    public double Weight { get; set; }
+    public double Weight { get=>this.MapProperties().Weight; set=>this.MapProperties().Weight=value; }
     ///<inheritdoc/>
-    public Color Color { get; set; } = DefaultColor;
+    public Color Color { get=>!this.Properties.ContainsKey("color") ? DefaultColor : this.MapProperties().Color; set=>this.MapProperties().Color=value; }
     ///<inheritdoc/>
     public IDictionary<string, object> Properties{get;init;}
     /// <summary>

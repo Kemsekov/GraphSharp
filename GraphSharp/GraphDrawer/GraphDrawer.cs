@@ -55,7 +55,7 @@ where TEdge : IEdge
         path.Aggregate((n1, n2) =>
         {
             var tmp_edge = Graph.Configuration.CreateEdge(n1, n2);
-            tmp_edge.Color = color;
+            tmp_edge.MapProperties().Color = color;
             DrawEdge(tmp_edge, lineThickness,color);
             return n2;
         });
@@ -181,7 +181,7 @@ where TEdge : IEdge
         var n2 = Math.Max(edge.SourceId,edge.TargetId);
         var sourcePos = ShiftVector(GetNodePos(Graph.GetSource(edge)));
         var targetPos = ShiftVector(GetNodePos(Graph.GetTarget(edge)));
-        color = color == default ? edge.Color : color;
+        color = color == default ? edge.MapProperties().Color : color;
         var size = Size;
         var point1 = sourcePos*((float)size);
         var point2 = targetPos*((float)size);

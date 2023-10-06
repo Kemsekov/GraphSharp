@@ -38,7 +38,7 @@ where TEdge : IEdge
         return false;
     }
     /// <inheritdoc/>
-    protected override void VisitImpl(TNode node)
+    protected override void VisitImpl(int node)
     {
         DidSomething = true;
     }

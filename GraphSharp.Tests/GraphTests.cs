@@ -117,7 +117,7 @@ public class GraphTests
         {
             Assert.Equal(l.Count, l.Distinct().Count());
         }
-        var diff = t1.Layers.SelectMany(x => x).Except(_Graph.Nodes);
+        var diff = t1.Layers.SelectMany(x => x).Except(_Graph.Nodes.Select(n=>n.Id));
         Assert.Empty(diff);
         Assert.Equal(t1.Layers.Sum(x => x.Count), _Graph.Nodes.Count);
         var layer = t1.Layers.GetEnumerator();
@@ -127,13 +127,13 @@ public class GraphTests
             visit: node =>
             {
                 Assert.True(layer.Current.Remove(node));
-                visited[node.Id] = 1;
+                visited[node] = 1;
                 visitedCount++;
             },
             select: edge => visited[edge.TargetId] == 0,
             start: () => layer.MoveNext()
         );
-        var propagator = new Propagator<Node, Edge>(visitor, _Graph);
+        var propagator = new Propagator<Edge>(_Graph.Edges,visitor);
         if (startPositions.Length != 0)
             propagator.SetPosition(startPositions);
         else

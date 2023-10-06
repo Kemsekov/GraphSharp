@@ -311,7 +311,7 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        getCost ??= edge => edge.Weight;
+        getCost ??= edge => edge.MapProperties().Weight;
         var cost = 0d;
         path.Aggregate((n1, n2) =>
         {
@@ -327,7 +327,7 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        getCost ??= edge => edge.Weight;
+        getCost ??= edge => edge.MapProperties().Weight;
         var cost = 0d;
         path.Aggregate((n1, n2) =>
         {
@@ -344,7 +344,7 @@ public static class GraphExtensions
     where TNode : INode
     where TEdge : IEdge
     {
-        getWeight ??= edge => edge.Weight;
+        getWeight ??= edge => edge.MapProperties().Weight;
         return path.Sum(x => getWeight(x));
     }
     /// <summary>
@@ -435,7 +435,7 @@ public static class GraphExtensions
     {
         foreach (var n in edges)
         {
-            n.Color = color;
+            n.MapProperties().Color = color;
         }
     }
     //TODO: add tests

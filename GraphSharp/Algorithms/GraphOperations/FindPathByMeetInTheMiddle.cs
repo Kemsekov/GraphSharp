@@ -15,7 +15,7 @@ where TEdge : IEdge
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     public IPath<TNode> FindPathByMeetInTheMiddle(int startNodeId, int endNodeId, Func<TEdge, double>? getWeight = null, Predicate<EdgeSelect<TEdge>>? condition = null, bool undirected = false)
     {
-        getWeight ??= x => x.Weight;
+        getWeight ??= x => x.MapProperties().Weight;
         condition ??= x => true;
         var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
         var path = FindPathByMeetInTheMiddleBase(
@@ -34,7 +34,7 @@ where TEdge : IEdge
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     public IPath<TNode> FindPathByMeetInTheMiddleDijkstra(int startNodeId, int endNodeId, Func<TEdge, double>? getWeight = null, Predicate<EdgeSelect<TEdge>>? condition = null, bool undirected = false)
     {
-        getWeight ??= x => x.Weight;
+        getWeight ??= x => x.MapProperties().Weight;
         condition ??= x => true;
         var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
         var path = FindPathByMeetInTheMiddleBase(
@@ -53,7 +53,7 @@ where TEdge : IEdge
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     public IPath<TNode> FindPathByMeetInTheMiddleDijkstraParallel(int startNodeId, int endNodeId, Func<TEdge, double>? getWeight = null, Predicate<EdgeSelect<TEdge>>? condition = null, bool undirected = false)
     {
-        getWeight ??= x => x.Weight;
+        getWeight ??= x => x.MapProperties().Weight;
         condition ??= x => true;
         var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
         var path = FindPathByMeetInTheMiddleBase(
@@ -72,7 +72,7 @@ where TEdge : IEdge
     /// <inheritdoc cref="FindPathByMeetInTheMiddleBase" />
     public IPath<TNode> FindPathByMeetInTheMiddleParallel(int startNodeId, int endNodeId, Func<TEdge, double>? getWeight = null, Predicate<EdgeSelect<TEdge>>? condition = null, bool undirected = false)
     {
-        getWeight ??= x => x.Weight;
+        getWeight ??= x => x.MapProperties().Weight;
         condition ??= x => true;
         var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
         var path = FindPathByMeetInTheMiddleBase(
@@ -101,7 +101,7 @@ where TEdge : IEdge
         int startNodeId,
         int endNodeId,
         Predicate<EdgeSelect<TEdge>> condition,
-        Func<IVisitor<TNode, TEdge>, PropagatorBase<TNode, TEdge>> createPropagator,
+        Func<IVisitor<TEdge>, PropagatorBase<TEdge>> createPropagator,
         Func<PathFinderBase<TNode, TEdge>> createPathFinder,
         bool undirected)
     {
@@ -110,7 +110,7 @@ where TEdge : IEdge
         var pathJoiner = new ActionVisitor<TNode, TEdge>();
         var propagator = createPropagator(pathJoiner);
 
-        byte StartNodeBFS = (byte)(PropagatorBase<TNode, TEdge>.BiggestUsedState * 2);
+        byte StartNodeBFS = (byte)(PropagatorBase<TEdge>.BiggestUsedState * 2);
         byte EndNodeBFS = (byte)(StartNodeBFS * 2);
 
         var startFinder = createPathFinder();
@@ -140,20 +140,19 @@ where TEdge : IEdge
             startFinder.End();
             endFinder.End();
         };
-        pathJoiner.VisitEvent += node =>
+        pathJoiner.VisitEvent += nodeId =>
         {
             if (done) return;
-            var id = node.Id;
-            if (states.IsInState(StartNodeBFS, id) && states.IsInState(EndNodeBFS, id))
+            if (states.IsInState(StartNodeBFS, nodeId) && states.IsInState(EndNodeBFS, nodeId))
             {
                 lock (pathJoiner)
                 {
                     done = true;
-                    intersectionNodeId = id;
+                    intersectionNodeId = nodeId;
                 }
             }
-            startFinder.Visit(node);
-            endFinder.Visit(node);
+            startFinder.Visit(nodeId);
+            endFinder.Visit(nodeId);
         };
         if (undirected)
             pathJoiner.Condition += (EdgeSelect<TEdge> edge) =>

@@ -5,8 +5,7 @@ namespace GraphSharp.Visitors;
 /// Base class for visitors that contains default extension capabilities and tracking
 /// of algorithm execution steps count and algorithm completion.
 /// </summary>
-public abstract class VisitorBase<TNode, TEdge> : IVisitorWithSteps<TNode, TEdge>
-where TNode : INode
+public abstract class VisitorBase<TEdge> : IVisitorWithSteps<TEdge>
 where TEdge : IEdge
 {
     /// <summary>
@@ -21,7 +20,7 @@ where TEdge : IEdge
     /// <summary>
     /// Called at the beginning of <see cref="Visit"/> method
     /// </summary>
-    public event Action<TNode> VisitEvent;
+    public event Action<int> VisitEvent;
     /// <summary>
     /// Called at the beginning of <see cref="Select"/> method
     /// </summary>
@@ -62,7 +61,7 @@ where TEdge : IEdge
         return SelectImpl(edge);
     }
     ///<inheritdoc/>
-    public void Visit(TNode node){
+    public void Visit(int node){
         if(Done) return;
         VisitEvent(node);
         VisitImpl(node);
@@ -84,7 +83,7 @@ where TEdge : IEdge
     /// <summary>
     /// <see cref="Visit"/> function implementation
     /// </summary>
-    protected abstract void VisitImpl(TNode node);
+    protected abstract void VisitImpl(int node);
     /// <summary>
     /// <see cref="End"/> function implementation
     /// </summary>

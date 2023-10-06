@@ -93,7 +93,7 @@ where TEdge : IEdge
     /// </summary>
     public ITsp<TNode> TspCheapestLink(Func<TNode, TNode, double> cost, int initialConnectionsCount)
     {
-        var tsp = TspCheapestLinkOnEdgeCost(e=>e.Weight,g=>g.Do.ConnectToClosest(initialConnectionsCount,cost));;
+        var tsp = TspCheapestLinkOnEdgeCost(e=>e.MapProperties().Weight,g=>g.Do.ConnectToClosest(initialConnectionsCount,cost));;
         tsp = TspOpt2(tsp.Tour,tsp.TourCost,cost);
         return tsp;
     }

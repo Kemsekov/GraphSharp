@@ -199,7 +199,7 @@ public class EdgeSourcesTests
             edgeSource.Add(e2);
             edgeSource.Add(e3);
 
-            Assert.Equal(edgeSource.GetParallelEdges(0, 5).Select(x => x.Weight), new[] { e1, e2, e3 }.Select(x => x.Weight));
+            Assert.Equal(edgeSource.GetParallelEdges(0, 5).Select(x => x.MapProperties().Weight), new[] { e1, e2, e3 }.Select(x => x.MapProperties().Weight));
             edgeSource.Remove(e3);
             Assert.Equal(edgeSource.GetParallelEdges(0, 5), new[] { e1, e2 });
         }

@@ -22,7 +22,7 @@ where TEdge : IEdge
     /// <param name="pathType">The type of path</param>
     public DijkstrasAlgorithm(int startNodeId, IImmutableGraph<TNode, TEdge> graph,PathType pathType) : base(graph,pathType)
     {
-        GetWeight = e => e.Weight;
+        GetWeight = e => e.MapProperties().Weight;
         this.StartNodeId = startNodeId;
         PathLength = ArrayPoolStorage.RentArray<double>(graph.Nodes.MaxNodeId + 1);
         PathLength.Fill(-1);
@@ -58,7 +58,7 @@ where TEdge : IEdge
         return true;
     }
     ///<inheritdoc/>
-    protected override void VisitImpl(TNode node)
+    protected override void VisitImpl(int node)
     {
         DidSomething = true;
     }

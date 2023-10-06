@@ -18,7 +18,7 @@ where TEdge : IEdge
     public KruskalForest<TEdge> FindSpanningForestKruskal(Func<TEdge, double>? getWeight = null, Func<TNode, int>? maxDegree = null)
     {
         maxDegree ??= n => Int32.MaxValue;
-        getWeight ??= e => e.Weight;
+        getWeight ??= e => e.MapProperties().Weight;
         var edges = Edges.OrderBy(x => getWeight(x));
         var forest = KruskalAlgorithm(edges, maxDegree);
         return forest;
@@ -35,7 +35,7 @@ where TEdge : IEdge
     /// <returns></returns>
     protected (IList<TEdge> tree, TNode[] ends) FindSpanningTreeDegree2OnNodes(Func<TNode, Vector> getPos, Func<TEdge, double>? getWeight = null)
     {
-        getWeight ??= x => x.Weight;
+        getWeight ??= x => x.MapProperties().Weight;
         return FindSpanningTreeDegree2OnNodes(getWeight, graph => graph.Do.DelaunayTriangulation(getPos));
     }
     /// <summary>

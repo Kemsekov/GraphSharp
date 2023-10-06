@@ -22,7 +22,7 @@ where TEdge : IEdge
     /// </summary>
     public IPath<TNode> TryFindHamiltonianCycleByBubbleExpansion(Func<TEdge, double>? getWeight = null)
     {
-        getWeight ??= x => x.Weight;
+        getWeight ??= x => x.MapProperties().Weight;
         var start = Edges.MinBy(getWeight);
         var edges = new DefaultEdgeSource<TEdge>();
         using var addedNodes = ArrayPoolStorage.RentArray<byte>(Nodes.MaxNodeId + 1);
@@ -78,7 +78,7 @@ where TEdge : IEdge
                     continue;
                 }
 
-                var weight = path.Cost - e.Weight;
+                var weight = path.Cost - e.MapProperties().Weight;
                 if (weight > minWeight) continue;
 
                 var pathInEdges = new List<TEdge>();

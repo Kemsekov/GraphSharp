@@ -10,6 +10,12 @@ namespace GraphSharp.Graphs;
 /// </summary>
 public static class EdgeSourceExtensions
 {
+    /// <returns>max node index</returns>
+    public static int MaxNodeId<TEdge>(this IImmutableEdgeSource<TEdge> Edges)
+    where TEdge: IEdge
+    {
+        return Edges.Select(x=>Math.Max(x.SourceId,x.TargetId)).Max();
+    }
     /// <summary>
     /// Removes all edges that directs source -> target (including parallel edges)
     /// </summary>

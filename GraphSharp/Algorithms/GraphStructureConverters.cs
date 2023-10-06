@@ -49,7 +49,7 @@ where TEdge : IEdge
         adjacencyMatrix = DenseMatrix.Create(size, size, 0);
         foreach (var e in Edges)
         {
-            adjacencyMatrix[e.SourceId, e.TargetId] = (float)e.Weight;
+            adjacencyMatrix[e.SourceId, e.TargetId] = (float)e.MapProperties().Weight;
         }
         return adjacencyMatrix;
     }
@@ -63,7 +63,7 @@ where TEdge : IEdge
         adjacencyMatrix = SparseMatrix.Create(size, size, 0);
         foreach (var e in Edges)
         {
-            adjacencyMatrix[e.SourceId, e.TargetId] = (float)e.Weight;
+            adjacencyMatrix[e.SourceId, e.TargetId] = (float)e.MapProperties().Weight;
         }
         return adjacencyMatrix;
     }
@@ -165,7 +165,7 @@ where TEdge : IEdge
                 if (adjacencyMatrix[i, b] != 0)
                 {
                     var edge = Configuration.CreateEdge(Nodes[i], Nodes[b]);
-                    edge.Weight = adjacencyMatrix[i, b];
+                    edge.MapProperties().Weight = adjacencyMatrix[i, b];
                     Edges.Add(edge);
                 }
             }

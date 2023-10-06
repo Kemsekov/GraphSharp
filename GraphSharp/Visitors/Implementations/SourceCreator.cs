@@ -9,7 +9,7 @@ namespace GraphSharp.Visitors;
 /// <summary>
 /// This visitor will create sources on assigned points so any path in graph will ends on some of this points
 /// </summary>
-public class SourceCreator<TNode, TEdge> : VisitorWithPropagator<TNode, TEdge>
+public class SourceCreator<TNode, TEdge> : VisitorWithPropagator<TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -18,7 +18,7 @@ where TEdge : IEdge
     const byte ToRemove = 32;
     ByteStatesHandler NodeStates => Propagator.NodeStates;
     ///<inheritdoc/>
-    public override PropagatorBase<TNode, TEdge> Propagator { get; }
+    public override PropagatorBase<TEdge> Propagator { get; }
     /// <summary>
     /// Graph that used by this class
     /// </summary>
@@ -28,7 +28,7 @@ where TEdge : IEdge
     /// </summary>
     public SourceCreator(IGraph<TNode, TEdge> graph)
     {
-        Propagator = new ParallelPropagator<TNode, TEdge>(this, graph);
+        Propagator = new ParallelPropagator<TEdge>(graph.Edges,this,graph.Nodes.MaxNodeId);
         this.Graph = graph;
     }
 
@@ -44,11 +44,11 @@ where TEdge : IEdge
     }
 
     ///<inheritdoc/>
-    protected override void VisitImpl(TNode node)
+    protected override void VisitImpl(int nodeId)
     {
-        NodeStates.AddState(Proceed,node.Id);
+        NodeStates.AddState(Proceed,nodeId);
 
-        var edges = Graph.Edges.OutEdges(node.Id);
+        var edges = Graph.Edges.OutEdges(nodeId);
         var toRemove = new List<TEdge>(edges.Count());
         foreach (var edge in edges)
         {
