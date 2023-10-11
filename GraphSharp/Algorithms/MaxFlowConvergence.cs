@@ -32,12 +32,8 @@ where TEdge : IEdge
     /// <summary>
     /// How much flow is stored inside of node - not yet passed to edges
     /// </summary>
-    public double[] StoredNodeFlow { get; }
+    double[] NodeFlowAccumulator { get; }
     double[] nodeFlowCapacity { get; }
-    /// <summary>
-    /// How much flow can go trough node. It equals to sum of out edge capacities.
-    /// </summary>
-    public double NodeFlowCapacity(int node) => nodeFlowCapacity[node];
     /// <summary>
     /// How much flow goes trough edge
     /// </summary>
@@ -47,13 +43,21 @@ where TEdge : IEdge
     /// </summary>
     public double ResidualEdgeFlow(TEdge e) => capacities(e) - EdgeFlow[e];
     /// <summary>
+    /// How much flow goes trough node
+    /// </summary>
+    public double Flow(int node){
+        var s1 = edges.OutEdges(node).Sum(e=>EdgeFlow[e]);
+        var s2 = edges.OutEdges(node).Sum(e=>EdgeFlow[e]);
+        return Math.Max(s1,s2);
+    }
+    /// <summary>
     /// How much more flow can be pushed into node
     /// </summary>
-    public double ResidualNodeCapacity(int node) => nodeFlowCapacity[node] - StoredNodeFlow[node];
+    double ResidualNodeCapacity(int node) => nodeFlowCapacity[node] - NodeFlowAccumulator[node];
     /// <summary>
     /// How much more flow actually can be pushed into edge, considering how much more flow can be pushed into target node and how much flow can be pushed into edge
     /// </summary>
-    double LocalCapacity(TEdge edge) => new[] { ResidualEdgeFlow(edge), ResidualNodeCapacity(edge.TargetId), StoredNodeFlow[edge.SourceId] }.Min();
+    double LocalCapacity(TEdge edge) => new[] { ResidualEdgeFlow(edge), ResidualNodeCapacity(edge.TargetId), NodeFlowAccumulator[edge.SourceId] }.Min();
     /// <summary>
     /// Creates new instance of max flow convergence algorithm
     /// </summary>
@@ -71,18 +75,22 @@ where TEdge : IEdge
         this.cost = cost ?? (e=>1);
         var maxNodeId = edges.MaxNodeId();
         this.propagator = new Propagator<TEdge>(edges, this, maxNodeId);
-        this.StoredNodeFlow = new double[maxNodeId + 1];
+        this.NodeFlowAccumulator = new double[maxNodeId + 1];
         this.nodeFlowCapacity = new double[maxNodeId + 1];
         EdgeFlow = new ConcurrentDictionary<TEdge, double>();
         foreach (var e in edges)
-        {
             EdgeFlow[e] = 0;
-            nodeFlowCapacity[e.SourceId] += capacities(e);
+        for(int i = 0;i<nodeFlowCapacity.Length;i++){
+            var outE = edges.OutEdges(i).Sum(capacities);
+            var inE = edges.InEdges(i).Sum(capacities);
+            var min = Math.Min(outE,inE);
+            nodeFlowCapacity[i]=min;                
         }
+        nodeFlowCapacity[target] = edges.InEdges(target).Sum(capacities);
+        nodeFlowCapacity[source] = edges.OutEdges(source).Sum(capacities);
 
         LimitNodeCapacities(edges);
-        StoredNodeFlow[source] = NodeFlowCapacity(source);
-        nodeFlowCapacity[target] = double.MaxValue;
+        NodeFlowAccumulator[source] = nodeFlowCapacity[source];
     }
     /// <summary>
     /// This method limits nodes capacities by repeatedly re-computing sum of out and in edges capacities for each node and finding minimum from them
@@ -99,22 +107,24 @@ where TEdge : IEdge
                 var localNodeOutCapacity = 0.0;
                 var localNodeInCapacity = 0.0;
                 var oldCapacity = nodeFlowCapacity[i];
-                foreach (var e in edges.OutEdges(i))
+                var outE = edges.OutEdges(i);
+                var inE = edges.InEdges(i);
+                foreach (var e in outE)
                 {
-                    localNodeOutCapacity += LocalCapacity(e);
+                    localNodeOutCapacity += Math.Min(ResidualEdgeFlow(e), nodeFlowCapacity[e.TargetId]);
                 }
-                foreach (var e in edges.InEdges(i))
+                foreach (var e in inE)
                 {
-                    localNodeInCapacity += LocalCapacity(e);
+                    localNodeInCapacity += Math.Min(ResidualEdgeFlow(e), nodeFlowCapacity[e.SourceId]);
                 }
                 
                 //in case of source and target edges we don't have out or in edges, so these sums
                 //will be set to zero, and we need to except these cases.
                 if(i==Target){
-                    localNodeOutCapacity = oldCapacity;
+                    localNodeOutCapacity = localNodeInCapacity;
                 }
                 if(i==Source){
-                   localNodeInCapacity = oldCapacity;
+                   localNodeInCapacity = localNodeOutCapacity;
                 }
 
                 var newCapacity = new[] { localNodeInCapacity, localNodeOutCapacity, oldCapacity }.Min();
@@ -139,11 +149,12 @@ where TEdge : IEdge
             DidSomething = false;
             propagator.Propagate();
         }
-        var sourceFlow = StoredNodeFlow.Sum();
 
-        Array.Fill(StoredNodeFlow, 0);
-        StoredNodeFlow[Source] = sourceFlow;
-        return StoredNodeFlow[Source];
+        var sourceFlow = NodeFlowAccumulator.Sum();
+
+        Array.Fill(NodeFlowAccumulator, 0);
+        NodeFlowAccumulator[Source] = sourceFlow;
+        return sourceFlow;
     }
     /// <summary>
     /// Tries to push flow into node.
@@ -153,15 +164,19 @@ where TEdge : IEdge
     {
         var canPush = Math.Min(flow, LocalCapacity(edge));
         EdgeFlow[edge] += canPush;
-        StoredNodeFlow[edge.TargetId] += canPush;
-        StoredNodeFlow[edge.SourceId] -= canPush;
+        NodeFlowAccumulator[edge.TargetId] += canPush;
+        NodeFlowAccumulator[edge.SourceId] -= canPush;
+
+        nodeFlowCapacity[edge.SourceId]+=canPush;
+        nodeFlowCapacity[edge.TargetId]-=canPush;
+
         return flow - canPush;
     }
     ///<inheritdoc/>
     public void End()
     {
         //target node is basically infinite consumer of flow
-        StoredNodeFlow[Target] = 0;
+        NodeFlowAccumulator[Target] = 0;
     }
 
     ///<inheritdoc/>
@@ -184,7 +199,8 @@ where TEdge : IEdge
     ///<inheritdoc/>
     public void Visit(int node)
     {
-        var flow = StoredNodeFlow[node];
+        //how much flow accumulated - how much flow we need to push forward
+        var flow = NodeFlowAccumulator[node];
         if(flow==0) return;
         
         var outE = edges.OutEdges(node).ToList();
@@ -195,10 +211,8 @@ where TEdge : IEdge
             SoftMax(parts);
             var currentFlow = flow;
             flow = 0;
-            foreach (var e in outE.Zip(parts))
+            foreach (var (edge,flowProportion) in outE.Zip(parts))
             {
-                var edge = e.First;
-                var flowProportion = e.Second;
                 flow += PushFlow(edge, currentFlow*flowProportion);
                 DidSomething = true;
             }

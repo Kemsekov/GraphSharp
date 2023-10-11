@@ -68,8 +68,7 @@ where TEdge : IEdge
     /// </param>
     public MaxFlowResult<TEdge> MaxFlowEdmondsKarp(int sourceId, int sinkId, Func<TEdge, double>? getCapacity = null)
     {
-        FIX THIS ONE
-        throw new NotImplementedException("TODO");
+        
         getCapacity ??= e => e.MapProperties().Capacity;
         var createEdge = (int vertex1, int vertex2) => new EdgeAdapter<TEdge>(Configuration.CreateEdge(Nodes[vertex1], Nodes[vertex2]));
 

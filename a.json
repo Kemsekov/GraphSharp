@@ -1,0 +1,22 @@
+{
+    "abc" : {
+        "array" : [1,2,3,4,5],
+        "jsonArray" : [
+            {
+                "Name" : "dima",
+                "Amount" : 123
+            },
+            {
+                "Name" : "Vlad"
+            },
+            {
+                "Name" : "artem"
+            }
+        ]
+    },
+    "Anything" : {
+        "haha" : 1,
+        "HEHE" : 2
+    }
+}
+
