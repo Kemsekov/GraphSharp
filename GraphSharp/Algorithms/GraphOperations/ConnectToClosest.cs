@@ -116,4 +116,47 @@ where TEdge : IEdge
         
         return this;
     }
+        /// <summary>
+    /// Creates thresholded random geometric - like graph.<br/>
+    /// Randomly connects closest nodes on their <paramref name="position"/><br/> 
+    /// minEdgesCount and maxEdgesCount not gonna give 100% right results. 
+    /// This params are just approximation of how much edges per node is gonna be created.<br/>
+    /// </summary>
+    /// <param name="minEdgesCount">minimum edges count</param>
+    /// <param name="maxEdgesCount">maximum edges count</param>
+    /// <param name="position">Node position</param>
+    public GraphOperation<TNode, TEdge> ConnectToClosest(int minEdgesCount, int maxEdgesCount, Func<TNode, float[]> position)
+    {
+        
+        if (maxEdgesCount == 0) return this;
+        using var edgesCountMap = ArrayPoolStorage.RentArray<int>(Nodes.MaxNodeId + 1);
+        foreach (var node in Nodes)
+            edgesCountMap[node.Id] = Configuration.Rand.Next(minEdgesCount, maxEdgesCount);
+        
+        var dims = position(Nodes.First()).Length;
+        var tree = new KdTree.KdTree<float,TNode>(dims,new KdTree.Math.FloatMath());
+        foreach(var node in Nodes)
+            tree.Add(position(node),node);
+
+        var locker = new object();
+        Parallel.ForEach(Nodes, source =>
+        {
+            ref var edgesCount = ref edgesCountMap.At(source.Id);
+            if(edgesCount<=0) return;
+            var targets = tree.GetNearestNeighbours(position(source),edgesCount*2).Select(v=>v.Value);
+            foreach (var target in targets.DistinctBy(x => x.Id))
+            {
+                if (target.Id == source.Id) continue;
+                lock (locker)
+                {
+                    if (edgesCount <= 0) break;
+                    if(Edges.TryGetEdge(source.Id,target.Id,out var _)) continue;
+                    Edges.Add(Configuration.CreateEdge(source, target));
+                    edgesCount--;
+                    edgesCountMap[target.Id]--;
+                }
+            }
+        });
+        return this;
+    }
 }

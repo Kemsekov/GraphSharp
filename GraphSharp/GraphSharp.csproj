@@ -14,11 +14,11 @@
     <WarningLevel>6</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="KdTree" Version="1.4.1" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-    <PackageReference Include="Delaunator" Version="1.0.9" />
+    <PackageReference Include="MIConvexHull" Version="1.1.19.1019" />
     <PackageReference Include="QuikGraph" Version="2.5.0" />
     <PackageReference Include="RentedArraySharp" Version="1.0.4" />
-    <PackageReference Include="SpaceDivisor" Version="1.0.0" />
     <PackageReference Include="Unchase.Satsuma.Algorithms" Version="1.0.0" />
     <PackageReference Include="Unchase.Satsuma.Core" Version="1.0.0" />
     <PackageReference Include="Unchase.Satsuma.TSP" Version="1.0.0" />
