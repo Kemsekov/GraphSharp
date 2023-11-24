@@ -19,7 +19,7 @@ where TEdge : IEdge
 {
     ///<inheritdoc cref="DelaunayTriangulation(Func{TNode, double[]}, double)"/>
     public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,Vector> getPos, double planeDistanceTolerance = 0.001){
-        return DelaunayTriangulation(n=>getPos(n).Select(c=>(double)c).ToArray());
+        return DelaunayTriangulation(n=>getPos(n).Select(c=>(double)c).ToArray(),planeDistanceTolerance);
     }
     /// <summary>
     /// Removes all edges from graph then
@@ -29,13 +29,7 @@ where TEdge : IEdge
     public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,double[]> getPos, double planeDistanceTolerance = 0.001)
     {
         var verts = Nodes.Select(v => new DelaunayVertex(v) { Position = getPos(v) }).ToList();
-        var indices = new Dictionary<TNode, int>();
-        foreach (var (p, index) in Nodes.Select((point, index) => (point, index)))
-        {
-            indices[p] = index;
-        }
-        //key is source, value is target. Source key is always < target key
-
+        
         var dims = verts.First().Position.Length;
 
         //this delaunay triangulation algorithm only provides results as a set of simplexes.
@@ -46,16 +40,11 @@ where TEdge : IEdge
             for (int i = 0; i <= dims; i++)
                 for (int j = i + 1; j <= dims; j++)
                 {
-                    var v1 = cell.Vertices[i];
-                    var v2 = cell.Vertices[j];
+                    var v1 = (TNode)cell.Vertices[i].Node;
+                    var v2 = (TNode)cell.Vertices[j].Node;
 
-                    var index1 = indices[(TNode)v1.Node];
-                    var index2 = indices[(TNode)v2.Node];
-
-                    var source = (TNode)(index1 < index2 ? v1 : v2).Node;
-                    var target = (TNode)(index1 >= index2 ? v1 : v2).Node;
-                    if(Edges.BetweenOrDefault(source.Id,target.Id) is not null) continue;
-                    Edges.Add(Configuration.CreateEdge(source,target));
+                    if(Edges.BetweenOrDefault(v1.Id,v2.Id) is not null) continue;
+                    Edges.Add(Configuration.CreateEdge(v1,v2));
                 }
         }
         return this;
