@@ -96,6 +96,17 @@ public class GraphTests
         _Graph.ValidateCycle(result);
     }
     [Fact]
+    public void DelaunayTriangulation_Works(){
+        _Graph.Do.CreateNodes(500);
+        foreach(var n in _Graph.Nodes){
+            n.Properties["position"] = new double[]{Random.Shared.NextDouble(),Random.Shared.NextDouble(),Random.Shared.NextDouble()};
+        }
+        _Graph.Do.DelaunayTriangulation(n=>(double[])n.Properties["position"]);
+        foreach(var n in _Graph.Nodes){
+            Assert.NotEmpty(_Graph.Edges.AdjacentEdges(n.Id));
+        }
+    }
+    [Fact]
     public void TopologicalSort_Works()
     {
         _Graph.Do.CreateNodes(500);
