@@ -39,6 +39,25 @@ where TEdge : IEdge
         return tsp;
     }
     /// <summary>
+    /// Improves a solution for the computed TSP. <br/>
+	/// It starts from a precomputed tour (e.g. one returned by TSPBubbleExpansion) and gradually improves it by 
+	/// repeatedly swapping two edges using small random opt2. <see cref="SmallRandomOpt2{TNode}"/> 
+    /// </summary>
+    /// <param name="tour"></param>
+    /// <param name="tourCost"></param>
+    /// <param name="cost"></param>
+    /// <param name="maxPermutationsPerNode">
+    /// Max amount of searching permutations per node.<br/>
+    /// Set it as some multiple of tour length. For example tour.Count/4
+    /// </param>
+    public ITsp<TNode> TspSmallRandomOpt2(IEnumerable<TNode> tour, double tourCost, Func<TNode, TNode, double> cost,int maxPermutationsPerNode = -1)
+    {
+        var tsp = new SmallRandomOpt2<TNode>(cost, tour, tourCost);
+        if(maxPermutationsPerNode>0) tsp.MaxPermutationsPerNode=maxPermutationsPerNode;
+        tsp.Run();
+        return tsp;
+    }
+    /// <summary>
     /// Computes a TSP on 2vector positions
     /// </summary>
     public ITsp<TNode> TspCheapestLinkOnPositions(Func<TNode,Vector> getPos)
