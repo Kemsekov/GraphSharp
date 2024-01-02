@@ -34,7 +34,17 @@ where TEdge : IEdge
     /// </summary>
     public ITsp<TNode> TspOpt2(IEnumerable<TNode> tour, double tourCost, Func<TNode, TNode, double> cost)
     {
-        var tsp = new Opt2Tsp<TNode>(cost, tour, tourCost);
+        var tourList = tour.ToList();
+        var distances = new double[Nodes.MaxNodeId+1,Nodes.MaxNodeId+1];
+        var len = tourList.Count;
+        Parallel.For(0,len,i=>{
+            var ni = tourList[i];
+            for(int j = 0;j<len;j++){
+                var nj = tourList[j];
+                distances[ni.Id,nj.Id]=cost(Nodes[ni.Id],Nodes[nj.Id]);
+            }
+        });
+        var tsp = new Opt2Tsp<TNode>((n1,n2)=>distances[n1.Id,n2.Id], tourList, tourCost);
         tsp.Run();
         return tsp;
     }
@@ -52,7 +62,17 @@ where TEdge : IEdge
     /// </param>
     public ITsp<TNode> TspSmallRandomOpt2(IEnumerable<TNode> tour, double tourCost, Func<TNode, TNode, double> cost,int maxPermutationsPerNode = -1)
     {
-        var tsp = new SmallRandomOpt2<TNode>(cost, tour, tourCost);
+        var tourList = tour.ToList();
+        var distances = new double[Nodes.MaxNodeId+1,Nodes.MaxNodeId+1];
+        var len = tourList.Count;
+        Parallel.For(0,len,i=>{
+            var ni = tourList[i];
+            for(int j = 0;j<len;j++){
+                var nj = tourList[j];
+                distances[ni.Id,nj.Id]=cost(Nodes[ni.Id],Nodes[nj.Id]);
+            }
+        });
+        var tsp = new SmallRandomOpt2<TNode>((n1,n2)=>distances[n1.Id,n2.Id], tourList, tourCost);
         if(maxPermutationsPerNode>0) tsp.MaxPermutationsPerNode=maxPermutationsPerNode;
         tsp.Run();
         return tsp;
