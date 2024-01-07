@@ -145,9 +145,9 @@ where TEdge : IEdge
             }
 
             maxLocalDiff = localDiffs.Max();
-            if(maxLocalDiff<tolerance) break;
             (hubScores,newHubScores)=(newHubScores,hubScores);
             (authScores,newAuthScores)=(newAuthScores,authScores);
+            if(maxLocalDiff<tolerance) break;
         }
         return new(authScores,hubScores){
             Iterations=iterations,
