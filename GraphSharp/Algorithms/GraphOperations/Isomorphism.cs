@@ -10,16 +10,17 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-
     // TODO: add sample to it and test on some graphs
     /// <summary>
     /// Method that uses nodes embeddings to determine graph isomorphism
     /// </summary>
     /// <returns>Value between 0 and 1 that gives confidence that current graph is isomorphic to another</returns>
-    public double IsIsomorphic<TNode_, TEdge_>(IGraph<TNode_, TEdge_> another)
+    public double IsIsomorphic<TNode_, TEdge_>(IImmutableGraph<TNode_, TEdge_> another)
     where TNode_ : INode
     where TEdge_ : IEdge
     {
+        if(Nodes.Count()!=another.Nodes.Count()) return 0;
+        if(Edges.Count()!=another.Edges.Count()) return 0;
 
         var emb1 = StructureBase.Do.NodesEmbedding();
         var emb2 = another.Do.NodesEmbedding();
