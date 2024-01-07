@@ -18,7 +18,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     ///<inheritdoc cref="DelaunayTriangulation(Func{TNode, double[]}, double)"/>
-    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,Vector> getPos, double planeDistanceTolerance = 0.001){
+    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,Vector> getPos, double planeDistanceTolerance = 1e-8){
         return DelaunayTriangulation(n=>getPos(n).Select(c=>(double)c).ToArray(),planeDistanceTolerance);
     }
     /// <summary>
