@@ -5,12 +5,17 @@ namespace GraphSharp.Graphs;
 /// <summary>
 /// Result of finding strongly connected components algorithm
 /// </summary>
-/// <typeparam name="TNode"></typeparam>
 public class StronglyConnectedComponents<TNode> : IDisposable
+where TNode : INode
 {
     /// <returns>List of tuples, where first value is a list of nodes in a certain component and second value is this component id.</returns>
     public IEnumerable<(IEnumerable<TNode> nodes, int componentId)> Components { get; }
     private RentedArray<int> low;
+    /// <summary>
+    /// Mapping of node id to component id where this node resides
+    /// </summary>
+    public IDictionary<int, int> NodeIdToComponentId { get; }
+
     /// <summary>
     /// </summary>
     public StronglyConnectedComponents(RentedArray<int> lowLinkValues, IImmutableNodeSource<TNode> Nodes)
@@ -21,6 +26,12 @@ public class StronglyConnectedComponents<TNode> : IDisposable
         .GroupBy(x => x.componentId)
         .Select(x => (x.Select(x => Nodes[x.index]), x.Key)).ToList();
         this.low = lowLinkValues;
+        NodeIdToComponentId = new Dictionary<int,int>();
+        foreach(var c in Components){
+            foreach(var n in c.nodes){
+                NodeIdToComponentId[n.Id]=c.componentId;
+            }
+        }
     }
     /// <returns><see langword="true"/> if nodes in the same strongly connected component, else <see langword="false"/></returns>
     public bool InSameComponent(int nodeId1, int nodeId2)

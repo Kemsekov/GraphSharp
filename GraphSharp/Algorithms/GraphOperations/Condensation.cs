@@ -75,13 +75,7 @@ where TEdge : IEdge
         g.SetSources(nodes:condensedNodes);
 
         // create mapping from node id to component id
-        var nodeIdToComponentId = new Dictionary<int,int>();
-
-        foreach(var c in sccs.Components){
-            foreach(var n in c.nodes){
-                nodeIdToComponentId[n.Id]=c.componentId;
-            }
-        }
+        var nodeIdToComponentId = sccs.NodeIdToComponentId;
 
         //for each node that connect different components create an edge in graph g
         foreach(var e in Edges){

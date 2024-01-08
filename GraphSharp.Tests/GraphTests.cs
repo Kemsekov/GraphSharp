@@ -212,21 +212,32 @@ public class GraphTests
     public void FindStronglyConnectedComponents_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.ConnectToClosest(2, 5,(n1,n2)=>(n1.MapProperties().Position-n2.MapProperties().Position).L2Norm());
+        _Graph.Do.ConnectToClosest(1,7,(n1,n2)=>(n1.MapProperties().Position-n2.MapProperties().Position).L2Norm());
+        var maxPairsToCheck = 100;
         var ssc = _Graph.Do.FindStronglyConnectedComponentsTarjan();
         Assert.NotEmpty(ssc.Components);
         foreach (var c in ssc.Components)
         {
             Assert.NotEmpty(c.nodes);
-            foreach (var n1 in c.nodes)
+            if(c.nodes.Count()==1) continue;
+            foreach (var n1 in c.nodes.OrderBy(x=>Random.Shared.Next()).Take(maxPairsToCheck))
             {
-                foreach (var n2 in c.nodes)
+                foreach (var n2 in c.nodes.OrderBy(x=>Random.Shared.Next()).Take(maxPairsToCheck))
                 {
                     if (n1.Equals(n2)) continue;
                     var path = _Graph.Do.FindAnyPath(n1.Id, n2.Id).Path;
+                    Assert.True(ssc.InSameComponent(n1.Id,n2.Id));
                     Assert.NotEmpty(path);
                 }
             }
+        }
+        foreach(var n1 in _Graph.Nodes.OrderBy(x=>Random.Shared.Next()).Take(maxPairsToCheck))
+        foreach(var n2 in _Graph.Nodes.OrderBy(x=>Random.Shared.Next()).Take(maxPairsToCheck)){
+            if (n1.Equals(n2)) continue;
+            if(ssc.InSameComponent(n1.Id,n2.Id)) continue;
+            var path1 = _Graph.Do.FindAnyPath(n1.Id, n2.Id).Path;
+            var path2 = _Graph.Do.FindAnyPath(n2.Id, n1.Id).Path;
+            Assert.True(path1.Count()==0 || path2.Count()==0);
         }
     }
     [Fact]
@@ -473,13 +484,7 @@ public class GraphTests
     public void Condensation_Works(){
         _Graph.Do.ConnectRandomly(1, 5);
         var sccs = _Graph.Do.FindStronglyConnectedComponentsTarjan();
-        var nodeIdToComponentId = new Dictionary<int,int>();
-        
-        foreach(var c in sccs.Components){
-            foreach(var n in c.nodes){
-                nodeIdToComponentId[n.Id]=c.componentId;
-            }
-        }
+        var nodeIdToComponentId = sccs.NodeIdToComponentId;
 
         var condensation = _Graph.Do.CondenseSCC();
 
@@ -537,6 +542,13 @@ public class GraphTests
             totalNodesSum.AddRange(n.Component.Nodes);
         }
         Assert.Equal(_Graph.Nodes.OrderBy(e=>e.GetHashCode()),totalNodesSum.OrderBy(e=>e.GetHashCode()));
+
+        // condensation graph is DAG so it have N scc's itself and all of them consists of 1 node
+
+        var csccs = condensation.Do.FindStronglyConnectedComponentsTarjan();
+        
+        Assert.True(csccs.Components.All(i=>i.nodes.Count()==1));
+        Assert.True(csccs.Components.Count()==condensation.Nodes.Count);
     }
 
 }

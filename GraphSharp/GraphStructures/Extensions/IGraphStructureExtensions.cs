@@ -103,6 +103,14 @@ public static class GraphExtensions
         }
         return true;
     }
+    /// <returns>True if graph is directed acyclic, else false</returns>
+    public static bool IsDirectedAcyclic<TNode,TEdge>(this IImmutableGraph<TNode, TEdge> g)
+    where TEdge : IEdge
+    where TNode : INode
+    {
+        var csccs = g.Do.FindStronglyConnectedComponentsTarjan();
+        return csccs.Components.All(i=>i.nodes.Count()==1) && csccs.Components.Count()==g.Nodes.Count();
+    }
     /// <returns>True if graph is bidirected, else false</returns>
     public static bool IsBidirected<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph)
     where TNode : INode
