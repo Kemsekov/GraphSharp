@@ -52,7 +52,10 @@ where TEdge : IEdge
     /// <summary>
     /// Finds all strongly connected components. 
     /// It means that if there is a path between two nodes like A->...->B and B->...->A (in both directions) 
-    /// then these nodes are strongly connected and in the same strongly connected component. 
+    /// then these nodes are strongly connected and in the same strongly connected component. <br/>
+    /// WARNING: Works only on ONE connected component! If your graph have multiple components, 
+    /// consider to use <see cref=" ImmutableGraphOperation{T,T}.FindComponents"/> to
+    /// divide your big graph into connected subgraphs and run this algorithm on them separately.
     /// </summary>
     public StronglyConnectedComponents<TNode> FindStronglyConnectedComponentsTarjan()
     {
