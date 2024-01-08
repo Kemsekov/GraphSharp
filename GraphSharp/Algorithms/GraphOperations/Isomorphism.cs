@@ -54,15 +54,38 @@ where TEdge : IEdge
             var diff = Math.Sqrt(nEmb.Zip(closest.Point).Sum(v => (v.First - v.Second) * (v.First - v.Second)));
             differences.Add(diff);
 
+
+            var anotherOut = another.Edges.OutEdges(n.Id).ToList();
+            var anotherIn  = another.Edges.InEdges(n.Id).ToList();
+            var currentOut = Edges.OutEdges(closest.Value).ToList();
+            var currentIn  = Edges.InEdges(closest.Value).ToList();
+
             // if these two nodes are the same in isomorphism, they must have same amount of 
-            // out and in edges
-            if (another.Edges.OutEdges(n.Id).Count() == Edges.OutEdges(closest.Value).Count() &&
-                another.Edges.InEdges(n.Id).Count() == Edges.InEdges(closest.Value).Count()) 
-                continue;
+            // out and in edges, also same amount of degrees of those out and in edges
+
+            var sameEdgesCount = 
+                anotherOut.Count == currentOut.Count &&
+                anotherIn.Count == currentIn.Count;
             
-            // if not, these nodes is not isomorphic and hence these two graphs is not isomorphic too
-            differEdges = true;
-            break;
+            if (!sameEdgesCount){
+                differEdges = true;
+                break;
+            }
+
+            var anotherOutDegrees = anotherOut.Select(e=>another.Edges.Degree(e.TargetId)).OrderBy(v=>v);
+            var anotherInDegrees = anotherIn.Select(e=>another.Edges.Degree(e.SourceId)).OrderBy(v=>v);
+
+            var currentOutDegrees = currentOut.Select(e=>Edges.Degree(e.TargetId)).OrderBy(v=>v);
+            var currentInDegrees = currentIn.Select(e=>Edges.Degree(e.SourceId)).OrderBy(v=>v);
+
+            var sameOutDegrees = 
+                currentOutDegrees.Zip(anotherOutDegrees).Sum(v=>v.First-v.Second)+
+                currentInDegrees.Zip(anotherInDegrees).Sum(v=>v.First-v.Second);
+            
+            if(sameOutDegrees!=0){
+                differEdges = true;
+                break;
+            }
         }
 
         if (differEdges)
