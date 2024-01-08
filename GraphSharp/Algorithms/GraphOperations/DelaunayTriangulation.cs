@@ -18,7 +18,7 @@ where TNode : INode
 where TEdge : IEdge
 {
     ///<inheritdoc cref="DelaunayTriangulation(Func{TNode, double[]}, double)"/>
-    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,Vector> getPos, double planeDistanceTolerance = 1e-8){
+    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,Vector> getPos, double planeDistanceTolerance = 1e-15){
         return DelaunayTriangulation(n=>getPos(n).Select(c=>(double)c).ToArray(),planeDistanceTolerance);
     }
     /// <summary>
@@ -26,7 +26,7 @@ where TEdge : IEdge
     /// preforms delaunay triangulation. See https://en.wikipedia.org/wiki/Delaunay_triangulation <br/>
     /// Works on any number of dimensions
     /// </summary>
-    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,double[]> getPos, double planeDistanceTolerance = 1e-8)
+    public GraphOperation<TNode, TEdge> DelaunayTriangulation(Func<TNode,double[]> getPos, double planeDistanceTolerance = 1e-15)
     {
         var verts = Nodes.Select(v => new DelaunayVertex(v) { Position = getPos(v) }).ToList();
         var dims = verts.First().Position.Length;
