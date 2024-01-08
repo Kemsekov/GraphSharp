@@ -78,11 +78,11 @@ where TEdge : IEdge
             var currentOutDegrees = currentOut.Select(e=>Edges.Degree(e.TargetId)).OrderBy(v=>v);
             var currentInDegrees = currentIn.Select(e=>Edges.Degree(e.SourceId)).OrderBy(v=>v);
 
-            var sameOutDegrees = 
+            var differentOutDegrees = 
                 currentOutDegrees.Zip(anotherOutDegrees).Sum(v=>v.First-v.Second)+
                 currentInDegrees.Zip(anotherInDegrees).Sum(v=>v.First-v.Second);
             
-            if(sameOutDegrees!=0){
+            if(differentOutDegrees!=0){
                 differEdges = true;
                 break;
             }
