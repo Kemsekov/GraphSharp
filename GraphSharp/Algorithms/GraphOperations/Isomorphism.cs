@@ -71,16 +71,23 @@ where TEdge : IEdge
                 differEdges = true;
                 break;
             }
+            var anotherOutDegreesIn = anotherOut.Select(e=>another.Edges.InEdges(e.TargetId).Count()).OrderBy(v=>v);
+            var anotherOutDegreesOut = anotherOut.Select(e=>another.Edges.OutEdges(e.TargetId).Count()).OrderBy(v=>v);
 
-            var anotherOutDegrees = anotherOut.Select(e=>another.Edges.Degree(e.TargetId)).OrderBy(v=>v);
-            var anotherInDegrees = anotherIn.Select(e=>another.Edges.Degree(e.SourceId)).OrderBy(v=>v);
+            var anotherInDegreesIn = anotherIn.Select(e=>another.Edges.InEdges(e.SourceId).Count()).OrderBy(v=>v);
+            var anotherInDegreesOut = anotherIn.Select(e=>another.Edges.OutEdges(e.SourceId).Count()).OrderBy(v=>v);
 
-            var currentOutDegrees = currentOut.Select(e=>Edges.Degree(e.TargetId)).OrderBy(v=>v);
-            var currentInDegrees = currentIn.Select(e=>Edges.Degree(e.SourceId)).OrderBy(v=>v);
+            var currentOutDegreesIn = currentOut.Select(e=>Edges.InEdges(e.TargetId).Count()).OrderBy(v=>v);
+            var currentOutDegreesOut = currentOut.Select(e=>Edges.OutEdges(e.TargetId).Count()).OrderBy(v=>v);
+
+            var currentInDegreesIn = currentIn.Select(e=>Edges.InEdges(e.SourceId).Count()).OrderBy(v=>v);
+            var currentInDegreesOut = currentIn.Select(e=>Edges.OutEdges(e.SourceId).Count()).OrderBy(v=>v);
 
             var differentDegrees = 
-                currentOutDegrees.Zip(anotherOutDegrees).Sum(v=>v.First-v.Second)+
-                currentInDegrees.Zip(anotherInDegrees).Sum(v=>v.First-v.Second);
+                currentOutDegreesIn.Zip(anotherOutDegreesIn).Sum(v=>v.First-v.Second)+
+                currentOutDegreesOut.Zip(anotherOutDegreesOut).Sum(v=>v.First-v.Second)+
+                currentInDegreesIn.Zip(anotherInDegreesIn).Sum(v=>v.First-v.Second)+
+                currentInDegreesOut.Zip(anotherInDegreesOut).Sum(v=>v.First-v.Second);
             
             if(differentDegrees!=0){
                 differEdges = true;
