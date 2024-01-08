@@ -10,7 +10,7 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    // TODO: add sample to it and test on some graphs
+    // TODO: add sample to it and tests on some graphs
     /// <summary>
     /// Method that uses nodes embeddings to determine graph isomorphism. Works in approximately O(n) time
     /// </summary>
@@ -32,7 +32,7 @@ where TEdge : IEdge
         var emb1 = StructureBase.Do.NodesEmbedding();
         var emb2 = another.Do.NodesEmbedding();
 
-        var kdtree = new KdTree<double,int>(4,new KdTree.Math.DoubleMath());
+        var kdtree = new KdTree<double,int>(emb1.First().Value.Length,new KdTree.Math.DoubleMath());
 
         //same current graph embedding into kdtree for speed
         foreach (var n in emb1)

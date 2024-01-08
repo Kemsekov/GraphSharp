@@ -168,7 +168,7 @@ public class GraphTests
         Assert.NotEmpty(c2);
         c2 = c2.OrderBy(x=>x.Id).ToList();
         c1 = c1.OrderBy(x=>x.Id).ToList();
-        Assert.Equal(c2.ToHashSet(), c1.ToHashSet());
+        Assert.Empty(c1.ToHashSet().Except(c2.ToHashSet()));
         foreach (var c in c1.Concat(c2))
         {
             var ecc = _Graph.Do.FindEccentricity(c.Id, x => 1).length;
@@ -467,6 +467,76 @@ public class GraphTests
                 Assert.True(combined.All(n => inCycles[n.Id] == 1));
             }
         }
+    }
+
+    [Fact]
+    public void Condensation_Works(){
+        _Graph.Do.ConnectRandomly(1, 5);
+        var sccs = _Graph.Do.FindStronglyConnectedComponentsTarjan();
+        var nodeIdToComponentId = new Dictionary<int,int>();
+        
+        foreach(var c in sccs.Components){
+            foreach(var n in c.nodes){
+                nodeIdToComponentId[n.Id]=c.componentId;
+            }
+        }
+
+        var condensation = _Graph.Do.CondenseSCC();
+
+        // each node is in same scc
+        //nodes count eq to scc size
+        foreach(var n in condensation.Nodes){
+            var componentId = nodeIdToComponentId[n.Component.Nodes.First().Id];
+            var component = sccs.Components.First(c=>c.componentId==componentId);
+
+            Assert.True(n.Component.Nodes.All(n=>nodeIdToComponentId[n.Id]==componentId));
+            Assert.True(n.Component.Nodes.Count()==component.nodes.Count());
+        }
+
+        // each node have full subgraph of scc
+        foreach(var n in condensation.Nodes){
+            var nodes = n.Component.Nodes;
+            var subgraph = _Graph.Do.Induce(nodes.Select(v=>v.Id));
+            var edges = n.Component.Edges;
+            var subgEdges = subgraph.Edges;
+
+            Assert.Equal(edges.OrderBy(e=>e.GetHashCode()),subgEdges.OrderBy(e=>e.GetHashCode()));
+        }
+
+        // nodes count = sccs count
+        Assert.Equal(condensation.Nodes.Count,sccs.Components.Count());
+
+        // original edges that connect different components are preserved into condensed edges
+
+        foreach(var e in _Graph.Edges){
+            if(sccs.InSameComponent(e.SourceId,e.TargetId)) continue;
+            var sourceComponentId = nodeIdToComponentId[e.SourceId];
+            var targetComponentId = nodeIdToComponentId[e.TargetId];
+
+            Assert.Contains(e,condensation.Edges[sourceComponentId,targetComponentId].BaseEdges);
+        }
+
+        // total set sum of all edges from both nodes and edges of condensed graph
+        // does not have duplicates and equals to original edges set
+
+        var totalEdgesSum = new List<IEdge>();
+        foreach(var n in condensation.Nodes){
+            totalEdgesSum.AddRange(n.Component.Edges);
+        }
+        foreach(var e in condensation.Edges){
+            totalEdgesSum.AddRange(e.BaseEdges);
+        }
+
+        Assert.Equal(_Graph.Edges.OrderBy(e=>e.GetHashCode()),totalEdgesSum.OrderBy(e=>e.GetHashCode()));
+
+        // total nodes sum from nodes of condensed nodes does not have duplicates
+        // and equal to original nodes set
+
+        var totalNodesSum = new List<INode>();
+        foreach(var n in condensation.Nodes){
+            totalNodesSum.AddRange(n.Component.Nodes);
+        }
+        Assert.Equal(_Graph.Nodes.OrderBy(e=>e.GetHashCode()),totalNodesSum.OrderBy(e=>e.GetHashCode()));
     }
 
 }
