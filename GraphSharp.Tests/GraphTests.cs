@@ -547,8 +547,7 @@ public class GraphTests
 
         var csccs = condensation.Do.FindStronglyConnectedComponentsTarjan();
         
-        Assert.True(csccs.Components.All(i=>i.nodes.Count()==1));
-        Assert.True(csccs.Components.Count()==condensation.Nodes.Count);
+        Assert.True(condensation.IsDirectedAcyclic());
     }
 
 }
