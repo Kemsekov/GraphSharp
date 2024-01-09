@@ -168,7 +168,7 @@ public class GraphTests
         Assert.NotEmpty(c2);
         c2 = c2.OrderBy(x=>x.Id).ToList();
         c1 = c1.OrderBy(x=>x.Id).ToList();
-        Assert.Empty(c1.ToHashSet().Except(c2.ToHashSet()));
+        Assert.Equal(c1,c2);
         foreach (var c in c1.Concat(c2))
         {
             var ecc = _Graph.Do.FindEccentricity(c.Id, x => 1).length;

@@ -73,7 +73,7 @@ where TEdge : IEdge
             components = componentsResult.Components;
         }
         var radius = double.MaxValue;
-        var center = Enumerable.Empty<int>();
+        var center = new List<(int nodeId,double radius)>();
 
         //we use ApproximateCenter on each of SSC so we can cover
         //a lot of possible paths to a center with a good accuracy.
@@ -85,16 +85,21 @@ where TEdge : IEdge
                 lock (components)
                 {
                     radius = Math.Min(rad, radius);
-                    if (rad == radius)
-                        center = cr;
+                    if (rad != radius) continue;
+                    
+                    foreach(var n in cr)
+                        center.Add((n,rad));
                 }
             }
-        else
-            (radius, center) = ApproximateCenter(Nodes.First().Id);
+        else{
+            (radius, var center1) = ApproximateCenter(Nodes.First().Id);
+            foreach(var n in center1)
+                center.Add((n,radius));
+        }
         
-        center = center.Distinct();
-        var result = new List<int>(center);
-        foreach(var n in center.ToArray()){
+        center = center.Distinct().ToList();
+        var result = new List<int>(center.Where(n=>n.radius==radius).Select(i=>i.nodeId));
+        foreach(var n in result.ToArray()){
             result.AddRange(
                 Edges.Neighbors(n).Where(x=>FindEccentricity(x,getWeight).length==radius)
             );
