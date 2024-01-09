@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,48 @@ public class CliqueResult
     }
 }
 
+/// <summary>
+/// Cliques finder algorithm.
+/// </summary>
+public class Cliques{
+    /// <summary>
+    /// </summary>
+    public Cliques(IEnumerable<CliqueResult> cliqueResults){
+        CliqueResults = cliqueResults.ToDictionary(v=>v.InitialNodeId);
+    }
+    /// <summary>
+    /// </summary>
+    public Cliques(IDictionary<int,CliqueResult> cliqueResults){
+        CliqueResults = cliqueResults;
+    }
+    /// <summary>
+    /// Get clique of given node
+    /// </summary>
+    public CliqueResult this[int nodeId]=>CliqueResults[nodeId];
+    /// <summary>
+    /// Clique results. Key is node id, value is clique
+    /// </summary>
+    public IDictionary<int,CliqueResult> CliqueResults { get; }
+    /// <summary>
+    /// find minimal set of cliques that is sufficient to cover all nodes
+    /// so each node is exactly in one clique.
+    /// </summary>
+    /// <returns>
+    /// Dict with key is node id, result is clique<br/>
+    /// Difference is that clique value of different nodes now can be the same, so nodes in same clique shares same clique object
+    /// </returns>
+    public Dictionary<int, CliqueResult> MinimalCliqueCover(){
+        var minimalCliqueCover = new Dictionary<int,CliqueResult>();
+        foreach(var clique in CliqueResults.Values.OrderBy(c=>-c.Nodes.Count)){
+            foreach(var n in clique.Nodes){
+                if(minimalCliqueCover.ContainsKey(n)) continue;
+                minimalCliqueCover[n]=clique;
+            }
+        }
+        return minimalCliqueCover;
+    }
+}
+
 public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
@@ -40,7 +83,7 @@ where TEdge : IEdge
     /// Works in <see langword="O(E^2/N)"/> time. <br/>
     /// For better results see <see cref="FindAllCliques"/>
     /// </summary>
-    public IDictionary<int,CliqueResult> FindAllCliquesFast()
+    public Cliques FindAllCliquesFast()
     {
         var cliques = new ConcurrentDictionary<int,CliqueResult>();
         using var coefficients = FindLocalClusteringCoefficients();
@@ -49,14 +92,14 @@ where TEdge : IEdge
         {
             cliques[n.Id] = FindCliqueFast(n.Id,x=>x.OrderBy(y=>-coefficients[y]*degree[y]));
         });
-        return cliques;
+        return new(cliques);
     }
     /// <summary>
     /// Finds all cliques in a graph. <br/>
     /// Produce close to optimal results.<br/>
     /// Works in <see langword="O(E^3/N)"/> time
     /// </summary>
-    public IDictionary<int,CliqueResult> FindAllCliques()
+    public Cliques FindAllCliques()
     {
         var cliques = new ConcurrentDictionary<int,CliqueResult>();
         //a set of nodes
@@ -64,7 +107,7 @@ where TEdge : IEdge
         {
             cliques[n.Id] = FindClique(n.Id);
         });
-        return cliques;
+        return new(cliques);
     }
     /// <summary>
     /// Finds clique of max size for given graph<br/>
