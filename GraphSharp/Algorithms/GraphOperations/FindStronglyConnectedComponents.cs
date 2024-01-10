@@ -14,7 +14,15 @@ where TNode : INode
     /// <summary>
     /// Mapping of node id to component id where this node resides
     /// </summary>
-    public IDictionary<int, int> NodeIdToComponentId { get; }
+    public IDictionary<int, int> NodeIdToComponentId(){
+        var nodeIdToComponentId = new Dictionary<int,int>();
+        foreach(var c in Components){
+            foreach(var n in c.nodes){
+                nodeIdToComponentId[n.Id]=c.componentId;
+            }
+        }
+        return nodeIdToComponentId;
+    }
 
     /// <summary>
     /// </summary>
@@ -25,13 +33,7 @@ where TNode : INode
         .Where(x => Nodes.TryGetNode(x.index, out var _))
         .GroupBy(x => x.componentId)
         .Select(x => (x.Select(x => Nodes[x.index]), x.Key)).ToList();
-        this.low = lowLinkValues;
-        NodeIdToComponentId = new Dictionary<int,int>();
-        foreach(var c in Components){
-            foreach(var n in c.nodes){
-                NodeIdToComponentId[n.Id]=c.componentId;
-            }
-        }
+        low = lowLinkValues;
     }
     /// <returns><see langword="true"/> if nodes in the same strongly connected component, else <see langword="false"/></returns>
     public bool InSameComponent(int nodeId1, int nodeId2)

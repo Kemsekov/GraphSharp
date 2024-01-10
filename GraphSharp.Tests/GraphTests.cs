@@ -24,85 +24,98 @@ public class GraphTests
         this._Graph = new Graph<Node, Edge>(new TestGraphConfiguration(new Random()));
         _Graph.Do.CreateNodes(1000);
     }
-    void CheckClique(int nodeId,CliqueResult clique){
-        Assert.Equal(clique.InitialNodeId,nodeId);
-        Assert.Contains(nodeId,clique.Nodes);
+    void CheckClique(int nodeId, CliqueResult clique)
+    {
+        Assert.Equal(clique.InitialNodeId, nodeId);
+        Assert.Contains(nodeId, clique.Nodes);
         var induced = _Graph.Do.Induce(clique.Nodes);
         induced.Do.MakeBidirected();
         var complement = induced.Do.GetComplement();
-        Assert.True(complement.All(x=>x.SourceId==x.TargetId));
-        Assert.Equal(complement.Count,clique.Nodes.Count);
+        Assert.True(complement.All(x => x.SourceId == x.TargetId));
+        Assert.Equal(complement.Count, clique.Nodes.Count);
     }
     [Fact]
-    public void FindClique_Works(){
+    public void FindClique_Works()
+    {
         _Graph.Do.CreateNodes(500);
         _Graph.Do.ConnectNodes(10);
-        foreach(var n in _Graph.Nodes){
+        foreach (var n in _Graph.Nodes)
+        {
             var clique = _Graph.Do.FindClique(n.Id);
-            CheckClique(n.Id,clique);
+            CheckClique(n.Id, clique);
         }
     }
     [Fact]
-    public void FindCliqueFast_Works(){
+    public void FindCliqueFast_Works()
+    {
         _Graph.Do.CreateNodes(500);
         _Graph.Do.ConnectNodes(10);
-        foreach(var n in _Graph.Nodes){
+        foreach (var n in _Graph.Nodes)
+        {
             var clique = _Graph.Do.FindCliqueFast(n.Id);
-            CheckClique(n.Id,clique);
+            CheckClique(n.Id, clique);
         }
     }
     [Fact]
-    public void FindMaxClique_Works(){
+    public void FindMaxClique_Works()
+    {
         _Graph.Do.CreateNodes(500);
         _Graph.Do.ConnectNodes(10);
         var clique = _Graph.Do.FindMaxClique();
-        CheckClique(clique.InitialNodeId,clique);
+        CheckClique(clique.InitialNodeId, clique);
     }
     [Fact]
-    public void FindMaxCliqueFast_Works(){
+    public void FindMaxCliqueFast_Works()
+    {
         _Graph.Do.CreateNodes(500);
         _Graph.Do.ConnectNodes(10);
         var clique = _Graph.Do.FindMaxCliqueFast();
-        CheckClique(clique.InitialNodeId,clique);
+        CheckClique(clique.InitialNodeId, clique);
     }
 
     [Fact]
-    public void MaxFlow_Works(){
+    public void MaxFlow_Works()
+    {
         _Graph.Do.CreateNodes(500);
         _Graph.Do.ConnectNodes(10);
         _Graph.Do.MakeSources(0);
         var clone = _Graph.Clone();
-        var sink = _Graph.Nodes.First(x=>_Graph.Edges.IsSink(x.Id)).Id;
-        var flow = _Graph.Do.MaxFlowEdmondsKarp(0,sink,x=>Random.Shared.NextDouble());
-        Assert.True(flow.MaxFlow>0);
+        var sink = _Graph.Nodes.First(x => _Graph.Edges.IsSink(x.Id)).Id;
+        var flow = _Graph.Do.MaxFlowEdmondsKarp(0, sink, x => Random.Shared.NextDouble());
+        Assert.True(flow.MaxFlow > 0);
 
         //check that after max flow we didn't changed our graph
-        Assert.Equal(_Graph.Edges.Count,clone.Edges.Count);
-        Assert.Equal(_Graph.Nodes.Count,clone.Nodes.Count);
-        foreach(var e in clone.Edges){
-            Assert.True(_Graph.Edges.Contains(e.SourceId,e.TargetId));
+        Assert.Equal(_Graph.Edges.Count, clone.Edges.Count);
+        Assert.Equal(_Graph.Nodes.Count, clone.Nodes.Count);
+        foreach (var e in clone.Edges)
+        {
+            Assert.True(_Graph.Edges.Contains(e.SourceId, e.TargetId));
         }
-        foreach(var e in _Graph.Edges){
-            Assert.True(clone.Edges.Contains(e.SourceId,e.TargetId));
+        foreach (var e in _Graph.Edges)
+        {
+            Assert.True(clone.Edges.Contains(e.SourceId, e.TargetId));
         }
     }
     [Fact]
     public void TryFindHamiltonianCycleByBubbleExpansion_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
+        _Graph.Do.DelaunayTriangulation(x => x.MapProperties().Position);
         _Graph.Do.MakeBidirected();
         var result = _Graph.Do.TryFindHamiltonianCycleByBubbleExpansion();
         _Graph.ValidateCycle(result);
     }
     [Fact]
-    public void DelaunayTriangulation_Works(){
+    public void DelaunayTriangulation_Works()
+    {
         _Graph.Do.CreateNodes(500);
-        foreach(var n in _Graph.Nodes){
-            n.Properties["position"] = new double[]{Random.Shared.NextDouble(),Random.Shared.NextDouble(),Random.Shared.NextDouble()};
+        foreach (var n in _Graph.Nodes)
+        {
+            n.Properties["position"] = new double[] { Random.Shared.NextDouble(), Random.Shared.NextDouble(), Random.Shared.NextDouble() };
         }
-        _Graph.Do.DelaunayTriangulation(n=>(double[])n.Properties["position"]);
-        foreach(var n in _Graph.Nodes){
+        _Graph.Do.DelaunayTriangulation(n => (double[])n.Properties["position"]);
+        foreach (var n in _Graph.Nodes)
+        {
             Assert.NotEmpty(_Graph.Edges.AdjacentEdges(n.Id));
         }
     }
@@ -128,7 +141,7 @@ public class GraphTests
         {
             Assert.Equal(l.Count, l.Distinct().Count());
         }
-        var diff = t1.Layers.SelectMany(x => x).Except(_Graph.Nodes.Select(n=>n.Id));
+        var diff = t1.Layers.SelectMany(x => x).Except(_Graph.Nodes.Select(n => n.Id));
         Assert.Empty(diff);
         Assert.Equal(t1.Layers.Sum(x => x.Count), _Graph.Nodes.Count);
         var layer = t1.Layers.GetEnumerator();
@@ -144,7 +157,7 @@ public class GraphTests
             select: edge => visited[edge.TargetId] == 0,
             start: () => layer.MoveNext()
         );
-        var propagator = new Propagator<Edge>(_Graph.Edges,visitor);
+        var propagator = new Propagator<Edge>(_Graph.Edges, visitor);
         if (startPositions.Length != 0)
             propagator.SetPosition(startPositions);
         else
@@ -161,14 +174,14 @@ public class GraphTests
     public void TryFindCenter_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
-        (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1,false);
-        (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1,false);
+        _Graph.Do.DelaunayTriangulation(x => x.MapProperties().Position);
+        (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1, false);
+        (var r2, var c2) = _Graph.Do.FindCenterByDijkstras(x => 1, false);
         Assert.NotEmpty(c1);
         Assert.NotEmpty(c2);
-        c2 = c2.OrderBy(x=>x.Id).ToList();
-        c1 = c1.OrderBy(x=>x.Id).ToList();
-        Assert.Equal(c1,c2);
+        c2 = c2.OrderBy(x => x.Id).ToList();
+        c1 = c1.OrderBy(x => x.Id).ToList();
+        Assert.Equal(c1, c2);
         foreach (var c in c1.Concat(c2))
         {
             var ecc = _Graph.Do.FindEccentricity(c.Id, x => 1).length;
@@ -205,46 +218,47 @@ public class GraphTests
         }
         var n = _Graph.Nodes.Count;
         var e1 = _Graph.Edges.Count;
-        var e2 = complement.Count-n;
-        Assert.Equal(n*(n-1),e1+e2);
+        var e2 = complement.Count - n;
+        Assert.Equal(n * (n - 1), e1 + e2);
     }
     [Fact]
     public void FindStronglyConnectedComponents_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.ConnectToClosest(1,7,(n1,n2)=>(n1.MapProperties().Position-n2.MapProperties().Position).L2Norm());
+        _Graph.Do.ConnectToClosest(1, 7, (n1, n2) => (n1.MapProperties().Position - n2.MapProperties().Position).L2Norm());
         var maxPairsToCheck = 100;
         var ssc = _Graph.Do.FindStronglyConnectedComponentsTarjan();
         Assert.NotEmpty(ssc.Components);
         foreach (var c in ssc.Components)
         {
             Assert.NotEmpty(c.nodes);
-            if(c.nodes.Count()==1) continue;
-            foreach (var n1 in c.nodes.OrderBy(x=>Random.Shared.Next()).Take(maxPairsToCheck))
+            if (c.nodes.Count() == 1) continue;
+            foreach (var n1 in c.nodes.OrderBy(x => Random.Shared.Next()).Take(maxPairsToCheck))
             {
-                foreach (var n2 in c.nodes.OrderBy(x=>Random.Shared.Next()).Take(maxPairsToCheck))
+                foreach (var n2 in c.nodes.OrderBy(x => Random.Shared.Next()).Take(maxPairsToCheck))
                 {
                     if (n1.Equals(n2)) continue;
                     var path = _Graph.Do.FindAnyPath(n1.Id, n2.Id).Path;
-                    Assert.True(ssc.InSameComponent(n1.Id,n2.Id));
+                    Assert.True(ssc.InSameComponent(n1.Id, n2.Id));
                     Assert.NotEmpty(path);
                 }
             }
         }
-        foreach(var n1 in _Graph.Nodes.OrderBy(x=>Random.Shared.Next()).Take(maxPairsToCheck))
-        foreach(var n2 in _Graph.Nodes.OrderBy(x=>Random.Shared.Next()).Take(maxPairsToCheck)){
-            if (n1.Equals(n2)) continue;
-            if(ssc.InSameComponent(n1.Id,n2.Id)) continue;
-            var path1 = _Graph.Do.FindAnyPath(n1.Id, n2.Id).Path;
-            var path2 = _Graph.Do.FindAnyPath(n2.Id, n1.Id).Path;
-            Assert.True(path1.Count()==0 || path2.Count()==0);
-        }
+        foreach (var n1 in _Graph.Nodes.OrderBy(x => Random.Shared.Next()).Take(maxPairsToCheck))
+            foreach (var n2 in _Graph.Nodes.OrderBy(x => Random.Shared.Next()).Take(maxPairsToCheck))
+            {
+                if (n1.Equals(n2)) continue;
+                if (ssc.InSameComponent(n1.Id, n2.Id)) continue;
+                var path1 = _Graph.Do.FindAnyPath(n1.Id, n2.Id).Path;
+                var path2 = _Graph.Do.FindAnyPath(n2.Id, n1.Id).Path;
+                Assert.True(path1.Count() == 0 || path2.Count() == 0);
+            }
     }
     [Fact]
     public void FindEccentricity_Works()
     {
         _Graph.Do.CreateNodes(1000);
-        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
+        _Graph.Do.DelaunayTriangulation(x => x.MapProperties().Position);
         var node = _Graph.Nodes[Random.Shared.Next(1000)];
         var ecc = _Graph.Do.FindEccentricity(node.Id);
         var paths = _Graph.Do.FindShortestPathsDijkstra(node.Id);
@@ -333,7 +347,7 @@ public class GraphTests
         _Graph.Do.ConnectRandomly(0, 6);
         int indexer = 0;
         var result = _Graph.Do.FindComponents();
-        Assert.Equal(result.Components.Length,result.SetFinder.SetsCount);
+        Assert.Equal(result.Components.Length, result.SetFinder.SetsCount);
         var indexedComponents = result.Components.Select(x => (indexer++, x)).ToArray();
         var paired = new Dictionary<(int, int), int>();
         foreach (var c1 in indexedComponents)
@@ -391,7 +405,7 @@ public class GraphTests
             .MakeBidirected();
         Assert.True(directed.IsBidirected());
     }
-    
+
     [Fact]
     public void Clone_Works()
     {
@@ -442,15 +456,15 @@ public class GraphTests
     public void CombineCycles_Works()
     {
         {
-            var cycle1 =_Graph.ToPath(new Node[] { new(26), new(90), new(86), new(89), new(26) },PathType.OutEdges);
-            var cycle2 =_Graph.ToPath(new Node[] { new(86), new(26), new(94), new(90), new(86) },PathType.OutEdges);
+            var cycle1 = _Graph.ToPath(new Node[] { new(26), new(90), new(86), new(89), new(26) }, PathType.OutEdges);
+            var cycle2 = _Graph.ToPath(new Node[] { new(86), new(26), new(94), new(90), new(86) }, PathType.OutEdges);
 
             Assert.True(_Graph.CombineCycles(cycle1, cycle2, out var combined));
             Assert.True(combined.Count > cycle1.Count && combined.Count > cycle2.Count);
         }
         {
-            var cycle1 = _Graph.ToPath(new Node[] { new(1), new(8), new(7), new(9), new(2), new(1) },PathType.OutEdges);
-            var cycle2 = _Graph.ToPath(new Node[] { new(3), new(2), new(9), new(7), new(6), new(5), new(4), new(3) },PathType.OutEdges);
+            var cycle1 = _Graph.ToPath(new Node[] { new(1), new(8), new(7), new(9), new(2), new(1) }, PathType.OutEdges);
+            var cycle2 = _Graph.ToPath(new Node[] { new(3), new(2), new(9), new(7), new(6), new(5), new(4), new(3) }, PathType.OutEdges);
             Assert.False(_Graph.CombineCycles(cycle1, cycle2, out var combined));
         }
         _Graph.Do.CreateNodes(1000);
@@ -469,8 +483,8 @@ public class GraphTests
             Array.Fill(inCycles, (byte)0);
             foreach (var c in cycle1.Concat(cycle2))
                 inCycles[c.Id] = 1;
-            var c1 = _Graph.ToPath(cycle1,PathType.OutEdges);
-            var c2 = _Graph.ToPath(cycle2,PathType.OutEdges);
+            var c1 = _Graph.ToPath(cycle1, PathType.OutEdges);
+            var c2 = _Graph.ToPath(cycle2, PathType.OutEdges);
             if (_Graph.CombineCycles(c1, c2, out var combined))
             {
                 _Graph.ValidateCycle(combined);
@@ -481,73 +495,86 @@ public class GraphTests
     }
 
     [Fact]
-    public void Condensation_Works(){
-        _Graph.Do.ConnectRandomly(1, 5);
-        var sccs = _Graph.Do.FindStronglyConnectedComponentsTarjan();
-        var nodeIdToComponentId = sccs.NodeIdToComponentId;
+    public void Condensation_Works()
+    {
+        for (int k = 0; k < 100; k++)
+        {
+            _Graph.Edges.Clear();
+            _Graph.Do.ConnectRandomly(1, 7);
+            var sccs = _Graph.Do.FindStronglyConnectedComponentsTarjan();
+            var nodeIdToComponentId = sccs.NodeIdToComponentId();
 
-        var condensation = _Graph.Do.CondenseSCC();
+            var condensation = _Graph.Do.CondenseSCC();
 
-        // each node is in same scc
-        //nodes count eq to scc size
-        foreach(var n in condensation.Nodes){
-            var componentId = nodeIdToComponentId[n.Component.Nodes.First().Id];
-            var component = sccs.Components.First(c=>c.componentId==componentId);
+            // each node is in same scc
+            //nodes count eq to scc size
+            foreach (var n in condensation.Nodes)
+            {
+                var componentId = nodeIdToComponentId[n.Component.Nodes.First().Id];
+                var component = sccs.Components.First(c => c.componentId == componentId);
 
-            Assert.True(n.Component.Nodes.All(n=>nodeIdToComponentId[n.Id]==componentId));
-            Assert.True(n.Component.Nodes.Count()==component.nodes.Count());
+                Assert.True(n.Component.Nodes.All(n => nodeIdToComponentId[n.Id] == componentId));
+                Assert.True(n.Component.Nodes.Count() == component.nodes.Count());
+            }
+
+            // each node have full subgraph of scc
+            foreach (var n in condensation.Nodes)
+            {
+                var nodes = n.Component.Nodes;
+                var subgraph = _Graph.Do.Induce(nodes.Select(v => v.Id));
+                var edges = n.Component.Edges;
+                var subgEdges = subgraph.Edges;
+
+                Assert.Equal(edges.OrderBy(e => e.GetHashCode()), subgEdges.OrderBy(e => e.GetHashCode()));
+            }
+
+            // nodes count = sccs count
+            Assert.Equal(condensation.Nodes.Count, sccs.Components.Count());
+
+            // original edges that connect different components are preserved into condensed edges
+
+            foreach (var e in _Graph.Edges)
+            {
+                if (sccs.InSameComponent(e.SourceId, e.TargetId)) continue;
+                var sourceComponentId = nodeIdToComponentId[e.SourceId];
+                var targetComponentId = nodeIdToComponentId[e.TargetId];
+
+                Assert.Contains(e, condensation.Edges[sourceComponentId, targetComponentId].BaseEdges);
+            }
+
+            // total set sum of all edges from both nodes and edges of condensed graph
+            // does not have duplicates and equals to original edges set
+
+            var totalEdgesSum = new List<IEdge>();
+            foreach (var n in condensation.Nodes)
+            {
+                totalEdgesSum.AddRange(n.Component.Edges);
+            }
+            foreach (var e in condensation.Edges)
+            {
+                totalEdgesSum.AddRange(e.BaseEdges);
+            }
+            var expectedEdges = _Graph.Edges.OrderBy(e => e.GetHashCode()).ToList();
+            var actualEdges = totalEdgesSum.OrderBy(e => e.GetHashCode()).ToList();
+
+            Assert.Equal(expectedEdges, actualEdges);
+
+            // total nodes sum from nodes of condensed nodes does not have duplicates
+            // and equal to original nodes set
+
+            var totalNodesSum = new List<INode>();
+            foreach (var n in condensation.Nodes)
+            {
+                totalNodesSum.AddRange(n.Component.Nodes);
+            }
+            Assert.Equal(_Graph.Nodes.OrderBy(e => e.GetHashCode()), totalNodesSum.OrderBy(e => e.GetHashCode()));
+
+            // condensation graph is DAG so it have N scc's itself and all of them consists of 1 node
+
+            var csccs = condensation.Do.FindStronglyConnectedComponentsTarjan();
+
+            Assert.True(condensation.IsDirectedAcyclic());
         }
-
-        // each node have full subgraph of scc
-        foreach(var n in condensation.Nodes){
-            var nodes = n.Component.Nodes;
-            var subgraph = _Graph.Do.Induce(nodes.Select(v=>v.Id));
-            var edges = n.Component.Edges;
-            var subgEdges = subgraph.Edges;
-
-            Assert.Equal(edges.OrderBy(e=>e.GetHashCode()),subgEdges.OrderBy(e=>e.GetHashCode()));
-        }
-
-        // nodes count = sccs count
-        Assert.Equal(condensation.Nodes.Count,sccs.Components.Count());
-
-        // original edges that connect different components are preserved into condensed edges
-
-        foreach(var e in _Graph.Edges){
-            if(sccs.InSameComponent(e.SourceId,e.TargetId)) continue;
-            var sourceComponentId = nodeIdToComponentId[e.SourceId];
-            var targetComponentId = nodeIdToComponentId[e.TargetId];
-
-            Assert.Contains(e,condensation.Edges[sourceComponentId,targetComponentId].BaseEdges);
-        }
-
-        // total set sum of all edges from both nodes and edges of condensed graph
-        // does not have duplicates and equals to original edges set
-
-        var totalEdgesSum = new List<IEdge>();
-        foreach(var n in condensation.Nodes){
-            totalEdgesSum.AddRange(n.Component.Edges);
-        }
-        foreach(var e in condensation.Edges){
-            totalEdgesSum.AddRange(e.BaseEdges);
-        }
-
-        Assert.Equal(_Graph.Edges.OrderBy(e=>e.GetHashCode()),totalEdgesSum.OrderBy(e=>e.GetHashCode()));
-
-        // total nodes sum from nodes of condensed nodes does not have duplicates
-        // and equal to original nodes set
-
-        var totalNodesSum = new List<INode>();
-        foreach(var n in condensation.Nodes){
-            totalNodesSum.AddRange(n.Component.Nodes);
-        }
-        Assert.Equal(_Graph.Nodes.OrderBy(e=>e.GetHashCode()),totalNodesSum.OrderBy(e=>e.GetHashCode()));
-
-        // condensation graph is DAG so it have N scc's itself and all of them consists of 1 node
-
-        var csccs = condensation.Do.FindStronglyConnectedComponentsTarjan();
-        
-        Assert.True(condensation.IsDirectedAcyclic());
     }
 
 }

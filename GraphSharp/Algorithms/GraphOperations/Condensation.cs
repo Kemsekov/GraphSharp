@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using MathNet.Numerics;
 using Unchase.Satsuma.Core.Extensions;
 
 namespace GraphSharp.Graphs;
@@ -43,25 +44,50 @@ where TNode : INode
 where TEdge : IEdge
 {
     /// <summary>
-    /// Makes graph condensation by merging each strongly connected components subgraphs into one node, preserving edges that connects different components, resulting in DAG
+    /// Makes graph condensation by merging each nodes components subgraphs into one node, preserving edges that connects different components.<br/>
+    /// If some of graph node is not present into components, it will be condensed into itself.
     /// </summary>
     /// <returns>
-    /// DAG where each node is strongly connected component from original graph
+    /// New graph where each node is condensed component from original graph
     /// and edges contains all edges from original graph that connects different components
     /// </returns>
-    public IGraph<CondensedNode, CondensedEdge> CondenseSCC()
+    public IGraph<CondensedNode, CondensedEdge> Condense(IEnumerable<int[]> components){
+        return Condense(components.Select((c,i)=>(c,i)));
+    }
+    /// <summary>
+    /// Makes graph condensation by merging each nodes components subgraphs into one node, preserving edges that connects different components.<br/>
+    /// If some of graph node is not present into components, it will be condensed into itself.
+    /// </summary>
+    /// <returns>
+    /// New graph where each node is condensed component from original graph
+    /// and edges contains all edges from original graph that connects different components
+    /// </returns>
+    public IGraph<CondensedNode, CondensedEdge> Condense(IEnumerable<(int[] nodes,int componentId)> components)
     {
-        var sccs = StructureBase.Do.FindStronglyConnectedComponentsTarjan();
-        
+        // create mapping from node id to component id
+        var nodeIdToComponentId = new Dictionary<int,int>();
+
+        foreach(var c in components){
+            foreach(var n in c.nodes){
+                nodeIdToComponentId[n]=c.componentId;
+            }
+        }
+
+        //if new don't have component for some nodes, just put those leftovers into null component
+        foreach(var n in Nodes){
+            if(!nodeIdToComponentId.ContainsKey(n.Id)){
+                nodeIdToComponentId[n.Id]=int.MinValue;
+            }
+        }
+
         //for each component create node that contains induced subgraph of component
         var condensedNodes = 
-        sccs
-        .Components
+        components
         .Select(
             c=>{
                 var subgraph = new Graph<INode,IEdge>(i=>Configuration.CreateNode(i),(a,b)=>new Edge(a,b));
-                var inducedEdges = Edges.InducedEdges(c.nodes.Select(i=>i.Id).ToArray());
-                var inducedNodes = c.nodes;
+                var inducedEdges = Edges.InducedEdges(c.nodes);
+                var inducedNodes = c.nodes.Select(i=>Nodes[i]);
                 subgraph.SetSources(inducedNodes.Cast<INode>(),inducedEdges.Cast<IEdge>());
                 var node = new CondensedNode(c.componentId,subgraph);
                 return node;
@@ -74,17 +100,15 @@ where TEdge : IEdge
 
         g.SetSources(nodes:condensedNodes);
 
-        // create mapping from node id to component id
-        var nodeIdToComponentId = sccs.NodeIdToComponentId;
-
         //for each node that connect different components create an edge in graph g
         foreach(var e in Edges){
-            if(sccs.InSameComponent(e.SourceId,e.TargetId)) continue;
             //get component Id of source node and component Id of target node
             var sourceComponent = nodeIdToComponentId[e.SourceId];
             var targetComponent = nodeIdToComponentId[e.TargetId];
 
-            // add edge to base edges that connects strongly connected components
+            if(sourceComponent==targetComponent) continue;
+
+            // add edge to base edges that connects different components
             if(g.Edges.TryGetEdge(sourceComponent,targetComponent,out var found)){
                 found?.BaseEdges.Add(e);
             }
@@ -96,6 +120,21 @@ where TEdge : IEdge
         }
         return g;
     }
+    /// <summary>
+    /// Makes graph condensation by merging each strongly connected components subgraphs into one node, preserving edges that connects different components, resulting in DAG
+    /// </summary>
+    /// <returns>
+    /// DAG where each node is strongly connected component from original graph
+    /// and edges contains all edges from original graph that connects different components
+    /// </returns>
+    public IGraph<CondensedNode, CondensedEdge> CondenseSCC()
+    {
+        var sccs = StructureBase.Do.FindStronglyConnectedComponentsTarjan();
+        // create mapping from node id to component id
+        var nodeIdToComponentId = sccs.NodeIdToComponentId();
+        return Condense(sccs.Components.Select(c=>(c.nodes.Select(n=>n.Id).ToArray(),c.componentId)));
+    }
+
     //TODO: add test
     /// <summary>
     /// Makes graph condensation by merging each clique subgraphs into one node, preserving edges that connects different cliques
@@ -112,47 +151,8 @@ where TEdge : IEdge
         // find minimal set of cliques that is sufficient to cover all nodes
         // so each node is exactly in one clique
         var cliquesCover = cliques.MinimalCliqueCover();
+        var components = cliquesCover.Values.Select((v,index)=>(v.Nodes.ToArray(),v.InitialNodeId));
 
-        //for each clique create node that contains induced subgraph of clique
-        var condensedNodes = 
-        cliquesCover.Values
-        .Select(
-            c=>{
-                var initialNodeId = c.InitialNodeId;
-                var nodes = c.Nodes;
-
-                var subgraph = new Graph<INode,IEdge>(i=>Configuration.CreateNode(i),(a,b)=>new Edge(a,b));
-                var inducedEdges = Edges.InducedEdges(nodes.ToArray());
-                var inducedNodes = nodes.Select(n=>Nodes[n]);
-                subgraph.SetSources(inducedNodes.Cast<INode>(),inducedEdges.Cast<IEdge>());
-                var node = new CondensedNode(initialNodeId,subgraph);
-                return node;
-            }
-        )
-        .ToArray();
-
-        var emptyGTemplate = new Graph<INode,IEdge>(i=>Configuration.CreateNode(i),(a,b)=>new Edge(a,b));
-        var g = new Graph<CondensedNode,CondensedEdge>(i=>new (i,emptyGTemplate.CloneJustConfiguration()),(a,b)=>new(a.Id,b.Id));
-
-        g.SetSources(nodes:condensedNodes);
-
-        //for each node that connect different cliques create an edge in graph g
-        foreach(var e in Edges){
-            //get clique Id of source node and clique Id of target node
-            var sourceClique = cliquesCover[e.SourceId].InitialNodeId;
-            var targetClique = cliquesCover[e.TargetId].InitialNodeId;
-            if(sourceClique==targetClique) continue;
-
-            // add edge to base edges that connects strongly connected components
-            if(g.Edges.TryGetEdge(sourceClique,targetClique,out var found)){
-                found?.BaseEdges.Add(e);
-            }
-            else{
-                var edge = new CondensedEdge(sourceClique,targetClique);
-                edge.BaseEdges.Add(e);
-                g.Edges.Add(edge);
-            }
-        }
-        return g;
+        return Condense(components);
     }
 }
