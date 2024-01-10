@@ -14,18 +14,23 @@ where TEdge : IEdge
     /// </summary>
     /// <param name="clusteringCoefficients">Precomputed clustering coefficients</param>
     /// <returns>Array, where index is node Id and value is coefficient. -1 means this node was not present in the graph.</returns>
-    public double[] FindAveragedLocalClusteringCoefficients(double[] clusteringCoefficients)
+    public double[] FindAveragedLocalClusteringCoefficients(Func<int,double> clusteringCoefficients)
     {
-        var avgClustering = clusteringCoefficients.ToArray();
+        var avgClustering = new double[Nodes.MaxNodeId+1];
+
+        Array.Fill(avgClustering,-1);
+        foreach(var n in Nodes){
+            avgClustering[n.Id]=clusteringCoefficients(n.Id);
+        }
 
         Parallel.ForEach(Nodes, n =>
         {
             var neigh = Edges.Neighbors(n.Id).ToList();
-            var oldAvg = clusteringCoefficients[n.Id];
+            var oldAvg = clusteringCoefficients(n.Id);
             var avg = oldAvg;
             foreach (var nei in neigh)
             {
-                avg += clusteringCoefficients[nei];
+                avg += clusteringCoefficients(nei);
             }
             avg /= neigh.Count + 1;
             avgClustering[n.Id] = avg;

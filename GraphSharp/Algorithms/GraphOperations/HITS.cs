@@ -99,7 +99,7 @@ where TEdge : IEdge
             hubScores[n]=authScores[n]=1;
         }
 
-        var localDiffs = new List<double>(nodesArray.Length);
+        var localDiffs = new ConcurrentBag<double>();
         var iterations= 0 ;
         var maxLocalDiff=0.0;
         var hubLength=1.0;
@@ -132,8 +132,7 @@ where TEdge : IEdge
                 var oldAuth = authScores[n.Id];
 
                 var maxLocalDiff = Math.Max(Math.Abs(newHub/hubLength-oldHub),Math.Abs(newAuth/authLength-oldAuth));
-                lock(localDiffs)
-                    localDiffs.Add(maxLocalDiff);
+                localDiffs.Add(maxLocalDiff);
             });
 
             hubLength = Math.Sqrt(newHubScores.Values.Sum(v=>v*v));

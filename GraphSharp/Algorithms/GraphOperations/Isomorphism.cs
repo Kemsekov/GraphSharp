@@ -1,10 +1,39 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using KdTree;
 using MathNet.Numerics.Distributions;
 
 namespace GraphSharp.Graphs;
+
+/// <summary>
+/// Isomorphism computation results
+/// </summary>
+public class IsomorphismResult{
+    /// <summary>
+    /// </summary>
+    public IsomorphismResult(IDictionary<int,int> isomorphism, double maxEmbeddingDifference, bool isIsomorphic){
+        Isomorphism = isomorphism;
+        MaxNodeEmbeddingDifference = maxEmbeddingDifference;
+        IsIsomorphic = isIsomorphic;
+    }
+    /// <summary>
+    /// Dict that defines isomorphism mapping of node id from one graph to node id of another graph.
+    /// </summary>
+    public IDictionary<int,int> Isomorphism{get;}
+    /// <summary>
+    /// Metric of how close two graphs are to be isomorphic. <br/>
+    /// If two graphs are isomorphic it must be around zero up to double precision.<br/>
+    /// Max node embedding difference among all closest node embeddings of two graph.
+    /// </summary>
+    public double MaxNodeEmbeddingDifference{get;}
+    /// <summary>
+    /// Determine if two graphs are isomorphic.
+    /// </summary>
+    public bool IsIsomorphic{get;}
+}
 
 public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
@@ -15,45 +44,41 @@ where TEdge : IEdge
     /// Method that uses nodes embeddings to determine graph isomorphism. Works in approximately O(n) time
     /// </summary>
     /// <param name="another">Another graph</param>
-    /// <param name="isomorphism">
-    /// Dict that defines isomorphism mapping of current node id to node id of another graph.
-    /// </param>
     /// <returns>
-    /// Value between 0 and 1 that gives confidence that current graph is isomorphic to another
+    /// Isomorphism results object that
     /// </returns>
-    public double IsIsomorphic<TNode_, TEdge_>(IImmutableGraph<TNode_, TEdge_> another,out IDictionary<int,int> isomorphism)
+    public IsomorphismResult Isomorphism<TNode_, TEdge_>(IImmutableGraph<TNode_, TEdge_> another)
     where TNode_ : INode
     where TEdge_ : IEdge
     {
-        isomorphism = new Dictionary<int, int>();
-        if(Nodes.Count()!=another.Nodes.Count()) return 0;
-        if(Edges.Count()!=another.Edges.Count()) return 0;
+        var isomorphism = new ConcurrentDictionary<int, int>();
+        if(Nodes.Count()!=another.Nodes.Count()) return new(isomorphism,double.MaxValue,false);
+        if(Edges.Count()!=another.Edges.Count()) return new(isomorphism,double.MaxValue,false);
 
         var emb1 = StructureBase.Do.NodesEmbedding();
         var emb2 = another.Do.NodesEmbedding();
 
-        var kdtree = new KdTree<double,int>(emb1.First().Value.Length,new KdTree.Math.DoubleMath());
+        var currentGraphEmbedding = new KdTree<double,int>(emb1.First().Value.Length,new KdTree.Math.DoubleMath());
 
         //same current graph embedding into kdtree for speed
         foreach (var n in emb1)
         {
-            kdtree.Add(n.Value, n.Key);
+            currentGraphEmbedding.Add(n.Value, n.Key);
         }
 
-        var differences = new List<double>();
+        var differences = new System.Collections.Concurrent.ConcurrentBag<double>();
         var differEdges = false;
 
         //for each node of another graph find node with most similar embedding
-        foreach (var n in another.Nodes)
+        foreach(var n in another.Nodes)
         {
-            var nEmb = emb2[n.Id];
-            var closest = kdtree.GetNearestNeighbours(nEmb,1).First();
+            var anotherNodeEmbedding = emb2[n.Id];
+            var closest = currentGraphEmbedding.GetNearestNeighbours(anotherNodeEmbedding,1).First();
             isomorphism[closest.Value] = n.Id;
 
             // find these nodes embedding difference and save it
-            var diff = Math.Sqrt(nEmb.Zip(closest.Point).Sum(v => (v.First - v.Second) * (v.First - v.Second)));
+            var diff = Math.Sqrt(anotherNodeEmbedding.Zip(closest.Point).Sum(v => (v.First - v.Second) * (v.First - v.Second)));
             differences.Add(diff);
-
 
             var anotherOut = another.Edges.OutEdges(n.Id).ToList();
             var anotherIn  = another.Edges.InEdges(n.Id).ToList();
@@ -93,19 +118,17 @@ where TEdge : IEdge
                 differEdges = true;
                 break;
             }
-        }
+        };
 
+        var maxDiff = differences.Max();
         if (differEdges)
         {
             //not isomorphic
             isomorphism.Clear();
-            return 0;
+            return new(isomorphism,maxDiff,false);
         }
 
-        // This is the most strict metric that we can use to measure how isomorphic graphs are.
-        // if graphs are isomorphic max difference value will be close to 0 and method will return 1.
-        // if there is some differences in node embeddings return value will wary.
-        return Math.Max(1-differences.Max(),0);
+        return new(isomorphism,maxDiff,true);
     }
 
 }

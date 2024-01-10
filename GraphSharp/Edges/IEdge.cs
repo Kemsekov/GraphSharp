@@ -22,21 +22,6 @@ public interface IEdge : IComparable<IEdge>, ICloneable<IEdge>
     /// Id of a target node of this edge
     /// </summary>
     int TargetId { get; set; }
-    /// <returns>
-    /// Other part of edge, or <see langword="-1"/> if not found
-    /// </returns>
-    public int Other(int nodeId)
-    {
-        if (SourceId == nodeId)
-            return TargetId;
-        if (TargetId == nodeId)
-            return SourceId;
-        return -1;
-    }
-    /// <returns>True if edges connect same nodes, without taking their directness into accountants</returns>
-    public bool ConnectsSame(IEdge edge){
-        return TargetId==edge.TargetId && SourceId==edge.SourceId || SourceId==edge.TargetId && TargetId==edge.SourceId;
-    }
     int IComparable<IEdge>.CompareTo(IEdge? other)
     {
         if (other is null)

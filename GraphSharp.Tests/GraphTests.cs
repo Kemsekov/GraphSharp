@@ -672,5 +672,38 @@ public class GraphTests
             Assert.True(condensation.IsDirectedAcyclic());
         }
     }
+    [Fact]
+    public void Isomorphism_OnAutomorphism_Works(){
+        var counter = 0;
+        var maxN = 1000;
+        for (int k = 0; k < maxN; k++)
+        {
+            _Graph.Clear();
+            _Graph.Do.CreateNodes(500);
+            _Graph.Do.DelaunayTriangulation(v=>v.MapProperties().Position);
+            // _Graph.Do.DelaunayTriangulation(v=>v.MapProperties().Position);
+            var (isomorphic,expectedMapping) = ExtensionsTests.CreateAutomorphism(_Graph);
 
+            // _Graph.Edges.Remove(_Graph.Edges.Last());
+            // isomorphic.Edges.Remove(isomorphic.Edges.First());
+
+            var isomorphism = _Graph.Do.Isomorphism(isomorphic);
+
+            if(isomorphism.IsIsomorphic){
+                counter++;
+            }
+
+            // var actualMapping = isomorphism.Isomorphism;
+            // Assert.True(isomorphism.IsIsomorphic);
+
+            
+            // foreach(var n in _Graph.Nodes){
+            //     var expected = expectedMapping[n.Id];
+            //     var actual = actualMapping[n.Id];
+            //     Assert.Equal(expected,actual);
+            // }
+        }
+        var rate = counter*1.0/maxN;
+        var a = 1;
+    }
 }

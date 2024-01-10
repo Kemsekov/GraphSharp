@@ -66,7 +66,7 @@ where TEdge : IEdge
         var nodesArray = Nodes.ToArray();
 
         var oneMinusDump= 1 - dumping;
-        var localDiffs = new List<double>(nodesArray.Length);
+        var localDiffs = new ConcurrentBag<double>();
 
         var iterations= 0 ;
         var maxLocalDiff=double.MaxValue;
