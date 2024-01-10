@@ -60,7 +60,8 @@ public class Cliques{
     /// </summary>
     /// <returns>
     /// Dict with key is node id, result is clique<br/>
-    /// Difference is that clique value of different nodes now can be the same, so nodes in same clique shares same clique object
+    /// Difference is that clique value of different nodes now can be the same, so nodes in same clique shares same clique object <br/>
+    /// If you need to just get a set of unique cliques, call Distinct on Values of resulting dictionary
     /// </returns>
     public Dictionary<int, CliqueResult> MinimalCliqueCover(){
         var minimalCliqueCover = new Dictionary<int,CliqueResult>();

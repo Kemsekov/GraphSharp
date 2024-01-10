@@ -132,7 +132,8 @@ where TEdge : IEdge
         var sccs = StructureBase.Do.FindStronglyConnectedComponentsTarjan();
         // create mapping from node id to component id
         var nodeIdToComponentId = sccs.NodeIdToComponentId();
-        return Condense(sccs.Components.Select(c=>(c.nodes.Select(n=>n.Id).ToArray(),c.componentId)));
+        var components = sccs.Components.Select(c=>(c.nodes.Select(n=>n.Id).ToArray(),c.componentId)).ToList();
+        return Condense(components);
     }
 
     //TODO: add test
@@ -151,7 +152,7 @@ where TEdge : IEdge
         // find minimal set of cliques that is sufficient to cover all nodes
         // so each node is exactly in one clique
         var cliquesCover = cliques.MinimalCliqueCover();
-        var components = cliquesCover.Values.Select((v,index)=>(v.Nodes.ToArray(),v.InitialNodeId));
+        var components = cliquesCover.Values.Distinct().Select((v,index)=>(v.Nodes.ToArray(),v.InitialNodeId)).ToList();
 
         return Condense(components);
     }

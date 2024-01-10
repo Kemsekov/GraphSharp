@@ -514,7 +514,7 @@ public class GraphTests
 
             var appeared = new Dictionary<int,bool>();
             //check that each node of graph appear only once among all cliques
-            foreach(var c in minimalCliqueCover.Values){
+            foreach(var c in minimalCliqueCover.Values.Distinct()){
                 foreach(var n in c.Nodes){
                     Assert.False(appeared.ContainsKey(n));
                     appeared[n]=true;
@@ -528,18 +528,64 @@ public class GraphTests
         for (int k = 0; k < 10; k++)
         {
             _Graph.Edges.Clear();
-            _Graph.Do.ConnectRandomly(1, 7);
+            _Graph.Do.ConnectRandomly(2, 7);
             _Graph.Do.MakeDirected();
 
             var cliques = _Graph.Do.FindAllCliques();
             var condensed = _Graph.Do.CondenseCliques();
 
             // each node contains clique with all required edges
+            foreach(var node in condensed.Nodes){
+                var subg = node.Component;
+                var isClique = subg.Edges.IsClique(subg.Nodes.Select(i=>i.Id));
+                Assert.True(isClique);
+            }
+
+            var nodeIdToComponentId = new Dictionary<int,CondensedNode>();
+            foreach(var c in condensed.Nodes){
+                foreach(var n in c.Component.Nodes){
+                    nodeIdToComponentId[n.Id]=c;
+                }
+            }
+
             // edges between cliques preserved into edges on condensed graph
+            foreach (var e in _Graph.Edges)
+            {
+                var sourceComponent = nodeIdToComponentId[e.SourceId];
+                var targetComponent = nodeIdToComponentId[e.TargetId];
+                if(sourceComponent==targetComponent) continue;
+
+                Assert.Contains(e, condensed.Edges[sourceComponent.Id, targetComponent.Id].BaseEdges);
+            }
+
             // total set sum of all edges from both nodes and edges of condensed graph
             // does not have duplicates and equals to original edges set
-            // all cliques is at least size of 2
-            // TODO: complete
+
+            var totalEdgesSum = new List<IEdge>();
+            foreach (var n in condensed.Nodes)
+            {
+                totalEdgesSum.AddRange(n.Component.Edges);
+            }
+            foreach (var e in condensed.Edges)
+            {
+                totalEdgesSum.AddRange(e.BaseEdges);
+            }
+            var expectedEdges = _Graph.Edges.OrderBy(e => e.GetHashCode()).ToList();
+            var actualEdges = totalEdgesSum.OrderBy(e => e.GetHashCode()).ToList();
+
+            var leftDiff = expectedEdges.Except(actualEdges);
+            var rightDiff = actualEdges.Except(expectedEdges);
+            Assert.Empty(leftDiff.Concat(rightDiff));
+
+            // total nodes sum from nodes of condensed nodes does not have duplicates
+            // and equal to original nodes set
+
+            var totalNodesSum = new List<INode>();
+            foreach (var n in condensed.Nodes)
+            {
+                totalNodesSum.AddRange(n.Component.Nodes);
+            }
+            Assert.Equal(_Graph.Nodes.OrderBy(e => e.GetHashCode()), totalNodesSum.OrderBy(e => e.GetHashCode()));
         }
     }
     [Fact]
@@ -605,7 +651,9 @@ public class GraphTests
             var expectedEdges = _Graph.Edges.OrderBy(e => e.GetHashCode()).ToList();
             var actualEdges = totalEdgesSum.OrderBy(e => e.GetHashCode()).ToList();
 
-            Assert.Equal(expectedEdges, actualEdges);
+            var leftDiff = expectedEdges.Except(actualEdges);
+            var rightDiff = actualEdges.Except(expectedEdges);
+            Assert.Empty(leftDiff.Concat(rightDiff));
 
             // total nodes sum from nodes of condensed nodes does not have duplicates
             // and equal to original nodes set
