@@ -680,7 +680,7 @@ public class GraphTests
         {
             _Graph.Clear();
             _Graph.Do.CreateNodes(500);
-            _Graph.Do.DelaunayTriangulation(v=>v.MapProperties().Position);
+            _Graph.Do.ConnectRandomly(1,7);
             // _Graph.Do.DelaunayTriangulation(v=>v.MapProperties().Position);
             var (isomorphic,expectedMapping) = ExtensionsTests.CreateAutomorphism(_Graph);
 
@@ -688,6 +688,8 @@ public class GraphTests
             // isomorphic.Edges.Remove(isomorphic.Edges.First());
 
             var isomorphism = _Graph.Do.Isomorphism(isomorphic);
+
+            // Assert.True(isomorphism.IsIsomorphic);
 
             if(isomorphism.IsIsomorphic){
                 counter++;
