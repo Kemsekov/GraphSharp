@@ -53,7 +53,6 @@ public class Cliques{
     /// Clique results. Key is node id, value is clique
     /// </summary>
     public IDictionary<int,CliqueResult> CliqueResults { get; }
-    // TODO: add test for it
     /// <summary>
     /// find minimal set of cliques that is sufficient to cover all nodes
     /// so each node is exactly in one clique.

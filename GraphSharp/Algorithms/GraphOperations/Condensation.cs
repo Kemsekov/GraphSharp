@@ -136,7 +136,6 @@ where TEdge : IEdge
         return Condense(components);
     }
 
-    //TODO: add test
     /// <summary>
     /// Makes graph condensation by merging each clique subgraphs into one node, preserving edges that connects different cliques
     /// </summary>

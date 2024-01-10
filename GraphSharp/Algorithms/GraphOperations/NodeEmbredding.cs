@@ -29,7 +29,6 @@ where TEdge : IEdge
 
         pagerank = StructureBase.Do.PageRank(0.9,tolerance).Ranks;
         using var c1 = StructureBase.Do.FindLocalClusteringCoefficients();
-        var clustering = c1.ToArray();
 
         var mostImportantNodes = pagerank.Keys.Zip(pagerank.Keys.Select(k => pagerank[k])).OrderBy(v => -v.Second).ToArray();
 
@@ -38,7 +37,16 @@ where TEdge : IEdge
         auth = c.AuthScores;
         hub = c.HubScores;
 
-        var nodeVectors = StructureBase.Nodes.ToDictionary(n => n.Id, n => new[] { clustering[n.Id], pagerank[n.Id], auth[n.Id], hub[n.Id] });
+        var clustering = c1.ToArray();
+
+        //another fun metric that seems to work well
+        var avgClustering = StructureBase.Do.FindAveragedLocalClusteringCoefficients(clustering);
+        var min = avgClustering.Min();
+        for(int i = 0;i<avgClustering.Length;i++)
+            avgClustering[i]-=min;
+        var nodeVectors = StructureBase.Nodes.ToDictionary(n => n.Id, n => new[] { clustering[n.Id], pagerank[n.Id], auth[n.Id], hub[n.Id],avgClustering[n.Id] });
+
+        // var nodeVectors = StructureBase.Nodes.ToDictionary(n => n.Id, n => new[] { clustering[n.Id], pagerank[n.Id], auth[n.Id], hub[n.Id]});
         return nodeVectors;
     }
 
