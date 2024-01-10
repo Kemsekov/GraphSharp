@@ -10,18 +10,7 @@ where TEdge : IEdge
     /// </summary>
     public GraphOperation<TNode, TEdge> MakeBidirected(Action<TEdge>? onCreatedEdge = null)
     {
-        onCreatedEdge ??= (edge) => { };
-        foreach (var source in Nodes)
-        {
-            var edges = Edges.OutEdges(source.Id);
-            foreach (var edge in edges)
-            {
-                if (Edges.TryGetEdge(edge.TargetId, edge.SourceId, out var _)) continue;
-                var newEdge = Configuration.CreateEdge(Nodes[edge.TargetId], Nodes[edge.SourceId]);
-                onCreatedEdge(newEdge);
-                Edges.Add(newEdge);
-            }
-        };
+        Edges.MakeBidirected((a,b)=>Configuration.CreateEdge(Nodes[a],Nodes[b]),onCreatedEdge);
         return this;
     }
 }

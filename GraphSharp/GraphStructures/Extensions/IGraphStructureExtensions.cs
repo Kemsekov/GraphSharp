@@ -103,6 +103,7 @@ public static class GraphExtensions
         }
         return true;
     }
+    // TODO: add test
     /// <returns>True if graph is directed acyclic graph (DAG), else false</returns>
     public static bool IsDirectedAcyclic<TNode,TEdge>(this IImmutableGraph<TNode, TEdge> g)
     where TEdge : IEdge

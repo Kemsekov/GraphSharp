@@ -53,6 +53,7 @@ public class Cliques{
     /// Clique results. Key is node id, value is clique
     /// </summary>
     public IDictionary<int,CliqueResult> CliqueResults { get; }
+    // TODO: add test for it
     /// <summary>
     /// find minimal set of cliques that is sufficient to cover all nodes
     /// so each node is exactly in one clique.
@@ -63,11 +64,24 @@ public class Cliques{
     /// </returns>
     public Dictionary<int, CliqueResult> MinimalCliqueCover(){
         var minimalCliqueCover = new Dictionary<int,CliqueResult>();
+        var totalNodes = new HashSet<int>();
         foreach(var clique in CliqueResults.Values.OrderBy(c=>-c.Nodes.Count)){
+            // find non-intersecting with other cliques subclique
+            var subCliqueThatCanBeAdded = new List<int>();
             foreach(var n in clique.Nodes){
+                totalNodes.Add(n);
                 if(minimalCliqueCover.ContainsKey(n)) continue;
-                minimalCliqueCover[n]=clique;
+                subCliqueThatCanBeAdded.Add(n);
             }
+            var subClique = new CliqueResult(clique.InitialNodeId,subCliqueThatCanBeAdded);
+            foreach(var n in subCliqueThatCanBeAdded)
+                minimalCliqueCover[n]=subClique;
+        }
+
+        //if some nodes was not assigned to clique, assign them to their own clique of 1 element
+        foreach(var n in totalNodes){
+            if(minimalCliqueCover.ContainsKey(n)) continue;
+            minimalCliqueCover[n] = new CliqueResult(n,new[]{n});
         }
         return minimalCliqueCover;
     }

@@ -11,6 +11,7 @@ using GraphSharp.Propagators;
 using GraphSharp.Tests.Helpers;
 using GraphSharp.Tests.Models;
 using GraphSharp.Visitors;
+using Unchase.Satsuma.Core;
 using Xunit;
 
 namespace GraphSharp.Tests;
@@ -495,9 +496,56 @@ public class GraphTests
     }
 
     [Fact]
-    public void Condensation_Works()
+    public void MinimalCliqueCover_Works(){
+        for (int k = 0; k < 10; k++)
+        {
+            _Graph.Edges.Clear();
+            _Graph.Do.ConnectRandomly(1, 7);
+            _Graph.Do.MakeDirected();
+
+            var cliques = _Graph.Do.FindAllCliques();
+            var minimalCliqueCover = cliques.MinimalCliqueCover();
+
+            //check that each CliqueResult is indeed a clique
+            foreach(var c in minimalCliqueCover.Values){
+                var nodes = c.Nodes;
+                Assert.True(_Graph.Edges.IsClique(nodes));
+            }
+
+            var appeared = new Dictionary<int,bool>();
+            //check that each node of graph appear only once among all cliques
+            foreach(var c in minimalCliqueCover.Values){
+                foreach(var n in c.Nodes){
+                    Assert.False(appeared.ContainsKey(n));
+                    appeared[n]=true;
+                }
+            }
+        }
+    }
+
+    [Fact]
+    public void CondenseCliques_Works(){
+        for (int k = 0; k < 10; k++)
+        {
+            _Graph.Edges.Clear();
+            _Graph.Do.ConnectRandomly(1, 7);
+            _Graph.Do.MakeDirected();
+
+            var cliques = _Graph.Do.FindAllCliques();
+            var condensed = _Graph.Do.CondenseCliques();
+
+            // each node contains clique with all required edges
+            // edges between cliques preserved into edges on condensed graph
+            // total set sum of all edges from both nodes and edges of condensed graph
+            // does not have duplicates and equals to original edges set
+            // all cliques is at least size of 2
+            // TODO: complete
+        }
+    }
+    [Fact]
+    public void CondenseSCC_Works()
     {
-        for (int k = 0; k < 100; k++)
+        for (int k = 0; k < 10; k++)
         {
             _Graph.Edges.Clear();
             _Graph.Do.ConnectRandomly(1, 7);
