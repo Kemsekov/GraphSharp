@@ -8,7 +8,7 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    
+
     /// <summary>
     /// Creates nodes embeddings that represents node unique position relative to all other nodes and edges in a graph.<br/>
     /// Can be used to determine if two graphs are isomorphic.
@@ -16,67 +16,94 @@ where TEdge : IEdge
     /// <param name="tolerance">
     /// Tolerance to node embeddings. Varying these greatly changes execution time
     /// </param>
+    /// <param name="maxIterations">Max iterations of embedding algorithms to run</param>
     /// <returns>Embeddings nodeId -> vector</returns>
-    public IDictionary<int, double[]> NodesEmbedding(double tolerance = 0.01)
+    public IDictionary<int, double[]> NodesEmbedding(double tolerance = 0.01,int maxIterations=100)
     {
         //here we use different structural information about nodes to give them unique embeddings.
         //This setup may differ, here I use pagerank, HITS and local clustering coefficients
         //this setup works +- well from big graphs up to 5000
 
+        var pagerank1 = StructureBase.Do.PageRank(0.95,tolerance,maxIterations).Ranks;
+        var pagerank2 = StructureBase.Do.PageRank(0.75,tolerance,maxIterations).Ranks;
 
-        var pageranks = new[]{
-            StructureBase.Do.PageRank(0.95,tolerance).Ranks,
-            StructureBase.Do.PageRank(0.75,tolerance).Ranks,
-            // StructureBase.Do.PageRank(0.55,tolerance).Ranks,
-        };
+        var mostImportantNodes1 = 
+            pagerank1.Keys.Zip(
+                pagerank1.Keys
+                    .Select(k => pagerank1[k]))
+            .OrderBy(v => -v.Second).ToArray();
+        var mostImportantNodes2 =
+            pagerank2.Keys.Zip(
+                pagerank1.Keys
+                    .Select(k => pagerank2[k]))
+            .OrderBy(v => v.Second).ToArray();
 
-        var mostImportantNodes = 
-        pageranks
-        .Select((pagerank,index)=>
-            pagerank.Keys.Zip(
-                pagerank.Keys
-                    .Select(k => pagerank[k]))
-            .OrderBy(v => (index%2==0 ? -1 : 1)*v.Second).ToArray());
+        var rootSet1=
+            mostImportantNodes1
+            .Take(Math.Max(StructureBase.Nodes.Count() / 4, 1))
+            .Select(i => i.First).ToArray();
         
-        var rootSets = mostImportantNodes.Select(
-            (mostImportantNodes,index)=>
-                mostImportantNodes
-                .Take(Math.Max(StructureBase.Nodes.Count() / (index+2), 1))
-                .Select(i => i.First).ToArray()
-            );
+        var rootSet2=
+            mostImportantNodes2
+            .Take(Math.Max(StructureBase.Nodes.Count() / 4, 1))
+            .Select(i => i.First).ToArray();
+
         
-        var HITSs = 
-            rootSets
-            .Select(rootSet => 
-                StructureBase.Do.HITS(rootSet, tolerance))
-            .ToList();
-        var auths = HITSs.Select(c=>c.AuthScores).ToList();
-        var hubs =  HITSs.Select(c=>c.HubScores) .ToList();
+        var HITS1 =StructureBase.Do.HITS(rootSet1, tolerance,maxIterations);
+        var HITS2 =StructureBase.Do.HITS(rootSet2, tolerance,maxIterations);
+
+        var auth1 = HITS1.AuthScores;
+        var auth2 = HITS2.AuthScores;
+        var hub1 =  HITS1.HubScores;
+        var hub2 =  HITS2.HubScores;
 
         using var clustering = FindLocalClusteringCoefficients();
-        
+
 
         //another fun set of metric that seems to work well
-        // var avgClustering = StructureBase.Do.FindAveragedLocalClusteringCoefficients(i=>clustering[i]);
-        // var avgAuth = StructureBase.Do.FindAveragedLocalClusteringCoefficients(i=>auth[i]);
-        // var avgHub = StructureBase.Do.FindAveragedLocalClusteringCoefficients(i=>hub[i]);
-        // var avgPageRank = StructureBase.Do.FindAveragedLocalClusteringCoefficients(i=>pagerank[i]);
+        var avgClustering = StructureBase.Do.FindAveragedLocalClusteringCoefficients(i=>clustering[i]);
+        var avgAuth = StructureBase.Do.FindAveragedLocalClusteringCoefficients(i=>auth1[i]+auth2[i]);
+        var avgHub = StructureBase.Do.FindAveragedLocalClusteringCoefficients(i=>hub1[i]+hub2[i]);
+        var avgPageRank = StructureBase.Do.FindAveragedLocalClusteringCoefficients(i=>pagerank1[i]+pagerank2[i]);
         
 
         var nodeVectors = StructureBase.Nodes.ToDictionary(
             n => n.Id, 
             n => new[] { 
-                pageranks[0][n.Id], 
-                pageranks[1][n.Id], 
-                // pageranks[2][n.Id], 
-                auths[0][n.Id], 
-                auths[1][n.Id], 
-                // auths[2][n.Id], 
-                hubs[0][n.Id],
-                hubs[1][n.Id],
-                // hubs[2][n.Id],
-                clustering[n.Id]
+                pagerank1[n.Id], 
+                pagerank2[n.Id], 
+                auth1[n.Id], 
+                auth2[n.Id], 
+                hub1[n.Id],
+                hub2[n.Id],
+                clustering[n.Id],
+                avgClustering[n.Id],
+                avgAuth[n.Id],
+                avgHub[n.Id],
+                avgPageRank[n.Id]
             });
+        var max = nodeVectors.First().Value.ToArray();
+        var min = nodeVectors.First().Value.ToArray();
+        
+        Array.Fill(max,double.MinValue);
+        Array.Fill(min,double.MaxValue);
+
+        var dims = max.Length;
+        foreach(var n in Nodes){
+            var value = nodeVectors[n.Id];
+            for(int i = 0;i<dims;i++){
+                max[i]=Math.Max(max[i],value[i]);
+                min[i]=Math.Min(min[i],value[i]);
+            }
+        }
+
+        foreach(var n in Nodes){
+            var value = nodeVectors[n.Id];
+            for(int i = 0;i<dims;i++){
+                value[i]=(value[i]-min[i])/(max[i]-min[i]);
+            }
+        }
+
 
         return nodeVectors;
     }

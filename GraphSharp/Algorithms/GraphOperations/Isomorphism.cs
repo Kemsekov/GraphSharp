@@ -70,8 +70,9 @@ where TEdge : IEdge
         var differEdges = false;
 
         //for each node of another graph find node with most similar embedding
-        foreach(var n in another.Nodes)
+        Parallel.ForEach(another.Nodes,n=>
         {
+            if(differEdges) return;
             var anotherNodeEmbedding = emb2[n.Id];
             var closest = currentGraphEmbedding.GetNearestNeighbours(anotherNodeEmbedding,1).First();
             isomorphism[closest.Value] = n.Id;
@@ -94,7 +95,7 @@ where TEdge : IEdge
             
             if (!sameEdgesCount){
                 differEdges = true;
-                break;
+                return;
             }
             var anotherOutDegreesIn = anotherOut.Select(e=>another.Edges.InEdges(e.TargetId).Count()).OrderBy(v=>v);
             var anotherOutDegreesOut = anotherOut.Select(e=>another.Edges.OutEdges(e.TargetId).Count()).OrderBy(v=>v);
@@ -116,9 +117,9 @@ where TEdge : IEdge
             
             if(differentDegrees!=0){
                 differEdges = true;
-                break;
+                return;
             }
-        };
+        });
 
         var maxDiff = differences.Max();
         if (differEdges)

@@ -675,7 +675,7 @@ public class GraphTests
     [Fact]
     public void Isomorphism_OnAutomorphism_Works(){
         var counter = 0;
-        var maxN = 1000;
+        var maxN = 100;
         for (int k = 0; k < maxN; k++)
         {
             _Graph.Clear();
@@ -696,7 +696,7 @@ public class GraphTests
             }
 
             // var actualMapping = isomorphism.Isomorphism;
-            // Assert.True(isomorphism.IsIsomorphic);
+            Assert.True(isomorphism.IsIsomorphic);
 
             
             // foreach(var n in _Graph.Nodes){
@@ -706,6 +706,5 @@ public class GraphTests
             // }
         }
         var rate = counter*1.0/maxN;
-        var a = 1;
     }
 }

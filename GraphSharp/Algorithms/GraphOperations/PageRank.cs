@@ -121,10 +121,13 @@ where TEdge : IEdge
     /// <param name="tolerance">
     /// What precision needs to be achieved.
     /// </param>
-    public PageRankResult PageRank(double damping = 0.85, double tolerance = 0.001)
+    /// <param name="maxIterations">
+    /// Max amount of iterations of algorithm to run
+    /// </param>
+    public PageRankResult PageRank(double damping = 0.85, double tolerance = 0.001,int maxIterations = int.MaxValue)
     {
         var pageranks = new PageRank<TNode,TEdge>(Nodes,Edges);
-        return pageranks.Compute(damping,tolerance);
+        return pageranks.Compute(damping,tolerance,maxIterations);
     }
     /// <summary>
     /// Uses quik graph implementation to find page rank of current graph.

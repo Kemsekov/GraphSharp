@@ -174,6 +174,6 @@ where TEdge : IEdge
     public HITSResults HITS(int[] rootSet, double tolerance = 0.01,int maxIterations = int.MaxValue)
     {
         var hits = new HITS<TNode,TEdge>(Nodes,Edges);
-        return hits.Compute(rootSet,tolerance);
+        return hits.Compute(rootSet,tolerance,maxIterations);
     }
 }
