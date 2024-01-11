@@ -672,39 +672,43 @@ public class GraphTests
             Assert.True(condensation.IsDirectedAcyclic());
         }
     }
+
     [Fact]
     public void Isomorphism_OnAutomorphism_Works(){
-        var counter = 0;
-        var maxN = 100;
-        for (int k = 0; k < maxN; k++)
-        {
+        for(int k = 0;k<5;k++){
             _Graph.Clear();
-            _Graph.Do.CreateNodes(500);
+            _Graph.Do.CreateNodes(2000);
             _Graph.Do.ConnectRandomly(1,7);
-            // _Graph.Do.DelaunayTriangulation(v=>v.MapProperties().Position);
-            var (isomorphic,expectedMapping) = ExtensionsTests.CreateAutomorphism(_Graph);
-
-            // _Graph.Edges.Remove(_Graph.Edges.Last());
-            // isomorphic.Edges.Remove(isomorphic.Edges.First());
+            var (isomorphic,expectedMapping) = _Graph.Do.CreateRandomAutomorphism();
 
             var isomorphism = _Graph.Do.Isomorphism(isomorphic);
 
-            // Assert.True(isomorphism.IsIsomorphic);
-
-            if(isomorphism.IsIsomorphic){
-                counter++;
-            }
-
-            // var actualMapping = isomorphism.Isomorphism;
             Assert.True(isomorphism.IsIsomorphic);
 
-            
+            // var actualMapping = isomorphism.Isomorphism;
+            // Assert.True(isomorphism.IsIsomorphic);
+
             // foreach(var n in _Graph.Nodes){
             //     var expected = expectedMapping[n.Id];
             //     var actual = actualMapping[n.Id];
             //     Assert.Equal(expected,actual);
             // }
         }
-        var rate = counter*1.0/maxN;
+    }
+    [Fact]
+    public void Isomorphism_OnChangedAutomorphism_Works(){
+        for(int k = 0;k<5;k++){
+            _Graph.Clear();
+            _Graph.Do.CreateNodes(2000);
+            _Graph.Do.ConnectRandomly(1,7);
+            var (isomorphic,expectedMapping) = _Graph.Do.CreateRandomAutomorphism();
+
+            _Graph.Edges.Remove(_Graph.Edges.First());
+            isomorphic.Edges.Remove(isomorphic.Edges.First());
+
+            var isomorphism = _Graph.Do.Isomorphism(isomorphic);
+
+            Assert.False(isomorphism.IsIsomorphic);
+        }
     }
 }
