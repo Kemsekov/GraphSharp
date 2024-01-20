@@ -1,6 +1,10 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using Google.OrTools.Graph;
 using GraphSharp.Adapters;
+using GraphSharp.Exceptions;
 using QuikGraph.Algorithms.MaximumFlow;
 using QuikGraph.Algorithms.Ranking;
 
@@ -12,7 +16,6 @@ namespace GraphSharp.Graphs;
 public class MaxFlowResult<TEdge>
 where TEdge : IEdge
 {
-    MaximumFlowAlgorithm<int, EdgeAdapter<TEdge>> Result { get; }
     /// <summary>
     /// Id of node that was used as source
     /// </summary>
@@ -28,23 +31,37 @@ where TEdge : IEdge
     /// <summary>
     /// Capacities used in current max flow result
     /// </summary>
-    public Func<TEdge, double> Capacities { get; }
+    public IDictionary<TEdge, double> Capacities { get; }
     /// <summary>
     /// ResidualCapacities in current max flow result
     /// </summary>
     /// <value></value>
-    public Func<TEdge, double> ResidualCapacities { get; }
+    public double ResidualCapacities(TEdge e)=>Capacities[e]-Flow[e];
+    /// <summary>
+    /// Flow that goes trough edge
+    /// </summary>
+    public IDictionary<TEdge, double> Flow { get; }
     /// <summary>
     /// Creates a new instance if max fow result
     /// </summary>
-    public MaxFlowResult(MaximumFlowAlgorithm<int, EdgeAdapter<TEdge>> result)
+    public MaxFlowResult(IEnumerable<TEdge> edges,MaximumFlowAlgorithm<int, EdgeAdapter<TEdge>> result)
     {
-        Result = result;
         SourceId = result.Source;
         SinkId = result.Sink;
         MaxFlow = result.MaxFlow;
-        ResidualCapacities = x => result.ResidualCapacities[new(x)];
-        Capacities = x => Result.Capacities(new(x));
+        Capacities = edges.ToDictionary(x=>x,x => result.Capacities(new(x)));
+        Flow= edges.ToDictionary(x=>x,x=> result.Capacities(new(x))-result.ResidualCapacities[new(x)]);
+    }
+    /// <summary>
+    /// Creates new max flow from a complete max flow result
+    /// </summary>
+    public MaxFlowResult(IEnumerable<TEdge> edges,int sourceId, int sinkId,double maxFlow,Func<TEdge, double> capacities, Func<TEdge, double> flow)
+    {
+        SourceId = sourceId;
+        SinkId = sinkId;
+        MaxFlow = maxFlow;
+        Capacities = edges.ToDictionary(x=>x,x=>capacities(x));
+        Flow = edges.ToDictionary(x=>x,x=>flow(x));
     }
 
 }
@@ -90,6 +107,35 @@ where TEdge : IEdge
         //graph state
         foreach (var e in augmentor.AugmentedEdges)
             Edges.Remove(e.GraphSharpEdge);
-        return new(maxFlow);
+        return new(Edges,maxFlow);
+    }
+    // TODO: add test 
+    /// <summary>
+    /// Uses google or tools to compute max flow
+    /// </summary>
+    /// <param name="sourceId">
+    /// Id of source node
+    /// </param>
+    /// <param name="sinkId">
+    /// Id of sink node
+    /// </param>
+    /// <param name="getCapacity">
+    /// Function to get edge capacity. By default uses edge flow values
+    /// </param>
+    public MaxFlowResult<TEdge> MaxFlowGoogleOrTools(int sourceId, int sinkId, Func<TEdge, int> getCapacity){
+        var maxFlow = new MaxFlow();
+        var edgeToId = new Dictionary<TEdge,int>();
+        var idToEdge = new Dictionary<int,TEdge>();
+        foreach(var (e,i) in Edges.Select((e,i)=>(e,i))){
+            maxFlow.AddArcWithCapacity(e.SourceId,e.TargetId,getCapacity(e));
+            edgeToId[e]=i;
+            idToEdge[i]=e;
+        }
+        var status = maxFlow.Solve(sourceId, sinkId);
+        if(status==MaxFlow.Status.BAD_INPUT)
+            throw new FailedToSolveMaxFlowException("Bad graph input");
+        if(status==MaxFlow.Status.BAD_RESULT)
+            throw new FailedToSolveMaxFlowException("Bad result. Failed to solve max flow.");
+        return new(Edges,sourceId,sinkId,maxFlow.OptimalFlow(),e=>getCapacity(e),edge=>maxFlow.Flow(edgeToId[edge]));
     }
 }
