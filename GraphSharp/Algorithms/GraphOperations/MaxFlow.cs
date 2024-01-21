@@ -85,7 +85,6 @@ where TEdge : IEdge
     /// </param>
     public MaxFlowResult<TEdge> MaxFlowEdmondsKarp(int sourceId, int sinkId, Func<TEdge, double>? getCapacity = null)
     {
-        
         getCapacity ??= e => e.MapProperties().Capacity;
         var createEdge = (int vertex1, int vertex2) => new EdgeAdapter<TEdge>(Configuration.CreateEdge(Nodes[vertex1], Nodes[vertex2]));
 
@@ -122,7 +121,8 @@ where TEdge : IEdge
     /// <param name="getCapacity">
     /// Function to get edge capacity. By default uses edge flow values
     /// </param>
-    public MaxFlowResult<TEdge> MaxFlowGoogleOrTools(int sourceId, int sinkId, Func<TEdge, int> getCapacity){
+    public MaxFlowResult<TEdge> MaxFlowGoogleOrTools(int sourceId, int sinkId, Func<TEdge, int>? getCapacity = null){
+        getCapacity ??= e => (int)e.MapProperties().Capacity;
         var maxFlow = new MaxFlow();
         var edgeToId = new Dictionary<TEdge,int>();
         var idToEdge = new Dictionary<int,TEdge>();
