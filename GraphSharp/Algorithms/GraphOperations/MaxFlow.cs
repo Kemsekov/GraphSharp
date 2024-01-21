@@ -66,7 +66,7 @@ where TEdge : IEdge
 
 }
 
-public partial class GraphOperation<TNode, TEdge>
+public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -108,7 +108,8 @@ where TEdge : IEdge
             Edges.Remove(e.GraphSharpEdge);
         return new(Edges,maxFlow);
     }
-    // TODO: add test 
+    // TODO: add test. Move it to separate namespace like Kemsekov.GraphSharp.GoogleOrTools
+    //because google or tools is just way too heavy to use
     /// <summary>
     /// Uses google or tools to compute max flow
     /// </summary>
