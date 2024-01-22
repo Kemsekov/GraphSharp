@@ -51,7 +51,9 @@ public static class ImmutableGraphOperationMaxFlow
     /// Function to get edge cost by one flow. By default uses edge "cost" property
     /// </param>
     /// <param name="getSupply">
-    /// Function to get node supply. By default uses node "supply" property
+    /// Function to get node supply. <br/>
+    /// Positive values is nodes that gives flow, negative values is nodes that consumes flow. <br/>
+    /// By default uses node "supply" property
     /// </param>
     public static MinCostFlowResult<TEdge> MinCostMaxFlowGoogleOrTools<TNode, TEdge>(this ImmutableGraphOperation<TNode,TEdge> g,Func<TEdge, long>? getCapacity = null,Func<TEdge, long>? getUnitCost = null,Func<TNode,long>? getSupply = null)
     where TNode : INode
