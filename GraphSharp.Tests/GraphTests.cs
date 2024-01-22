@@ -182,7 +182,7 @@ public class GraphTests
         Assert.NotEmpty(c2);
         c2 = c2.OrderBy(x => x.Id).ToList();
         c1 = c1.OrderBy(x => x.Id).ToList();
-        Assert.Equal(0,c1.Except(c2).Count());
+        Assert.True(c1.Except(c2).Count()==0);
         Assert.Equal(r1,r2);
     }
     [Fact]

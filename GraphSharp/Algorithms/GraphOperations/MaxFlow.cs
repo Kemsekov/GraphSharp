@@ -80,7 +80,7 @@ where TEdge : IEdge
     /// Id of sink node
     /// </param>
     /// <param name="getCapacity">
-    /// Function to get edge capacity. By default uses edge flow values
+    /// Function to get edge capacity. By default uses edge "capacity" property
     /// </param>
     public MaxFlowResult<TEdge> MaxFlowEdmondsKarp(int sourceId, int sinkId, Func<TEdge, double>? getCapacity = null)
     {

@@ -15,7 +15,23 @@ public partial class EdgePropertiesMap : IEdge
     /// Base edge
     /// </summary>
     public IEdge BaseEdge { get; }
-
+    /// <summary>
+    /// Edge cost
+    /// </summary>
+    public double Cost
+    {
+        get
+        {
+            var c = Properties.GetOrDefault("cost");
+            if (c is double cap)
+                return cap;
+            return 0;
+        }
+        set
+        {
+            Properties["cost"] = value;
+        }
+    }
     /// <summary>
     /// Edge capacity
     /// </summary>

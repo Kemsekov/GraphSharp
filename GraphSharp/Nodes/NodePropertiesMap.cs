@@ -33,6 +33,23 @@ public partial class NodePropertiesMap : INode
         }
     }
     /// <summary>
+    /// Node supply
+    /// </summary>
+    public double Supply
+    {
+        get
+        {
+            var c = Properties.GetOrDefault("supply");
+            if (c is double w)
+                return w;
+            return 0;
+        }
+        set
+        {
+            Properties["supply"] = value;
+        }
+    }
+    /// <summary>
     /// Node weight
     /// </summary>
     public double Weight
