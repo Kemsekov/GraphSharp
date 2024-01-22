@@ -53,7 +53,7 @@ where TEdge : IEdge
             startNodeId,
             endNodeId,
             v => GetParallelPropagator(v),
-            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase,pathType){GetWeight = getWeight},
+            () => new AnyPathFinder<TNode, TEdge>(startNodeId, StructureBase, pathType){GetWeight = getWeight},
             condition)
         .GetPath(startNodeId, endNodeId);
         return path;
@@ -99,12 +99,14 @@ where TEdge : IEdge
         var propagator = createPropagator(pathFinder);
         propagator.SetPosition(startNodeId);
         var pathType = pathFinder.PathType;
+        
         if(pathType==PathType.Undirected)
             propagator.SetToIterateByBothEdges();
         if(pathType==PathType.OutEdges)
             propagator.SetToIterateByOutEdges();
         if(pathType==PathType.InEdges)
             propagator.SetToIterateByInEdges();
+        
         int steps = 0;
         while (!pathFinder.Done || steps<minStepsCount)
         {
