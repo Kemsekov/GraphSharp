@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using GraphSharp.Graphs;
 using GraphSharp.Tests.Models;
+using MathNet.Numerics.LinearAlgebra.Single;
 using Xunit;
 
 namespace GraphSharp.Tests.Operations

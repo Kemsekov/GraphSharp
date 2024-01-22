@@ -182,12 +182,8 @@ public class GraphTests
         Assert.NotEmpty(c2);
         c2 = c2.OrderBy(x => x.Id).ToList();
         c1 = c1.OrderBy(x => x.Id).ToList();
-        Assert.Equal(c1, c2);
-        foreach (var c in c1.Concat(c2))
-        {
-            var ecc = _Graph.Do.FindEccentricity(c.Id, x => 1).length;
-            Assert.Equal(ecc, r1);
-        }
+        Assert.Equal(c1.Except(c2).Count(),0);
+        Assert.Equal(r1,r2);
     }
     [Fact]
     public void FindLocalClusteringCoefficients_Works()

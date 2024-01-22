@@ -17,11 +17,12 @@ where TEdge : IEdge
     /// <param name="center">Center nodes that share same radius</param>
     public record CenterFinderResult(double radius, IEnumerable<TNode> center);
     /// <summary>
-    /// Finds radius and center of graph using approximation technic. In general produce very good results, but works very fast.<br/>
+    /// Finds radius and center of graph using approximation technic. In general produce very good results, only with few center nodes missing, but works very fast.<br/>
     /// </summary>
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
     /// <param name="undirected">Is resulting graph center should correspond to center of undirected graph?</param>
-    public CenterFinderResult TryFindCenterByApproximation(Func<TEdge, double>? getWeight = null, bool undirected = true)
+    /// <param name="precision">Max absolute difference between center node radius</param>
+    public CenterFinderResult TryFindCenterByApproximation(Func<TEdge, double>? getWeight = null, bool undirected = true,double precision = 1e-10)
     {
         using var visited = ArrayPoolStorage.RentArray<byte>(Nodes.MaxNodeId + 1);
 
@@ -36,32 +37,33 @@ where TEdge : IEdge
         //   and we found a center of a graph. 
         (double radius, IEnumerable<int> center) ApproximateCenter(int startNodeId)
         {
-            (int Id, double eccentricity) point = (startNodeId, 0);
+            var pointId = startNodeId;
             var pathType = undirected ? PathType.Undirected : PathType.OutEdges;
             var points = new List<(int Id, double eccentricity)>();
             double radius = double.MaxValue;
-            double error = 1f;
             while (true)
             {
-                visited[point.Id] += 1;
-                if (visited[point.Id] > 1)
+                visited[pointId] += 1;
+                if (visited[pointId] > 1)
                 {
                     break;
                 }
-                var paths = FindShortestPathsParallelDijkstra(point.Id,getWeight,null,pathType);
+                var paths = FindShortestPathsParallelDijkstra(pointId,getWeight,null,pathType);
 
-                var direction = paths.PathLength.Select((length, index) => (length, index)).MaxBy(x => x.length);
+                var direction = paths.PathLength
+                    .Select((length, index) => (length, index))
+                    .MaxBy(x => x.length);
+                
+                //nodes of longest path that is not yet visited
                 var path = paths.GetPath(direction.index).Path.Where(x=>visited[x.Id]==0).ToList();
                 if(path.Count==0) continue;
-                points.Add((point.Id, direction.length));
+
+                points.Add((pointId, direction.length));
+
                 radius = Math.Min(radius, direction.length);
-                var index = (int)(1+error*(path.Count-2));
-                index = Math.Max(index,0);
-                index = Math.Min(index,path.Count-1);
-                point = (path[index].Id, double.MaxValue);
-                error*=0.85f;
+                pointId = path[0].Id;
             }
-            return (radius, points.Where(x => x.eccentricity == radius).Select(x=>x.Id));
+            return (radius, points.Where(n=>Math.Abs(n.eccentricity-radius)<precision).Select(x=>x.Id));
         }
         
         IEnumerable<(IEnumerable<TNode> nodes, int componentId)> components;
@@ -77,34 +79,25 @@ where TEdge : IEdge
 
         //we use ApproximateCenter on each of SSC so we can cover
         //a lot of possible paths to a center with a good accuracy.
-        if (components.Count() > 1)
-            foreach(var c in components)
-            {
-                (var rad, var cr) = ApproximateCenter(c.nodes.First().Id);
-                if (rad > radius) continue;
-                lock (components)
-                {
-                    radius = Math.Min(rad, radius);
-                    if (rad != radius) continue;
-                    
-                    foreach(var n in cr)
-                        center.Add((n,rad));
-                }
-            }
-        else{
-            (radius, var center1) = ApproximateCenter(Nodes.First().Id);
-            foreach(var n in center1)
-                center.Add((n,radius));
+        foreach(var (nodes, componentId) in components)
+        {
+            (var rad, var cr) = ApproximateCenter(nodes.First().Id);
+            if (rad > radius) continue;
+            radius = Math.Min(rad, radius);
+            
+            foreach(var n in cr)
+                center.Add((n,rad));
         }
         
-        center = center.Distinct().ToList();
-        var result = new List<int>(center.Where(n=>n.radius==radius).Select(i=>i.nodeId));
-        foreach(var n in result.ToArray()){
+        var result = new List<(int node,double radius)>(center);
+        foreach(var n in center){
             result.AddRange(
-                Edges.Neighbors(n).Where(x=>FindEccentricity(x,getWeight).length==radius)
+                Edges.Neighbors(n.nodeId)
+                .Where(n=>visited[n]==0)
+                .Select(n=>(n,FindEccentricity(n,getWeight).length))
             );
         }
-        return new(radius, result.Distinct().Select(id=>Nodes[id]));
+        return new(radius, result.Distinct().Where(n=>Math.Abs(n.radius-radius)<precision).Select(n=>Nodes[n.node]));
     }
     /// <summary>
     /// Finds radius and center of graph using Dijkstras Algorithm to brute force eccentricity of all nodes and select minimum of them.<br/>
@@ -112,7 +105,8 @@ where TEdge : IEdge
     /// </summary>
     /// <param name="getWeight">Determine how to find a center of a graph. By default it uses edges weights, but you can change it.</param>
     /// <param name="undirected">Is resulting graph center should correspond to center of undirected graph?</param>
-    public CenterFinderResult FindCenterByDijkstras(Func<TEdge, double>? getWeight = null, bool undirected = true)
+    /// <param name="precision">Max absolute difference between center node radius</param>
+    public CenterFinderResult FindCenterByDijkstras(Func<TEdge, double>? getWeight = null, bool undirected = true,double precision = 1e-10)
     {
         getWeight ??= x=>x.MapProperties().Weight;
         var radius = double.MaxValue;
@@ -143,9 +137,8 @@ where TEdge : IEdge
                     radius = p.length;
                     center.Clear();
                 }
-            if (Math.Abs(p.length - radius) < double.Epsilon)
+            if (Math.Abs(p.length - radius) < precision)
                 center.Add(Nodes[n.Id]);
-
         }
         ReturnPropagator(propagator);
         return new(radius, center);
