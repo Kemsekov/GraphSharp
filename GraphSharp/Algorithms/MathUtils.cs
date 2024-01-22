@@ -5,10 +5,14 @@ using MIConvexHull;
 
 namespace GraphSharp.Algorithms;
 
-
-
+/// <summary>
+/// Math utils class
+/// </summary>
 public class MathUtils
 {
+    /// <summary>
+    /// N-dimensional delaunay triangulation
+    /// </summary>
     public static IEnumerable<(double[] v, double[] u)> DelaunayND(IEnumerable<double[]> points, double planeDistanceTolerance = 0.001)
     {
         var verts = points.Select(v => new DefaultVertex() { Position = v }).ToList();

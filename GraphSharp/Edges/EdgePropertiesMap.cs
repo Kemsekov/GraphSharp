@@ -9,6 +9,8 @@ namespace GraphSharp;
 /// </summary>
 public partial class EdgePropertiesMap : IEdge
 {
+    ///<inheritdoc/>
+    public object this[string propertyName] { get => Properties[propertyName]; set => Properties[propertyName]=value; }
     /// <summary>
     /// Base edge
     /// </summary>

@@ -42,28 +42,30 @@ where TEdge : IEdge
     /// <summary>
     /// Converts current <see cref="Nodes"/> to adjacency matrix.
     /// </summary>
-    public DenseMatrix ToAdjacencyMatrix()
+    public DenseMatrix ToAdjacencyMatrix(Func<TEdge,float>? getWeight = null)
     {
+        getWeight??=e=>(float)e.MapProperties().Weight;
         DenseMatrix adjacencyMatrix;
         int size = Nodes.MaxNodeId + 1;
         adjacencyMatrix = DenseMatrix.Create(size, size, 0);
         foreach (var e in Edges)
         {
-            adjacencyMatrix[e.SourceId, e.TargetId] = (float)e.MapProperties().Weight;
+            adjacencyMatrix[e.SourceId, e.TargetId] = getWeight(e);
         }
         return adjacencyMatrix;
     }
     /// <summary>
     /// Converts current <see cref="Nodes"/> to sparse adjacency matrix.
     /// </summary>
-    public SparseMatrix ToSparseAdjacencyMatrix()
+    public SparseMatrix ToSparseAdjacencyMatrix(Func<TEdge,float>? getWeight = null)
     {
+        getWeight??=e=>(float)e.MapProperties().Weight;
         SparseMatrix adjacencyMatrix;
         int size = Nodes.MaxNodeId + 1;
         adjacencyMatrix = SparseMatrix.Create(size, size, 0);
         foreach (var e in Edges)
         {
-            adjacencyMatrix[e.SourceId, e.TargetId] = (float)e.MapProperties().Weight;
+            adjacencyMatrix[e.SourceId, e.TargetId] = getWeight(e);
         }
         return adjacencyMatrix;
     }

@@ -10,6 +10,10 @@ namespace GraphSharp;
 public interface INode : IComparable<INode>, ICloneable<INode>, System.IEquatable<INode>
 {
     /// <summary>
+    /// Get or set node property
+    /// </summary>
+    object this[string propertyName]{get;set;}
+    /// <summary>
     /// Node properties
     /// </summary>
     IDictionary<string, object> Properties { get; }

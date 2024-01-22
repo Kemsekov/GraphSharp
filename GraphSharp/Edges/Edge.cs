@@ -14,6 +14,8 @@ public class Edge : IEdge
     ///<inheritdoc/>
     public static Color DefaultColor = Color.DarkViolet;
     ///<inheritdoc/>
+    public object this[string propertyName] { get => Properties[propertyName]; set => Properties[propertyName]=value; }
+    ///<inheritdoc/>
     public int SourceId { get; set; }
     ///<inheritdoc/>
     public int TargetId { get; set; }

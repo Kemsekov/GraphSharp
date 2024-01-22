@@ -22,6 +22,8 @@ where TEdge : IEdge
         this.Edge = edge;
         Id = id;
     }
+    ///<inheritdoc/>
+    public object this[string propertyName] { get => Properties[propertyName]; set => Properties[propertyName]=value; }
     /// <inheritdoc/>
     public int Id { get; set; }
     /// <summary>

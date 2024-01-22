@@ -11,6 +11,10 @@ namespace GraphSharp;
 public interface IEdge : IComparable<IEdge>, ICloneable<IEdge>
 {
     /// <summary>
+    /// Get or set edge property
+    /// </summary>
+    object this[string propertyName]{get;set;}
+    /// <summary>
     /// Edge properties
     /// </summary>
     IDictionary<string,object> Properties{get;}

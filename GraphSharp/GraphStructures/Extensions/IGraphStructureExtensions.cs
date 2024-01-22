@@ -229,11 +229,11 @@ public static class GraphExtensions
                 throw new ArgumentException("Cycle contains duplicate nodes.");
             }
         }
-        catch (ArgumentException e)
+        catch (ArgumentException)
         {
             System.Console.WriteLine("Invalid cycle detected");
             PrintPath(cycle);
-            throw e;
+            throw;
         }
     }
     /// <summary>

@@ -18,13 +18,15 @@ public class Node : INode
 
     ///<inheritdoc/>
     public IDictionary<string, object> Properties{get;init;}
+
+    ///<inheritdoc/>
+    public object this[string propertyName] { get => Properties[propertyName]; set => Properties[propertyName]=value; }
+
     ///<inheritdoc/>
     public Node(int id)
     {
         Id = id;
         Properties = new Dictionary<string,object>();
-        Properties["color"] = DefaultColor;
-        Properties["position"] = DenseVector.Create(2,0);
     }
     ///<inheritdoc/>
     public override string ToString()

@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Google.OrTools.Graph;
 using GraphSharp.Adapters;
 using GraphSharp.Exceptions;
 using QuikGraph.Algorithms.MaximumFlow;
@@ -66,7 +65,7 @@ where TEdge : IEdge
 
 }
 
-public partial class ImmutableGraphOperation<TNode, TEdge>
+public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
@@ -108,35 +107,5 @@ where TEdge : IEdge
             Edges.Remove(e.GraphSharpEdge);
         return new(Edges,maxFlow);
     }
-    // TODO: add test. Move it to separate namespace like Kemsekov.GraphSharp.GoogleOrTools
-    //because google or tools is just way too heavy to use
-    /// <summary>
-    /// Uses google or tools to compute max flow
-    /// </summary>
-    /// <param name="sourceId">
-    /// Id of source node
-    /// </param>
-    /// <param name="sinkId">
-    /// Id of sink node
-    /// </param>
-    /// <param name="getCapacity">
-    /// Function to get edge capacity. By default uses edge flow values
-    /// </param>
-    public MaxFlowResult<TEdge> MaxFlowGoogleOrTools(int sourceId, int sinkId, Func<TEdge, int>? getCapacity = null){
-        getCapacity ??= e => (int)e.MapProperties().Capacity;
-        var maxFlow = new MaxFlow();
-        var edgeToId = new Dictionary<TEdge,int>();
-        var idToEdge = new Dictionary<int,TEdge>();
-        foreach(var (e,i) in Edges.Select((e,i)=>(e,i))){
-            maxFlow.AddArcWithCapacity(e.SourceId,e.TargetId,getCapacity(e));
-            edgeToId[e]=i;
-            idToEdge[i]=e;
-        }
-        var status = maxFlow.Solve(sourceId, sinkId);
-        if(status==MaxFlow.Status.BAD_INPUT)
-            throw new FailedToSolveMaxFlowException("Bad graph input");
-        if(status==MaxFlow.Status.BAD_RESULT)
-            throw new FailedToSolveMaxFlowException("Bad result. Failed to solve max flow.");
-        return new(Edges,sourceId,sinkId,maxFlow.OptimalFlow(),e=>getCapacity(e),edge=>maxFlow.Flow(edgeToId[edge]));
-    }
+
 }

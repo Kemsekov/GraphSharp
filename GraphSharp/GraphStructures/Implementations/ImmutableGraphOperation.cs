@@ -12,10 +12,22 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    IImmutableGraph<TNode, TEdge> StructureBase{get;}
-    IImmutableNodeSource<TNode> Nodes => StructureBase.Nodes;
-    IImmutableEdgeSource<TEdge> Edges => StructureBase.Edges;
-    IGraphConfiguration<TNode, TEdge> Configuration => StructureBase.Configuration;
+    /// <summary>
+    /// Source graph
+    /// </summary>
+    public IImmutableGraph<TNode, TEdge> StructureBase{get;}
+    /// <summary>
+    /// Graph nodes
+    /// </summary>
+    public IImmutableNodeSource<TNode> Nodes => StructureBase.Nodes;
+    /// <summary>
+    /// Graph edges
+    /// </summary>
+    public IImmutableEdgeSource<TEdge> Edges => StructureBase.Edges;
+    /// <summary>
+    /// Graph configuration
+    /// </summary>
+    public IGraphConfiguration<TNode, TEdge> Configuration => StructureBase.Configuration;
     ObjectPool<Propagator<TEdge>> PropagatorPool;
     ObjectPool<ParallelPropagator<TEdge>> ParallelPropagatorPool;
     ///<inheritdoc/>

@@ -14,7 +14,6 @@
     <WarningLevel>6</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Google.OrTools" Version="9.8.3296" />
     <PackageReference Include="KdTree" Version="1.4.1" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="MIConvexHull" Version="1.1.19.1019" />

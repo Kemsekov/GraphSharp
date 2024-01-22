@@ -8,6 +8,8 @@ using GraphSharp.Adapters;
 using Unchase.Satsuma;
 using Unchase.Satsuma.TSP.Contracts;
 using Unchase.Satsuma.TSP;
+using System.Buffers;
+using MathNet.Numerics;
 
 namespace GraphSharp.Graphs;
 
@@ -78,23 +80,11 @@ where TEdge : IEdge
         return tsp;
     }
     /// <summary>
-    /// Computes a TSP on 2vector positions
+    /// Computes a TSP on vector positions
     /// </summary>
     public ITsp<TNode> TspCheapestLinkOnPositions(Func<TNode,Vector> getPos)
     {
-        var count = Nodes.Count();
-        if(count==1) return new TspResult<TNode>(new[]{Nodes.First(),Nodes.First()},0);
-        if(count<=0) throw new ArgumentException("Cannot find TSP on empty graph");
-        var treeDegree2 = FindSpanningTreeDegree2OnNodes(getPos);
-        var graph = StructureBase.CloneJustConfiguration();
-        graph.SetSources(Nodes,Edges);
-        graph.SetSources(edges:treeDegree2.tree);
-        graph.Do.MakeBidirected();
-        var path = graph.Do.FindAnyPath(treeDegree2.ends[0].Id,treeDegree2.ends[1].Id);
-        var additionalCost = (getPos(treeDegree2.ends[0])-getPos(treeDegree2.ends[1])).L2Norm();
-        var cost = path.Cost+additionalCost;
-        path.Path.Add(treeDegree2.ends[0]);
-        return new TspResult<TNode>(path.Path,cost);
+        return TspCheapestLinkOnEdgeCost(e=>(getPos(Nodes[e.SourceId])-getPos(Nodes[e.TargetId])).L2Norm(),g=>g.Do.DelaunayTriangulation(getPos));
     }
     /// <summary>
     /// Computes tsp on edge costs only. When supplied with good <see langword="doDelaunayTriangulation"/> 
@@ -106,7 +96,6 @@ where TEdge : IEdge
     /// graph by creating edge between them<br/>
     /// Delaunay triangulation works best, but you can try other variance.
     /// </param>
-    /// <returns></returns>
     public ITsp<TNode> TspCheapestLinkOnEdgeCost(Func<TEdge,double> edgeCost,Action<IGraph<TNode, TEdge>> doDelaunayTriangulation)
     {
         var count = Nodes.Count();
