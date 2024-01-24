@@ -15,6 +15,13 @@ public static class DictionaryExtensions
         }
         return default;
     }
+    /// <returns>Found value in dictionary, or default value if key not found</returns>
+    public static TValue GetOrDefault<TValue,TKey>(this IDictionary<TKey,TValue> dict, TKey key, TValue defaultV){
+        if(dict.TryGetValue(key,out var result)){
+            return result;
+        }
+        return defaultV;
+    }
     /// <summary>
     /// Tries to make deep copy of dictionary
     /// </summary>

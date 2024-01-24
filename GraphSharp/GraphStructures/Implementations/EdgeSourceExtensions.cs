@@ -228,10 +228,13 @@ public static class EdgeSourceExtensions
     public static IEnumerable<EdgeSelect<TEdge>> AdjacentEdges<TEdge>(this IImmutableEdgeSource<TEdge> Edges, params int[] nodes)
     where TEdge : IEdge
     {
+        var adj = new HashSet<TEdge>();
         foreach (var nodeId in nodes)
         {
             foreach (var e in Edges.InOutEdges(nodeId))
             {
+                if(adj.Contains(e)) continue;
+                adj.Add(e);
                 yield return new(e, nodeId);
             }
 
