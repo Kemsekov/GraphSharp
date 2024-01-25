@@ -202,7 +202,6 @@ where TEdge : IEdge
         var dirVector = targetPos - sourcePos;
         dirVector /= ((float)dirVector.L2Norm());
 
-
         dirVector = targetPos - dirVector * ((float)(directionLength));
         var point1 = dirVector*((float)size);
         var point2 = targetPos*((float)size);
@@ -211,8 +210,7 @@ where TEdge : IEdge
         }
         else
         {
-            var sourcePoint = new DenseVector(new[]{(sourcePos[0] + targetPos[1]) / 2 * size, (sourcePos[1] + targetPos[1]) / 2 * size});
-            Drawer.DrawLine(sourcePoint, (Vector)point2, color, lineThickness*windowSize);
+            DrawDirection(edge,lineThickness,directionLength/2,color);
         }
     }
     Vector ShiftVector(Vector v){
