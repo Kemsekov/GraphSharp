@@ -1,7 +1,11 @@
 GraphSharp
+
 [![nuget](https://img.shields.io/nuget/v/Kemsekov.GraphSharp.svg)](https://www.nuget.org/packages/Kemsekov.GraphSharp/) 
+
 LP solvers for GraphSharp
-[![nuget](https://img.shields.io/nuget/v/Kemsekov.GraphSharp.svg)](https://www.nuget.org/packages/Kemsekov.GraphSharp.GoogleOrTools/3.1.0) 
+
+[![nuget](https://img.shields.io/nuget/v/Kemsekov.GraphSharp.svg)](https://www.nuget.org/packages/Kemsekov.GraphSharp.GoogleOrTools) 
+
 # GraphSharp
 GraphSharp is a tool to manipulate on the set of connected nodes, or just graph. 
 
