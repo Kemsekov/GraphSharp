@@ -62,7 +62,7 @@ public static class ImmutableGraphOperationMaxFlow
     where TEdge : IEdge
     {
         getCapacity ??= e => (long)e.MapProperties().Capacity;
-        getUnitCost ??= e => (long)e.MapProperties().Weight;
+        getUnitCost ??= e => (long)e.MapProperties().Cost;
         getSupply ??= n => (long)n.MapProperties().Supply;
         
         var Edges = g.Edges;
