@@ -87,7 +87,6 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                 outSum = 1 * outVars[0];
                 for (int i = 1; i < outVars.Length; i++)
                     outSum += outVars[i];
-                solver.Add(outSum <= 1);
             }
 
             LinearExpr? inSum = null;
@@ -96,7 +95,6 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                 inSum = 1 * inVars[0];
                 for (int i = 1; i < inVars.Length; i++)
                     inSum += inVars[i];
-                solver.Add(inSum <= 1);
             }
 
             LinearExpr? undirSum = null;
