@@ -62,3 +62,10 @@ This example condenses cliques of original graph into nodes of new graph
 ![graph](https://github.com/Kemsekov/GraphSharp/assets/57869319/068f4855-d432-404c-b20e-a3835499ca38)
 ![condensedCliques](https://github.com/Kemsekov/GraphSharp/assets/57869319/7a8c69f3-e25d-4a9f-9ac6-1f60f902b1c9)
 
+This example condenses strongly connected components of original graph into nodes of new graph
+
+[SCC condensation](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/CondenseSCC)
+![graph](https://github.com/Kemsekov/GraphSharp/assets/57869319/6cf1aaff-e776-48e0-8300-c3f50888535b)
+![condensedSCC](https://github.com/Kemsekov/GraphSharp/assets/57869319/ab553e2c-9149-4dd4-a27c-5d30ffcb5a16)
+
+
