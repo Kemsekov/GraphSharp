@@ -5,6 +5,8 @@ using System.Linq;
 using Google.OrTools.ModelBuilder;
 using MathNet.Numerics;
 using Unchase.Satsuma.Adapters;
+using System.Collections.Generic;
+using System;
 namespace GraphSharp.Graphs;
 
 class TspResult<TNode> : ITsp<TNode>
@@ -19,11 +21,15 @@ class TspResult<TNode> : ITsp<TNode>
     }
 }
 
+/// <summary>
+/// Tsp google or tools extensions
+/// </summary>
 public static class ImmutableGraphOperationTSP
 {
     /// <summary>
     /// Tsp of graph by google or tools. 
     /// </summary>
+    /// <param name="g"></param>
     /// <param name="distances">Distance between two nodes by their ids. It is long, so you better to scale your distances.</param>
     /// <returns>Tsp</returns>
     public static ITsp<TNode> TspGoogleOrTools<TNode, TEdge>(this ImmutableGraphOperation<TNode, TEdge> g, Func<int, int, long> distances)

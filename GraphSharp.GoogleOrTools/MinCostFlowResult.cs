@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace GraphSharp.Graphs;
 /// <summary>
 /// Min cost max flow algorithm result

@@ -9,9 +9,18 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Version>3.0.6</Version>
+    <PackageId>Kemsekov.GraphSharp.GoogleOrTools</PackageId>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <PackageVersion>$(Version)</PackageVersion>
+    <Authors>Kemsekov</Authors>
+    <PackageProjectUrl>https://github.com/Kemsekov/GraphSharp</PackageProjectUrl>
+    <WarningLevel>6</WarningLevel>
   </PropertyGroup>
 
 </Project>

@@ -5,14 +5,20 @@ using MathNet.Numerics;
 using Unchase.Satsuma.Adapters;
 using Google.OrTools.LinearSolver;
 using GraphSharp.Common;
+using System.Collections.Generic;
+using System;
 namespace GraphSharp.Graphs;
 
-public static class ImmutableGraphOperationHamCycle
+/// <summary>
+/// Hamiltonian cycle google or tools extension
+/// </summary>
+public static class ImmutableGraphOperationHamCycleGoogleOrTools
 {
     // TODO: add tests
     /// <summary>
     /// Finds hamiltonian cycle on undirected graph solving lp problem using google or tools
     /// </summary>
+    /// <param name="operation"></param>
     /// <param name="weight">Edge length</param>
     /// <param name="maxIterations">Max iterations of lp solver</param>
     /// <returns>Hamiltonian cycle and edges of that cycle</returns>
@@ -188,6 +194,7 @@ public static class ImmutableGraphOperationHamCycle
     /// <summary>
     /// Finds hamiltonian cycle on directed graph solving lp problem using google or tools
     /// </summary>
+    /// <param name="operation"></param>
     /// <param name="weight">Edge length</param>
     /// <param name="maxIterations">Max iterations of lp solver</param>
     /// <returns>Hamiltonian cycle and edges of that cycle</returns>

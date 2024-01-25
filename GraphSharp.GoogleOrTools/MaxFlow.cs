@@ -1,12 +1,19 @@
-﻿using Google.OrTools.Graph;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Google.OrTools.Graph;
 using GraphSharp.Exceptions;
 
 namespace GraphSharp.Graphs;
+/// <summary>
+/// Google or tools flows extensions
+/// </summary>
 public static class ImmutableGraphOperationMaxFlow
 {
     /// <summary>
     /// Uses google or tools to compute max flow
     /// </summary>
+    /// <param name="g"></param>
     /// <param name="sourceId">
     /// Id of source node
     /// </param>
@@ -38,12 +45,7 @@ public static class ImmutableGraphOperationMaxFlow
     /// <summary>
     /// Uses google or tools to compute min cost max flow
     /// </summary>
-    /// <param name="sourceId">
-    /// Id of source node
-    /// </param>
-    /// <param name="sinkId">
-    /// Id of sink node
-    /// </param>
+    /// <param name="g"></param>
     /// <param name="getCapacity">
     /// Function to get edge capacity. By default uses edge "capacity" property
     /// </param>
