@@ -70,10 +70,10 @@ public static class ImmutableGraphOperationMaxFlow
 
         var maxFlow = new MinCostFlow();
         var edgeToId = new Dictionary<TEdge,int>();
-        foreach(var (e,i) in Edges.Select((e,i)=>(e,i))){
-            maxFlow.AddArcWithCapacityAndUnitCost(e.SourceId,e.TargetId,getCapacity(e),getUnitCost(e));
-            edgeToId[e]=i;
+        foreach(var e in Edges){
+            edgeToId[e]=maxFlow.AddArcWithCapacityAndUnitCost(e.SourceId,e.TargetId,getCapacity(e),getUnitCost(e));
         }
+
         foreach(var n in Nodes){
             maxFlow.SetNodeSupply(n.Id,getSupply(n));
         }
@@ -82,7 +82,6 @@ public static class ImmutableGraphOperationMaxFlow
 
         if(status!=MinCostFlowBase.Status.OPTIMAL)
             throw new FailedToSolveMaxFlowException("Failed to solve min cost max flow. Error : "+status);
-        
         return new(
             Nodes.Select(n=>n.Id),
             Edges,

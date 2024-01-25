@@ -1,9 +1,15 @@
 [![nuget](https://img.shields.io/nuget/v/Kemsekov.GraphSharp.svg)](https://www.nuget.org/packages/Kemsekov.GraphSharp/) 
 # GraphSharp
 GraphSharp is a tool to manipulate on the set of connected nodes, or just graph. 
-It allow you to create such algorithms as dijkstra algorithm(shortest path finder), graph coloring, components finder etc...
-Also, this library have adapter for graph structure to works as one from [QuikGraph](https://github.com/KeRNeLith/QuikGraph).
-So I could call this lib like an extension for QuikGraph library at this point.
+
+It is currently the most advanced graph library in c#.
+
+Also, this library have adapters for graphs from another library [QuikGraph](https://github.com/KeRNeLith/QuikGraph).
+
+And also for [Satsuma](https://github.com/unchase/Unchase.Satsuma)
+
+So any algorithms that works in these libraries also work here + this library contains lots and lots more algorithms and operations.
+
 
 For samples see https://github.com/Kemsekov/GraphSharp.Samples
 

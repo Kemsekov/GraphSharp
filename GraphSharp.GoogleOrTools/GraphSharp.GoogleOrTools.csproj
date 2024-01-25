@@ -14,7 +14,7 @@
     <OutputType>Library</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Version>3.0.6</Version>
+    <Version>3.1.0</Version>
     <PackageId>Kemsekov.GraphSharp.GoogleOrTools</PackageId>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <PackageVersion>$(Version)</PackageVersion>
