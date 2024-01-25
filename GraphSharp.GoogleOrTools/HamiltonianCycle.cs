@@ -56,14 +56,11 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                 paths[p] = firstV;
         }
 
-        //every node must have at most one out and one in edge
         //and total sum of active edges adjacent to node must equal to 2
         foreach (var n in g.Nodes)
         {
             var outE = g.Edges.OutEdges(n.Id).ToList();
             var inE = g.Edges.InEdges(n.Id).ToList();
-            if (outE.Count < 1 || inE.Count < 1)
-                throw new Exception("Not a hamiltonial cycle");
             //find all undirected edges
             var undirected =
                 outE
@@ -238,7 +235,7 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
             var outE = g.Edges.OutEdges(n.Id).ToList();
             var inE = g.Edges.InEdges(n.Id).ToList();
             if (outE.Count < 1 || inE.Count < 1)
-                throw new Exception("Not a hamiltonial cycle");
+                throw new Exception("Not a hamiltonial graph!");
 
             //get vars for each edges set
             var outVars = outE.Select(e => paths[e]).ToArray();
