@@ -189,7 +189,7 @@ public static class GraphExtensions
         }
     }
     /// <summary>
-    /// Validates that given path is a valid cycle for given graph.
+    /// Converts given nodes list to path
     /// </summary>
     public static IPath<TNode> ToPath<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, IEnumerable<TNode> nodes, PathType pathType)
     where TNode : INode
