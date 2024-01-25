@@ -95,6 +95,21 @@ where TEdge : IEdge
             startNodePosition += nodePositionShift;
         }
     }
+    /// <summary>
+    /// For each topological component gives coordinate from 0 to 1
+    /// </summary>
+    public IEnumerable<(IList<int> layer,double pos)> GetSortedByCoordinate()
+    {
+        if (!Done) yield break;
+        float startNodePosition = 0f;
+        var nodePositionShift = 1.0f / (Layers.Count() - 2);
+
+        foreach (var layer in Layers)
+        {
+            yield return (layer,startNodePosition);
+            startNodePosition += nodePositionShift;
+        }
+    }
 
     ///<inheritdoc/>
     protected override void StartImpl()
