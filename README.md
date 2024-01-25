@@ -56,6 +56,10 @@ For samples see https://github.com/Kemsekov/GraphSharp.Samples
 [Min cost flow using google or tools](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/MinCostFlow)
 ![example](https://github.com/Kemsekov/GraphSharp/assets/57869319/ce098798-476e-4645-857d-92d3a6aba5da)
 
+[Different graph center finders](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/CenterFinder)
+![example](https://github.com/Kemsekov/GraphSharp/assets/57869319/3f806a34-18a9-46bb-ad18-040e96644cad)
+
+
 This example condenses cliques of original graph into nodes of new graph
 
 [Clique condensation](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/CondenseCliques)
