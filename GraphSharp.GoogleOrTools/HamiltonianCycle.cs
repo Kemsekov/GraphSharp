@@ -56,10 +56,7 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                 paths[p] = firstV;
         }
 
-        var one = solver.MakeBoolVar("one");
-        solver.Add(one==1);
-
-        //every node must have degree 2
+        //and total sum of active edges adjacent to node must equal to 2
         foreach (var n in g.Nodes)
         {
             var outE = g.Edges.OutEdges(n.Id).ToList();
