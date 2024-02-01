@@ -327,13 +327,19 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
             solver.Add(sum <= 1);
         }
 
+        var forbiddenEdges = new HashSet<Variable>();
         //every node must have one out and one in edge
         foreach (var n in g.Nodes)
         {
             var outE = g.Edges.OutEdges(n.Id).ToList();
             var inE = g.Edges.InEdges(n.Id).ToList();
-            if (outE.Count < 1 || inE.Count < 1)
+
+            if (outE.Count < 1 || inE.Count < 1){
+                foreach(var e in outE.Concat(inE)){
+                    forbiddenEdges.Add(paths[e]);
+                }
                 continue;
+            }
 
             //get vars for each edges set
             var outVars = outE.Select(e => paths[e]).ToArray();
@@ -363,6 +369,14 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                 solver.Add(inSum == outSum);
                 solver.Add(inSum <= 1);
             }
+        }
+
+        //forbidden edges - edges that cannot be used
+        if(forbiddenEdges.Count>1){
+            var sum = 1.0*forbiddenEdges.First();
+            foreach(var e in forbiddenEdges.Skip(1))
+                sum+=e;
+            solver.Add(sum==0);
         }
 
         //we need to maximize edges count meanwhile prefer short edges more
@@ -446,9 +460,11 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
         var components = hamGraph.Do.FindComponents();
 
         foreach(var c in components.Components){
-            if(c.Count()<=1) continue;
+            if(c.Count()<3) continue;
             var subCycleEdges = hamEdges.InducedEdges(c.Select(t=>t.Id));
-            yield return GetCycle(hamGraph,subCycleEdges,pathType);
+            var cycle = GetCycle(hamGraph,subCycleEdges,pathType);
+            if(cycle.Count<3) continue;
+            yield return cycle;
         }
     }
 
