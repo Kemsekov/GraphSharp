@@ -707,4 +707,16 @@ public class GraphTests
             Assert.False(isomorphism.IsIsomorphic);
         }
     }
+    double L2(Node n1, Node n2) => (n1.MapProperties().Position - n2.MapProperties().Position).L2Norm();
+    [Fact]
+    public void FeedbackArcSet(){
+        _Graph.Do.CreateNodes(300);
+        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
+        _Graph.Do.ConnectToClosest(3,L2);
+
+        Assert.False(_Graph.IsDirectedAcyclic());
+        var arcSet = _Graph.Do.FeedbackArcSet(e=>L2(_Graph.Nodes[e.SourceId],_Graph.Nodes[e.TargetId]));
+        _Graph.Do.RemoveEdges(e=>arcSet.BetweenOrDefault(e.SourceId,e.TargetId) is not null);
+        Assert.True(_Graph.IsDirectedAcyclic());
+    }
 }
