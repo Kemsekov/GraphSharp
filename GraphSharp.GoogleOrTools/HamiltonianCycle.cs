@@ -56,13 +56,17 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                 paths[p] = firstV;
         }
 
+        var one = solver.MakeBoolVar("one");
+        solver.Add(one==1);
+
         //every node must have degree 2
         foreach (var n in g.Nodes)
         {
             var outE = g.Edges.OutEdges(n.Id).ToList();
             var inE = g.Edges.InEdges(n.Id).ToList();
-            if (outE.Count < 1 || inE.Count < 1)
-                throw new Exception("Not a hamiltonial cycle");
+            if (outE.Count + inE.Count < 2)
+                continue;
+            
             //find all undirected edges
             var undirected =
                 outE
@@ -116,12 +120,14 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
             solver.Add(totalSum == 2);
         }
 
+        //we need to maximize edges count meanwhile prefer short edges more
+        //than long ones
         var edgesArr = edges_.ToArray();
-        var edgesWeights = edgesArr.Select(e => weight(e)).ToArray();
+        var EdgesWeights = edgesArr.Select(e => weight(e)).ToArray();
         var edgesVars = edgesArr.Select(e => paths[e]).ToArray();
 
-        var pathLength = edgesVars.Dot(edgesWeights);
-        solver.Minimize(pathLength);
+        var PathLength = edgesVars.Dot(EdgesWeights);
+        solver.Minimize(PathLength);
 
         var result = Solver.ResultStatus.INFEASIBLE;
         EluminateSubtourUndirected(ref maxIterations, g, solver, paths, solutions, ref result);
@@ -188,7 +194,7 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
         }
     }
 
-    /// <summary>
+     /// <summary>
     /// Finds hamiltonian cycle on directed graph solving lp problem using google or tools
     /// </summary>
     /// <param name="operation"></param>
@@ -278,16 +284,17 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
 
         return (cycles, resultEdges);
     }
+
     /// <summary>
-    /// Finds approximate possible hamiltonian cycle on directed graph solving lp problem using google or tools. <br/>
-    /// It is adjustable method to get 
+    /// Finds approximate hamiltonian cycle on directed graph solving lp problem using google or tools. <br/>
+    /// It differs from <see cref="HamCycleDirected"/> in a way that it works on any (even non-hamiltonian) graphs, so this is convenient
+    /// method to find for example all possible cycles of max length
     /// </summary>
     /// <param name="operation"></param>
     /// <param name="weight">Edge length</param>
     /// <param name="maxIterations">Max iterations of lp solver</param>
-    /// <param name="minEdges">Min amount of edges used in all found cycles</param>
-    /// <returns>Hamiltonian cycle and edges of that cycle</returns>
-    public static (IEnumerable<IPath<TNode>> cycles, IEdgeSource<TEdge> edges) ApproxHamCycleDirected<TNode, TEdge>(this ImmutableGraphOperation<TNode, TEdge> operation, Func<TEdge, double> weight, int maxIterations = 100,int minEdges = 3)
+    /// <returns>Hamiltonian cycles(will be one if graph is hamiltonian) and edges of that cycle or empty if not a ham cycle</returns>
+    public static (IEnumerable<IPath<TNode>> cycles, IEdgeSource<TEdge> edges) ApproxHamCycleDirected<TNode, TEdge>(this ImmutableGraphOperation<TNode, TEdge> operation, Func<TEdge, double> weight, int maxIterations = 100)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -349,6 +356,11 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                 for (int i = 1; i < inVars.Length; i++)
                     inSum += inVars[i];
             }
+            //not strict condition: we allow some node
+            //not to be in the cycle, when it's degree=0,
+            //but require it to have either degree=2(in cycle) or 
+            //degree=0(not in cycle)
+            //we need to do it because not all graphs are hamiltonian
             if (inSum is not null && outSum is not null)
             {
                 solver.Add(inSum == outSum);
@@ -356,15 +368,14 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
             }
         }
 
+        //we need to maximize edges count meanwhile prefer short edges more
+        //than long ones
         var edgesArr = edges.ToArray();
-        var edgesWeights = edgesArr.Select(e => weight(e)).ToArray();
-        var edgesVars = edgesArr.Select(e => paths[e]).ToArray();
-
-        var pathLength = edgesVars.Dot(edgesWeights);
-        var ones = edgesVars.Select(i=>1.0).ToArray();
-        var pathCount = edgesVars.Dot(ones);
         
-        solver.Add(pathCount>=minEdges);
+        var edgesWeights = edgesArr.Select(e => weight(e)-1).ToArray();
+        var edgesVars = edgesArr.Select(e => paths[e]).ToArray();
+        
+        var pathLength = edgesVars.Dot(edgesWeights);
         solver.Minimize(pathLength);
 
         var result = Solver.ResultStatus.INFEASIBLE;
@@ -377,39 +388,8 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
 
         return (cycles, resultEdges);
     }
-    static IEnumerable<IPath<TNode>> GetCycles<TNode, TEdge>(IGraph<TNode, TEdge> hamGraph,IEdgeSource<TEdge> hamEdges, PathType pathType)
-        where TNode : INode
-        where TEdge : IEdge
-    {
-        hamGraph.SetSources(edges:hamEdges);
-        var components = hamGraph.Do.FindComponents();
 
-        foreach(var c in components.Components){
-            if(c.Count()<=1) continue;
-            var subCycleEdges = hamEdges.InducedEdges(c.Select(t=>t.Id));
-            yield return GetCycle(hamGraph,subCycleEdges,pathType);
-        }
-    }
-
-    static IPath<TNode> GetCycle<TNode, TEdge>(IGraph<TNode, TEdge> hamGraph,IEnumerable<TEdge> hamEdges,PathType pathType)
-        where TNode : INode
-        where TEdge : IEdge
-    {
-        hamGraph.SetSources(edges:hamEdges);
-        var firstE = hamGraph.Edges.First();
-        hamGraph.Edges.RemoveAll(e => e.ConnectsSame(firstE));
-        var path = hamGraph.Do.FindAnyPath(firstE.SourceId, firstE.TargetId,pathType: pathType);
-        if (path.Count > 2)
-            path.Path.Add(hamGraph.Nodes[firstE.SourceId]);
-        else
-        {
-            path = hamGraph.Do.FindAnyPath(firstE.TargetId, firstE.SourceId);
-            path.Path.Add(hamGraph.Nodes[firstE.TargetId]);
-        }
-        return path;
-    }
-
-    private static void EluminateSubtoursDirected<TNode, TEdge>(ref int maxIterations, IImmutableGraph<TNode, TEdge> g, Solver solver, Dictionary<TEdge, Variable> paths, Dictionary<TEdge, double> solutions, ref Solver.ResultStatus result)
+    static void EluminateSubtoursDirected<TNode, TEdge>(ref int maxIterations, IImmutableGraph<TNode, TEdge> g, Solver solver, Dictionary<TEdge, Variable> paths, Dictionary<TEdge, double> solutions, ref Solver.ResultStatus result)
         where TNode : INode
         where TEdge : IEdge
     {
@@ -461,4 +441,36 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
             }
         }
     }
+    static IEnumerable<IPath<TNode>> GetCycles<TNode, TEdge>(IGraph<TNode, TEdge> hamGraph,IEdgeSource<TEdge> hamEdges, PathType pathType)
+        where TNode : INode
+        where TEdge : IEdge
+    {
+        hamGraph.SetSources(edges:hamEdges);
+        var components = hamGraph.Do.FindComponents();
+
+        foreach(var c in components.Components){
+            if(c.Count()<=1) continue;
+            var subCycleEdges = hamEdges.InducedEdges(c.Select(t=>t.Id));
+            yield return GetCycle(hamGraph,subCycleEdges,pathType);
+        }
+    }
+
+    static IPath<TNode> GetCycle<TNode, TEdge>(IGraph<TNode, TEdge> hamGraph,IEnumerable<TEdge> hamEdges,PathType pathType)
+        where TNode : INode
+        where TEdge : IEdge
+    {
+        hamGraph.SetSources(edges:hamEdges);
+        var firstE = hamGraph.Edges.First();
+        hamGraph.Edges.RemoveAll(e => e.ConnectsSame(firstE));
+        var path = hamGraph.Do.FindAnyPath(firstE.SourceId, firstE.TargetId,pathType: pathType);
+        if (path.Count > 2)
+            path.Path.Add(hamGraph.Nodes[firstE.SourceId]);
+        else
+        {
+            path = hamGraph.Do.FindAnyPath(firstE.TargetId, firstE.SourceId);
+            path.Path.Add(hamGraph.Nodes[firstE.TargetId]);
+        }
+        return path;
+    }
+
 }
