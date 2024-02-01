@@ -69,6 +69,7 @@ public partial class GraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
+    // TODO: write tests fot it
     /// <summary>
     /// Uses quik graph implementation to compute EdmondsKarp max flow.<br/>
     /// This max flow algorithm suited for graphs with positive capacities and flows.
