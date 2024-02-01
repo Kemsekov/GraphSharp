@@ -55,14 +55,19 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
             foreach (var p in between)
                 paths[p] = firstV;
         }
+        var forbiddenEdges = new HashSet<Variable>();
 
         //and total sum of active edges adjacent to node must equal to 2
         foreach (var n in g.Nodes)
         {
             var outE = g.Edges.OutEdges(n.Id).ToList();
             var inE = g.Edges.InEdges(n.Id).ToList();
-            if (outE.Count + inE.Count < 2)
+            if (outE.Count + inE.Count < 2){
+                foreach(var e in outE.Concat(inE)){
+                    forbiddenEdges.Add(paths[e]);
+                }
                 continue;
+            }
             
             //find all undirected edges
             var undirected =
@@ -115,6 +120,14 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
 
             var totalSum = totalSumVars.Dot(new[] { 1.0, 1, 1 });
             solver.Add(totalSum == 2);
+        }
+
+        //forbidden edges - edges that cannot be used
+        if(forbiddenEdges.Count>1){
+            var sum = 1.0*forbiddenEdges.First();
+            foreach(var e in forbiddenEdges.Skip(1))
+                sum+=e;
+            solver.Add(sum==0);
         }
 
         //we need to maximize edges count meanwhile prefer short edges more
@@ -233,14 +246,19 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                 sum += paths[p];
             solver.Add(sum <= 1);
         }
+        var forbiddenEdges = new HashSet<Variable>();
 
         //every node must have one out and one in edge
         foreach (var n in g.Nodes)
         {
             var outE = g.Edges.OutEdges(n.Id).ToList();
             var inE = g.Edges.InEdges(n.Id).ToList();
-            if (outE.Count < 1 || inE.Count < 1)
+            if (outE.Count < 1 || inE.Count < 1){
+                foreach(var e in outE.Concat(inE)){
+                    forbiddenEdges.Add(paths[e]);
+                }
                 continue;
+            }
 
             //get vars for each edges set
             var outVars = outE.Select(e => paths[e]).ToArray();
@@ -261,6 +279,14 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
                     inSum += inVars[i];
                 solver.Add(inSum == 1);
             }
+        }
+
+        //forbidden edges - edges that cannot be used
+        if(forbiddenEdges.Count>1){
+            var sum = 1.0*forbiddenEdges.First();
+            foreach(var e in forbiddenEdges.Skip(1))
+                sum+=e;
+            solver.Add(sum==0);
         }
 
         var edgesArr = edges.ToArray();
