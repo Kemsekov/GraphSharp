@@ -309,7 +309,7 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
     }
 
     /// <summary>
-    /// Finds approximate hamiltonian cycle on directed graph solving lp problem using google or tools. <br/>
+    /// Finds approximate set of longest cycles on directed graph solving lp problem using google or tools. <br/>
     /// It differs from <see cref="HamCycleDirected"/> in a way that it works on any (even non-hamiltonian) graphs, so this is convenient
     /// method to find for example all possible cycles of max length
     /// </summary>
@@ -317,7 +317,7 @@ public static class ImmutableGraphOperationHamCycleGoogleOrTools
     /// <param name="weight">Edge length</param>
     /// <param name="maxIterations">Max iterations of lp solver</param>
     /// <returns>Hamiltonian cycles(will be one if graph is hamiltonian) and edges of that cycle or empty if not a ham cycle</returns>
-    public static (IEnumerable<IPath<TNode>> cycles, IEdgeSource<TEdge> edges) ApproxHamCycleDirected<TNode, TEdge>(this ImmutableGraphOperation<TNode, TEdge> operation, Func<TEdge, double> weight, int maxIterations = 100)
+    public static (IEnumerable<IPath<TNode>> cycles, IEdgeSource<TEdge> edges) ApproxCyclesDirected<TNode, TEdge>(this ImmutableGraphOperation<TNode, TEdge> operation, Func<TEdge, double> weight, int maxIterations = 100)
     where TNode : INode
     where TEdge : IEdge
     {

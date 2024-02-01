@@ -45,7 +45,7 @@ public static class ImmutableGraphOperationFeedbackArcSet
                 var (cyclesNodes, edges_) =
                     gClone.Do
                     .Induce(scc.nodes.Select(i => i.Id)).Do
-                    .ApproxHamCycleDirected(weight, 1);
+                    .ApproxCyclesDirected(weight, 1);
 
                 //on each cycle find shortest edge
                 foreach (var nodes in cyclesNodes)

@@ -726,8 +726,54 @@ public class GraphTests
         _Graph.Do.ConnectToClosest(3,L2);
 
         Assert.False(_Graph.IsDirectedAcyclic());
-        var arcSet = _Graph.Do.FeedbackArcSetFast(e=>L2(_Graph.Nodes[e.SourceId],_Graph.Nodes[e.TargetId]));
+        var arcSet = _Graph.Do.FeedbackArcSetFast(e=>e.Weight);
         _Graph.Do.RemoveEdges(e=>arcSet.BetweenOrDefault(e.SourceId,e.TargetId) is not null);
         Assert.True(_Graph.IsDirectedAcyclic());
     }
+    [Fact]
+    public void HamCycleUndirected(){
+        _Graph.Do.CreateNodes(60);
+        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
+        _Graph.Do.ConnectToClosest(3,L2);
+
+        var (cycles,edges) = _Graph.Do.HamCycleUndirected(e=>e.Weight,100);
+        Assert.Single(cycles);
+        var hamCycle = cycles.First();
+        _Graph.ValidateCycle(hamCycle);
+        Assert.Equal(_Graph.Nodes.Count+1,hamCycle.Count);
+        _Graph.ConvertPathToEdges(hamCycle,out var expectedEdges);
+        Assert.Equal(expectedEdges.OrderBy(e=>e.GetHashCode()),edges.OrderBy(e=>e.GetHashCode()));
+    }
+    [Fact]
+    public void HamCycleDirected(){
+        _Graph.Do.CreateNodes(60);
+        _Graph.Do.ConnectAsHamiltonianCycle(x=>x.MapProperties().Position);
+        _Graph.Do.ConnectToClosest(3,L2);
+
+        var (cycles,edges) = _Graph.Do.HamCycleDirected(e=>e.Weight,100);
+        Assert.Single(cycles);
+        var hamCycle = cycles.First();
+        _Graph.ValidateCycle(hamCycle);
+        Assert.Equal(_Graph.Nodes.Count+1,hamCycle.Count);
+        _Graph.ConvertPathToEdges(hamCycle,out var expectedEdges);
+        Assert.Equal(expectedEdges.OrderBy(e=>e.GetHashCode()),edges.OrderBy(e=>e.GetHashCode()));
+    }
+    [Fact]
+    public void ApproxCyclesDirected(){
+        _Graph.Do.CreateNodes(100);
+        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
+        _Graph.Do.ConnectToClosest(3,L2);
+        var (cycles,edges) = _Graph.Do.ApproxCyclesDirected(e=>e.Weight,100);
+        Assert.NotEmpty(cycles);
+        foreach(var c in cycles)
+            _Graph.ValidateCycle(c);
+        
+        var totalEdges = new List<Edge>();
+        foreach(var c in cycles){
+            _Graph.ConvertPathToEdges(c,out var expectedEdges);
+            totalEdges.AddRange(expectedEdges);
+        }
+        Assert.Equal(totalEdges.OrderBy(e=>e.GetHashCode()),edges.OrderBy(e=>e.GetHashCode()));
+    }
+
 }
