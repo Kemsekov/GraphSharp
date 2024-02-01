@@ -719,4 +719,15 @@ public class GraphTests
         _Graph.Do.RemoveEdges(e=>arcSet.BetweenOrDefault(e.SourceId,e.TargetId) is not null);
         Assert.True(_Graph.IsDirectedAcyclic());
     }
+    [Fact]
+    public void FeedbackArcSetFast(){
+        _Graph.Do.CreateNodes(300);
+        _Graph.Do.DelaunayTriangulation(x=>x.MapProperties().Position);
+        _Graph.Do.ConnectToClosest(3,L2);
+
+        Assert.False(_Graph.IsDirectedAcyclic());
+        var arcSet = _Graph.Do.FeedbackArcSetFast(e=>L2(_Graph.Nodes[e.SourceId],_Graph.Nodes[e.TargetId]));
+        _Graph.Do.RemoveEdges(e=>arcSet.BetweenOrDefault(e.SourceId,e.TargetId) is not null);
+        Assert.True(_Graph.IsDirectedAcyclic());
+    }
 }
