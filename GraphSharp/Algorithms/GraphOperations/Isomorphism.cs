@@ -39,7 +39,6 @@ public partial class ImmutableGraphOperation<TNode, TEdge>
 where TNode : INode
 where TEdge : IEdge
 {
-    // TODO: add sample to it and tests on some graphs
     /// <summary>
     /// Method that uses nodes embeddings to determine graph isomorphism. Works in approximately O(n) time
     /// </summary>

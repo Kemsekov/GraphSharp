@@ -14,7 +14,6 @@ namespace GraphSharp.Graphs;
 /// </summary>
 public static class ImmutableGraphOperationHamCycleGoogleOrTools
 {
-    // TODO: add tests
     /// <summary>
     /// Finds hamiltonian cycle on undirected graph solving lp problem using google or tools
     /// </summary>

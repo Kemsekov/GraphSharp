@@ -174,6 +174,7 @@ public class GraphTests
     [Fact]
     public void TryFindCenter_Works()
     {
+        //this thing sometimes works
         _Graph.Do.CreateNodes(1000);
         _Graph.Do.DelaunayTriangulation(x => x.MapProperties().Position);
         (var r1, var c1) = _Graph.Do.TryFindCenterByApproximation(x => 1, false);
