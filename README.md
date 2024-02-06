@@ -52,7 +52,7 @@ For samples see https://github.com/Kemsekov/GraphSharp.Samples
 ![example](https://user-images.githubusercontent.com/57869319/183226714-827188f0-2f34-4a99-b90d-c6937c5dd41f.jpg)
 
 [Hamiltonian cycle finder (using google or tools)](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/HamiltonianCycle)
-![example](https://github.com/Kemsekov/GraphSharp/assets/57869319/32c373ee-d988-42de-a6ef-c7e023345d3e)
+![output](https://github.com/Kemsekov/GraphSharp/assets/57869319/cb861151-1a75-461a-a4ed-33b0e582fc93)
 
 [Pagerank using QuikGraph](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/PageRank)
 ![example](https://user-images.githubusercontent.com/57869319/187511214-3963fa78-ebf5-4d84-8bac-b483ea70f4b1.jpg)
