@@ -47,22 +47,34 @@ where TEdge : IEdge
     /// </summary>
     public MinCutResult MinCut(MaxFlowResult<TEdge> maxFlow){
         var residual = maxFlow.ResidualCapacities;
-        var paths = FindShortestPathsDijkstra(
-            maxFlow.SourceId,
-            getWeight: e=>1,
-            condition: e=>residual(e.Edge)!=0);
-        
         var left = new List<int>();
         var right = new List<int>();
+        
+        var sourcePaths = 
+            FindShortestPathsDijkstra(
+                maxFlow.
+                SourceId,
+                e=>1,
+                condition:e=>residual(e.Edge)!=0
+            );
+        var sinkPaths = 
+            FindShortestPathsDijkstra(
+                maxFlow.SinkId,
+                e=>1,
+                condition:e=>residual(e.Edge)!=0,
+                pathType:PathType.InEdges
+            );
 
         foreach(var n in Nodes){
-            var p = FindAnyPath(maxFlow.SourceId,n.Id,e=>residual(e)!=0);
-            if(p.Count==0)
+            var p1 = sourcePaths.GetPath(n.Id);
+            var p2 = sinkPaths.GetPath(n.Id);
+            if(p1.Count!=0)
                 right.Add(n.Id);
-            else
+            // else
+            if(p2.Count!=0)
                 left.Add(n.Id);
         }
-        right.Remove(maxFlow.SourceId);
+        right.Add(maxFlow.SinkId);
         left.Add(maxFlow.SourceId);
         return new MinCutResult(left,right);
     }
