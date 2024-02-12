@@ -9,16 +9,16 @@ namespace GraphSharp.Graphs;
 /// </summary>
 public static class ImmutableGraphOperationColoring
 {
+    //TODO: add test
     /// <summary>
     /// Computes nodes coloring up to optimal coloring using corresponding SAT problem<br/>
     /// If it returns <see cref="CpSolverStatus.Infeasible"/> with given amount of colors it means this is impossible to color graph with this amount of colors
     /// </summary>
     /// <param name="g"></param>
-    /// <param name="maxColors">Max colors to use</param>
-    /// <param name="millisecondsToRun">This method will search for solutions until the time is up or optimal coloring is found</param>
+    /// <param name="maxColors">Max amount of colors to use</param>
     /// <param name="res">Solve status</param>
     /// <returns>Coloring</returns>
-    public static ColoringResult SATColoring<TNode, TEdge>(this ImmutableGraphOperation<TNode, TEdge> g,int maxColors, double millisecondsToRun,out CpSolverStatus res)
+    public static ColoringResult SATColoring<TNode, TEdge>(this ImmutableGraphOperation<TNode, TEdge> g,int maxColors,out CpSolverStatus res)
     where TNode : INode
     where TEdge : IEdge
     {
@@ -47,10 +47,10 @@ public static class ImmutableGraphOperationColoring
         var values = nodeColor.Values.ToList();
         var colorSum = values.Sum();
 
-        model.Minimize(colorSum);
 
         var solver = new CpSolver();
-        solver.StringParameters = $"max_time_in_seconds:{millisecondsToRun/1000}";
+        // solver.StringParameters = $"max_time_in_seconds:{millisecondsToRun/1000}";
+        solver.StringParameters = $"stop_after_first_solution: true";
 
         res = solver.Solve(model);
         var arr = RentedArraySharp.ArrayPoolStorage.RentArray<int>(g.Nodes.MaxNodeId+1);
