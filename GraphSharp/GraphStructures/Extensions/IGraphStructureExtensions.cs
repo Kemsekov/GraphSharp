@@ -375,6 +375,24 @@ public static class GraphExtensions
         }
     }
     /// <summary>
+    /// Checks if graph colored in a right way. Throws an exception if there is a case when some node is not colored in a right way.
+    /// </summary>
+    public static void EnsureRightColoring<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph,Func<TNode,long> colorId)
+    where TNode : INode
+    where TEdge : IEdge
+    {
+        var Nodes = graph.Nodes;
+        foreach (var n in Nodes)
+        {
+            var color = colorId(n);
+            var edges = graph.Edges.OutEdges(n.Id);
+            if (edges.Any(x => colorId(Nodes[x.TargetId]) == color))
+            {
+                throw new WrongGraphColoringException($"Wrong graph coloring! Node {n.Id} with color {color} have edge with the same color!");
+            }
+        }
+    }
+    /// <summary>
     /// Apply predicate on nodes and returns selected nodes Id as int array. Just a shortcut for convenience.
     /// </summary>
     public static int[] GetNodesIdWhere<TNode, TEdge>(this IImmutableGraph<TNode, TEdge> graph, Predicate<TNode> predicate)

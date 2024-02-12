@@ -11,6 +11,14 @@ namespace GraphSharp.Graphs;
 public class ColoringResult : IDisposable{
     /// <summary>Array, which index is nodeId and value is colorId. If node is not colored it's value is 0</summary>
     public RentedArray<int> Colors { get; }
+    /// <summary>
+    /// Return node color
+    /// </summary>
+    public int this[int nodeId]=>Colors[nodeId];
+    /// <summary>
+    /// Return node color
+    /// </summary>
+    public int this[INode node]=>Colors[node.Id];
     /// <param name="colors">
     /// Colors to use. <br/>
     /// <see langword="colors[id] == colorId"/> <br/>
