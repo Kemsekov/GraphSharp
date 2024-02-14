@@ -162,6 +162,16 @@ where TEdge : IEdge
         Drawer.DrawText(node.Id.ToString(), point, color, fontSize*windowSize);
     }
     /// <summary>
+    /// Draws a text close to node
+    /// </summary>
+    public void DrawNodeText(TNode node, Color color, double fontSize,string text)
+    {
+        var pos = ShiftVector(GetNodePos(node));
+        float size = ((float)Size);
+        var point = new DenseVector(new[]{(float)(pos[0] - fontSize / 2) * size, (float)(pos[1] - fontSize / 2) * size});
+        Drawer.DrawText(text, point, color, fontSize*windowSize);
+    }
+    /// <summary>
     /// Fills node position with ellipse of given size and color. When color not specified uses node color
     /// </summary>
     public void DrawNode(TNode node, double nodeSize, Color color = default)
