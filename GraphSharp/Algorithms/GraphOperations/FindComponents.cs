@@ -17,14 +17,18 @@ where TEdge : IEdge
         Parallel.ForEach(g.Nodes, n =>u.MakeSet(n.Id));
         Parallel.ForEach(g.Edges, e =>u.UnionSet(e.SourceId, e.TargetId));
         
-        var result = new Dictionary<int,IList<TNode>>(u.SetsCount+1);
-        foreach(var n in Nodes){
+        var result = new ConcurrentDictionary<int, IList<Node>>();
+        Parallel.ForEach(g.Nodes, n =>
+        {
             var set = u.FindSet(n.Id);
-            if(result.TryGetValue(set,out var list))
-                list.Add(n);
+            if (result.TryGetValue(set, out var list))
+            {
+                lock (list)
+                    list.Add(n);
+            }
             else
-                result[set] = new List<TNode>(){n};
-        }
+                result[set] = new List<Node>() { n };
+        });
         return new (result.Values.ToArray(), u);
     }
 }
