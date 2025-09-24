@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using GraphSharp.Common;
 namespace GraphSharp.Graphs;
 
@@ -14,11 +16,11 @@ where TEdge : IEdge
     public ComponentsResult<TNode> FindComponents()
     {
         UnionFind u = new(Nodes.MaxNodeId + 1);
-        Parallel.ForEach(g.Nodes, n =>u.MakeSet(n.Id));
-        Parallel.ForEach(g.Edges, e =>u.UnionSet(e.SourceId, e.TargetId));
+        Parallel.ForEach(Nodes, n =>u.MakeSet(n.Id));
+        Parallel.ForEach(Edges, e =>u.UnionSet(e.SourceId, e.TargetId));
         
-        var result = new ConcurrentDictionary<int, IList<Node>>();
-        Parallel.ForEach(g.Nodes, n =>
+        var result = new ConcurrentDictionary<int, IList<TNode>>();
+        Parallel.ForEach(Nodes, n =>
         {
             var set = u.FindSet(n.Id);
             if (result.TryGetValue(set, out var list))
@@ -27,7 +29,7 @@ where TEdge : IEdge
                     list.Add(n);
             }
             else
-                result[set] = new List<Node>() { n };
+                result[set] = new List<TNode>() { n };
         });
         return new (result.Values.ToArray(), u);
     }

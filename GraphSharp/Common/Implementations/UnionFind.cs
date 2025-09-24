@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace GraphSharp.Common;
 
@@ -7,10 +8,19 @@ namespace GraphSharp.Common;
 /// Disjoint-set data structure
 /// https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 /// </summary>
-public class UnionFind
+public class UnionFind : IDisposable
 {
+    /// <summary>
+    /// Locks used for concurrency safety in union find
+    /// </summary>
     public object[] Locks;
+    /// <summary>
+    /// Parent nodes
+    /// </summary>
     public int[] parent;
+    /// <summary>
+    /// Rank of elements
+    /// </summary>
     public int[] rank;
     /// <summary>
     /// Total count of sets in the union find
@@ -91,5 +101,13 @@ public class UnionFind
                     return;
                 }
         }
+    }
+
+    /// <summary>
+    /// Empty dispose method
+    /// </summary>
+    public void Dispose()
+    {
+
     }
 }

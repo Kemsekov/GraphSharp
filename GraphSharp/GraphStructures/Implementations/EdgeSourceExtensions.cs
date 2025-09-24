@@ -214,7 +214,7 @@ public static class EdgeSourceExtensions
     public static void Isolate<TEdge>(this IEdgeSource<TEdge> Edges, params int[] nodes)
     where TEdge : IEdge
     {
-        foreach (var nodeId in nodes)
+        Parallel.ForEach(nodes, nodeId =>
         {
             var candidates = Edges.InducedEdges(Edges.Neighbors(nodeId).Concat(new[] { nodeId })).ToList();
             foreach (var candidate in candidates)
@@ -222,7 +222,7 @@ public static class EdgeSourceExtensions
                 if (candidate.SourceId == nodeId || candidate.TargetId == nodeId)
                     Edges.Remove(candidate);
             }
-        }
+        });
     }
     /// <returns>All edges adjacent to given nodes</returns>
     public static IEnumerable<EdgeSelect<TEdge>> AdjacentEdges<TEdge>(this IImmutableEdgeSource<TEdge> Edges, params int[] nodes)
