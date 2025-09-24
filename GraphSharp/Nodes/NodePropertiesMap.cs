@@ -22,13 +22,17 @@ public partial class NodePropertiesMap : INode
     {
         get
         {
-            var c = Properties.GetOrDefault("color");
-            if (c is Color color)
-                return color;
-            return Color.Empty;
+            lock (Properties)
+            {
+                var c = Properties.GetOrDefault("color");
+                if (c is Color color)
+                    return color;
+                return Color.Empty;
+            }
         }
         set
         {
+            lock (Properties)
             Properties["color"] = value;
         }
     }
@@ -39,13 +43,17 @@ public partial class NodePropertiesMap : INode
     {
         get
         {
-            var c = Properties.GetOrDefault("supply");
-            if (c is double w)
-                return w;
-            return 0;
+            lock (Properties)
+            {
+                var c = Properties.GetOrDefault("supply");
+                if (c is double w)
+                    return w;
+                return 0;
+            }
         }
         set
         {
+            lock (Properties)
             Properties["supply"] = value;
         }
     }
@@ -56,13 +64,17 @@ public partial class NodePropertiesMap : INode
     {
         get
         {
-            var c = Properties.GetOrDefault("weight");
-            if (c is double w)
-                return w;
-            return 0;
+            lock (Properties)
+            {
+                var c = Properties.GetOrDefault("weight");
+                if (c is double w)
+                    return w;
+                return 0;
+            }
         }
         set
         {
+            lock (Properties)
             Properties["weight"] = value;
         }
     }
@@ -70,15 +82,19 @@ public partial class NodePropertiesMap : INode
     public Vector Position{
         get
         {
-            var c = Properties.GetOrDefault("position");
-            if (c is Vector w)
-                return w;
-            var newW =  DenseVector.Create(2,0);
-            Properties["position"] = newW;
-            return newW;
+            lock (Properties)
+            {
+                var c = Properties.GetOrDefault("position");
+                if (c is Vector w)
+                    return w;
+                var newW = DenseVector.Create(2, 0);
+                Properties["position"] = newW;
+                return newW;
+            }
         }
         set
         {
+            lock (Properties)
             Properties["position"] = value;
         }
     }

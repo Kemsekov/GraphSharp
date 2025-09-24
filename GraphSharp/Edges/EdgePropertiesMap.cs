@@ -22,10 +22,13 @@ public partial class EdgePropertiesMap : IEdge
     {
         get
         {
-            var c = Properties.GetOrDefault("cost");
-            if (c is double cap)
-                return cap;
-            return 0;
+            lock (Properties)
+            {
+                var c = Properties.GetOrDefault("cost");
+                if (c is double cap)
+                    return cap;
+                return 0;
+            }
         }
         set
         {
@@ -39,13 +42,17 @@ public partial class EdgePropertiesMap : IEdge
     {
         get
         {
-            var c = Properties.GetOrDefault("capacity");
-            if (c is double cap)
-                return cap;
-            return 0;
+            lock (Properties)
+            {
+                var c = Properties.GetOrDefault("capacity");
+                if (c is double cap)
+                    return cap;
+                return 0;
+            }
         }
         set
         {
+            lock (Properties)
             Properties["capacity"] = value;
         }
     }
@@ -56,10 +63,13 @@ public partial class EdgePropertiesMap : IEdge
     {
         get
         {
-            var c = Properties.GetOrDefault("color");
-            if (c is Color color)
-                return color;
-            return Color.Empty;
+            lock (Properties)
+            {
+                var c = Properties.GetOrDefault("color");
+                if (c is Color color)
+                    return color;
+                return Color.Empty;
+            }
         }
         set
         {
@@ -73,13 +83,17 @@ public partial class EdgePropertiesMap : IEdge
     {
         get
         {
-            var c = Properties.GetOrDefault("weight");
-            if (c is double w)
-                return w;
-            return 0;
+            lock (Properties)
+            {
+                var c = Properties.GetOrDefault("weight");
+                if (c is double w)
+                    return w;
+                return 0;
+            }
         }
         set
         {
+            lock (Properties)
             Properties["weight"] = value;
         }
     }
