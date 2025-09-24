@@ -14,10 +14,8 @@ where TEdge : IEdge
     public ComponentsResult<TNode> FindComponents()
     {
         UnionFind u = new(Nodes.MaxNodeId + 1);
-        foreach (var n in Nodes)
-            u.MakeSet(n.Id);
-        foreach (var e in Edges)
-            u.UnionSet(e.SourceId, e.TargetId);
+        Parallel.ForEach(g.Nodes, n =>u.MakeSet(n.Id));
+        Parallel.ForEach(g.Edges, e =>u.UnionSet(e.SourceId, e.TargetId));
         
         var result = new Dictionary<int,IList<TNode>>(u.SetsCount+1);
         foreach(var n in Nodes){

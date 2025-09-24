@@ -7,10 +7,11 @@ namespace GraphSharp.Common;
 /// Disjoint-set data structure
 /// https://en.wikipedia.org/wiki/Disjoint-set_data_structure
 /// </summary>
-public class UnionFind : IDisposable
+public class UnionFind
 {
-    RentedArray<int> parent;
-    RentedArray<int> rank;
+    public object[] Locks;
+    public int[] parent;
+    public int[] rank;
     /// <summary>
     /// Total count of sets in the union find
     /// </summary>
@@ -19,14 +20,13 @@ public class UnionFind : IDisposable
     /// <param name="maxSetSize">Max element index in union set</param>
     public UnionFind(int maxSetSize)
     {
-        parent = ArrayPoolStorage.RentArray<int>(maxSetSize);
-        rank = ArrayPoolStorage.RentArray<int>(maxSetSize);
+        parent = new int[maxSetSize];
+        rank = new int[maxSetSize];
+        Locks = new object[maxSetSize];
+        for (int i = 0; i < maxSetSize; i++)
+            Locks[i] = new object();
     }
-    ///<inheritdoc/>
-    public void Dispose(){
-        parent.Dispose();
-        rank.Dispose();
-    }
+
     /// <summary>
     /// Assigns new set for given element
     /// </summary>
@@ -41,9 +41,15 @@ public class UnionFind : IDisposable
     /// <returns>Set id</returns>
     public int FindSet(int v)
     {
-        if (v == parent[v])
-            return v;
-        return parent[v] = FindSet(parent[v]);
+        int parentV = parent[v];
+        if (v == parentV) return v;
+
+        int root = FindSet(parentV);
+
+        // Try to update parent[v] to root atomically
+        Interlocked.CompareExchange(ref parent[v], root, parentV);
+
+        return root;
     }
     /// <summary>
     /// Helps to determine if two objects in same set
@@ -54,21 +60,36 @@ public class UnionFind : IDisposable
     /// <summary>
     /// Unions two object to be in same set
     /// </summary>
-    public void UnionSet(int a, int b)
+    public void UnionSet(int x, int y)
     {
-        a = FindSet(a);
-        b = FindSet(b);
-        if (a != b)
+        while (true)
         {
-            if (rank[a] < rank[b])
-            {
-                a = a ^ b;
-                b = a ^ b;
-                a = a ^ b;
-            }
-            parent[b] = a;
-            if (rank[a] == rank[b])
-                ++rank[a];
+            int a = FindSet(x);
+            int b = FindSet(y);
+            if (a == b) return;
+
+            // lock in consistent order
+            var firstLock = Locks[Math.Min(a, b)];
+            var secondLock = Locks[Math.Max(a, b)];
+
+            lock (firstLock)
+                lock (secondLock)
+                {
+                    // recompute roots after acquiring locks
+                    a = FindSet(x);
+                    b = FindSet(y);
+                    if (a == b) return;
+
+                    if (rank[a] < rank[b]) {
+                        a ^= b;
+                        b = a ^ b;
+                        a ^= b;
+                    }
+
+                    parent[b] = a;
+                    if (rank[a] == rank[b]) rank[a]++;
+                    return;
+                }
         }
     }
 }
