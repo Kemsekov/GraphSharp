@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,13 +31,20 @@ where TEdge : IEdge
                 }
             }
         }
+        
+        // debug stuff
+        // foreach (var e in treeGraph.Edges)
+        //     System.Console.WriteLine($"{e.SourceId} {e.TargetId}");
+        // System.Console.WriteLine("-------------");
+        // foreach(var e in Edges)
+        //     System.Console.WriteLine($"{e.SourceId} {e.TargetId}");
+        // System.Console.WriteLine("-------------");
 
-        var outsideEdges = Edges.Except(treeGraph.Edges).ToList();
+        var outsideEdges = Edges.Except(treeGraph.Edges);
+        outsideEdges=outsideEdges.DistinctBy(v => (Math.Min(v.SourceId, v.TargetId), Math.Max(v.SourceId, v.TargetId)));
         var result = new ConcurrentBag<IPath<TNode>>();
-        int counter = 0;
         Parallel.ForEach(outsideEdges, e =>
         {
-            Interlocked.Increment(ref counter);
             var path = treeGraph.Do.FindAnyPath(e.TargetId, e.SourceId).Path;
             if (path.Count() != 0)
             {
