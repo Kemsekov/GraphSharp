@@ -17,6 +17,71 @@ And also for [Satsuma](https://github.com/unchase/Unchase.Satsuma)
 
 So any algorithms that works in these libraries also work here + this library contains lots and lots more algorithms and operations.
 
+## SQL Server lazy loading support
+
+GraphSharp can also work with very large graphs by loading nodes and edges from SQL Server on demand instead of materializing the whole graph in RAM.
+
+This is useful for graphs with hundreds of millions of nodes and edges, where a full in-memory load is too expensive.
+
+### Example
+
+```csharp
+var connectionString = "Server=localhost;Database=GraphDb;Trusted_Connection=True;";
+
+var graph = new Graph<Node, Edge>(
+    id => new Node(id),
+    (source, target) => new Edge(source, target));
+
+graph.SetSources(
+    new SqlServerNodeSource<Node>(
+        connectionString,
+        "Nodes",
+        reader => new Node(reader.GetInt32(reader.GetOrdinal("Id"))),
+        (node, reader) =>
+        {
+            if (!reader.IsDBNull(reader.GetOrdinal("Weight")))
+                node.Weight = reader.GetDouble(reader.GetOrdinal("Weight"));
+        }),
+    new SqlServerEdgeSource<Edge>(
+        connectionString,
+        "Edges",
+        reader =>
+        {
+            var sourceId = reader.GetInt32(reader.GetOrdinal("SourceId"));
+            var targetId = reader.GetInt32(reader.GetOrdinal("TargetId"));
+            return new Edge(new Node(sourceId), new Node(targetId));
+        },
+        (edge, reader) =>
+        {
+            if (!reader.IsDBNull(reader.GetOrdinal("Weight")))
+                edge.MapProperties().Weight = reader.GetDouble(reader.GetOrdinal("Weight"));
+        }));
+```
+
+The graph still behaves like a normal GraphSharp graph, but node and edge data is loaded from SQL Server lazily when requested.
+
+### Included implementation
+
+- `GraphSharp/GraphStructures/Implementations/SqlServerSources.cs`
+- Node and edge source adapters for SQL Server tables
+- Custom property mapping from database columns to `Node` and `Edge` properties
+- Basic caching with memory guard support to evict older entries when configured
+
+### Sample app and tests
+
+A small sample console application and integration tests are also included to demonstrate the feature in a realistic setup.
+
+- Sample app: `SampleSql/`
+- Integration tests: `GraphSharp.SqlSources.Tests/`
+
+These examples create a local SQL Server database, seed a small dataset, and validate that nodes and edges can be loaded lazily from SQL.
+
+### Notes
+
+- This is lazy at the storage layer, not a full virtual graph database.
+- For very large graphs, indexing `Id`, `SourceId`, and `TargetId` is highly recommended.
+- Algorithms will still traverse the graph in memory once the relevant elements are loaded.
+
 For samples see https://github.com/Kemsekov/GraphSharp.Samples
 
 [Various path finders](https://github.com/Kemsekov/GraphSharp.Samples/tree/main/samples/FindPathByMeetInTheMiddle)
